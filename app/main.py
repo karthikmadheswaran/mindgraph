@@ -23,8 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://frontend:3000",
-        os.getenv("FRONTEND_URL", "http://localhost:3000"),
+        "https://mindgraph-frontend-production.up.railway.app",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
