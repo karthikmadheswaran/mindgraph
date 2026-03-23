@@ -1,0 +1,6 @@
+echo .env > .gitignore
+echo __pycache__/ >> .gitignore
+echo *.pyc >> .gitignore
+echo node_modules/ >> .gitignore
+echo .git/ >> .gitignore
+echo "Ui inspirations/" >> .gitignore

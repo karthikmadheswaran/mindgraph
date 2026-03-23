@@ -1,0 +1,12 @@
+journal-agent/
+├── app/
+│   ├── state.py          ← JournalState, CoreEntityNode, etc.
+│   ├── nodes/
+│   │   ├── normalize.py
+│   │   ├── classify.py
+│   │   ├── extract.py
+│   │   └── store.py
+│   ├── graph.py           ← wire nodes together, compile
+│   └── main.py            ← FastAPI or entry point
+├── requirements.txt
+└── .env                   ← API keys
