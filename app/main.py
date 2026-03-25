@@ -192,7 +192,9 @@ async def create_entry_stream(entry: EntryRequest):
         try:
             async for event in workflow.astream(state):
                 node_name = list(event.keys())[0]
-                final_result.update(event[node_name])
+                node_output = event[node_name]
+                if node_output and isinstance(node_output, dict):
+                    final_result.update(node_output)
                 update = {"node": node_name, "status": "completed"}
                 yield f"data: {json.dumps(update)}\n\n"
         except Exception as e:
