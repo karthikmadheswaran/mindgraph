@@ -200,12 +200,22 @@ async def create_entry_stream(entry: EntryRequest):
         except Exception as e:
             yield f"data: {json.dumps({'node': 'error', 'message': str(e)})}\n\n"
 
+        # Convert deadlines to serializable format
+        deadlines = final_result.get('deadline', [])
+        serializable_deadlines = []
+        for d in deadlines:
+            serializable_deadlines.append({
+                "description": d.get("description", ""),
+                "due_at": str(d.get("due_at", "")),
+                "raw_text": d.get("raw_text", ""),
+            })
+
         yield f"data: {json.dumps({'node': 'done', 'result': {
             'auto_title': final_result.get('auto_title', ''),
             'summary': final_result.get('summary', ''),
             'classifier': final_result.get('classifier', []),
             'core_entities': final_result.get('core_entities', []),
-            'deadline': final_result.get('deadline', []),
+            'deadline': serializable_deadlines,
         }})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
