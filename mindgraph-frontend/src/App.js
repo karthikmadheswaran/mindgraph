@@ -43,7 +43,7 @@ const deadlineLabel = (dateStr) => {
   return new Date(dateStr).toLocaleDateString("en", { month: "short", day: "numeric" });
 };
 
-/* ─── Input View ─── */
+/* --- Input View --- */
 function InputView() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -72,13 +72,17 @@ function InputView() {
         const chunk = decoder.decode(value);
         const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
         for (const line of lines) {
-          const data = JSON.parse(line.replace("data: ", ""));
-          if (data.node === "done") {
-            setResult(data.result);
-          } else if (data.node === "error") {
-            console.error("Pipeline error:", data.message);
-          } else {
-            setStatus((prev) => [...prev, data.node]);
+          try {
+            const data = JSON.parse(line.replace("data: ", ""));
+            if (data.node === "done") {
+              setResult(data.result);
+            } else if (data.node === "error") {
+              console.error("Pipeline error:", data.message);
+            } else {
+              setStatus((prev) => [...prev, data.node]);
+            }
+          } catch (parseErr) {
+            console.warn("Failed to parse SSE line:", line);
           }
         }
       }
@@ -120,7 +124,7 @@ function InputView() {
         <div className="status-card">
           {status.map((node, i) => (
             <div key={i} className="status-item completed">
-              <span className="status-check">✓</span>
+              <span className="status-check">&#10003;</span>
               {nodeLabels[node] || node}
             </div>
           ))}
@@ -136,37 +140,63 @@ function InputView() {
       {/* Result */}
       {result && (
         <div className="result-card">
-          <div className="result-summary">
-            <span className="result-check">✓</span>
-            <span>
-              <strong>
-                {result.classifier?.length > 0 &&
-                  result.classifier.map((c, i) => (
-                    <span key={i} className="tag category">{c}</span>
-                  ))}
-              </strong>
-              {result.core_entities?.length > 0 && (
-                <span className="result-entities">
-                  {result.core_entities.map((e) => e.name).join(". ")}
-                  {". "}
-                </span>
-              )}
-              {result.deadline?.length > 0 && (
-                <span className="result-deadline">
-                  Deadline noted: {result.deadline.map((d) => d.description).join(", ")}.
-                </span>
-              )}
-            </span>
-          </div>
           <div className="result-title">{result.auto_title}</div>
           <div className="result-text">{result.summary}</div>
+
+          {/* Categories */}
+          {result.classifier && result.classifier.length > 0 && (
+            <div className="result-section">
+              <div className="result-label">Categories</div>
+              <div className="result-tags">
+                {result.classifier.map((c, i) => (
+                  <span key={i} className="tag category">{c}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Entities */}
+          {result.core_entities && result.core_entities.length > 0 && (
+            <div className="result-section">
+              <div className="result-label">People &amp; Projects</div>
+              <div className="result-tags">
+                {result.core_entities.map((e, i) => {
+                  const color = entityColors[e.type] || entityColors.task;
+                  return (
+                    <span key={i} className="entity-chip" style={{ background: color.bg, color: color.text }}>
+                      {e.name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Deadlines */}
+          {result.deadline && result.deadline.length > 0 && (
+            <div className="result-section">
+              <div className="result-label">Deadlines</div>
+              {result.deadline.map((d, i) => {
+                const color = deadlineColor(d.due_at);
+                const label = deadlineLabel(d.due_at);
+                return (
+                  <div key={i} className="deadline-item">
+                    <span className="deadline-desc">{d.description}</span>
+                    <span className="deadline-badge" style={{ background: color.bg, color: color.text }}>
+                      {label || d.due_at?.slice(0, 10)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-/* ─── Dashboard ─── */
+/* --- Dashboard --- */
 function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -174,11 +204,19 @@ function Dashboard() {
   const [askQuery, setAskQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/entries?user_id=${USER_ID}`).then((r) => r.json()).then((d) => setEntries(d.entries || []));
-    fetch(`${API}/deadlines?user_id=${USER_ID}`).then((r) => r.json()).then((d) => setDeadlines(d.deadlines || []));
-    fetch(`${API}/entities?user_id=${USER_ID}`).then((r) => r.json()).then((d) => setEntities(d.entities || []));
+    Promise.all([
+      fetch(`${API}/entries?user_id=${USER_ID}`).then((r) => r.json()),
+      fetch(`${API}/deadlines?user_id=${USER_ID}`).then((r) => r.json()),
+      fetch(`${API}/entities?user_id=${USER_ID}`).then((r) => r.json()),
+    ]).then(([entriesData, deadlinesData, entitiesData]) => {
+      setEntries(entriesData.entries || []);
+      setDeadlines(deadlinesData.deadlines || []);
+      setEntities(entitiesData.entities || []);
+      setLoadingData(false);
+    }).catch(() => setLoadingData(false));
   }, []);
 
   const handleAsk = async () => {
@@ -204,6 +242,15 @@ function Dashboard() {
   const others = entities.filter(
     (e) => !["project", "person", "place"].includes(e.entity_type)
   );
+
+  if (loadingData) {
+    return (
+      <div style={{ textAlign: "center", padding: 40, color: "#9a8b78" }}>
+        <span className="spinner" />
+        <p style={{ marginTop: 12 }}>Loading your journal...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -256,10 +303,7 @@ function Dashboard() {
               return (
                 <div key={d.id} className="deadline-item">
                   <span className="deadline-desc">{d.description}</span>
-                  <span
-                    className="deadline-badge"
-                    style={{ background: color.bg, color: color.text }}
-                  >
+                  <span className="deadline-badge" style={{ background: color.bg, color: color.text }}>
                     {label}
                   </span>
                 </div>
@@ -290,7 +334,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Patterns / Insights placeholder */}
+        {/* Patterns placeholder */}
         <div className="grid-card">
           <h3>Patterns Detected</h3>
           <p className="empty" style={{ fontStyle: "italic" }}>
@@ -321,7 +365,7 @@ function Dashboard() {
   );
 }
 
-/* ─── App Shell ─── */
+/* --- App Shell --- */
 function App() {
   const [view, setView] = useState("input");
 
@@ -370,7 +414,6 @@ function App() {
           min-height: 100vh;
         }
 
-        /* ─── Header ─── */
         .header {
           display: flex;
           justify-content: space-between;
@@ -398,7 +441,6 @@ function App() {
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
-          letter-spacing: 0.01em;
         }
         .nav-btn:hover { background: var(--bg-card); }
         .nav-btn.active {
@@ -407,7 +449,6 @@ function App() {
           border-color: var(--text-primary);
         }
 
-        /* ─── Input View ─── */
         .input-view { display: flex; flex-direction: column; gap: 16px; }
 
         .input-card {
@@ -461,12 +502,8 @@ function App() {
           color: var(--bg);
           border-color: var(--text-primary);
         }
-        .submit-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
+        .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* ─── Status ─── */
         .status-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -496,57 +533,50 @@ function App() {
           flex-shrink: 0;
         }
 
-        /* ─── Result ─── */
         .result-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
           border-radius: var(--radius);
-          padding: 16px;
+          padding: 20px;
           box-shadow: var(--shadow);
-        }
-        .result-summary {
-          display: flex;
-          gap: 8px;
-          align-items: flex-start;
-          font-size: 13px;
-          color: var(--text-secondary);
-          margin-bottom: 12px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid var(--border-light);
-        }
-        .result-check {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: var(--accent-green);
-          color: white;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          flex-shrink: 0;
-          margin-top: 2px;
         }
         .result-title {
           font-family: var(--font-display);
           font-size: 20px;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
+          color: var(--text-primary);
         }
         .result-text {
           font-size: 14px;
           color: var(--text-secondary);
           line-height: 1.6;
+          margin-bottom: 4px;
         }
-        .result-entities { color: var(--text-muted); }
-        .result-deadline { color: var(--accent-warm); font-weight: 500; }
+        .result-section {
+          padding-top: 12px;
+          margin-top: 12px;
+          border-top: 1px solid var(--border-light);
+        }
+        .result-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-muted);
+          margin-bottom: 8px;
+        }
+        .result-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
         .tag {
           display: inline-block;
-          padding: 2px 10px;
+          padding: 3px 12px;
           border-radius: var(--radius-pill);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 500;
-          margin-right: 4px;
-          letter-spacing: 0.02em;
           text-transform: capitalize;
         }
         .tag.category {
@@ -554,7 +584,6 @@ function App() {
           color: var(--text-secondary);
         }
 
-        /* ─── Spinner ─── */
         .spinner {
           width: 16px; height: 16px;
           border: 2px solid var(--border);
@@ -566,7 +595,6 @@ function App() {
         .spinner.small { width: 12px; height: 12px; border-width: 1.5px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ─── Dashboard ─── */
         .dashboard { display: flex; flex-direction: column; gap: 16px; }
 
         .ask-card {
@@ -622,7 +650,6 @@ function App() {
           white-space: pre-wrap;
         }
 
-        /* ─── Dashboard Grid ─── */
         .dashboard-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -646,22 +673,14 @@ function App() {
           margin-bottom: 12px;
           color: var(--text-primary);
         }
-        .empty {
-          font-size: 13px;
-          color: var(--text-muted);
-        }
+        .empty { font-size: 13px; color: var(--text-muted); }
 
-        /* Projects */
         .project-item {
           padding: 8px 0;
           border-bottom: 1px solid var(--border-light);
         }
         .project-item:last-child { border-bottom: none; }
-        .project-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--text-primary);
-        }
+        .project-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
         .project-meta {
           font-size: 12px;
           color: var(--text-muted);
@@ -676,12 +695,8 @@ function App() {
           font-size: 11px;
           font-weight: 500;
         }
-        .status-badge.active {
-          background: var(--accent-green);
-          color: white;
-        }
+        .status-badge.active { background: var(--accent-green); color: white; }
 
-        /* Deadlines */
         .deadline-item {
           display: flex;
           justify-content: space-between;
@@ -690,10 +705,7 @@ function App() {
           border-bottom: 1px solid var(--border-light);
         }
         .deadline-item:last-child { border-bottom: none; }
-        .deadline-desc {
-          font-size: 14px;
-          color: var(--text-primary);
-        }
+        .deadline-desc { font-size: 14px; color: var(--text-primary); }
         .deadline-badge {
           padding: 3px 12px;
           border-radius: var(--radius-pill);
@@ -702,12 +714,7 @@ function App() {
           white-space: nowrap;
         }
 
-        /* Entities */
-        .entity-group {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
+        .entity-group { display: flex; flex-wrap: wrap; gap: 6px; }
         .entity-chip {
           padding: 4px 12px;
           border-radius: var(--radius-pill);
@@ -728,7 +735,6 @@ function App() {
           font-size: 10px;
         }
 
-        /* Entries */
         .section-title {
           font-family: var(--font-display);
           font-size: 18px;
