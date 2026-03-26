@@ -59,6 +59,7 @@ class JournalState(TypedDict):
     trigger_check: Annotated[bool, keep_latest]
     duplicate_of: Annotated[Optional[str], keep_latest]
     dedup_check_result: Annotated[Optional[str], keep_latest]
+    entry_id: Annotated[Optional[str], keep_latest]
 
 
 

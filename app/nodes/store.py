@@ -26,8 +26,18 @@ async def store_entry(state: JournalState) -> dict:
         "user_id": state.get('user_id', ''),
         "embedding": embedding,
     }
-    result = supabase.table("entries").insert(data).execute()
-    return {"id": result.data[0]["id"]} if result.data else {"error": "Failed to store entry"}
+
+    entry_id = state.get("entry_id")
+    if entry_id:
+        # Update the skeleton row created during async submission
+        data["status"] = "completed"
+        data["pipeline_stage"] = None
+        result = supabase.table("entries").update(data).eq("id", entry_id).execute()
+        return {"id": entry_id}
+    else:
+        # Fallback: insert new row (sync endpoint)
+        result = supabase.table("entries").insert(data).execute()
+        return {"id": result.data[0]["id"]} if result.data else {"error": "Failed to store entry"}
 
 async def store_entry_tags(entry_id: int, tags: list[str]) -> dict:
     #Store the tags for a journal entry in Supabase
