@@ -87,7 +87,7 @@ async def create_entry(entry: EntryRequest):
 @app.get("/entries")
 async def get_entries(user_id: str):
     result = supabase.table("entries")\
-        .select("id, raw_text, cleaned_text, auto_title, summary, created_at") \
+        .select("id, raw_text, cleaned_text, auto_title, summary, created_at, status, pipeline_stage") \
         .eq("user_id", user_id)\
         .order("created_at", desc=True)\
         .limit(20) \
@@ -232,6 +232,19 @@ async def create_entry_stream(entry: EntryRequest):
 
 @app.post("/entries/async")
 async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTasks):
+    # Insert skeleton row immediately so it appears on dashboard
+    skeleton = supabase.table("entries").insert({
+        "raw_text": entry.raw_text,
+        "user_id": entry.user_id,
+        "cleaned_text": "",
+        "auto_title": "",
+        "summary": "",
+        "status": "processing",
+        "pipeline_stage": "normalize",
+    }).execute()
+
+    entry_id = skeleton.data[0]["id"] if skeleton.data else None
+
     state = {
         "raw_text": entry.raw_text,
         "user_id": entry.user_id,
@@ -246,18 +259,38 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
         "trigger_check": False,
         "duplicate_of": None,
         "dedup_check_result": None,
+        "entry_id": str(entry_id) if entry_id else None,
     }
-    
+
     async def process_entry():
         try:
             langfuse_handler = LangfuseCallbackHandler()
-            await workflow.ainvoke(state, config={"callbacks": [langfuse_handler]})
+            async for event in workflow.astream(state, config={"callbacks": [langfuse_handler]}):
+                node_name = list(event.keys())[0]
+                if entry_id:
+                    supabase.table("entries").update({
+                        "pipeline_stage": node_name
+                    }).eq("id", entry_id).execute()
         except Exception as e:
             print(f"❌ Background processing error: {e}")
-    
+            if entry_id:
+                supabase.table("entries").update({
+                    "status": "error",
+                    "pipeline_stage": None
+                }).eq("id", entry_id).execute()
+
     background_tasks.add_task(process_entry)
-    
-    return {"status": "processing", "message": "Your entry is being processed. Check the dashboard in a few seconds."}
+
+    return {"status": "processing", "entry_id": entry_id, "message": "Your entry is being processed. Check the dashboard in a few seconds."}
+
+@app.get("/entries/{entry_id}/status")
+async def get_entry_status(entry_id: str):
+    result = supabase.table("entries") \
+        .select("id, status, pipeline_stage") \
+        .eq("id", entry_id) \
+        .single() \
+        .execute()
+    return result.data
     
 
 

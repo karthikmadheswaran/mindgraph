@@ -63,23 +63,11 @@ function InputView() {
         body: JSON.stringify({ raw_text: text, user_id: USER_ID }),
       });
       const data = await response.json();
-      setResult({
-        auto_title: "✨ Entry submitted!",
-        summary: data.message,
-        classifier: [],
-        core_entities: [],
-        deadline: [],
-      });
+      setResult({ type: "confirmation", message: data.message });
       setText("");
     } catch (err) {
       console.error(err);
-      setResult({
-        auto_title: "❌ Error",
-        summary: "Failed to submit entry. Please try again.",
-        classifier: [],
-        core_entities: [],
-        deadline: [],
-      });
+      setResult({ type: "error", message: "Failed to submit entry. Please try again." });
     }
     setLoading(false);
   };
@@ -130,57 +118,11 @@ function InputView() {
 
       {/* Result */}
       {result && (
-        <div className="result-card">
-          <div className="result-title">{result.auto_title}</div>
-          <div className="result-text">{result.summary}</div>
-
-          {/* Categories */}
-          {result.classifier && result.classifier.length > 0 && (
-            <div className="result-section">
-              <div className="result-label">Categories</div>
-              <div className="result-tags">
-                {result.classifier.map((c, i) => (
-                  <span key={i} className="tag category">{c}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Entities */}
-          {result.core_entities && result.core_entities.length > 0 && (
-            <div className="result-section">
-              <div className="result-label">People &amp; Projects</div>
-              <div className="result-tags">
-                {result.core_entities.map((e, i) => {
-                  const color = entityColors[e.type] || entityColors.task;
-                  return (
-                    <span key={i} className="entity-chip" style={{ background: color.bg, color: color.text }}>
-                      {e.name}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Deadlines */}
-          {result.deadline && result.deadline.length > 0 && (
-            <div className="result-section">
-              <div className="result-label">Deadlines</div>
-              {result.deadline.map((d, i) => {
-                const color = deadlineColor(d.due_at);
-                const label = deadlineLabel(d.due_at);
-                return (
-                  <div key={i} className="deadline-item">
-                    <span className="deadline-desc">{d.description}</span>
-                    <span className="deadline-badge" style={{ background: color.bg, color: color.text }}>
-                      {label || d.due_at?.slice(0, 10)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        <div className={`confirmation-banner ${result.type}`}>
+          <span className="confirmation-icon">
+            {result.type === "confirmation" ? "\u2713" : "\u2717"}
+          </span>
+          <span className="confirmation-text">{result.message}</span>
         </div>
       )}
     </div>
@@ -188,6 +130,8 @@ function InputView() {
 }
 
 /* --- Dashboard --- */
+const pipelineOrder = ["normalize", "dedup", "classify", "entities", "deadline", "title_summary", "store"];
+
 function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -196,10 +140,15 @@ function Dashboard() {
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const [liveStage, setLiveStage] = useState(null);
+
+  const fetchEntries = () =>
+    fetch(`${API}/entries?user_id=${USER_ID}`).then((r) => r.json());
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/entries?user_id=${USER_ID}`).then((r) => r.json()),
+      fetchEntries(),
       fetch(`${API}/deadlines?user_id=${USER_ID}`).then((r) => r.json()),
       fetch(`${API}/entities?user_id=${USER_ID}`).then((r) => r.json()),
     ]).then(([entriesData, deadlinesData, entitiesData]) => {
@@ -209,6 +158,36 @@ function Dashboard() {
       setLoadingData(false);
     }).catch(() => setLoadingData(false));
   }, []);
+
+  // Auto-poll when processing entries exist
+  useEffect(() => {
+    if (!entries.some((e) => e.status === "processing")) return;
+    const interval = setInterval(() => {
+      fetchEntries().then((data) => setEntries(data.entries || []));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [entries]);
+
+  // Poll individual entry status when expanded
+  useEffect(() => {
+    if (!expandedEntryId) return;
+    const entry = entries.find((e) => e.id === expandedEntryId);
+    if (!entry || entry.status !== "processing") return;
+    setLiveStage(entry.pipeline_stage);
+    const interval = setInterval(() => {
+      fetch(`${API}/entries/${expandedEntryId}/status`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data) setLiveStage(data.pipeline_stage);
+          if (data && data.status !== "processing") {
+            setExpandedEntryId(null);
+            setLiveStage(null);
+            fetchEntries().then((d) => setEntries(d.entries || []));
+          }
+        });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [expandedEntryId, entries]);
 
   const handleAsk = async () => {
     if (!askQuery.trim()) return;
@@ -337,19 +316,69 @@ function Dashboard() {
       {/* Recent Entries */}
       <h3 className="section-title">Recent Entries</h3>
       {entries.map((e) => (
-        <div key={e.id} className="entry-card">
+        <div
+          key={e.id}
+          className={`entry-card${e.status === "processing" ? " processing" : ""}`}
+          onClick={() => {
+            if (e.status === "processing") {
+              setExpandedEntryId(expandedEntryId === e.id ? null : e.id);
+            }
+          }}
+          style={e.status === "processing" ? { cursor: "pointer" } : {}}
+        >
           <div className="entry-header">
-            <span className="entry-title">{e.auto_title}</span>
-            <span className="entry-date">
-              {e.created_at
-                ? new Date(e.created_at).toLocaleDateString("en", {
-                    month: "short",
-                    day: "numeric",
-                  })
-                : ""}
-            </span>
+            {e.status === "processing" ? (
+              <>
+                <span className="entry-title processing-title">
+                  <span className="spinner small" style={{ marginRight: 8 }} />
+                  Processing your entry...
+                </span>
+                <span className="entry-date">just now</span>
+              </>
+            ) : (
+              <>
+                <span className="entry-title">{e.auto_title}</span>
+                <span className="entry-date">
+                  {e.created_at
+                    ? new Date(e.created_at).toLocaleDateString("en", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : ""}
+                </span>
+              </>
+            )}
           </div>
-          <div className="entry-summary">{e.summary}</div>
+          {e.status === "processing" ? (
+            <div className="entry-summary processing-text">
+              {e.raw_text?.slice(0, 100)}{e.raw_text?.length > 100 ? "..." : ""}
+            </div>
+          ) : (
+            <div className="entry-summary">{e.summary}</div>
+          )}
+
+          {/* Pipeline status (expanded) */}
+          {expandedEntryId === e.id && e.status === "processing" && (
+            <div className="pipeline-status">
+              {pipelineOrder.map((step) => {
+                const currentIdx = pipelineOrder.indexOf(liveStage || e.pipeline_stage);
+                const stepIdx = pipelineOrder.indexOf(step);
+                let stepClass = "pending";
+                if (stepIdx < currentIdx) stepClass = "completed";
+                else if (stepIdx === currentIdx) stepClass = "active";
+                return (
+                  <div key={step} className={`pipeline-step ${stepClass}`}>
+                    <span className="pipeline-icon">
+                      {stepClass === "completed" ? "\u2713" : stepClass === "active" ? (
+                        <span className="spinner small" />
+                      ) : "\u2022"}
+                    </span>
+                    <span>{nodeLabels[step] || step}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -524,42 +553,44 @@ function App() {
           flex-shrink: 0;
         }
 
-        .result-card {
+        .confirmation-banner {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          border-radius: var(--radius);
           background: var(--bg-card);
           border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 20px;
+          border-left: 3px solid var(--accent-green);
           box-shadow: var(--shadow);
+          animation: fadeIn 0.3s ease;
         }
-        .result-title {
-          font-family: var(--font-display);
-          font-size: 20px;
-          margin-bottom: 8px;
-          color: var(--text-primary);
+        .confirmation-banner.error {
+          border-left-color: var(--accent-warm);
         }
-        .result-text {
+        .confirmation-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: var(--accent-green);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          flex-shrink: 0;
+        }
+        .confirmation-banner.error .confirmation-icon {
+          background: var(--accent-warm);
+        }
+        .confirmation-text {
           font-size: 14px;
           color: var(--text-secondary);
-          line-height: 1.6;
-          margin-bottom: 4px;
+          line-height: 1.5;
         }
-        .result-section {
-          padding-top: 12px;
-          margin-top: 12px;
-          border-top: 1px solid var(--border-light);
-        }
-        .result-label {
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-muted);
-          margin-bottom: 8px;
-        }
-        .result-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .tag {
@@ -762,6 +793,72 @@ function App() {
           font-size: 13px;
           color: var(--text-secondary);
           line-height: 1.6;
+        }
+
+        .entry-card.processing {
+          border-left: 3px solid var(--accent-amber);
+          animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.85; }
+        }
+        .processing-title {
+          font-style: italic;
+          display: flex;
+          align-items: center;
+          color: var(--text-muted);
+        }
+        .processing-text {
+          font-style: italic;
+          color: var(--text-muted);
+        }
+
+        .pipeline-status {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid var(--border-light);
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          animation: fadeIn 0.3s ease;
+        }
+        .pipeline-step {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 13px;
+          color: var(--text-muted);
+          padding: 3px 0;
+        }
+        .pipeline-step.completed {
+          color: var(--text-secondary);
+        }
+        .pipeline-step.active {
+          color: var(--text-primary);
+          font-weight: 500;
+        }
+        .pipeline-icon {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          flex-shrink: 0;
+        }
+        .pipeline-step.completed .pipeline-icon {
+          background: var(--accent-green);
+          color: white;
+        }
+        .pipeline-step.active .pipeline-icon {
+          background: transparent;
+        }
+        .pipeline-step.pending .pipeline-icon {
+          background: var(--border);
+          color: var(--text-muted);
+          font-size: 8px;
         }
       `}</style>
 
