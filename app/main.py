@@ -56,10 +56,7 @@ async def health_check():
 
 @app.post("/entries", response_model=EntryResponse)
 async def create_entry(entry: EntryRequest):
-    langfuse_handler = LangfuseCallbackHandler(
-        tags=["pipeline"],
-        metadata={"user_id": entry.user_id}
-    )
+    langfuse_handler = LangfuseCallbackHandler()
     state={
         "raw_text": entry.raw_text,
         "user_id": entry.user_id,
@@ -123,10 +120,7 @@ def extract_text_from_response(response):
 
 @app.post("/ask")
 async def ask_question(question: str, user_id: str):
-    langfuse_handler = LangfuseCallbackHandler(
-        tags=["rag"],
-        metadata={"user_id": user_id, "question": question}
-    )
+    langfuse_handler = LangfuseCallbackHandler()
     query_embedding = await get_embedding(question)
 
     result = supabase.rpc("match_entries", {
@@ -185,10 +179,7 @@ async def get_entities(user_id: str):
 
 @app.post("/entries/stream")
 async def create_entry_stream(entry: EntryRequest):
-    langfuse_handler = LangfuseCallbackHandler(
-        tags=["pipeline", "stream"],
-        metadata={"user_id": entry.user_id}
-    )
+    langfuse_handler = LangfuseCallbackHandler()
     state = {
         "raw_text": entry.raw_text,
         "user_id": entry.user_id,
