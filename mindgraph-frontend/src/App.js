@@ -57,38 +57,29 @@ function InputView() {
     setStatus([]);
 
     try {
-      const response = await fetch(`${API}/entries/stream`, {
+      const response = await fetch(`${API}/entries/async`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ raw_text: text, user_id: USER_ID }),
       });
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
-        for (const line of lines) {
-          try {
-            const data = JSON.parse(line.replace("data: ", ""));
-            if (data.node === "done") {
-              setResult(data.result);
-            } else if (data.node === "error") {
-              console.error("Pipeline error:", data.message);
-            } else {
-              setStatus((prev) => [...prev, data.node]);
-            }
-          } catch (parseErr) {
-            console.warn("Failed to parse SSE line:", line);
-          }
-        }
-      }
+      const data = await response.json();
+      setResult({
+        auto_title: "✨ Entry submitted!",
+        summary: data.message,
+        classifier: [],
+        core_entities: [],
+        deadline: [],
+      });
       setText("");
     } catch (err) {
       console.error(err);
+      setResult({
+        auto_title: "❌ Error",
+        summary: "Failed to submit entry. Please try again.",
+        classifier: [],
+        core_entities: [],
+        deadline: [],
+      });
     }
     setLoading(false);
   };

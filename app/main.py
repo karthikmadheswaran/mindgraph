@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional 
 from app.graph import build_graph
+from fastapi import FastAPI, BackgroundTasks
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
 from app.nodes.store import supabase
@@ -229,6 +230,34 @@ async def create_entry_stream(entry: EntryRequest):
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
+@app.post("/entries/async")
+async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTasks):
+    state = {
+        "raw_text": entry.raw_text,
+        "user_id": entry.user_id,
+        "input_type": entry.input_type,
+        "cleaned_text": "",
+        "auto_title": "",
+        "summary": "",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": False,
+        "duplicate_of": None,
+        "dedup_check_result": None,
+    }
+    
+    async def process_entry():
+        try:
+            langfuse_handler = LangfuseCallbackHandler()
+            await workflow.ainvoke(state, config={"callbacks": [langfuse_handler]})
+        except Exception as e:
+            print(f"❌ Background processing error: {e}")
+    
+    background_tasks.add_task(process_entry)
+    
+    return {"status": "processing", "message": "Your entry is being processed. Check the dashboard in a few seconds."}
     
 
 
