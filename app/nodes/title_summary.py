@@ -117,6 +117,11 @@ async def title_summary(state: JournalState) -> dict:
 
     text = state['raw_text']
 
+    # Skip LLM for short entries (≤2 sentences and ≤150 chars)
+    sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
+    if len(sentences) <= 2 and len(text) <= 150:
+        return {"auto_title": text.strip(), "summary": text.strip()}
+
     prompt = build_auto_title_summary_prompt(text)
 
     response = await model.ainvoke(prompt)
