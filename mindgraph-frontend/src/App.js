@@ -78,7 +78,7 @@ function InputView() {
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="what's on your mind?"
+          placeholder="What's on your mind?"
           onKeyDown={(e) => {
             if (e.key === "Enter" && e.metaKey) handleSubmit();
           }}
@@ -215,7 +215,7 @@ function Dashboard() {
 
   if (loadingData) {
     return (
-      <div style={{ textAlign: "center", padding: 40, color: "#9a8b78" }}>
+      <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
         <span className="spinner" />
         <p style={{ marginTop: 12 }}>Loading your journal...</p>
       </div>
@@ -307,7 +307,7 @@ function Dashboard() {
         {/* Patterns placeholder */}
         <div className="grid-card">
           <h3>Patterns Detected</h3>
-          <p className="empty" style={{ fontStyle: "italic" }}>
+          <p className="empty">
             Patterns and insights will appear here as you journal more entries over time.
           </p>
         </div>
@@ -333,7 +333,7 @@ function Dashboard() {
                   <span className="spinner small" style={{ marginRight: 8 }} />
                   Processing your entry...
                 </span>
-                <span className="entry-date">just now</span>
+                <span className="entry-date">Just now</span>
               </>
             ) : (
               <>
@@ -493,7 +493,6 @@ function App() {
         }
         .input-card textarea::placeholder {
           color: var(--text-muted);
-          font-style: italic;
         }
 
         .input-actions {
@@ -628,7 +627,7 @@ function App() {
         }
         .ask-label {
           font-family: var(--font-display);
-          font-size: 17px;
+          font-size: 18px;
           margin-bottom: 10px;
           color: var(--text-primary);
         }
@@ -790,7 +789,7 @@ function App() {
           flex-shrink: 0;
         }
         .entry-summary {
-          font-size: 13px;
+          font-size: 14px;
           color: var(--text-secondary);
           line-height: 1.6;
         }
@@ -804,13 +803,11 @@ function App() {
           50% { opacity: 0.85; }
         }
         .processing-title {
-          font-style: italic;
           display: flex;
           align-items: center;
           color: var(--text-muted);
         }
         .processing-text {
-          font-style: italic;
           color: var(--text-muted);
         }
 
