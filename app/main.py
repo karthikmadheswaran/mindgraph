@@ -9,7 +9,14 @@ from app.nodes.store import supabase
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from dotenv import load_dotenv
+from langfuse import Langfuse
+from langfuse.langchain import CallbackHandler as LangfuseCallbackHandler
 load_dotenv()
+Langfuse(
+    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+    host=os.getenv("LANGFUSE_BASE_URL", "https://us.cloud.langfuse.com")
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import json
@@ -49,6 +56,10 @@ async def health_check():
 
 @app.post("/entries", response_model=EntryResponse)
 async def create_entry(entry: EntryRequest):
+    langfuse_handler = LangfuseCallbackHandler(
+        tags=["pipeline"],
+        metadata={"user_id": entry.user_id}
+    )
     state={
         "raw_text": entry.raw_text,
         "user_id": entry.user_id,
@@ -64,7 +75,7 @@ async def create_entry(entry: EntryRequest):
         "dedup_check_result": None
     }
 
-    result = await workflow.ainvoke(state)
+    result = await workflow.ainvoke(state, config={"callbacks": [langfuse_handler]})
 
 
     return EntryResponse(
@@ -112,7 +123,10 @@ def extract_text_from_response(response):
 
 @app.post("/ask")
 async def ask_question(question: str, user_id: str):
-
+    langfuse_handler = LangfuseCallbackHandler(
+        tags=["rag"],
+        metadata={"user_id": user_id, "question": question}
+    )
     query_embedding = await get_embedding(question)
 
     result = supabase.rpc("match_entries", {
@@ -143,7 +157,7 @@ async def ask_question(question: str, user_id: str):
     If the journal entries do not contain relevant information, say "I don't know".
     """
     
-    response = await model.ainvoke(prompt)
+    response = await model.ainvoke(prompt, config={"callbacks": [langfuse_handler]})
     answer = extract_text_from_response(response)
 
     return {"answer": answer}
@@ -171,6 +185,10 @@ async def get_entities(user_id: str):
 
 @app.post("/entries/stream")
 async def create_entry_stream(entry: EntryRequest):
+    langfuse_handler = LangfuseCallbackHandler(
+        tags=["pipeline", "stream"],
+        metadata={"user_id": entry.user_id}
+    )
     state = {
         "raw_text": entry.raw_text,
         "user_id": entry.user_id,
@@ -190,7 +208,7 @@ async def create_entry_stream(entry: EntryRequest):
     async def event_stream():
         final_result = {}
         try:
-            async for event in workflow.astream(state):
+            async for event in workflow.astream(state, config={"callbacks": [langfuse_handler]}):
                 node_name = list(event.keys())[0]
                 node_output = event[node_name]
                 if node_output and isinstance(node_output, dict):
