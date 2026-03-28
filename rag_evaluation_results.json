@@ -1,0 +1,613 @@
+{
+  "summary": {
+    "test_cases": 15,
+    "avg_retrieval_f1": 0.504,
+    "avg_keyword_score": 0.933,
+    "avg_hallucination_score": 1.0,
+    "avg_retrieval_latency_ms": 1011,
+    "avg_generation_latency_ms": 43726
+  },
+  "results": [
+    {
+      "question": "What have I been working on with Sneha?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Had coffee with Sneha",
+          "Debugging and Startup Ideas \u2615",
+          "Addressing Auth Module Issues Tomorrow \ud83d\udee0\ufe0f",
+          "New Auth Module Bug Report \ud83d\udc1b",
+          "Fixing Session Timeout Bug \ud83d\udc1b"
+        ],
+        "expected_titles": [
+          "Debugging and Startup Ideas",
+          "Debugging Success and Feeling Homesick",
+          "Had coffee with Sneha"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 0.667,
+        "f1_score": 0.5,
+        "retrieval_time_ms": 2051,
+        "similarities": [
+          0.791,
+          0.689,
+          0.653,
+          0.653,
+          0.653
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have been working with Sneha on the following:\n\n*   **Authentication Module:** You have been debugging this module together. Specifically, you discussed refactoring ...",
+        "keywords_found": [
+          "auth",
+          "debug",
+          "Sneha"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 43516
+      }
+    },
+    {
+      "question": "What are my health issues recently?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Struggling Through a Migraine Day \ud83e\udd15",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Productive Day Amidst Financial Stress \ud83d\udcb8",
+          "Pitch Deck Prep and Nerves \u2615",
+          "New User-Friendly Streaming Options \ud83c\udfa5"
+        ],
+        "expected_titles": [
+          "Struggling Through a Migraine Day",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1_score": 0.571,
+        "retrieval_time_ms": 807,
+        "similarities": [
+          0.613,
+          0.611,
+          0.582,
+          0.573,
+          0.567
+        ]
+      },
+      "answer": {
+        "answer": "Based on your recent journal entries, you have mentioned several health-related issues:\n\n*   **Migraines:** On March 9, you had a severe migraine that prevented you from focusing or exercising, and yo...",
+        "keywords_found": [
+          "migraine"
+        ],
+        "keywords_missing": [
+          "medicine"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 108314
+      }
+    },
+    {
+      "question": "Tell me about my family and parents",
+      "retrieval": {
+        "retrieved_titles": [
+          "Planning Parents' Bangalore Visit \ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Upcoming Deadlines and Family Calls \ud83d\udcde",
+          "Pitch Deck Prep and Nerves \u2615",
+          "Had coffee with Sneha"
+        ],
+        "expected_titles": [
+          "Planning Parents' Bangalore Visit",
+          "Upcoming Deadlines and Family Calls"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1_score": 0.571,
+        "retrieval_time_ms": 1108,
+        "similarities": [
+          0.595,
+          0.52,
+          0.511,
+          0.506,
+          0.505
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, here is what I found about your family and parents:\n\n*   **Upcoming Visit:** Your parents are planning to visit you in Bangalore on April 9, 2026. You\u2019ve been looking fo...",
+        "keywords_found": [
+          "mom",
+          "dad",
+          "Bangalore"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 41668
+      }
+    },
+    {
+      "question": "What startup ideas have I discussed?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Startup Strategy with Arun \ud83d\udca1",
+          "Debugging and Startup Ideas \u2615",
+          "Pitch Deck Prep and Nerves \u2615",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Deployment Progress and Security Lessons \ud83d\udee0\ufe0f"
+        ],
+        "expected_titles": [
+          "Startup Strategy with Arun",
+          "Debugging and Startup Ideas"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1_score": 0.571,
+        "retrieval_time_ms": 593,
+        "similarities": [
+          0.687,
+          0.675,
+          0.618,
+          0.598,
+          0.597
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have discussed the following startup ideas:\n\n*   **B2B SaaS:** On March 10, 2026, you had a brainstorming session with Arun and decided to focus your startup on B2B ...",
+        "keywords_found": [
+          "Arun",
+          "startup"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 28580
+      }
+    },
+    {
+      "question": "How much money have I been spending?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Struggling Through a Migraine Day \ud83e\udd15",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Productive Day Amidst Financial Stress \ud83d\udcb8",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0"
+        ],
+        "expected_titles": [
+          "Productive Day Amidst Financial Stress",
+          "Struggling Through a Migraine Day",
+          "Cosmic Perspective and Life Logistics",
+          "Amazing Brigade Road Coffee Discovery"
+        ],
+        "hits": 3,
+        "precision": 0.6,
+        "recall": 0.75,
+        "f1_score": 0.667,
+        "retrieval_time_ms": 868,
+        "similarities": [
+          0.574,
+          0.572,
+          0.567,
+          0.554,
+          0.551
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have recorded spending a total of **3,950** (in the currency used in your notes, likely INR).\n\nHere is a breakdown of your spending:\n\n*   **February 26, 2026:** \u20b91,8...",
+        "keywords_found": [
+          "medicine"
+        ],
+        "keywords_missing": [
+          "spent"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 145667
+      }
+    },
+    {
+      "question": "What happened when I quit my job?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Quitting Job for New Ventures \ud83d\ude80",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "MindGraph Deployment Success in Bangalore \ud83d\ude80",
+          "Deployment Progress and Security Lessons \ud83d\udee0\ufe0f"
+        ],
+        "expected_titles": [
+          "Quitting Job for New Ventures"
+        ],
+        "hits": 1,
+        "precision": 0.2,
+        "recall": 1.0,
+        "f1_score": 0.333,
+        "retrieval_time_ms": 1815,
+        "similarities": [
+          0.655,
+          0.567,
+          0.561,
+          0.555,
+          0.552
+        ]
+      },
+      "answer": {
+        "answer": "You quit your job on **February 25, 2026**. Based on your journal entries, here is what happened around that time and the events that followed:\n\n*   **Immediate Reactions:** You described the experien...",
+        "keywords_found": [
+          "quit",
+          "exciting",
+          "scary"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 19042
+      }
+    },
+    {
+      "question": "What places have I visited in Bangalore?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Debugging Success and Feeling Homesick \ud83c\udfe0",
+          "Planning Parents' Bangalore Visit \ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Quitting Job for New Ventures \ud83d\ude80",
+          "Amazing Brigade Road Coffee Discovery \u2615"
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick",
+          "Amazing Brigade Road Coffee Discovery",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 3,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1_score": 0.75,
+        "retrieval_time_ms": 691,
+        "similarities": [
+          0.644,
+          0.636,
+          0.605,
+          0.603,
+          0.602
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have visited the following places in Bangalore:\n\n*   **Cubbon Park:** You went for a run here on March 9, 2026.\n*   **Indiranagar:** You had lunch at a new place her...",
+        "keywords_found": [
+          "Bangalore"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 39069
+      }
+    },
+    {
+      "question": "What bugs have I been fixing?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Fixing Session Timeout Bug \ud83d\udc1b",
+          "Addressing Auth Module Issues \ud83d\udee0\ufe0f",
+          "New Auth Module Bug Report \ud83d\udc1b",
+          "Addressing Auth Module Issues Tomorrow \ud83d\udee0\ufe0f",
+          "SSE Fix and Methodology Test \ud83d\udee0\ufe0f"
+        ],
+        "expected_titles": [
+          "Addressing Auth Module Issues",
+          "Fixing Session Timeout Bug",
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 0.667,
+        "f1_score": 0.5,
+        "retrieval_time_ms": 687,
+        "similarities": [
+          0.643,
+          0.643,
+          0.643,
+          0.643,
+          0.626
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have been working on the following:\n\n*   **SSE Error:** You recently fixed an error related to Server-Sent Events (SSE) and tested it alongside a new \"acknowledge fa...",
+        "keywords_found": [
+          "auth",
+          "bug"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 38610
+      }
+    },
+    {
+      "question": "How has my mood been lately?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Day Amidst Financial Stress \ud83d\udcb8",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Pitch Deck Prep and Nerves \u2615",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c"
+        ],
+        "expected_titles": [
+          "Quitting Job for New Ventures",
+          "Struggling Through a Migraine Day",
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 1,
+        "precision": 0.2,
+        "recall": 0.333,
+        "f1_score": 0.25,
+        "retrieval_time_ms": 651,
+        "similarities": [
+          0.601,
+          0.594,
+          0.589,
+          0.585,
+          0.569
+        ]
+      },
+      "answer": {
+        "answer": "Based on your entries from late February through late March, your mood has been a mix of productivity, work-related anxiety, and moments of reflection. Here is a summary of how you\u2019ve been feeling:\n\n*...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 23756
+      }
+    },
+    {
+      "question": "What deadlines do I have coming up?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Upcoming Deadlines and Family Calls \ud83d\udcde",
+          "Deployment Progress and Security Lessons \ud83d\udee0\ufe0f",
+          "Productive Day Amidst Financial Stress \ud83d\udcb8",
+          "Addressing Auth Module Issues Tomorrow \ud83d\udee0\ufe0f",
+          "New Auth Module Bug Report \ud83d\udc1b"
+        ],
+        "expected_titles": [
+          "Upcoming Deadlines and Family Calls",
+          "Pitch Deck Prep and Nerves"
+        ],
+        "hits": 1,
+        "precision": 0.2,
+        "recall": 0.5,
+        "f1_score": 0.286,
+        "retrieval_time_ms": 996,
+        "similarities": [
+          0.652,
+          0.593,
+          0.587,
+          0.574,
+          0.574
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, here are the deadlines and scheduled tasks you have mentioned:\n\n*   **February 27, 2026:** Submit the Pull Request and book a dentist appointment.\n*   **March 1, 2026:**...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 17410
+      }
+    },
+    {
+      "question": "Who is Arun and what have we discussed?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Startup Strategy with Arun \ud83d\udca1",
+          "Pitch Deck Prep and Nerves \u2615",
+          "Debugging and Startup Ideas \u2615",
+          "Had coffee with Sneha",
+          "Deployment Progress and Security Lessons \ud83d\udee0\ufe0f"
+        ],
+        "expected_titles": [
+          "Startup Strategy with Arun"
+        ],
+        "hits": 1,
+        "precision": 0.2,
+        "recall": 1.0,
+        "f1_score": 0.333,
+        "retrieval_time_ms": 1832,
+        "similarities": [
+          0.638,
+          0.624,
+          0.608,
+          0.605,
+          0.58
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, Arun is a collaborator or partner in your startup venture. \n\nYou have discussed the following topics with him:\n\n*   **Startup Strategy:** During a brainstorming session ...",
+        "keywords_found": [
+          "Arun",
+          "startup"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 4204
+      }
+    },
+    {
+      "question": "What did I do about the MindGraph deployment?",
+      "retrieval": {
+        "retrieved_titles": [
+          "MindGraph Deployment Success in Bangalore \ud83d\ude80",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Deployment Progress and Security Lessons \ud83d\udee0\ufe0f",
+          "SSE Fix and Methodology Test \ud83d\udee0\ufe0f",
+          "New Streaming Functionality Progress \ud83c\udfa5"
+        ],
+        "expected_titles": [
+          "MindGraph Deployment Success in Bangalore",
+          "Deployment Progress and Security Lessons"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1_score": 0.571,
+        "retrieval_time_ms": 742,
+        "similarities": [
+          0.695,
+          0.61,
+          0.603,
+          0.562,
+          0.554
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from March 25, 2026, you successfully deployed **MindGraph to Railway** while working from a coworking space in Bangalore.\n\nHere are the specific actions you took regardi...",
+        "keywords_found": [
+          "deploy",
+          "Railway"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 4223
+      }
+    },
+    {
+      "question": "Have I been exercising recently?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0",
+          "Productive Day Amidst Financial Stress \ud83d\udcb8",
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Pitch Deck Prep and Nerves \u2615"
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 2,
+        "precision": 0.4,
+        "recall": 1.0,
+        "f1_score": 0.571,
+        "retrieval_time_ms": 527,
+        "similarities": [
+          0.61,
+          0.61,
+          0.57,
+          0.562,
+          0.561
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you haven't been exercising recently.\n\nIn your entry from **March 25, 2026**, you noted that you realized you hadn't exercised since **March 11, 2026**, and mentioned th...",
+        "keywords_found": [
+          "run",
+          "gym"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 62866
+      }
+    },
+    {
+      "question": "What coffee experiences have I had?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Had coffee with Sneha",
+          "Amazing Brigade Road Coffee Discovery \u2615",
+          "Debugging and Startup Ideas \u2615",
+          "Pitch Deck Prep and Nerves \u2615",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0"
+        ],
+        "expected_titles": [
+          "Amazing Brigade Road Coffee Discovery",
+          "Debugging and Startup Ideas",
+          "Had coffee with Sneha"
+        ],
+        "hits": 3,
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1_score": 0.75,
+        "retrieval_time_ms": 918,
+        "similarities": [
+          0.654,
+          0.614,
+          0.598,
+          0.583,
+          0.558
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have had several coffee-related experiences:\n\n*   **Social & Work Meetings:**\n    *   **With Sneha:** You had coffee with her on **March 26, 2026**. You also met her...",
+        "keywords_found": [
+          "coffee"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 60943
+      }
+    },
+    {
+      "question": "What have I been feeling homesick about?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Testing Deployed Journal Frontend \ud83d\ude80",
+          "Cosmic Perspective and Life Logistics \ud83c\udf0c",
+          "Debugging Success and Feeling Homesick \ud83c\udfe0",
+          "Struggling Through a Migraine Day \ud83e\udd15",
+          "First Entry via New UI \u2728"
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 1,
+        "precision": 0.2,
+        "recall": 1.0,
+        "f1_score": 0.333,
+        "retrieval_time_ms": 886,
+        "similarities": [
+          0.529,
+          0.525,
+          0.525,
+          0.524,
+          0.522
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you mentioned feeling homesick on **March 9, 2026** (Entry 3). \n\nIn that entry, you noted, \"I am missing home a lot,\" following a busy day where you went for a run in Cu...",
+        "keywords_found": [
+          "home",
+          "missing"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 18022
+      }
+    }
+  ]
+}

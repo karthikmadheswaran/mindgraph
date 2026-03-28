@@ -7,6 +7,7 @@ from fastapi import FastAPI, BackgroundTasks
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
 from app.nodes.store import supabase
+from app.retrieval import advanced_search
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from dotenv import load_dotenv
@@ -23,7 +24,7 @@ from fastapi.responses import StreamingResponse
 import json
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
-model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", temperature=0.1)
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 app = FastAPI(title="Mindgraph Journal API")
 
@@ -122,13 +123,14 @@ def extract_text_from_response(response):
 @app.post("/ask")
 async def ask_question(question: str, user_id: str):
     langfuse_handler = LangfuseCallbackHandler()
+    
     query_embedding = await get_embedding(question)
-
     result = supabase.rpc("match_entries", {
         "query_embedding": query_embedding,
         "match_count": 5,
         "filter_user_id": user_id
     }).execute()
+    
     if not result.data:
         return {"answer": "No relevant entries found."}
     
@@ -137,15 +139,13 @@ async def ask_question(question: str, user_id: str):
         date = entry.get("created_at", "Unknown date")
         title = entry.get("auto_title", "No title")
         formatted_entries.append(f"Entry {i} (created at {date}, title: {title}):\n{entry['cleaned_text']}")
-        
+    
     context_text = "\n\n---\n\n".join(formatted_entries)
 
-    # For simplicity, we'll just return the most relevant entry's cleaned_text as the "answer"
     prompt = f"""You are an assistant for a personal journal app. A user has asked the following question:
     "{question}"
 
     You have access to the following relevant journal entries:
-    
     {context_text}
     
     Based on these journal entries, provide a helpful answer to the user's question. 
@@ -154,7 +154,6 @@ async def ask_question(question: str, user_id: str):
     
     response = await model.ainvoke(prompt, config={"callbacks": [langfuse_handler]})
     answer = extract_text_from_response(response)
-
     return {"answer": answer}
 
 @app.get("/deadlines")
@@ -291,6 +290,11 @@ async def get_entry_status(entry_id: str):
         .single() \
         .execute()
     return result.data
+
+@app.get("/search")
+async def search_entries_endpoint(query: str, user_id: str):
+    results = await advanced_search(query, user_id, match_count=5)
+    return {"results": results}
     
 
 

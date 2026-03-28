@@ -9,7 +9,7 @@ load_dotenv()
 
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
-model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", temperature=0.1)
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 CLASSIFIER_TYPES = get_args(ClassifierType)
 
