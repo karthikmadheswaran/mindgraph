@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional 
 from app.graph import build_graph
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, Depends
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
 from app.nodes.store import supabase
@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler as LangfuseCallbackHandler
+from app.auth import get_current_user
 load_dotenv()
 Langfuse(
     public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
@@ -42,7 +43,6 @@ workflow=build_graph()
 
 class EntryRequest(BaseModel):
     raw_text: str
-    user_id: str
     input_type: str="text"
 
 class EntryResponse(BaseModel):
@@ -57,11 +57,11 @@ async def health_check():
     return {"status": "alive"}
 
 @app.post("/entries", response_model=EntryResponse)
-async def create_entry(entry: EntryRequest):
+async def create_entry(entry: EntryRequest, user_id: str = Depends(get_current_user)):
     langfuse_handler = LangfuseCallbackHandler()
     state={
         "raw_text": entry.raw_text,
-        "user_id": entry.user_id,
+        "user_id": user_id,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",
@@ -86,7 +86,7 @@ async def create_entry(entry: EntryRequest):
     )
 
 @app.get("/entries")
-async def get_entries(user_id: str):
+async def get_entries(user_id: str = Depends(get_current_user)):
     result = supabase.table("entries")\
         .select("id, raw_text, cleaned_text, auto_title, summary, created_at, status, pipeline_stage") \
         .eq("user_id", user_id)\
@@ -97,7 +97,7 @@ async def get_entries(user_id: str):
     return {"entries": result.data}
 
 @app.get("/search")
-async def search_entries(query: str, user_id: str):
+async def search_entries(query: str, user_id: str = Depends(get_current_user)):
     # Step 1: Convert the search query into an embedding
     query_embedding = await get_embedding(query)
     
@@ -121,7 +121,7 @@ def extract_text_from_response(response):
     return content.strip()
 
 @app.post("/ask")
-async def ask_question(question: str, user_id: str):
+async def ask_question(question: str, user_id: str = Depends(get_current_user)):
     langfuse_handler = LangfuseCallbackHandler()
     
     query_embedding = await get_embedding(question)
@@ -157,7 +157,7 @@ async def ask_question(question: str, user_id: str):
     return {"answer": answer}
 
 @app.get("/deadlines")
-async def get_deadlines(user_id: str):
+async def get_deadlines(user_id: str = Depends(get_current_user)):
     result = supabase.table("deadlines")\
         .select("id, description, due_date") \
         .eq("user_id", user_id)\
@@ -167,7 +167,7 @@ async def get_deadlines(user_id: str):
     return {"deadlines": result.data}
 
 @app.get("/entities")
-async def get_entities(user_id: str):
+async def get_entities(user_id: str = Depends(get_current_user)):
     result = supabase.table("entities") \
         .select("id, name, entity_type, mention_count") \
         .eq("user_id", user_id) \
@@ -178,11 +178,11 @@ async def get_entities(user_id: str):
     return {"entities": result.data}
 
 @app.post("/entries/stream")
-async def create_entry_stream(entry: EntryRequest):
+async def create_entry_stream(entry: EntryRequest, user_id: str = Depends(get_current_user)):
     langfuse_handler = LangfuseCallbackHandler()
     state = {
         "raw_text": entry.raw_text,
-        "user_id": entry.user_id,
+        "user_id": user_id,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",
@@ -230,11 +230,11 @@ async def create_entry_stream(entry: EntryRequest):
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.post("/entries/async")
-async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTasks):
+async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTasks, user_id: str = Depends(get_current_user)):
     # Insert skeleton row immediately so it appears on dashboard
     skeleton = supabase.table("entries").insert({
         "raw_text": entry.raw_text,
-        "user_id": entry.user_id,
+        "user_id": user_id,
         "cleaned_text": "",
         "auto_title": "",
         "summary": "",
@@ -246,7 +246,7 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
 
     state = {
         "raw_text": entry.raw_text,
-        "user_id": entry.user_id,
+        "user_id": user_id,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",
@@ -283,16 +283,17 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
     return {"status": "processing", "entry_id": entry_id, "message": "Your entry is being processed. Check the dashboard in a few seconds."}
 
 @app.get("/entries/{entry_id}/status")
-async def get_entry_status(entry_id: str):
+async def get_entry_status(entry_id: str, user_id: str = Depends(get_current_user)):
     result = supabase.table("entries") \
         .select("id, status, pipeline_stage") \
         .eq("id", entry_id) \
+        .eq("user_id", user_id) \
         .single() \
         .execute()
     return result.data
 
 @app.get("/search")
-async def search_entries_endpoint(query: str, user_id: str):
+async def search_entries_endpoint(query: str, user_id: str = Depends(get_current_user)):
     results = await advanced_search(query, user_id, match_count=5)
     return {"results": results}
     

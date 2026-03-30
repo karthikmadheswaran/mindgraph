@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "./supabaseClient";
 
-const USER_ID = "e5e611e2-7618-43e2-be84-bf1fc3296382";
 const API = "https://mindgraph-production.up.railway.app";
 
 const nodeLabels = {
@@ -43,25 +43,127 @@ const deadlineLabel = (dateStr) => {
   return new Date(dateStr).toLocaleDateString("en", { month: "short", day: "numeric" });
 };
 
+/* Helper: get auth headers */
+async function authHeaders() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return {};
+  return {
+    "Authorization": `Bearer ${session.access_token}`,
+    "Content-Type": "application/json",
+  };
+}
+
+/* --- Auth View --- */
+function AuthView({ onAuth }) {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setInfo("");
+
+    if (mode === "signup") {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setError(error.message);
+      } else {
+        setInfo("Check your email for a confirmation link, then log in.");
+        setMode("login");
+        setPassword("");
+      }
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(error.message);
+      } else if (data.session) {
+        onAuth(data.session);
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1 className="auth-title">MindGraph</h1>
+        <p className="auth-subtitle">Your AI-powered journal</p>
+
+        <div className="auth-tabs">
+          <button
+            className={`auth-tab ${mode === "login" ? "active" : ""}`}
+            onClick={() => { setMode("login"); setError(""); setInfo(""); }}
+          >
+            Log in
+          </button>
+          <button
+            className={`auth-tab ${mode === "signup" ? "active" : ""}`}
+            onClick={() => { setMode("signup"); setError(""); setInfo(""); }}
+          >
+            Sign up
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            className="auth-input"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            minLength={6}
+            className="auth-input"
+          />
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? <span className="spinner" /> : mode === "login" ? "Log in" : "Create account"}
+          </button>
+        </form>
+
+        {error && <div className="auth-error">{error}</div>}
+        {info && <div className="auth-info">{info}</div>}
+      </div>
+    </div>
+  );
+}
+
 /* --- Input View --- */
+const pipelineOrder = ["normalize", "dedup", "classify", "entities", "deadline", "title_summary", "store"];
+
 function InputView() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [status, setStatus] = useState([]);
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
     setLoading(true);
     setResult(null);
-    setStatus([]);
 
     try {
+      const headers = await authHeaders();
       const response = await fetch(`${API}/entries/async`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ raw_text: text, user_id: USER_ID }),
+        headers,
+        body: JSON.stringify({ raw_text: text }),
       });
+      if (response.status === 401) {
+        setResult({ type: "error", message: "Session expired. Please log in again." });
+        setLoading(false);
+        return;
+      }
       const data = await response.json();
       setResult({ type: "confirmation", message: data.message });
       setText("");
@@ -80,10 +182,11 @@ function InputView() {
           onChange={(e) => setText(e.target.value)}
           placeholder="What's on your mind?"
           onKeyDown={(e) => {
-            if (e.key === "Enter" && e.metaKey) handleSubmit();
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
           }}
         />
         <div className="input-actions">
+          <span className="input-hint">Ctrl+Enter to submit</span>
           <button
             className="submit-btn"
             onClick={handleSubmit}
@@ -98,25 +201,6 @@ function InputView() {
         </div>
       </div>
 
-      {/* Processing Status */}
-      {status.length > 0 && (
-        <div className="status-card">
-          {status.map((node, i) => (
-            <div key={i} className="status-item completed">
-              <span className="status-check">&#10003;</span>
-              {nodeLabels[node] || node}
-            </div>
-          ))}
-          {loading && (
-            <div className="status-item processing">
-              <span className="spinner small" />
-              Processing next step...
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Result */}
       {result && (
         <div className={`confirmation-banner ${result.type}`}>
           <span className="confirmation-icon">
@@ -130,8 +214,6 @@ function InputView() {
 }
 
 /* --- Dashboard --- */
-const pipelineOrder = ["normalize", "dedup", "classify", "entities", "deadline", "title_summary", "store"];
-
 function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -143,30 +225,40 @@ function Dashboard() {
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
 
-  const fetchEntries = () =>
-    fetch(`${API}/entries?user_id=${USER_ID}`).then((r) => r.json());
+  const fetchEntries = useCallback(async () => {
+    const headers = await authHeaders();
+    return fetch(`${API}/entries`, { headers }).then((r) => r.json());
+  }, []);
 
-  useEffect(() => {
-    Promise.all([
-      fetchEntries(),
-      fetch(`${API}/deadlines?user_id=${USER_ID}`).then((r) => r.json()),
-      fetch(`${API}/entities?user_id=${USER_ID}`).then((r) => r.json()),
-    ]).then(([entriesData, deadlinesData, entitiesData]) => {
+  const fetchAll = useCallback(async () => {
+    setLoadingData(true);
+    try {
+      const headers = await authHeaders();
+      const [entriesData, deadlinesData, entitiesData] = await Promise.all([
+        fetch(`${API}/entries`, { headers }).then((r) => r.json()),
+        fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
+        fetch(`${API}/entities`, { headers }).then((r) => r.json()),
+      ]);
       setEntries(entriesData.entries || []);
       setDeadlines(deadlinesData.deadlines || []);
       setEntities(entitiesData.entities || []);
-      setLoadingData(false);
-    }).catch(() => setLoadingData(false));
+    } catch (err) {
+      console.error(err);
+    }
+    setLoadingData(false);
   }, []);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   // Auto-poll when processing entries exist
   useEffect(() => {
     if (!entries.some((e) => e.status === "processing")) return;
-    const interval = setInterval(() => {
-      fetchEntries().then((data) => setEntries(data.entries || []));
+    const interval = setInterval(async () => {
+      const data = await fetchEntries();
+      setEntries(data.entries || []);
     }, 4000);
     return () => clearInterval(interval);
-  }, [entries]);
+  }, [entries, fetchEntries]);
 
   // Poll individual entry status when expanded
   useEffect(() => {
@@ -174,29 +266,29 @@ function Dashboard() {
     const entry = entries.find((e) => e.id === expandedEntryId);
     if (!entry || entry.status !== "processing") return;
     setLiveStage(entry.pipeline_stage);
-    const interval = setInterval(() => {
-      fetch(`${API}/entries/${expandedEntryId}/status`)
-        .then((r) => r.json())
-        .then((data) => {
-          if (data) setLiveStage(data.pipeline_stage);
-          if (data && data.status !== "processing") {
-            setExpandedEntryId(null);
-            setLiveStage(null);
-            fetchEntries().then((d) => setEntries(d.entries || []));
-          }
-        });
+    const interval = setInterval(async () => {
+      const headers = await authHeaders();
+      const data = await fetch(`${API}/entries/${expandedEntryId}/status`, { headers }).then((r) => r.json());
+      if (data) setLiveStage(data.pipeline_stage);
+      if (data && data.status !== "processing") {
+        setExpandedEntryId(null);
+        setLiveStage(null);
+        const d = await fetchEntries();
+        setEntries(d.entries || []);
+      }
     }, 2000);
     return () => clearInterval(interval);
-  }, [expandedEntryId, entries]);
+  }, [expandedEntryId, entries, fetchEntries]);
 
   const handleAsk = async () => {
     if (!askQuery.trim()) return;
     setAsking(true);
     setAnswer("");
     try {
+      const headers = await authHeaders();
       const res = await fetch(
-        `${API}/ask?question=${encodeURIComponent(askQuery)}&user_id=${USER_ID}`,
-        { method: "POST" }
+        `${API}/ask?question=${encodeURIComponent(askQuery)}`,
+        { method: "POST", headers }
       );
       const data = await res.json();
       setAnswer(data.answer);
@@ -224,14 +316,13 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      {/* Ask */}
       <div className="ask-card">
         <div className="ask-label">Ask your journal anything</div>
         <div className="ask-row">
           <input
             value={askQuery}
             onChange={(e) => setAskQuery(e.target.value)}
-            placeholder="What have I been working on with Sneha?"
+            placeholder="What have I been working on lately?"
             onKeyDown={(e) => e.key === "Enter" && handleAsk()}
           />
           <button onClick={handleAsk} disabled={asking}>
@@ -241,9 +332,7 @@ function Dashboard() {
         {answer && <div className="ask-answer">{answer}</div>}
       </div>
 
-      {/* Grid */}
       <div className="dashboard-grid">
-        {/* Active Projects */}
         <div className="grid-card">
           <h3>Active Projects</h3>
           {projects.length === 0 ? (
@@ -261,7 +350,6 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Upcoming Deadlines */}
         <div className="grid-card">
           <h3>Upcoming Deadlines</h3>
           {deadlines.length === 0 ? (
@@ -282,18 +370,13 @@ function Dashboard() {
           )}
         </div>
 
-        {/* People & Entities */}
         <div className="grid-card">
           <h3>People &amp; Entities</h3>
           <div className="entity-group">
             {[...people, ...places, ...others].slice(0, 15).map((e) => {
               const color = entityColors[e.entity_type] || entityColors.task;
               return (
-                <span
-                  key={e.id}
-                  className="entity-chip"
-                  style={{ background: color.bg, color: color.text }}
-                >
+                <span key={e.id} className="entity-chip" style={{ background: color.bg, color: color.text }}>
                   {e.name}
                   {e.mention_count > 1 && (
                     <span className="mention-count">{e.mention_count}</span>
@@ -304,7 +387,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Patterns placeholder */}
         <div className="grid-card">
           <h3>Patterns Detected</h3>
           <p className="empty">
@@ -313,74 +395,73 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Entries */}
       <h3 className="section-title">Recent Entries</h3>
-      {entries.map((e) => (
-        <div
-          key={e.id}
-          className={`entry-card${e.status === "processing" ? " processing" : ""}`}
-          onClick={() => {
-            if (e.status === "processing") {
-              setExpandedEntryId(expandedEntryId === e.id ? null : e.id);
-            }
-          }}
-          style={e.status === "processing" ? { cursor: "pointer" } : {}}
-        >
-          <div className="entry-header">
+      {entries.length === 0 ? (
+        <p className="empty" style={{ padding: 16 }}>No entries yet. Start writing!</p>
+      ) : (
+        entries.map((e) => (
+          <div
+            key={e.id}
+            className={`entry-card${e.status === "processing" ? " processing" : ""}`}
+            onClick={() => {
+              if (e.status === "processing") {
+                setExpandedEntryId(expandedEntryId === e.id ? null : e.id);
+              }
+            }}
+            style={e.status === "processing" ? { cursor: "pointer" } : {}}
+          >
+            <div className="entry-header">
+              {e.status === "processing" ? (
+                <>
+                  <span className="entry-title processing-title">
+                    <span className="spinner small" style={{ marginRight: 8 }} />
+                    Processing your entry...
+                  </span>
+                  <span className="entry-date">Just now</span>
+                </>
+              ) : (
+                <>
+                  <span className="entry-title">{e.auto_title}</span>
+                  <span className="entry-date">
+                    {e.created_at
+                      ? new Date(e.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })
+                      : ""}
+                  </span>
+                </>
+              )}
+            </div>
             {e.status === "processing" ? (
-              <>
-                <span className="entry-title processing-title">
-                  <span className="spinner small" style={{ marginRight: 8 }} />
-                  Processing your entry...
-                </span>
-                <span className="entry-date">Just now</span>
-              </>
+              <div className="entry-summary processing-text">
+                {e.raw_text?.slice(0, 100)}{e.raw_text?.length > 100 ? "..." : ""}
+              </div>
             ) : (
-              <>
-                <span className="entry-title">{e.auto_title}</span>
-                <span className="entry-date">
-                  {e.created_at
-                    ? new Date(e.created_at).toLocaleDateString("en", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : ""}
-                </span>
-              </>
+              <div className="entry-summary">{e.summary}</div>
+            )}
+
+            {expandedEntryId === e.id && e.status === "processing" && (
+              <div className="pipeline-status">
+                {pipelineOrder.map((step) => {
+                  const currentIdx = pipelineOrder.indexOf(liveStage || e.pipeline_stage);
+                  const stepIdx = pipelineOrder.indexOf(step);
+                  let stepClass = "pending";
+                  if (stepIdx < currentIdx) stepClass = "completed";
+                  else if (stepIdx === currentIdx) stepClass = "active";
+                  return (
+                    <div key={step} className={`pipeline-step ${stepClass}`}>
+                      <span className="pipeline-icon">
+                        {stepClass === "completed" ? "\u2713" : stepClass === "active" ? (
+                          <span className="spinner small" />
+                        ) : "\u2022"}
+                      </span>
+                      <span>{nodeLabels[step] || step}</span>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-          {e.status === "processing" ? (
-            <div className="entry-summary processing-text">
-              {e.raw_text?.slice(0, 100)}{e.raw_text?.length > 100 ? "..." : ""}
-            </div>
-          ) : (
-            <div className="entry-summary">{e.summary}</div>
-          )}
-
-          {/* Pipeline status (expanded) */}
-          {expandedEntryId === e.id && e.status === "processing" && (
-            <div className="pipeline-status">
-              {pipelineOrder.map((step) => {
-                const currentIdx = pipelineOrder.indexOf(liveStage || e.pipeline_stage);
-                const stepIdx = pipelineOrder.indexOf(step);
-                let stepClass = "pending";
-                if (stepIdx < currentIdx) stepClass = "completed";
-                else if (stepIdx === currentIdx) stepClass = "active";
-                return (
-                  <div key={step} className={`pipeline-step ${stepClass}`}>
-                    <span className="pipeline-icon">
-                      {stepClass === "completed" ? "\u2713" : stepClass === "active" ? (
-                        <span className="spinner small" />
-                      ) : "\u2022"}
-                    </span>
-                    <span>{nodeLabels[step] || step}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }
@@ -388,6 +469,37 @@ function Dashboard() {
 /* --- App Shell --- */
 function App() {
   const [view, setView] = useState("input");
+  const [session, setSession] = useState(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  useEffect(() => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoadingAuth(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setView("input");
+  };
+
+  if (loadingAuth) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f0e8" }}>
+        <span className="spinner" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -427,6 +539,117 @@ function App() {
           -webkit-font-smoothing: antialiased;
         }
 
+        /* --- Auth --- */
+        .auth-container {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+        }
+        .auth-card {
+          width: 100%;
+          max-width: 380px;
+          background: var(--bg-card);
+          border: 1px solid var(--border-light);
+          border-radius: var(--radius);
+          padding: 36px 28px;
+          box-shadow: var(--shadow-md);
+        }
+        .auth-title {
+          font-family: var(--font-display);
+          font-size: 32px;
+          font-weight: 400;
+          text-align: center;
+          color: var(--text-primary);
+          margin-bottom: 4px;
+        }
+        .auth-subtitle {
+          text-align: center;
+          font-size: 14px;
+          color: var(--text-muted);
+          margin-bottom: 24px;
+        }
+        .auth-tabs {
+          display: flex;
+          gap: 0;
+          margin-bottom: 20px;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          overflow: hidden;
+        }
+        .auth-tab {
+          flex: 1;
+          padding: 10px;
+          border: none;
+          background: transparent;
+          font-family: var(--font-body);
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .auth-tab.active {
+          background: var(--text-primary);
+          color: var(--bg);
+        }
+        .auth-form {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .auth-input {
+          padding: 12px 14px;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          font-family: var(--font-body);
+          font-size: 14px;
+          color: var(--text-primary);
+          background: var(--bg-input);
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .auth-input:focus { border-color: var(--text-muted); }
+        .auth-input::placeholder { color: var(--text-muted); }
+        .auth-submit {
+          padding: 12px;
+          border: none;
+          border-radius: var(--radius-sm);
+          background: var(--text-primary);
+          color: var(--bg);
+          font-family: var(--font-body);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: opacity 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+        }
+        .auth-submit:hover { opacity: 0.9; }
+        .auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .auth-error {
+          margin-top: 12px;
+          padding: 10px 14px;
+          border-radius: var(--radius-sm);
+          background: #f5e6e4;
+          color: var(--accent-warm);
+          font-size: 13px;
+          text-align: center;
+        }
+        .auth-info {
+          margin-top: 12px;
+          padding: 10px 14px;
+          border-radius: var(--radius-sm);
+          background: #e6ede4;
+          color: var(--accent-olive);
+          font-size: 13px;
+          text-align: center;
+        }
+
+        /* --- App Shell --- */
         .app-shell {
           max-width: 720px;
           margin: 0 auto;
@@ -449,6 +672,11 @@ function App() {
           color: var(--text-primary);
           letter-spacing: -0.01em;
         }
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
         .nav-btns { display: flex; gap: 4px; }
         .nav-btn {
           padding: 8px 18px;
@@ -468,7 +696,33 @@ function App() {
           color: var(--bg);
           border-color: var(--text-primary);
         }
+        .logout-btn {
+          padding: 6px 14px;
+          border-radius: var(--radius-pill);
+          border: 1px solid var(--border);
+          background: transparent;
+          color: var(--text-muted);
+          font-family: var(--font-body);
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-left: 8px;
+        }
+        .logout-btn:hover {
+          background: #f5e6e4;
+          color: var(--accent-warm);
+          border-color: var(--accent-warm);
+        }
+        .user-email {
+          font-size: 12px;
+          color: var(--text-muted);
+          max-width: 140px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
 
+        /* --- Input --- */
         .input-view { display: flex; flex-direction: column; gap: 16px; }
 
         .input-card {
@@ -491,17 +745,17 @@ function App() {
           background: transparent;
           padding: 0;
         }
-        .input-card textarea::placeholder {
-          color: var(--text-muted);
-        }
+        .input-card textarea::placeholder { color: var(--text-muted); }
 
         .input-actions {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between;
+          align-items: center;
           margin-top: 12px;
           padding-top: 12px;
           border-top: 1px solid var(--border-light);
         }
+        .input-hint { font-size: 12px; color: var(--text-muted); }
 
         .submit-btn {
           width: 42px;
@@ -523,35 +777,7 @@ function App() {
         }
         .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .status-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 16px;
-          box-shadow: var(--shadow);
-        }
-        .status-item {
-          font-size: 13px;
-          color: var(--text-muted);
-          padding: 4px 0;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .status-item.completed { color: var(--text-secondary); }
-        .status-check {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: var(--accent-green);
-          color: white;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 10px;
-          flex-shrink: 0;
-        }
-
+        /* --- Confirmation --- */
         .confirmation-banner {
           display: flex;
           align-items: center;
@@ -564,12 +790,9 @@ function App() {
           box-shadow: var(--shadow);
           animation: fadeIn 0.3s ease;
         }
-        .confirmation-banner.error {
-          border-left-color: var(--accent-warm);
-        }
+        .confirmation-banner.error { border-left-color: var(--accent-warm); }
         .confirmation-icon {
-          width: 24px;
-          height: 24px;
+          width: 24px; height: 24px;
           border-radius: 50%;
           background: var(--accent-green);
           color: white;
@@ -579,32 +802,14 @@ function App() {
           font-size: 13px;
           flex-shrink: 0;
         }
-        .confirmation-banner.error .confirmation-icon {
-          background: var(--accent-warm);
-        }
-        .confirmation-text {
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.5;
-        }
+        .confirmation-banner.error .confirmation-icon { background: var(--accent-warm); }
+        .confirmation-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .tag {
-          display: inline-block;
-          padding: 3px 12px;
-          border-radius: var(--radius-pill);
-          font-size: 12px;
-          font-weight: 500;
-          text-transform: capitalize;
-        }
-        .tag.category {
-          background: #e8e0d4;
-          color: var(--text-secondary);
-        }
-
+        /* --- Spinner --- */
         .spinner {
           width: 16px; height: 16px;
           border: 2px solid var(--border);
@@ -616,6 +821,7 @@ function App() {
         .spinner.small { width: 12px; height: 12px; border-width: 1.5px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* --- Dashboard --- */
         .dashboard { display: flex; flex-direction: column; gap: 16px; }
 
         .ask-card {
@@ -633,8 +839,7 @@ function App() {
         }
         .ask-row { display: flex; gap: 8px; }
         .ask-row input {
-          flex: 1;
-          min-width: 0;
+          flex: 1; min-width: 0;
           padding: 10px 14px;
           border-radius: var(--radius-sm);
           border: 1px solid var(--border);
@@ -662,11 +867,9 @@ function App() {
         }
         .ask-row button:disabled { opacity: 0.5; cursor: not-allowed; }
         .ask-answer {
-          margin-top: 14px;
-          padding-top: 14px;
+          margin-top: 14px; padding-top: 14px;
           border-top: 1px solid var(--border-light);
-          font-size: 14px;
-          line-height: 1.7;
+          font-size: 14px; line-height: 1.7;
           color: var(--text-secondary);
           white-space: pre-wrap;
         }
@@ -689,79 +892,50 @@ function App() {
         }
         .grid-card h3 {
           font-family: var(--font-display);
-          font-size: 16px;
-          font-weight: 400;
+          font-size: 16px; font-weight: 400;
           margin-bottom: 12px;
           color: var(--text-primary);
         }
         .empty { font-size: 13px; color: var(--text-muted); }
 
-        .project-item {
-          padding: 8px 0;
-          border-bottom: 1px solid var(--border-light);
-        }
+        .project-item { padding: 8px 0; border-bottom: 1px solid var(--border-light); }
         .project-item:last-child { border-bottom: none; }
         .project-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
         .project-meta {
-          font-size: 12px;
-          color: var(--text-muted);
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 2px;
+          font-size: 12px; color: var(--text-muted);
+          display: flex; align-items: center; gap: 8px; margin-top: 2px;
         }
-        .status-badge {
-          padding: 2px 10px;
-          border-radius: var(--radius-pill);
-          font-size: 11px;
-          font-weight: 500;
-        }
+        .status-badge { padding: 2px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 500; }
         .status-badge.active { background: var(--accent-green); color: white; }
 
         .deadline-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 0;
-          border-bottom: 1px solid var(--border-light);
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 8px 0; border-bottom: 1px solid var(--border-light);
         }
         .deadline-item:last-child { border-bottom: none; }
         .deadline-desc { font-size: 14px; color: var(--text-primary); }
         .deadline-badge {
-          padding: 3px 12px;
-          border-radius: var(--radius-pill);
-          font-size: 11px;
-          font-weight: 500;
-          white-space: nowrap;
+          padding: 3px 12px; border-radius: var(--radius-pill);
+          font-size: 11px; font-weight: 500; white-space: nowrap;
         }
 
         .entity-group { display: flex; flex-wrap: wrap; gap: 6px; }
         .entity-chip {
-          padding: 4px 12px;
-          border-radius: var(--radius-pill);
-          font-size: 12px;
-          font-weight: 500;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
+          padding: 4px 12px; border-radius: var(--radius-pill);
+          font-size: 12px; font-weight: 500;
+          display: inline-flex; align-items: center; gap: 4px;
         }
         .mention-count {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
+          width: 16px; height: 16px; border-radius: 50%;
           background: rgba(0,0,0,0.08);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          display: inline-flex; align-items: center; justify-content: center;
           font-size: 10px;
         }
 
         .section-title {
           font-family: var(--font-display);
-          font-size: 18px;
-          font-weight: 400;
-          color: var(--text-primary);
-          margin-top: 4px;
+          font-size: 18px; font-weight: 400;
+          color: var(--text-primary); margin-top: 4px;
         }
         .entry-card {
           background: var(--bg-card);
@@ -771,115 +945,75 @@ function App() {
           box-shadow: var(--shadow);
         }
         .entry-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 8px;
-          margin-bottom: 4px;
+          display: flex; justify-content: space-between;
+          align-items: flex-start; gap: 8px; margin-bottom: 4px;
         }
         .entry-title {
           font-family: var(--font-display);
-          font-size: 16px;
-          color: var(--text-primary);
+          font-size: 16px; color: var(--text-primary);
         }
-        .entry-date {
-          font-size: 12px;
-          color: var(--text-muted);
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .entry-summary {
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.6;
-        }
+        .entry-date { font-size: 12px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+        .entry-summary { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
         .entry-card.processing {
           border-left: 3px solid var(--accent-amber);
           animation: pulse 2s ease-in-out infinite;
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.85; }
-        }
-        .processing-title {
-          display: flex;
-          align-items: center;
-          color: var(--text-muted);
-        }
-        .processing-text {
-          color: var(--text-muted);
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+        .processing-title { display: flex; align-items: center; color: var(--text-muted); }
+        .processing-text { color: var(--text-muted); }
 
         .pipeline-status {
-          margin-top: 12px;
-          padding-top: 12px;
+          margin-top: 12px; padding-top: 12px;
           border-top: 1px solid var(--border-light);
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+          display: flex; flex-direction: column; gap: 6px;
           animation: fadeIn 0.3s ease;
         }
         .pipeline-step {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 13px;
-          color: var(--text-muted);
-          padding: 3px 0;
+          display: flex; align-items: center; gap: 10px;
+          font-size: 13px; color: var(--text-muted); padding: 3px 0;
         }
-        .pipeline-step.completed {
-          color: var(--text-secondary);
-        }
-        .pipeline-step.active {
-          color: var(--text-primary);
-          font-weight: 500;
-        }
+        .pipeline-step.completed { color: var(--text-secondary); }
+        .pipeline-step.active { color: var(--text-primary); font-weight: 500; }
         .pipeline-icon {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
-          flex-shrink: 0;
+          width: 20px; height: 20px; border-radius: 50%;
+          display: inline-flex; align-items: center; justify-content: center;
+          font-size: 11px; flex-shrink: 0;
         }
-        .pipeline-step.completed .pipeline-icon {
-          background: var(--accent-green);
-          color: white;
-        }
-        .pipeline-step.active .pipeline-icon {
-          background: transparent;
-        }
-        .pipeline-step.pending .pipeline-icon {
-          background: var(--border);
-          color: var(--text-muted);
-          font-size: 8px;
-        }
+        .pipeline-step.completed .pipeline-icon { background: var(--accent-green); color: white; }
+        .pipeline-step.active .pipeline-icon { background: transparent; }
+        .pipeline-step.pending .pipeline-icon { background: var(--border); color: var(--text-muted); font-size: 8px; }
       `}</style>
 
-      <div className="app-shell">
-        <div className="header">
-          <h1>MindGraph</h1>
-          <div className="nav-btns">
-            <button
-              className={`nav-btn ${view === "input" ? "active" : ""}`}
-              onClick={() => setView("input")}
-            >
-              Write
-            </button>
-            <button
-              className={`nav-btn ${view === "dashboard" ? "active" : ""}`}
-              onClick={() => setView("dashboard")}
-            >
-              Dashboard
-            </button>
+      {!session ? (
+        <AuthView onAuth={setSession} />
+      ) : (
+        <div className="app-shell">
+          <div className="header">
+            <h1>MindGraph</h1>
+            <div className="header-right">
+              <div className="nav-btns">
+                <button
+                  className={`nav-btn ${view === "input" ? "active" : ""}`}
+                  onClick={() => setView("input")}
+                >
+                  Write
+                </button>
+                <button
+                  className={`nav-btn ${view === "dashboard" ? "active" : ""}`}
+                  onClick={() => setView("dashboard")}
+                >
+                  Dashboard
+                </button>
+              </div>
+              <span className="user-email">{session.user?.email}</span>
+              <button className="logout-btn" onClick={handleLogout}>Log out</button>
+            </div>
           </div>
-        </div>
 
-        {view === "input" ? <InputView /> : <Dashboard />}
-      </div>
+          {view === "input" ? <InputView /> : <Dashboard />}
+        </div>
+      )}
     </>
   );
 }
