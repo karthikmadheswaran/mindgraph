@@ -219,6 +219,7 @@ function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [entities, setEntities] = useState([]);
+  const [patterns, setPatterns] =useState([]);
   const [askQuery, setAskQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
@@ -235,14 +236,16 @@ function Dashboard() {
     setLoadingData(true);
     try {
       const headers = await authHeaders();
-      const [entriesData, deadlinesData, entitiesData] = await Promise.all([
+      const [entriesData, deadlinesData, entitiesData, patternsData] = await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
         fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
+        fetch(`${API}/insights/patterns`, { headers }).then((r) => r.json()),
       ]);
       setEntries(entriesData.entries || []);
       setDeadlines(deadlinesData.deadlines || []);
       setEntities(entitiesData.entities || []);
+      setPatterns(patternsData.data || {});
     } catch (err) {
       console.error(err);
     }
@@ -390,9 +393,18 @@ function Dashboard() {
 
         <div className="grid-card">
           <h3>Patterns Detected</h3>
-          <p className="empty">
-            Patterns and insights will appear here as you journal more entries over time.
-          </p>
+          {!patterns.repeated_themes ? (
+          <p className="empty">Analyzing your patterns...</p>
+            ) : patterns.repeated_themes.length === 0 ? (
+          <p className="empty">No patterns yet — keep journaling!</p>
+          ) : (
+          patterns.repeated_themes.map((t, i) => (
+          <div key={i} className="project-item">
+          <div className="project-name">{t.theme}</div>
+          <div className="project-meta">{t.observation}</div>
+      </div>
+    ))
+  )}
         </div>
       </div>
 

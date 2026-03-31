@@ -14,6 +14,11 @@ from dotenv import load_dotenv
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler as LangfuseCallbackHandler
 from app.auth import get_current_user
+from app.insights_engine import (
+    generate_weekly_digest,
+    generate_patterns,
+    generate_forgotten_projects,
+)
 load_dotenv()
 Langfuse(
     public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
@@ -298,7 +303,20 @@ async def search_entries_endpoint(query: str, user_id: str = Depends(get_current
     return {"results": results}
     
 
+@app.get("/insights/weekly")
+async def insights_weekly(user_id: str = Depends(get_current_user)):
+    result = generate_weekly_digest(user_id)
+    return {"status": "ok", "data": result}
 
+@app.get("/insights/patterns")
+async def insights_patterns(user_id: str = Depends(get_current_user)):
+    result = generate_patterns(user_id)
+    return {"status": "ok", "data": result}
+
+@app.get("/insights/forgotten")
+async def insights_forgotten(user_id: str = Depends(get_current_user)):
+    result = generate_forgotten_projects(user_id)
+    return {"status": "ok", "data": result}
 
 
 
