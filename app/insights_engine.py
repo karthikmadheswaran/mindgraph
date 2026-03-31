@@ -1,11 +1,10 @@
 import os
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from supabase import create_client, Client
-
 load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
@@ -19,24 +18,17 @@ supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_
 
 def fetch_recent_entries(user_id: str, days: int = 30) -> list:
     """Fetch entries from the last N days with their tags."""
-    result = supabase.rpc("get_entries_with_tags", {
-        "p_user_id": user_id,
-        "p_days": days
-    }).execute()
-    if result.data:
-        return result.data
 
-    # Fallback: plain query if RPC doesn't exist yet
-    from datetime import timedelta
+    
     since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     entries = (
-        supabase.table("entries")
-        .select("id, raw_text, summary, auto_title, created_at")
-        .eq("user_id", user_id)
-        .gte("created_at", since)
-        .order("created_at", desc=False)
-        .execute()
-    )
+    supabase.table("entries")
+    .select("id, raw_text, summary, auto_title, created_at")
+    .eq("user_id", user_id)
+    .gte("created_at", since)
+    .order("created_at", desc=False)
+    .execute()
+)
     return entries.data or []
 
 
