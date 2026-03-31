@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabaseClient";
+import ReactMarkdown from "react-markdown";
 
 const API = "https://mindgraph-production.up.railway.app";
 
@@ -329,7 +330,7 @@ function Dashboard() {
             {asking ? "..." : "Ask"}
           </button>
         </div>
-        {answer && <div className="ask-answer">{answer}</div>}
+        {answer && <div className="ask-answer"><ReactMarkdown>{answer}</ReactMarkdown></div>}
       </div>
 
       <div className="dashboard-grid">
