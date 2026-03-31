@@ -18,6 +18,8 @@ from app.insights_engine import (
     generate_weekly_digest,
     generate_patterns,
     generate_forgotten_projects,
+    clear_old_insights,
+    regenerate_insights_background  
 )
 load_dotenv()
 Langfuse(
@@ -275,6 +277,10 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
                     supabase.table("entries").update({
                         "pipeline_stage": node_name
                     }).eq("id", entry_id).execute()
+            
+            # Trigger C: regenerate insights after pipeline completes
+            await regenerate_insights_background(user_id)
+            
         except Exception as e:
             print(f"❌ Background processing error: {e}")
             if entry_id:
@@ -303,21 +309,61 @@ async def search_entries_endpoint(query: str, user_id: str = Depends(get_current
     return {"results": results}
     
 
+@app.get("/insights")
+async def get_insights(user_id: str = Depends(get_current_user)):
+    """Read cached insights from database — no LLM call"""
+    result = supabase.table("insights") \
+        .select("id, insight_type, content, severity, created_at") \
+        .eq("user_id", user_id) \
+        .order("created_at", desc=True) \
+        .limit(10) \
+        .execute()
+    return {"insights": result.data or []}
+
 @app.get("/insights/weekly")
 async def insights_weekly(user_id: str = Depends(get_current_user)):
-    result = generate_weekly_digest(user_id)
-    return {"status": "ok", "data": result}
+    """Read cached weekly digest — no LLM call"""
+    result = supabase.table("insights") \
+        .select("content, created_at") \
+        .eq("user_id", user_id) \
+        .eq("insight_type", "weekly_digest") \
+        .order("created_at", desc=True) \
+        .limit(1) \
+        .execute()
+    if result.data:
+        import json
+        return {"status": "ok", "data": json.loads(result.data[0]["content"])}
+    return {"status": "ok", "data": None}
 
 @app.get("/insights/patterns")
 async def insights_patterns(user_id: str = Depends(get_current_user)):
-    result = generate_patterns(user_id)
-    return {"status": "ok", "data": result}
+    """Read cached patterns — no LLM call"""
+    result = supabase.table("insights") \
+        .select("content, created_at") \
+        .eq("user_id", user_id) \
+        .eq("insight_type", "pattern") \
+        .order("created_at", desc=True) \
+        .limit(1) \
+        .execute()
+    if result.data:
+        import json
+        return {"status": "ok", "data": json.loads(result.data[0]["content"])}
+    return {"status": "ok", "data": None}
 
 @app.get("/insights/forgotten")
 async def insights_forgotten(user_id: str = Depends(get_current_user)):
-    result = generate_forgotten_projects(user_id)
-    return {"status": "ok", "data": result}
-
+    """Read cached forgotten projects — no LLM call"""
+    result = supabase.table("insights") \
+        .select("content, created_at") \
+        .eq("user_id", user_id) \
+        .eq("insight_type", "forgotten_projects") \
+        .order("created_at", desc=True) \
+        .limit(1) \
+        .execute()
+    if result.data:
+        import json
+        return {"status": "ok", "data": json.loads(result.data[0]["content"])}
+    return {"status": "ok", "data": None}
 
 
 

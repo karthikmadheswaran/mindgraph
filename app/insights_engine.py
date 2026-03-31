@@ -276,3 +276,18 @@ def generate_forgotten_projects(user_id: str) -> dict:
         store_insight(user_id, "forgotten_projects", json.dumps(result), severity)
 
     return result
+
+def clear_old_insights(user_id: str):
+    """Delete old insights before regenerating"""
+    supabase.table("insights").delete().eq("user_id", user_id).execute()
+
+
+async def regenerate_insights_background(user_id: str):
+    """Background task: clear old insights and regenerate patterns + forgotten projects.
+    Called after each new entry is processed."""
+    try:
+        clear_old_insights(user_id)
+        generate_patterns(user_id)
+        generate_forgotten_projects(user_id)
+    except Exception as e:
+        print(f"❌ Insight regeneration error: {e}")
