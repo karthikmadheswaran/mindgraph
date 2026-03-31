@@ -55,7 +55,13 @@ def extract_text_from_response(response):
 
 def parse_classifiers(raw: str) -> list[str]:
     try:
-        data = json.loads(raw)
+        content = raw.strip()
+        if content.startswith("```"):
+            content = content.split("\n", 1)[1] if "\n" in content else content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        content = content.strip()
+        data = json.loads(content)
     except json.JSONDecodeError:
         return ["other"]
 

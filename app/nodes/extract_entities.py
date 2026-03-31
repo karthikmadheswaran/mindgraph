@@ -52,8 +52,16 @@ def extract_text_from_response(response):
     return content.strip()
 
 def parse_entities(raw: str) -> list[CoreEntityNode]:
+    # Strip markdown code fences
+    content = raw.strip()
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
+    if content.endswith("```"):
+        content = content[:-3]
+    content = content.strip()
+    
     try:
-        data = json.loads(raw)
+        data = json.loads(content)
     except json.JSONDecodeError:
         return []
 
