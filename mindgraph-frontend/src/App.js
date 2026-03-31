@@ -284,6 +284,14 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, [expandedEntryId, entries, fetchEntries]);
 
+  // Auto-reload dashboard every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAll();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchAll]);
+
   const handleAsk = async () => {
     if (!askQuery.trim()) return;
     setAsking(true);
@@ -1018,6 +1026,12 @@ function App() {
                 >
                   Dashboard
                 </button>
+                <button
+                className="nav-btn"
+                onClick={fetchAll}
+              >
+               ↺
+              </button>
               </div>
               <span className="user-email">{session.user?.email}</span>
               <button className="logout-btn" onClick={handleLogout}>Log out</button>
