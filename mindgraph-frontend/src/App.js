@@ -215,15 +215,15 @@ function InputView() {
 }
 
 /* --- Dashboard --- */
-function Dashboard() {
+function Dashboard({ refreshKey }) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [entities, setEntities] = useState([]);
-  const [patterns, setPatterns] =useState([]);
+  const [patterns, setPatterns] = useState({});
   const [askQuery, setAskQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
+  const [loadingData, setLoadingData] = useState(true); 
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
 
@@ -248,11 +248,14 @@ function Dashboard() {
       setPatterns(patternsData.data || {});
     } catch (err) {
       console.error(err);
-    }
+    }finally {
     setLoadingData(false);
+    }
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+  fetchAll();
+}, [fetchAll, refreshKey]);
 
   // Auto-poll when processing entries exist
   useEffect(() => {
@@ -492,6 +495,7 @@ function App() {
   const [view, setView] = useState("input");
   const [session, setSession] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     // Check for existing session
@@ -1026,19 +1030,21 @@ function App() {
                 >
                   Dashboard
                 </button>
-                <button
-                className="nav-btn"
-                onClick={fetchAll}
-              >
+                {view === "dashboard" && (
+               <button
+              className="nav-btn"
+              onClick={() => setRefreshKey((k) => k + 1)}
+               >
                ↺
-              </button>
+               </button>
+                )}
               </div>
               <span className="user-email">{session.user?.email}</span>
               <button className="logout-btn" onClick={handleLogout}>Log out</button>
             </div>
           </div>
 
-          {view === "input" ? <InputView /> : <Dashboard />}
+          {view === "input" ? <InputView /> : <Dashboard refreshKey={refreshKey} />}
         </div>
       )}
     </>
