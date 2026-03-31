@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import ReactMarkdown from "react-markdown";
 
@@ -41,20 +41,25 @@ const deadlineLabel = (dateStr) => {
   if (days <= 7) {
     return new Date(dateStr).toLocaleDateString("en", { weekday: "long" });
   }
-  return new Date(dateStr).toLocaleDateString("en", { month: "short", day: "numeric" });
+  return new Date(dateStr).toLocaleDateString("en", {
+    month: "short",
+    day: "numeric",
+  });
 };
 
-/* Helper: get auth headers */
 async function authHeaders() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session) return {};
+
   return {
-    "Authorization": `Bearer ${session.access_token}`,
+    Authorization: `Bearer ${session.access_token}`,
     "Content-Type": "application/json",
   };
 }
 
-/* --- Auth View --- */
 function AuthView({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
@@ -79,13 +84,17 @@ function AuthView({ onAuth }) {
         setPassword("");
       }
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (error) {
         setError(error.message);
       } else if (data.session) {
         onAuth(data.session);
       }
     }
+
     setLoading(false);
   };
 
@@ -98,13 +107,21 @@ function AuthView({ onAuth }) {
         <div className="auth-tabs">
           <button
             className={`auth-tab ${mode === "login" ? "active" : ""}`}
-            onClick={() => { setMode("login"); setError(""); setInfo(""); }}
+            onClick={() => {
+              setMode("login");
+              setError("");
+              setInfo("");
+            }}
           >
             Log in
           </button>
           <button
             className={`auth-tab ${mode === "signup" ? "active" : ""}`}
-            onClick={() => { setMode("signup"); setError(""); setInfo(""); }}
+            onClick={() => {
+              setMode("signup");
+              setError("");
+              setInfo("");
+            }}
           >
             Sign up
           </button>
@@ -129,7 +146,13 @@ function AuthView({ onAuth }) {
             className="auth-input"
           />
           <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? <span className="spinner" /> : mode === "login" ? "Log in" : "Create account"}
+            {loading ? (
+              <span className="spinner" />
+            ) : mode === "login" ? (
+              "Log in"
+            ) : (
+              "Create account"
+            )}
           </button>
         </form>
 
@@ -140,8 +163,15 @@ function AuthView({ onAuth }) {
   );
 }
 
-/* --- Input View --- */
-const pipelineOrder = ["normalize", "dedup", "classify", "entities", "deadline", "title_summary", "store"];
+const pipelineOrder = [
+  "normalize",
+  "dedup",
+  "classify",
+  "entities",
+  "deadline",
+  "title_summary",
+  "store",
+];
 
 function InputView() {
   const [text, setText] = useState("");
@@ -150,6 +180,7 @@ function InputView() {
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
+
     setLoading(true);
     setResult(null);
 
@@ -160,18 +191,27 @@ function InputView() {
         headers,
         body: JSON.stringify({ raw_text: text }),
       });
+
       if (response.status === 401) {
-        setResult({ type: "error", message: "Session expired. Please log in again." });
+        setResult({
+          type: "error",
+          message: "Session expired. Please log in again.",
+        });
         setLoading(false);
         return;
       }
+
       const data = await response.json();
       setResult({ type: "confirmation", message: data.message });
       setText("");
     } catch (err) {
       console.error(err);
-      setResult({ type: "error", message: "Failed to submit entry. Please try again." });
+      setResult({
+        type: "error",
+        message: "Failed to submit entry. Please try again.",
+      });
     }
+
     setLoading(false);
   };
 
@@ -196,7 +236,19 @@ function InputView() {
             {loading ? (
               <span className="spinner" />
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
             )}
           </button>
         </div>
@@ -205,7 +257,7 @@ function InputView() {
       {result && (
         <div className={`confirmation-banner ${result.type}`}>
           <span className="confirmation-icon">
-            {result.type === "confirmation" ? "\u2713" : "\u2717"}
+            {result.type === "confirmation" ? "✓" : "✗"}
           </span>
           <span className="confirmation-text">{result.message}</span>
         </div>
@@ -214,7 +266,6 @@ function InputView() {
   );
 }
 
-/* --- Dashboard --- */
 function Dashboard({ refreshKey }) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -223,82 +274,175 @@ function Dashboard({ refreshKey }) {
   const [askQuery, setAskQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
-  const [loadingData, setLoadingData] = useState(true); 
+  const [loadingData, setLoadingData] = useState(true);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
+
+  const hasLoadedRef = useRef(false);
+  const refreshTimeoutRef = useRef(null);
+  const retryTimeoutRef = useRef(null);
+  const refreshInFlightRef = useRef(false);
+  const queuedRefreshRef = useRef(false);
+
+  const applySnapshot = useCallback((snapshot) => {
+    setEntries(snapshot.entries || []);
+    setDeadlines(snapshot.deadlines || []);
+    setEntities(snapshot.entities || []);
+    setPatterns(snapshot.patterns || {});
+  }, []);
 
   const fetchEntries = useCallback(async () => {
     const headers = await authHeaders();
     return fetch(`${API}/entries`, { headers }).then((r) => r.json());
   }, []);
 
-  const fetchAll = useCallback(async () => {
-    setLoadingData(true);
-    try {
-      const headers = await authHeaders();
-      const [entriesData, deadlinesData, entitiesData, patternsData] = await Promise.all([
+  const fetchSnapshot = useCallback(async () => {
+    const headers = await authHeaders();
+
+    const [entriesData, deadlinesData, entitiesData, patternsData] =
+      await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
         fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
         fetch(`${API}/insights/patterns`, { headers }).then((r) => r.json()),
       ]);
-      setEntries(entriesData.entries || []);
-      setDeadlines(deadlinesData.deadlines || []);
-      setEntities(entitiesData.entities || []);
-      setPatterns(patternsData.data || {});
-    } catch (err) {
-      console.error(err);
-    }finally {
-    setLoadingData(false);
-    }
+
+    return {
+      entries: entriesData.entries || [],
+      deadlines: deadlinesData.deadlines || [],
+      entities: entitiesData.entities || [],
+      patterns: patternsData.data || {},
+    };
   }, []);
 
-  useEffect(() => {
-  fetchAll();
-}, [fetchAll, refreshKey]);
+  const initialLoad = useCallback(async () => {
+    setLoadingData(true);
+    try {
+      const snapshot = await fetchSnapshot();
+      applySnapshot(snapshot);
+      hasLoadedRef.current = true;
+    } catch (err) {
+      console.error("Initial dashboard load failed:", err);
+    } finally {
+      setLoadingData(false);
+    }
+  }, [fetchSnapshot, applySnapshot]);
 
-  // Auto-poll when processing entries exist
+  const runSilentRefresh = useCallback(async () => {
+    if (refreshInFlightRef.current) {
+      queuedRefreshRef.current = true;
+      return;
+    }
+
+    refreshInFlightRef.current = true;
+
+    try {
+      const snapshot = await fetchSnapshot();
+      applySnapshot(snapshot);
+      hasLoadedRef.current = true;
+    } catch (err) {
+      console.error("Silent refresh failed:", err);
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = setTimeout(() => {
+        runSilentRefresh();
+      }, 1500);
+    } finally {
+      refreshInFlightRef.current = false;
+
+      if (queuedRefreshRef.current) {
+        queuedRefreshRef.current = false;
+        runSilentRefresh();
+      }
+    }
+  }, [fetchSnapshot, applySnapshot]);
+
+  const scheduleSilentRefresh = useCallback(
+    (delay = 500) => {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = setTimeout(() => {
+        runSilentRefresh();
+      }, delay);
+    },
+    [runSilentRefresh]
+  );
+
+  useEffect(() => {
+    initialLoad();
+  }, [initialLoad]);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+    scheduleSilentRefresh(0);
+  }, [refreshKey, scheduleSilentRefresh]);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
+    const interval = setInterval(() => {
+      scheduleSilentRefresh(0);
+    }, 45000);
+
+    return () => clearInterval(interval);
+  }, [scheduleSilentRefresh]);
+
   useEffect(() => {
     if (!entries.some((e) => e.status === "processing")) return;
+
     const interval = setInterval(async () => {
-      const data = await fetchEntries();
-      setEntries(data.entries || []);
+      try {
+        const data = await fetchEntries();
+        setEntries(data.entries || []);
+      } catch (err) {
+        console.error("Processing poll failed:", err);
+      }
     }, 4000);
+
     return () => clearInterval(interval);
   }, [entries, fetchEntries]);
 
-  // Poll individual entry status when expanded
   useEffect(() => {
     if (!expandedEntryId) return;
+
     const entry = entries.find((e) => e.id === expandedEntryId);
     if (!entry || entry.status !== "processing") return;
+
     setLiveStage(entry.pipeline_stage);
+
     const interval = setInterval(async () => {
-      const headers = await authHeaders();
-      const data = await fetch(`${API}/entries/${expandedEntryId}/status`, { headers }).then((r) => r.json());
-      if (data) setLiveStage(data.pipeline_stage);
-      if (data && data.status !== "processing") {
-        setExpandedEntryId(null);
-        setLiveStage(null);
-        const d = await fetchEntries();
-        setEntries(d.entries || []);
+      try {
+        const headers = await authHeaders();
+        const data = await fetch(`${API}/entries/${expandedEntryId}/status`, {
+          headers,
+        }).then((r) => r.json());
+
+        if (data) setLiveStage(data.pipeline_stage);
+
+        if (data && data.status !== "processing") {
+          setExpandedEntryId(null);
+          setLiveStage(null);
+          scheduleSilentRefresh(0);
+        }
+      } catch (err) {
+        console.error("Expanded entry status poll failed:", err);
       }
     }, 2000);
-    return () => clearInterval(interval);
-  }, [expandedEntryId, entries, fetchEntries]);
 
-  // Auto-reload dashboard every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchAll();
-    }, 30000);
     return () => clearInterval(interval);
-  }, [fetchAll]);
+  }, [expandedEntryId, entries, scheduleSilentRefresh]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(refreshTimeoutRef.current);
+      clearTimeout(retryTimeoutRef.current);
+    };
+  }, []);
 
   const handleAsk = async () => {
     if (!askQuery.trim()) return;
+
     setAsking(true);
     setAnswer("");
+
     try {
       const headers = await authHeaders();
       const res = await fetch(
@@ -310,6 +454,7 @@ function Dashboard({ refreshKey }) {
     } catch (err) {
       console.error(err);
     }
+
     setAsking(false);
   };
 
@@ -322,7 +467,13 @@ function Dashboard({ refreshKey }) {
 
   if (loadingData) {
     return (
-      <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
+      <div
+        style={{
+          textAlign: "center",
+          padding: 40,
+          color: "var(--text-muted)",
+        }}
+      >
         <span className="spinner" />
         <p style={{ marginTop: 12 }}>Loading your journal...</p>
       </div>
@@ -344,7 +495,11 @@ function Dashboard({ refreshKey }) {
             {asking ? "..." : "Ask"}
           </button>
         </div>
-        {answer && <div className="ask-answer"><ReactMarkdown>{answer}</ReactMarkdown></div>}
+        {answer && (
+          <div className="ask-answer">
+            <ReactMarkdown>{answer}</ReactMarkdown>
+          </div>
+        )}
       </div>
 
       <div className="dashboard-grid">
@@ -373,10 +528,14 @@ function Dashboard({ refreshKey }) {
             deadlines.slice(0, 5).map((d) => {
               const color = deadlineColor(d.due_date);
               const label = deadlineLabel(d.due_date);
+
               return (
                 <div key={d.id} className="deadline-item">
                   <span className="deadline-desc">{d.description}</span>
-                  <span className="deadline-badge" style={{ background: color.bg, color: color.text }}>
+                  <span
+                    className="deadline-badge"
+                    style={{ background: color.bg, color: color.text }}
+                  >
                     {label}
                   </span>
                 </div>
@@ -391,7 +550,11 @@ function Dashboard({ refreshKey }) {
             {[...people, ...places, ...others].slice(0, 15).map((e) => {
               const color = entityColors[e.entity_type] || entityColors.task;
               return (
-                <span key={e.id} className="entity-chip" style={{ background: color.bg, color: color.text }}>
+                <span
+                  key={e.id}
+                  className="entity-chip"
+                  style={{ background: color.bg, color: color.text }}
+                >
                   {e.name}
                   {e.mention_count > 1 && (
                     <span className="mention-count">{e.mention_count}</span>
@@ -405,23 +568,25 @@ function Dashboard({ refreshKey }) {
         <div className="grid-card">
           <h3>Patterns Detected</h3>
           {!patterns.repeated_themes ? (
-          <p className="empty">Analyzing your patterns...</p>
-            ) : patterns.repeated_themes.length === 0 ? (
-          <p className="empty">No patterns yet — keep journaling!</p>
+            <p className="empty">Analyzing your patterns...</p>
+          ) : patterns.repeated_themes.length === 0 ? (
+            <p className="empty">No patterns yet — keep journaling!</p>
           ) : (
-          patterns.repeated_themes.map((t, i) => (
-          <div key={i} className="project-item">
-          <div className="project-name">{t.theme}</div>
-          <div className="project-meta">{t.observation}</div>
-      </div>
-    ))
-  )}
+            patterns.repeated_themes.map((t, i) => (
+              <div key={i} className="project-item">
+                <div className="project-name">{t.theme}</div>
+                <div className="project-meta">{t.observation}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       <h3 className="section-title">Recent Entries</h3>
       {entries.length === 0 ? (
-        <p className="empty" style={{ padding: 16 }}>No entries yet. Start writing!</p>
+        <p className="empty" style={{ padding: 16 }}>
+          No entries yet. Start writing!
+        </p>
       ) : (
         entries.map((e) => (
           <div
@@ -448,15 +613,20 @@ function Dashboard({ refreshKey }) {
                   <span className="entry-title">{e.auto_title}</span>
                   <span className="entry-date">
                     {e.created_at
-                      ? new Date(e.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })
+                      ? new Date(e.created_at).toLocaleDateString("en", {
+                          month: "short",
+                          day: "numeric",
+                        })
                       : ""}
                   </span>
                 </>
               )}
             </div>
+
             {e.status === "processing" ? (
               <div className="entry-summary processing-text">
-                {e.raw_text?.slice(0, 100)}{e.raw_text?.length > 100 ? "..." : ""}
+                {e.raw_text?.slice(0, 100)}
+                {e.raw_text?.length > 100 ? "..." : ""}
               </div>
             ) : (
               <div className="entry-summary">{e.summary}</div>
@@ -465,17 +635,25 @@ function Dashboard({ refreshKey }) {
             {expandedEntryId === e.id && e.status === "processing" && (
               <div className="pipeline-status">
                 {pipelineOrder.map((step) => {
-                  const currentIdx = pipelineOrder.indexOf(liveStage || e.pipeline_stage);
+                  const currentIdx = pipelineOrder.indexOf(
+                    liveStage || e.pipeline_stage
+                  );
                   const stepIdx = pipelineOrder.indexOf(step);
+
                   let stepClass = "pending";
                   if (stepIdx < currentIdx) stepClass = "completed";
                   else if (stepIdx === currentIdx) stepClass = "active";
+
                   return (
                     <div key={step} className={`pipeline-step ${stepClass}`}>
                       <span className="pipeline-icon">
-                        {stepClass === "completed" ? "\u2713" : stepClass === "active" ? (
+                        {stepClass === "completed" ? (
+                          "✓"
+                        ) : stepClass === "active" ? (
                           <span className="spinner small" />
-                        ) : "\u2022"}
+                        ) : (
+                          "•"
+                        )}
                       </span>
                       <span>{nodeLabels[step] || step}</span>
                     </div>
@@ -490,7 +668,6 @@ function Dashboard({ refreshKey }) {
   );
 }
 
-/* --- App Shell --- */
 function App() {
   const [view, setView] = useState("input");
   const [session, setSession] = useState(null);
@@ -498,14 +675,14 @@ function App() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoadingAuth(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
@@ -520,7 +697,15 @@ function App() {
 
   if (loadingAuth) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f5f0e8" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          background: "#f5f0e8",
+        }}
+      >
         <span className="spinner" />
       </div>
     );
@@ -564,7 +749,6 @@ function App() {
           -webkit-font-smoothing: antialiased;
         }
 
-        /* --- Auth --- */
         .auth-container {
           min-height: 100vh;
           display: flex;
@@ -674,7 +858,6 @@ function App() {
           text-align: center;
         }
 
-        /* --- App Shell --- */
         .app-shell {
           max-width: 720px;
           margin: 0 auto;
@@ -738,18 +921,8 @@ function App() {
           color: var(--accent-warm);
           border-color: var(--accent-warm);
         }
-        .user-email {
-          font-size: 12px;
-          color: var(--text-muted);
-          max-width: 140px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
 
-        /* --- Input --- */
         .input-view { display: flex; flex-direction: column; gap: 16px; }
-
         .input-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -771,7 +944,6 @@ function App() {
           padding: 0;
         }
         .input-card textarea::placeholder { color: var(--text-muted); }
-
         .input-actions {
           display: flex;
           justify-content: space-between;
@@ -802,7 +974,6 @@ function App() {
         }
         .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* --- Confirmation --- */
         .confirmation-banner {
           display: flex;
           align-items: center;
@@ -829,12 +1000,12 @@ function App() {
         }
         .confirmation-banner.error .confirmation-icon { background: var(--accent-warm); }
         .confirmation-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Spinner --- */
         .spinner {
           width: 16px; height: 16px;
           border: 2px solid var(--border);
@@ -844,9 +1015,9 @@ function App() {
           display: inline-block;
         }
         .spinner.small { width: 12px; height: 12px; border-width: 1.5px; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Dashboard --- */
         .dashboard { display: flex; flex-direction: column; gap: 16px; }
 
         .ask-card {
@@ -864,7 +1035,8 @@ function App() {
         }
         .ask-row { display: flex; gap: 8px; }
         .ask-row input {
-          flex: 1; min-width: 0;
+          flex: 1;
+          min-width: 0;
           padding: 10px 14px;
           border-radius: var(--radius-sm);
           border: 1px solid var(--border);
@@ -892,9 +1064,11 @@ function App() {
         }
         .ask-row button:disabled { opacity: 0.5; cursor: not-allowed; }
         .ask-answer {
-          margin-top: 14px; padding-top: 14px;
+          margin-top: 14px;
+          padding-top: 14px;
           border-top: 1px solid var(--border-light);
-          font-size: 14px; line-height: 1.7;
+          font-size: 14px;
+          line-height: 1.7;
           color: var(--text-secondary);
           white-space: pre-wrap;
         }
@@ -917,7 +1091,8 @@ function App() {
         }
         .grid-card h3 {
           font-family: var(--font-display);
-          font-size: 16px; font-weight: 400;
+          font-size: 16px;
+          font-weight: 400;
           margin-bottom: 12px;
           color: var(--text-primary);
         }
@@ -927,40 +1102,65 @@ function App() {
         .project-item:last-child { border-bottom: none; }
         .project-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
         .project-meta {
-          font-size: 12px; color: var(--text-muted);
-          display: flex; align-items: center; gap: 8px; margin-top: 2px;
+          font-size: 12px;
+          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 2px;
         }
-        .status-badge { padding: 2px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 500; }
+        .status-badge {
+          padding: 2px 10px;
+          border-radius: var(--radius-pill);
+          font-size: 11px;
+          font-weight: 500;
+        }
         .status-badge.active { background: var(--accent-green); color: white; }
 
         .deadline-item {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 8px 0; border-bottom: 1px solid var(--border-light);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid var(--border-light);
         }
         .deadline-item:last-child { border-bottom: none; }
         .deadline-desc { font-size: 14px; color: var(--text-primary); }
         .deadline-badge {
-          padding: 3px 12px; border-radius: var(--radius-pill);
-          font-size: 11px; font-weight: 500; white-space: nowrap;
+          padding: 3px 12px;
+          border-radius: var(--radius-pill);
+          font-size: 11px;
+          font-weight: 500;
+          white-space: nowrap;
         }
 
         .entity-group { display: flex; flex-wrap: wrap; gap: 6px; }
         .entity-chip {
-          padding: 4px 12px; border-radius: var(--radius-pill);
-          font-size: 12px; font-weight: 500;
-          display: inline-flex; align-items: center; gap: 4px;
+          padding: 4px 12px;
+          border-radius: var(--radius-pill);
+          font-size: 12px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
         }
         .mention-count {
-          width: 16px; height: 16px; border-radius: 50%;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
           background: rgba(0,0,0,0.08);
-          display: inline-flex; align-items: center; justify-content: center;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           font-size: 10px;
         }
 
         .section-title {
           font-family: var(--font-display);
-          font-size: 18px; font-weight: 400;
-          color: var(--text-primary); margin-top: 4px;
+          font-size: 18px;
+          font-weight: 400;
+          color: var(--text-primary);
+          margin-top: 4px;
         }
         .entry-card {
           background: var(--bg-card);
@@ -970,44 +1170,79 @@ function App() {
           box-shadow: var(--shadow);
         }
         .entry-header {
-          display: flex; justify-content: space-between;
-          align-items: flex-start; gap: 8px; margin-bottom: 4px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 8px;
+          margin-bottom: 4px;
         }
         .entry-title {
           font-family: var(--font-display);
-          font-size: 16px; color: var(--text-primary);
+          font-size: 16px;
+          color: var(--text-primary);
         }
-        .entry-date { font-size: 12px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-        .entry-summary { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .entry-date {
+          font-size: 12px;
+          color: var(--text-muted);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .entry-summary {
+          font-size: 14px;
+          color: var(--text-secondary);
+          line-height: 1.6;
+        }
 
         .entry-card.processing {
           border-left: 3px solid var(--accent-amber);
           animation: pulse 2s ease-in-out infinite;
         }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.85; }
+        }
         .processing-title { display: flex; align-items: center; color: var(--text-muted); }
         .processing-text { color: var(--text-muted); }
 
         .pipeline-status {
-          margin-top: 12px; padding-top: 12px;
+          margin-top: 12px;
+          padding-top: 12px;
           border-top: 1px solid var(--border-light);
-          display: flex; flex-direction: column; gap: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
           animation: fadeIn 0.3s ease;
         }
         .pipeline-step {
-          display: flex; align-items: center; gap: 10px;
-          font-size: 13px; color: var(--text-muted); padding: 3px 0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 13px;
+          color: var(--text-muted);
+          padding: 3px 0;
         }
         .pipeline-step.completed { color: var(--text-secondary); }
         .pipeline-step.active { color: var(--text-primary); font-weight: 500; }
         .pipeline-icon {
-          width: 20px; height: 20px; border-radius: 50%;
-          display: inline-flex; align-items: center; justify-content: center;
-          font-size: 11px; flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          flex-shrink: 0;
         }
-        .pipeline-step.completed .pipeline-icon { background: var(--accent-green); color: white; }
+        .pipeline-step.completed .pipeline-icon {
+          background: var(--accent-green);
+          color: white;
+        }
         .pipeline-step.active .pipeline-icon { background: transparent; }
-        .pipeline-step.pending .pipeline-icon { background: var(--border); color: var(--text-muted); font-size: 8px; }
+        .pipeline-step.pending .pipeline-icon {
+          background: var(--border);
+          color: var(--text-muted);
+          font-size: 8px;
+        }
       `}</style>
 
       {!session ? (
@@ -1016,6 +1251,7 @@ function App() {
         <div className="app-shell">
           <div className="header">
             <h1>MindGraph</h1>
+
             <div className="header-right">
               <div className="nav-btns">
                 <button
@@ -1024,27 +1260,36 @@ function App() {
                 >
                   Write
                 </button>
+
                 <button
                   className={`nav-btn ${view === "dashboard" ? "active" : ""}`}
                   onClick={() => setView("dashboard")}
                 >
                   Dashboard
                 </button>
+
                 {view === "dashboard" && (
-               <button
-              className="nav-btn"
-              onClick={() => setRefreshKey((k) => k + 1)}
-               >
-               ↺
-               </button>
+                  <button
+                    className="nav-btn"
+                    onClick={() => setRefreshKey((k) => k + 1)}
+                    title="Refresh"
+                  >
+                    ↺
+                  </button>
                 )}
               </div>
-              <span className="user-email">{session.user?.email}</span>
-              <button className="logout-btn" onClick={handleLogout}>Log out</button>
+
+              <button className="logout-btn" onClick={handleLogout}>
+                Log out
+              </button>
             </div>
           </div>
 
-          {view === "input" ? <InputView /> : <Dashboard refreshKey={refreshKey} />}
+          {view === "input" ? (
+            <InputView />
+          ) : (
+            <Dashboard refreshKey={refreshKey} />
+          )}
         </div>
       )}
     </>
