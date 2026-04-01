@@ -1,190 +1,208 @@
-# MindGraph
+# 🧠 MindGraph — AI-Powered Frictionless Journal
 
-**An AI journal that organizes your thoughts automatically.** One textbox, zero friction — the AI handles classification, entity extraction, deadline detection, and semantic search across everything you write.
+**One textbox. Zero friction. Your AI organizes everything.**
 
-🔗 **[Live Demo](https://mindgraph-frontend-production.up.railway.app)**
+MindGraph is a full-stack AI journal application that automatically extracts people, projects, deadlines, emotions, and behavioral patterns from your thoughts — using a 7-node LangGraph pipeline powered by Gemini.
+
+🔗 **[Live Demo](https://mindgraph-frontend-production.up.railway.app)** · 📊 **[API Docs](https://mindgraph-production.up.railway.app/docs)**
 
 ---
 
-## What it does
+## What It Does
 
-You write a journal entry in plain text. MindGraph's 7-node AI pipeline processes it in ~6 seconds:
+Write freely in a single textbox. MindGraph's AI pipeline processes your entry in under 7 seconds:
 
-- **Classifies** the entry (work, health, finance, relationships, etc.)
-- **Extracts entities** — people, projects, places, tools — and links them to existing records using embedding similarity
-- **Detects deadlines** with natural language date resolution
-- **Generates** a title and smart summary
-- **Deduplicates** against previous entries using semantic similarity (0.85 threshold)
-- **Stores** everything with vector embeddings for later retrieval
-
-Then you can **ask your journal questions** in natural language ("What have I been stressed about this month?") and get answers grounded in your actual entries via RAG.
+- **🎯 Projects & Tasks** — Automatically tracks what you're working on
+- **📅 Deadlines** — Extracts real commitments with dates
+- **👥 People** — Maps who you mention and how often
+- **🔍 Ask Your Journal** — RAG-powered Q&A over all your entries
+- **🧠 Pattern Detection** — Finds emotional patterns, recurring themes, and shiny object syndrome
+- **⚡ 7-Second Pipeline** — LangGraph + Gemini for real-time processing
 
 ---
 
 ## Architecture
 
 ```
-React Frontend (Write + Dashboard + Ask + Pipeline Status)
+React Frontend (Write + Dashboard + Ask + Insights)
          ↓
-FastAPI Backend (10 endpoints, JWT auth, async processing + SSE)
+FastAPI Backend (10 endpoints, JWT auth, async processing)
          ↓
-LangGraph Pipeline (7 nodes, parallel execution, dedup)
+LangGraph Pipeline (7 nodes, parallel execution)
          ↓
-Supabase (Postgres + pgvector + Row Level Security)
+Supabase (Postgres + pgvector + Auth)
          ↓
-Gemini API (classification, extraction, RAG, embeddings)
+Gemini API (gemini-2.5-flash-lite + gemini-2.5-pro for insights)
 ```
 
-### Pipeline graph
+### Pipeline Graph
 
 ```
 START → normalize → dedup ──→ classify      ─┐
-                             → entities       ├→ store → END
-                             → deadline       │
-                             → title_summary  ┘
+                             → entities      ├→ store → END
+                             → deadline      │
+                             → title_summary ┘
 ```
 
-After dedup, four nodes run **in parallel** (classify, entities, deadline, title_summary) and fan back into the store node — a pattern that cut pipeline latency from sequential execution.
+All four extraction nodes (classify, entities, deadline, title_summary) run **in parallel** after dedup, then fan-in to the store node.
 
 ---
 
-## Tech stack
+## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React, Supabase Auth SDK |
-| Backend | FastAPI, Python 3.12 |
-| AI orchestration | LangGraph (StateGraph, parallel fan-out/fan-in, SSE streaming) |
-| LLM | Gemini 2.5 Flash Lite (classification, extraction, RAG generation) |
-| Embeddings | Gemini Embedding 001 (1536 dimensions) |
-| Database | Supabase Postgres + pgvector |
-| Auth | Supabase Auth (JWT/ES256, JWKS verification) |
-| Observability | Langfuse (pipeline tracing, token cost tracking) |
+|---|---|
+| Frontend | React, react-markdown |
+| Backend | FastAPI, Uvicorn |
+| AI Pipeline | LangGraph, LangChain |
+| LLM | Gemini 2.5 Flash-Lite (pipeline), Gemini 2.5 Pro (insights) |
+| Embeddings | Gemini embedding-001 (1536 dimensions) |
+| Database | Supabase (Postgres + pgvector) |
+| Auth | Supabase Auth (email/password, JWT/ES256/JWKS) |
+| Observability | Langfuse (per-node tracing, cost tracking) |
 | Deployment | Railway (backend + frontend), Docker |
 
 ---
 
-## Key engineering decisions
+## Key Engineering Decisions
 
-### 10x faster pipeline through model selection
-The pipeline originally used `gemini-3-flash-preview` and took **1m 7s** per entry. Switching all nodes to `gemini-2.5-flash-lite` brought it down to **6.66s** — a 10x speed improvement. Cost dropped from $0.009 to $0.0003 per entry (30x cheaper). The quality difference was negligible for classification and extraction tasks.
+### Model Optimization — 10x Faster, 30x Cheaper
+Switched all pipeline nodes from `gemini-3-flash-preview` to `gemini-2.5-flash-lite`. Total pipeline latency dropped from **1m 7s to 6.66s**, cost from **$0.009 to $0.0003** per entry.
 
-### Parallel node execution with LangGraph
-Classification, entity extraction, deadline detection, and title/summary generation don't depend on each other — only on the cleaned text from the normalize node. Running them in parallel with LangGraph's fan-out/fan-in pattern (`builder.add_edge([list], "store")`) was a natural fit and reduced wall-clock time significantly.
+### Async Background Processing
+Railway's proxy breaks long SSE connections. Switched to a "acknowledge fast, process slow" pattern — the frontend gets an instant response while the pipeline runs in the background. Dashboard polls for status with silent background sync.
 
-### Entity linking via embeddings, not string matching
-When the pipeline extracts an entity like "MindGraph project", it needs to check if this entity already exists. String matching fails on variations ("mindgraph", "the MindGraph app", "my journal project"). Instead, we generate embeddings for both the new entity and existing entities, then match using cosine similarity with a 0.8 threshold + entity type filtering. This handles natural language variations without brittle regex.
+### Entity Linking with Semantic Gating
+Case-insensitive exact-name lookup first, then embedding similarity with an acceptance gate. Prevents both duplicates ("MindGraph" vs "Mindgraph") and false merges (unrelated entities with high similarity scores).
 
-### Async processing with live status polling
-Journal entries are processed in the background (`BackgroundTasks`). The frontend immediately shows a skeleton entry card with a processing indicator. It polls `/entries/{id}/status` every 2 seconds and displays per-node pipeline progress (normalize → dedup → classify → ...). The user never stares at a blank screen.
+### RAG Evaluation — 4 Runs, Data-Driven Decisions
+Built a 15-test-case evaluation framework measuring retrieval F1, keyword accuracy, and hallucination rate. Used it to:
+- Diagnose NULL embedding failures (F1: 0.0 → 0.333 after backfill)
+- Evaluate query rewriting (+8.3% F1 but 50x latency — reverted)
+- Validate that basic vector search is optimal for current data size
 
-### JWT auth with asymmetric key verification
-Authentication uses Supabase Auth with ES256 (ECC P-256) JWT signing. The backend verifies tokens by fetching the public key from Supabase's JWKS endpoint — no shared secrets stored in environment variables. A database trigger automatically creates a `public.users` row whenever someone signs up through Supabase Auth.
+### Insight Engine — Hybrid Caching
+Dashboard reads cached insights from the database (instant load). Fresh insights regenerate in the background after each new journal entry. Pattern detection powered by Gemini 2.5 Pro.
 
----
-
-## RAG evaluation results
-
-Ran a formal evaluation with 15 test cases measuring retrieval accuracy, answer quality, and hallucination:
-
-| Metric | Score |
-|--------|-------|
-| Retrieval F1 | 0.504 |
-| Keyword accuracy | 0.933 |
-| Hallucination score | 1.000 (zero hallucinations) |
-| Retrieval latency | ~1,011ms |
-
-**Key insight**: With ~30 entries, retrieval precision is the bottleneck (irrelevant entries in top-5 results). This improves naturally as the database grows with more diverse entries. Query rewriting improved F1 by 8.3% but added 50x latency — not worth the trade-off at current scale.
+### Prompt Engineering with Evaluation Harnesses
+Each LLM node (deadline, entity extraction) has its own test suite with precision/recall/F1 metrics. Entity extraction: 100% precision, F1=0.981. Deadline detection: tightened prompt eliminated false positives like "new possibilities" and "hope for a better day".
 
 ---
 
-## API endpoints
+## RAG Evaluation Results
+
+| Metric | Run 1 | Run 2 (backfill) | Run 3 (query rewrite) | Run 4 (final) |
+|---|---|---|---|---|
+| Retrieval F1 | 0.483 | 0.504 | 0.523 | 0.504 |
+| Keyword Score | 0.922 | 0.911 | 0.933 | 0.933 |
+| Hallucination | 1.000 | 1.000 | 1.000 | **1.000** |
+| Retrieval Latency | 622ms | 799ms | 42,000ms | 1,011ms |
+
+**Zero hallucinations across all 4 evaluation runs.**
+
+---
+
+## API Endpoints
 
 | Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/entries/async` | Submit entry with background processing |
-| `POST` | `/entries/stream` | Submit with SSE streaming status |
-| `POST` | `/entries` | Submit and wait for result |
-| `GET` | `/entries` | Fetch user's entries |
-| `GET` | `/entries/{id}/status` | Poll pipeline progress |
-| `POST` | `/ask` | RAG — ask questions about your journal |
-| `GET` | `/search` | Semantic similarity search |
-| `GET` | `/deadlines` | Fetch upcoming deadlines |
-| `GET` | `/entities` | Fetch extracted entities |
-| `GET` | `/health` | Health check (public) |
+|---|---|---|
+| POST | `/entries/async` | Submit entry with async background processing |
+| GET | `/entries` | Fetch stored entries for authenticated user |
+| POST | `/ask` | RAG — ask questions about your journal |
+| GET | `/deadlines` | Fetch upcoming deadlines |
+| GET | `/entities` | Fetch extracted entities |
+| GET | `/entries/{id}/status` | Poll pipeline status for a processing entry |
+| GET | `/insights/patterns` | Read cached behavioral patterns |
+| GET | `/insights/weekly` | Read cached weekly digest |
+| GET | `/search` | Semantic similarity search on entries |
+| GET | `/health` | Health check |
 
-All endpoints except `/health` require JWT authentication.
+All endpoints (except `/health`) require JWT authentication via Supabase Auth.
 
 ---
 
-## Local development
+## Observability
+
+Integrated with **Langfuse** for full pipeline tracing:
+- Per-node latency and cost tracking
+- Token usage per LLM call
+- Pipeline graph visualization
+- Trace replay for debugging
+
+---
+
+## Running Locally
 
 ### Prerequisites
 - Python 3.12+
 - Node.js 18+
-- Supabase project with pgvector enabled
+- Supabase project (Postgres + pgvector)
 - Gemini API key
 
 ### Backend
-
 ```bash
-cd backend
+cd "Mindgraph - Frictionless AI journal app"
 pip install -r requirements.txt
-
-# .env file
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-anon-key
-GEMINI_API_KEY=your-gemini-key
-LANGFUSE_PUBLIC_KEY=your-langfuse-key      # optional
-LANGFUSE_SECRET_KEY=your-langfuse-secret   # optional
-
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
 
 ### Frontend
-
 ```bash
-cd frontend
+cd mindgraph-frontend
 npm install
-
-# .env file
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_SUPABASE_URL=your-supabase-url
-REACT_APP_SUPABASE_ANON_KEY=your-anon-key
-
 npm start
 ```
 
-### Docker
+### Environment Variables
 
+**Backend (`.env`)**
+```
+GEMINI_API_KEY=your_key
+GOOGLE_API_KEY=your_key
+SUPABASE_URL=your_url
+SUPABASE_KEY=your_service_role_key
+LANGFUSE_PUBLIC_KEY=your_key
+LANGFUSE_SECRET_KEY=your_key
+LANGFUSE_HOST=https://cloud.langfuse.com
+```
+
+**Frontend (`mindgraph-frontend/.env`)**
+```
+REACT_APP_SUPABASE_URL=your_url
+REACT_APP_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### Docker
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
 ├── app/
-│   ├── main.py              # FastAPI endpoints + middleware
-│   ├── auth.py              # JWT verification via JWKS
+│   ├── main.py              # FastAPI endpoints + auth
+│   ├── auth.py              # Supabase JWT validation (ES256/JWKS)
 │   ├── graph.py             # LangGraph pipeline wiring
-│   ├── state.py             # JournalState (TypedDict + reducers)
+│   ├── state.py             # Pipeline state definition
 │   ├── embeddings.py        # Gemini embedding generation
-│   ├── retrieval.py         # Advanced search utilities
+│   ├── retrieval.py         # Advanced retrieval module
+│   ├── insights_engine.py   # Pattern detection + weekly digest
 │   └── nodes/
 │       ├── normalize.py     # Text cleanup + date resolution
 │       ├── dedup.py         # Semantic duplicate detection
 │       ├── classify.py      # Multi-label categorization
-│       ├── extract_entities.py  # Entity extraction + linking
+│       ├── extract_entities.py  # Entity extraction
 │       ├── deadline.py      # Deadline detection
 │       ├── title_summary.py # Auto title + summary
-│       └── store.py         # Supabase storage with retry logic
-├── frontend/
+│       └── store.py         # Supabase storage + entity linking
+├── mindgraph-frontend/
 │   └── src/
-│       ├── App.js           # Main app with auth, input, dashboard
+│       ├── App.js           # Full React app (landing, auth, dashboard)
 │       └── supabaseClient.js
+├── rag_evaluation.py        # 15-test-case RAG evaluation framework
 ├── Dockerfile
 ├── docker-compose.yml
 └── requirements.txt
@@ -192,23 +210,15 @@ docker-compose up --build
 
 ---
 
-## What I learned building this
+## What I Learned
 
-- **LangGraph orchestration**: StateGraph, TypedDict with Annotated reducers, parallel fan-out/fan-in, conditional routing, SSE streaming with `workflow.astream()`
-- **RAG pipeline design**: Embedding generation, vector similarity search via pgvector, entity linking, formal evaluation methodology with F1 scoring
-- **Production patterns**: Async background processing, exponential backoff retry logic, observability with Langfuse, Docker containerization, Railway deployment
-- **Auth implementation**: Supabase Auth with asymmetric JWT verification (ES256/JWKS), FastAPI dependency injection, database triggers for user provisioning
-- **Model optimization**: Benchmarking different Gemini models for cost/latency/quality trade-offs across different task types
+This project was built as a hands-on learning exercise for LangGraph and AI pipeline development. Key learnings:
 
----
-
-## Roadmap
-
-- [ ] Voice input (Deepgram speech-to-text)
-- [ ] Image input (Gemini Vision)
-- [ ] Insight engine — weekly patterns, forgotten projects, "shiny object" detection
-- [ ] External tool use — calendar, GitHub, email integration via function calling
-- [ ] Advanced retrieval — hybrid search (semantic + keyword) with reranking
+- **LangGraph**: State management, parallel fan-out/fan-in, conditional routing, checkpointing
+- **RAG**: Vector embeddings, semantic search, evaluation with metrics, query rewriting trade-offs
+- **Entity Linking**: Exact match first, then gated semantic fallback — embedding similarity alone isn't reliable for entity identity
+- **Production**: Observability matters (Langfuse), model selection matters (10x speed difference), async processing for reliability
+- **Prompt Engineering**: Tighter prompts > more detailed prompts; evaluation harnesses catch regressions
 
 ---
 
