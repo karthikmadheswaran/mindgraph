@@ -17,24 +17,53 @@ allowed_types_str = ", ".join(ENTITY_TYPES)
 
 def build_entity_prompt(text: str) -> str:
     return f"""
-You are an entity extraction engine.
+You are a strict entity extraction engine.
 
-Extract all core entities from the journal entry.
-
-Allowed types:
-{allowed_types_str}
+Extract only concrete, meaningful named entities from the journal entry.
+Allowed types: {allowed_types_str}
 
 Return STRICT JSON only. No explanation.
-
 Format:
 [
   {{"name": "entity_name", "type": "entity_type"}}
 ]
 
 Rules:
-- Use only allowed types.
-- If no entities exist, return [].
-- Do not include extra fields.
+- Use only these types: {allowed_types_str}
+- If no valid entities exist, return []
+- Do not include extra fields
+- Extract only entities that are specific and meaningful in context
+- Do not guess or infer entities that are not clearly mentioned
+
+Never extract:
+- dates, times, timestamps, years, months, weekdays
+- generic nouns like "project", "conversation", "meeting", "task", "work"
+- vague concepts like "life", "mind", "thoughts", "feelings", "my own mind"
+- pronouns or generic references like "I", "me", "someone", "my friend"
+- sentence fragments
+- duplicate entities
+- anything with type "none"
+
+Entity guidance:
+- person: a specific person's name or uniquely identified person
+- project: a specific named project, app, initiative, or product
+- tool: a specific software, framework, platform, or device
+- place: a specific location, city, office, venue, or geographic place
+- organization: a company, institution, team, university, or brand
+- event: a specific named event, appointment, or occasion
+- task: a specific actionable item, not a generic word
+
+Normalization rules:
+- Keep names concise
+- Remove filler words unless they are part of the real name
+- Prefer "MindGraph" over "my MindGraph project"
+- Prefer singular canonical names
+
+Examples of invalid outputs:
+- {{"name": "2026-03-31", "type": "event"}}
+- {{"name": "project", "type": "project"}}
+- {{"name": "conversation", "type": "event"}}
+- {{"name": "my own mind", "type": "none"}}
 
 Journal Entry:
 {text}

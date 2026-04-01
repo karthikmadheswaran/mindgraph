@@ -60,7 +60,169 @@ async function authHeaders() {
   };
 }
 
-function AuthView({ onAuth }) {
+/* ─── Landing Page ─── */
+function LandingPage({ onGetStarted }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className={`landing ${visible ? "visible" : ""}`}>
+      <div className="landing-inner">
+        <div className="hero">
+          <div className="hero-badge">AI-Powered Journal</div>
+          <h1 className="hero-title">MindGraph</h1>
+          <p className="hero-subtitle">
+            One textbox. Zero friction.
+            <br />
+            Your AI organizes everything.
+          </p>
+          <p className="hero-desc">
+            Write freely. MindGraph&apos;s 7-node AI pipeline extracts people,
+            projects, deadlines, emotions, and patterns from your thoughts —
+            automatically.
+          </p>
+          <button className="hero-cta" onClick={onGetStarted}>
+            Start journaling
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="how-section">
+          <h2 className="section-label">How it works</h2>
+          <div className="how-grid">
+            <div className="how-card">
+              <div className="how-num">1</div>
+              <h3>Write anything</h3>
+              <p>
+                Journal your thoughts, rants, plans, or reflections. No
+                structure needed.
+              </p>
+            </div>
+            <div className="how-card">
+              <div className="how-num">2</div>
+              <h3>AI processes</h3>
+              <p>
+                A 7-node LangGraph pipeline classifies, extracts entities,
+                detects deadlines, and summarizes — in under 7 seconds.
+              </p>
+            </div>
+            <div className="how-card">
+              <div className="how-num">3</div>
+              <h3>See your mind</h3>
+              <p>
+                Dashboard shows active projects, upcoming deadlines, people in
+                your life, and behavioral patterns over time.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="features-section">
+          <h2 className="section-label">What MindGraph captures</h2>
+          <div className="features-grid">
+            {[
+              {
+                icon: "🎯",
+                title: "Projects & Tasks",
+                desc: "Automatically tracks what you're working on",
+              },
+              {
+                icon: "📅",
+                title: "Deadlines",
+                desc: "Extracts real commitments with dates",
+              },
+              {
+                icon: "👥",
+                title: "People",
+                desc: "Maps who you mention and how often",
+              },
+              {
+                icon: "🔍",
+                title: "Ask Your Journal",
+                desc: "RAG-powered Q&A over your entries",
+              },
+              {
+                icon: "🧠",
+                title: "Pattern Detection",
+                desc: "Finds emotional patterns and recurring themes",
+              },
+              {
+                icon: "⚡",
+                title: "7-Second Pipeline",
+                desc: "LangGraph + Gemini for real-time processing",
+              },
+            ].map((f, i) => (
+              <div key={i} className="feature-card">
+                <span className="feature-icon">{f.icon}</span>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="stack-section">
+          <h2 className="section-label">Built with</h2>
+          <div className="stack-pills">
+            {[
+              "LangGraph",
+              "FastAPI",
+              "React",
+              "Supabase",
+              "Gemini API",
+              "pgvector",
+              "Langfuse",
+              "Railway",
+            ].map((t) => (
+              <span key={t} className="stack-pill">
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="bottom-cta">
+          <p>Your thoughts deserve better than a blank notes app.</p>
+          <button className="hero-cta" onClick={onGetStarted}>
+            Get started — free
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Auth View ─── */
+function AuthView({ onAuth, onBack }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -101,6 +263,23 @@ function AuthView({ onAuth }) {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        <button className="auth-back" onClick={onBack}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back
+        </button>
+
         <h1 className="auth-title">MindGraph</h1>
         <p className="auth-subtitle">Your AI-powered journal</p>
 
@@ -163,6 +342,7 @@ function AuthView({ onAuth }) {
   );
 }
 
+/* ─── Input View ─── */
 const pipelineOrder = [
   "normalize",
   "dedup",
@@ -266,6 +446,7 @@ function InputView() {
   );
 }
 
+/* ─── Dashboard ─── */
 function Dashboard({ refreshKey }) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -304,7 +485,9 @@ function Dashboard({ refreshKey }) {
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
         fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
-        fetch(`${API}/insights/patterns`, { headers }).then((r) => r.json()),
+        fetch(`${API}/insights/patterns`, { headers })
+          .then((r) => r.json())
+          .catch(() => ({ data: {} })),
       ]);
 
     return {
@@ -512,7 +695,8 @@ function Dashboard({ refreshKey }) {
               <div key={p.id} className="project-item">
                 <div className="project-name">{p.name}</div>
                 <div className="project-meta">
-                  Mentioned {p.mention_count} time{p.mention_count !== 1 ? "s" : ""}
+                  Mentioned {p.mention_count} time
+                  {p.mention_count !== 1 ? "s" : ""}
                   <span className="status-badge active">Active</span>
                 </div>
               </div>
@@ -573,16 +757,33 @@ function Dashboard({ refreshKey }) {
             <p className="empty">No patterns yet — keep journaling!</p>
           ) : (
             patterns.repeated_themes.map((t, i) => (
-              <div key={i} className="project-item">
-                <div className="project-name">{t.theme}</div>
-                <div className="project-meta">{t.observation}</div>
+              <div key={i} className="pattern-item">
+                <div className="pattern-title">{t.theme}</div>
+                <div className="pattern-obs">{t.observation}</div>
               </div>
             ))
           )}
         </div>
       </div>
 
-      <h3 className="section-title">Recent Entries</h3>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 4,
+        }}
+      >
+        <h3 className="section-title">Recent Entries</h3>
+        <button
+          onClick={() => scheduleSilentRefresh(0)}
+          className="refresh-btn"
+          title="Refresh"
+        >
+          Refresh
+        </button>
+      </div>
+
       {entries.length === 0 ? (
         <p className="empty" style={{ padding: 16 }}>
           No entries yet. Start writing!
@@ -668,11 +869,13 @@ function Dashboard({ refreshKey }) {
   );
 }
 
+/* ─── App Shell ─── */
 function App() {
   const [view, setView] = useState("input");
   const [session, setSession] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -693,6 +896,7 @@ function App() {
     await supabase.auth.signOut();
     setSession(null);
     setView("input");
+    setShowAuth(false);
   };
 
   if (loadingAuth) {
@@ -749,6 +953,203 @@ function App() {
           -webkit-font-smoothing: antialiased;
         }
 
+        /* Landing */
+        .landing {
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 48px 24px 80px;
+          opacity: 0;
+          transform: translateY(12px);
+          transition: all 0.6s ease;
+        }
+        .landing.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .landing-inner {
+          display: flex;
+          flex-direction: column;
+          gap: 56px;
+        }
+        .hero {
+          text-align: center;
+          padding: 40px 0 0;
+        }
+        .hero-badge {
+          display: inline-block;
+          padding: 4px 16px;
+          border-radius: var(--radius-pill);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-muted);
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+        }
+        .hero-title {
+          font-family: var(--font-display);
+          font-size: clamp(42px, 8vw, 64px);
+          font-weight: 400;
+          color: var(--text-primary);
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          margin-bottom: 16px;
+        }
+        .hero-subtitle {
+          font-family: var(--font-display);
+          font-size: clamp(18px, 3.5vw, 24px);
+          font-weight: 400;
+          color: var(--text-secondary);
+          line-height: 1.4;
+          margin-bottom: 16px;
+          font-style: italic;
+        }
+        .hero-desc {
+          font-size: 15px;
+          color: var(--text-muted);
+          max-width: 480px;
+          margin: 0 auto 28px;
+          line-height: 1.7;
+        }
+        .hero-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 32px;
+          border-radius: var(--radius-pill);
+          border: none;
+          background: var(--text-primary);
+          color: var(--bg);
+          font-family: var(--font-body);
+          font-size: 15px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
+        .hero-cta:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(44, 36, 24, 0.15);
+        }
+
+        .section-label {
+          font-family: var(--font-display);
+          font-size: 11px;
+          font-weight: 400;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: var(--text-muted);
+          margin-bottom: 20px;
+          text-align: center;
+        }
+
+        .how-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+        @media (max-width: 600px) {
+          .how-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .how-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-light);
+          border-radius: var(--radius);
+          padding: 24px 20px;
+          text-align: center;
+        }
+        .how-num {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: var(--accent-green);
+          color: white;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+        .how-card h3 {
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 400;
+          margin-bottom: 8px;
+          color: var(--text-primary);
+        }
+        .how-card p {
+          font-size: 13px;
+          color: var(--text-muted);
+          line-height: 1.6;
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        @media (max-width: 600px) {
+          .features-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        .feature-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-light);
+          border-radius: var(--radius);
+          padding: 20px 16px;
+        }
+        .feature-icon {
+          font-size: 22px;
+          display: block;
+          margin-bottom: 8px;
+        }
+        .feature-card h3 {
+          font-family: var(--font-display);
+          font-size: 15px;
+          font-weight: 400;
+          margin-bottom: 4px;
+          color: var(--text-primary);
+        }
+        .feature-card p {
+          font-size: 12px;
+          color: var(--text-muted);
+          line-height: 1.5;
+        }
+
+        .stack-pills {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
+        }
+        .stack-pill {
+          padding: 6px 16px;
+          border-radius: var(--radius-pill);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          font-size: 13px;
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
+
+        .bottom-cta {
+          text-align: center;
+          padding: 32px 0;
+        }
+        .bottom-cta p {
+          font-family: var(--font-display);
+          font-size: 20px;
+          font-style: italic;
+          color: var(--text-secondary);
+          margin-bottom: 20px;
+        }
+
+        /* Auth */
         .auth-container {
           min-height: 100vh;
           display: flex;
@@ -764,6 +1165,22 @@ function App() {
           border-radius: var(--radius);
           padding: 36px 28px;
           box-shadow: var(--shadow-md);
+        }
+        .auth-back {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          font-family: var(--font-body);
+          font-size: 13px;
+          cursor: pointer;
+          margin-bottom: 20px;
+          transition: color 0.2s;
+        }
+        .auth-back:hover {
+          color: var(--text-primary);
         }
         .auth-title {
           font-family: var(--font-display);
@@ -781,7 +1198,6 @@ function App() {
         }
         .auth-tabs {
           display: flex;
-          gap: 0;
           margin-bottom: 20px;
           border: 1px solid var(--border);
           border-radius: var(--radius-sm);
@@ -819,8 +1235,12 @@ function App() {
           outline: none;
           transition: border-color 0.2s;
         }
-        .auth-input:focus { border-color: var(--text-muted); }
-        .auth-input::placeholder { color: var(--text-muted); }
+        .auth-input:focus {
+          border-color: var(--text-muted);
+        }
+        .auth-input::placeholder {
+          color: var(--text-muted);
+        }
         .auth-submit {
           padding: 12px;
           border: none;
@@ -837,8 +1257,13 @@ function App() {
           justify-content: center;
           min-height: 44px;
         }
-        .auth-submit:hover { opacity: 0.9; }
-        .auth-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .auth-submit:hover {
+          opacity: 0.9;
+        }
+        .auth-submit:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
         .auth-error {
           margin-top: 12px;
           padding: 10px 14px;
@@ -858,13 +1283,13 @@ function App() {
           text-align: center;
         }
 
+        /* App Shell */
         .app-shell {
           max-width: 720px;
           margin: 0 auto;
           padding: 24px 16px 60px;
           min-height: 100vh;
         }
-
         .header {
           display: flex;
           justify-content: space-between;
@@ -885,7 +1310,10 @@ function App() {
           align-items: center;
           gap: 8px;
         }
-        .nav-btns { display: flex; gap: 4px; }
+        .nav-btns {
+          display: flex;
+          gap: 4px;
+        }
         .nav-btn {
           padding: 8px 18px;
           border-radius: var(--radius-pill);
@@ -898,7 +1326,9 @@ function App() {
           cursor: pointer;
           transition: all 0.2s ease;
         }
-        .nav-btn:hover { background: var(--bg-card); }
+        .nav-btn:hover {
+          background: var(--bg-card);
+        }
         .nav-btn.active {
           background: var(--text-primary);
           color: var(--bg);
@@ -921,8 +1351,21 @@ function App() {
           color: var(--accent-warm);
           border-color: var(--accent-warm);
         }
+        .user-email {
+          font-size: 12px;
+          color: var(--text-muted);
+          max-width: 140px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
 
-        .input-view { display: flex; flex-direction: column; gap: 16px; }
+        /* Input */
+        .input-view {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
         .input-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -943,7 +1386,9 @@ function App() {
           background: transparent;
           padding: 0;
         }
-        .input-card textarea::placeholder { color: var(--text-muted); }
+        .input-card textarea::placeholder {
+          color: var(--text-muted);
+        }
         .input-actions {
           display: flex;
           justify-content: space-between;
@@ -952,8 +1397,10 @@ function App() {
           padding-top: 12px;
           border-top: 1px solid var(--border-light);
         }
-        .input-hint { font-size: 12px; color: var(--text-muted); }
-
+        .input-hint {
+          font-size: 12px;
+          color: var(--text-muted);
+        }
         .submit-btn {
           width: 42px;
           height: 42px;
@@ -972,7 +1419,10 @@ function App() {
           color: var(--bg);
           border-color: var(--text-primary);
         }
-        .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .submit-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
 
         .confirmation-banner {
           display: flex;
@@ -986,9 +1436,12 @@ function App() {
           box-shadow: var(--shadow);
           animation: fadeIn 0.3s ease;
         }
-        .confirmation-banner.error { border-left-color: var(--accent-warm); }
+        .confirmation-banner.error {
+          border-left-color: var(--accent-warm);
+        }
         .confirmation-icon {
-          width: 24px; height: 24px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
           background: var(--accent-green);
           color: white;
@@ -998,8 +1451,14 @@ function App() {
           font-size: 13px;
           flex-shrink: 0;
         }
-        .confirmation-banner.error .confirmation-icon { background: var(--accent-warm); }
-        .confirmation-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .confirmation-banner.error .confirmation-icon {
+          background: var(--accent-warm);
+        }
+        .confirmation-text {
+          font-size: 14px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
 
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-4px); }
@@ -1007,19 +1466,29 @@ function App() {
         }
 
         .spinner {
-          width: 16px; height: 16px;
+          width: 16px;
+          height: 16px;
           border: 2px solid var(--border);
           border-top-color: var(--text-secondary);
           border-radius: 50%;
           animation: spin 0.6s linear infinite;
           display: inline-block;
         }
-        .spinner.small { width: 12px; height: 12px; border-width: 1.5px; }
+        .spinner.small {
+          width: 12px;
+          height: 12px;
+          border-width: 1.5px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .dashboard { display: flex; flex-direction: column; gap: 16px; }
-
+        /* Dashboard */
+        .dashboard {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
         .ask-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -1033,7 +1502,10 @@ function App() {
           margin-bottom: 10px;
           color: var(--text-primary);
         }
-        .ask-row { display: flex; gap: 8px; }
+        .ask-row {
+          display: flex;
+          gap: 8px;
+        }
         .ask-row input {
           flex: 1;
           min-width: 0;
@@ -1047,8 +1519,12 @@ function App() {
           outline: none;
           transition: border-color 0.2s;
         }
-        .ask-row input:focus { border-color: var(--text-muted); }
-        .ask-row input::placeholder { color: var(--text-muted); }
+        .ask-row input:focus {
+          border-color: var(--text-muted);
+        }
+        .ask-row input::placeholder {
+          color: var(--text-muted);
+        }
         .ask-row button {
           padding: 10px 20px;
           border-radius: var(--radius-sm);
@@ -1062,7 +1538,10 @@ function App() {
           white-space: nowrap;
           transition: opacity 0.2s;
         }
-        .ask-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ask-row button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
         .ask-answer {
           margin-top: 14px;
           padding-top: 14px;
@@ -1070,7 +1549,19 @@ function App() {
           font-size: 14px;
           line-height: 1.7;
           color: var(--text-secondary);
-          white-space: pre-wrap;
+        }
+        .ask-answer p {
+          margin-bottom: 8px;
+        }
+        .ask-answer ul,
+        .ask-answer ol {
+          margin: 8px 0 8px 20px;
+        }
+        .ask-answer li {
+          margin-bottom: 4px;
+        }
+        .ask-answer strong {
+          color: var(--text-primary);
         }
 
         .dashboard-grid {
@@ -1079,9 +1570,10 @@ function App() {
           gap: 12px;
         }
         @media (max-width: 560px) {
-          .dashboard-grid { grid-template-columns: 1fr; }
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+          }
         }
-
         .grid-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -1096,11 +1588,23 @@ function App() {
           margin-bottom: 12px;
           color: var(--text-primary);
         }
-        .empty { font-size: 13px; color: var(--text-muted); }
+        .empty {
+          font-size: 13px;
+          color: var(--text-muted);
+        }
 
-        .project-item { padding: 8px 0; border-bottom: 1px solid var(--border-light); }
-        .project-item:last-child { border-bottom: none; }
-        .project-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+        .project-item {
+          padding: 8px 0;
+          border-bottom: 1px solid var(--border-light);
+        }
+        .project-item:last-child {
+          border-bottom: none;
+        }
+        .project-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-primary);
+        }
         .project-meta {
           font-size: 12px;
           color: var(--text-muted);
@@ -1115,7 +1619,10 @@ function App() {
           font-size: 11px;
           font-weight: 500;
         }
-        .status-badge.active { background: var(--accent-green); color: white; }
+        .status-badge.active {
+          background: var(--accent-green);
+          color: white;
+        }
 
         .deadline-item {
           display: flex;
@@ -1124,8 +1631,13 @@ function App() {
           padding: 8px 0;
           border-bottom: 1px solid var(--border-light);
         }
-        .deadline-item:last-child { border-bottom: none; }
-        .deadline-desc { font-size: 14px; color: var(--text-primary); }
+        .deadline-item:last-child {
+          border-bottom: none;
+        }
+        .deadline-desc {
+          font-size: 14px;
+          color: var(--text-primary);
+        }
         .deadline-badge {
           padding: 3px 12px;
           border-radius: var(--radius-pill);
@@ -1134,7 +1646,11 @@ function App() {
           white-space: nowrap;
         }
 
-        .entity-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .entity-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
         .entity-chip {
           padding: 4px 12px;
           border-radius: var(--radius-pill);
@@ -1155,6 +1671,26 @@ function App() {
           font-size: 10px;
         }
 
+        .pattern-item {
+          padding: 10px 0;
+          border-bottom: 1px solid var(--border-light);
+        }
+        .pattern-item:last-child {
+          border-bottom: none;
+        }
+        .pattern-title {
+          font-family: var(--font-display);
+          font-size: 15px;
+          font-weight: 400;
+          color: var(--text-primary);
+          margin-bottom: 2px;
+        }
+        .pattern-obs {
+          font-size: 13px;
+          color: var(--text-muted);
+          line-height: 1.5;
+        }
+
         .section-title {
           font-family: var(--font-display);
           font-size: 18px;
@@ -1162,6 +1698,23 @@ function App() {
           color: var(--text-primary);
           margin-top: 4px;
         }
+        .refresh-btn {
+          padding: 6px 16px;
+          border-radius: var(--radius-pill);
+          border: 1px solid var(--border);
+          background: transparent;
+          color: var(--text-muted);
+          font-family: var(--font-body);
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .refresh-btn:hover {
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          border-color: var(--text-secondary);
+        }
+
         .entry-card {
           background: var(--bg-card);
           border: 1px solid var(--border-light);
@@ -1201,8 +1754,14 @@ function App() {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.85; }
         }
-        .processing-title { display: flex; align-items: center; color: var(--text-muted); }
-        .processing-text { color: var(--text-muted); }
+        .processing-title {
+          display: flex;
+          align-items: center;
+          color: var(--text-muted);
+        }
+        .processing-text {
+          color: var(--text-muted);
+        }
 
         .pipeline-status {
           margin-top: 12px;
@@ -1221,8 +1780,13 @@ function App() {
           color: var(--text-muted);
           padding: 3px 0;
         }
-        .pipeline-step.completed { color: var(--text-secondary); }
-        .pipeline-step.active { color: var(--text-primary); font-weight: 500; }
+        .pipeline-step.completed {
+          color: var(--text-secondary);
+        }
+        .pipeline-step.active {
+          color: var(--text-primary);
+          font-weight: 500;
+        }
         .pipeline-icon {
           width: 20px;
           height: 20px;
@@ -1237,7 +1801,9 @@ function App() {
           background: var(--accent-green);
           color: white;
         }
-        .pipeline-step.active .pipeline-icon { background: transparent; }
+        .pipeline-step.active .pipeline-icon {
+          background: transparent;
+        }
         .pipeline-step.pending .pipeline-icon {
           background: var(--border);
           color: var(--text-muted);
@@ -1246,7 +1812,11 @@ function App() {
       `}</style>
 
       {!session ? (
-        <AuthView onAuth={setSession} />
+        showAuth ? (
+          <AuthView onAuth={setSession} onBack={() => setShowAuth(false)} />
+        ) : (
+          <LandingPage onGetStarted={() => setShowAuth(true)} />
+        )
       ) : (
         <div className="app-shell">
           <div className="header">
@@ -1279,6 +1849,7 @@ function App() {
                 )}
               </div>
 
+              <span className="user-email">{session.user?.email}</span>
               <button className="logout-btn" onClick={handleLogout}>
                 Log out
               </button>
