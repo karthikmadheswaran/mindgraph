@@ -414,34 +414,136 @@ function InputView() {
             disabled={loading || !text.trim()}
           >
             {loading ? (
-              <span className="spinner" />
+              <span className="spinner small" />
             ) : (
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
+              <>
+                Send
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </>
             )}
           </button>
         </div>
       </div>
-
       {result && (
-        <div className={`confirmation-banner ${result.type}`}>
-          <span className="confirmation-icon">
-            {result.type === "confirmation" ? "✓" : "✗"}
-          </span>
-          <span className="confirmation-text">{result.message}</span>
+        <div
+          className={`result-card ${result.type === "error" ? "error" : ""}`}
+        >
+          {result.message}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Mind Lately Card ─── */
+function MindLatelyCard({ nodes, selectedNodeId, onSelectNode }) {
+  const selectedNode =
+    nodes.find((node) => node.id === selectedNodeId) || nodes[0] || null;
+
+  const nonCenterNodes = nodes.filter((node) => node.kind !== "self");
+
+  const getNodeClass = (kind) => {
+    if (kind === "self") return "mind-node self";
+    if (kind === "project") return "mind-node project";
+    return "mind-node entity";
+  };
+
+  const renderDetail = (node) => {
+    if (!node) {
+      return "A gentle snapshot of what your mind has been orbiting around lately.";
+    }
+
+    if (node.kind === "self") {
+      return "You are at the center of this snapshot — the projects, people, places, and ideas your mind has been returning to recently.";
+    }
+
+    const mentionText =
+      node.mentionCount && node.mentionCount > 0
+        ? `Mentioned ${node.mentionCount} time${node.mentionCount > 1 ? "s" : ""}`
+        : "Recently active";
+
+    const recentText = node.lastMentionedLabel
+      ? ` · last seen ${node.lastMentionedLabel}`
+      : "";
+
+    if (node.kind === "project") {
+      return `${node.label} is one of your most recent active projects. ${mentionText}${recentText}.`;
+    }
+
+    return `${node.label} is showing up in your recent mental landscape. ${mentionText}${recentText}.`;
+  };
+
+  return (
+    <div className="grid-card mind-card mind-card-span">
+      <div className="mind-card-header">
+        <div>
+          <h3>Your Mind Lately</h3>
+          <p className="mind-card-subtext">
+            A calm snapshot of what has been most present recently.
+          </p>
+        </div>
+      </div>
+
+      <div className="mind-map-shell">
+        <svg
+          className="mind-lines"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {nonCenterNodes.map((node, index) => {
+            const curveX = node.x < 50 ? node.x + 10 : node.x - 10;
+            const curveY = node.y < 46 ? node.y + 8 : node.y - 8;
+
+            return (
+              <path
+                key={node.id}
+                d={`M 50 46 Q ${curveX} ${curveY}, ${node.x} ${node.y}`}
+                className="mind-line"
+                style={{
+                  opacity: selectedNodeId === node.id ? 0.9 : 0.5,
+                  transitionDelay: `${index * 40}ms`,
+                }}
+              />
+            );
+          })}
+        </svg>
+
+        {nodes.map((node) => (
+          <button
+            key={node.id}
+            type="button"
+            className={`${getNodeClass(node.kind)}${
+              selectedNodeId === node.id ? " active" : ""
+            }`}
+            style={{
+              left: `${node.x}%`,
+              top: `${node.y}%`,
+            }}
+            onClick={() => onSelectNode(node.id)}
+            title={node.label}
+          >
+            <span className="mind-node-label">{node.label}</span>
+            {node.kind !== "self" && node.mentionCount > 1 && (
+              <span className="mind-node-count">{node.mentionCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="mind-detail-box">{renderDetail(selectedNode)}</div>
     </div>
   );
 }
@@ -458,6 +560,7 @@ function Dashboard({ refreshKey }) {
   const [loadingData, setLoadingData] = useState(true);
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
+  const [selectedMindNodeId, setSelectedMindNodeId] = useState("you");
 
   const hasLoadedRef = useRef(false);
   const refreshTimeoutRef = useRef(null);
@@ -619,7 +722,6 @@ function Dashboard({ refreshKey }) {
       clearTimeout(retryTimeoutRef.current);
     };
   }, []);
-
   const handleAsk = async () => {
     if (!askQuery.trim()) return;
 
@@ -630,7 +732,10 @@ function Dashboard({ refreshKey }) {
       const headers = await authHeaders();
       const res = await fetch(
         `${API}/ask?question=${encodeURIComponent(askQuery)}`,
-        { method: "POST", headers }
+        {
+          method: "POST",
+          headers,
+        }
       );
       const data = await res.json();
       setAnswer(data.answer);
@@ -647,6 +752,95 @@ function Dashboard({ refreshKey }) {
   const others = entities.filter(
     (e) => !["project", "person", "place"].includes(e.entity_type)
   );
+
+  const getRecencyTs = (item) => {
+    const raw =
+      item?.last_mentioned_at ||
+      item?.updated_at ||
+      item?.created_at ||
+      item?.last_seen_at ||
+      null;
+
+    const ts = raw ? new Date(raw).getTime() : 0;
+    return Number.isNaN(ts) ? 0 : ts;
+  };
+
+  const formatMindDate = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("en", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const sortRecentAndRelevant = (items) =>
+    [...items].sort((a, b) => {
+      const recencyDiff = getRecencyTs(b) - getRecencyTs(a);
+      if (recencyDiff !== 0) return recencyDiff;
+
+      const mentionDiff = (b.mention_count || 0) - (a.mention_count || 0);
+      if (mentionDiff !== 0) return mentionDiff;
+
+      return (a.name || "").localeCompare(b.name || "");
+    });
+
+  const mindProjects = sortRecentAndRelevant(projects).slice(0, 2);
+  const mindEntities = sortRecentAndRelevant([
+    ...people,
+    ...places,
+    ...others,
+  ]).slice(0, 3);
+
+  const mindNodes = [
+    {
+      id: "you",
+      label: "You",
+      kind: "self",
+      x: 50,
+      y: 46,
+      mentionCount: 0,
+      lastMentionedLabel: "",
+    },
+    ...mindProjects.map((item, index) => ({
+      id: `project-${item.id ?? item.name ?? index}`,
+      label: item.name,
+      kind: "project",
+      x: index === 0 ? 24 : 76,
+      y: index === 0 ? 22 : 26,
+      mentionCount: item.mention_count || 0,
+      lastMentionedLabel: formatMindDate(
+        item.last_mentioned_at || item.updated_at || item.created_at
+      ),
+    })),
+    ...mindEntities.map((item, index) => {
+      const positions = [
+        { x: 20, y: 68 },
+        { x: 50, y: 78 },
+        { x: 80, y: 66 },
+      ];
+      const pos = positions[index] || { x: 50, y: 70 };
+
+      return {
+        id: `entity-${item.id ?? item.name ?? index}`,
+        label: item.name,
+        kind: "entity",
+        x: pos.x,
+        y: pos.y,
+        mentionCount: item.mention_count || 0,
+        lastMentionedLabel: formatMindDate(
+          item.last_mentioned_at || item.updated_at || item.created_at
+        ),
+      };
+    }),
+  ];
+
+  useEffect(() => {
+    if (!mindNodes.some((node) => node.id === selectedMindNodeId)) {
+      setSelectedMindNodeId("you");
+    }
+  }, [selectedMindNodeId, mindNodes]);
 
   if (loadingData) {
     return (
@@ -678,6 +872,7 @@ function Dashboard({ refreshKey }) {
             {asking ? "..." : "Ask"}
           </button>
         </div>
+
         {answer && (
           <div className="ask-answer">
             <ReactMarkdown>{answer}</ReactMarkdown>
@@ -686,6 +881,12 @@ function Dashboard({ refreshKey }) {
       </div>
 
       <div className="dashboard-grid">
+        <MindLatelyCard
+          nodes={mindNodes}
+          selectedNodeId={selectedMindNodeId}
+          onSelectNode={setSelectedMindNodeId}
+        />
+
         <div className="grid-card">
           <h3>Active Projects</h3>
           {projects.length === 0 ? (
@@ -695,7 +896,7 @@ function Dashboard({ refreshKey }) {
               <div key={p.id} className="project-item">
                 <div className="project-name">{p.name}</div>
                 <div className="project-meta">
-                  Mentioned {p.mention_count} time
+                  Mentioned {p.mention_count} time{" "}
                   {p.mention_count !== 1 ? "s" : ""}
                   <span className="status-badge active">Active</span>
                 </div>
@@ -729,10 +930,11 @@ function Dashboard({ refreshKey }) {
         </div>
 
         <div className="grid-card">
-          <h3>People &amp; Entities</h3>
+          <h3>People & Entities</h3>
           <div className="entity-group">
             {[...people, ...places, ...others].slice(0, 15).map((e) => {
               const color = entityColors[e.entity_type] || entityColors.task;
+
               return (
                 <span
                   key={e.id}
@@ -787,7 +989,7 @@ function Dashboard({ refreshKey }) {
       {entries.length === 0 ? (
         <p className="empty" style={{ padding: 16 }}>
           No entries yet. Start writing!
-        </p>
+                </p>
       ) : (
         entries.map((e) => (
           <div
@@ -807,60 +1009,54 @@ function Dashboard({ refreshKey }) {
                     <span className="spinner small" style={{ marginRight: 8 }} />
                     Processing your entry...
                   </span>
-                  <span className="entry-date">Just now</span>
+                  <span className="entry-date">
+                    {new Date(e.created_at).toLocaleString()}
+                  </span>
                 </>
               ) : (
                 <>
-                  <span className="entry-title">{e.auto_title}</span>
+                  <span className="entry-title">
+                    {e.auto_title || "Untitled Entry"}
+                  </span>
                   <span className="entry-date">
-                    {e.created_at
-                      ? new Date(e.created_at).toLocaleDateString("en", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : ""}
+                    {new Date(e.created_at).toLocaleString()}
                   </span>
                 </>
               )}
             </div>
 
             {e.status === "processing" ? (
-              <div className="entry-summary processing-text">
-                {e.raw_text?.slice(0, 100)}
-                {e.raw_text?.length > 100 ? "..." : ""}
+              <div className="entry-summary">
+                {expandedEntryId === e.id ? (
+                  <div className="pipeline-tracker">
+                    {pipelineOrder.map((stage, idx) => {
+                      const currentIndex = liveStage
+                        ? pipelineOrder.indexOf(liveStage)
+                        : -1;
+                      const isDone = idx < currentIndex;
+                      const isActive = stage === liveStage;
+
+                      return (
+                        <div
+                          key={stage}
+                          className={`pipeline-node ${
+                            isDone ? "done" : isActive ? "active" : ""
+                          }`}
+                        >
+                          <div className="pipeline-dot" />
+                          <div className="pipeline-label">
+                            {nodeLabels[stage] || stage}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <em>Click to view live progress...</em>
+                )}
               </div>
             ) : (
-              <div className="entry-summary">{e.summary}</div>
-            )}
-
-            {expandedEntryId === e.id && e.status === "processing" && (
-              <div className="pipeline-status">
-                {pipelineOrder.map((step) => {
-                  const currentIdx = pipelineOrder.indexOf(
-                    liveStage || e.pipeline_stage
-                  );
-                  const stepIdx = pipelineOrder.indexOf(step);
-
-                  let stepClass = "pending";
-                  if (stepIdx < currentIdx) stepClass = "completed";
-                  else if (stepIdx === currentIdx) stepClass = "active";
-
-                  return (
-                    <div key={step} className={`pipeline-step ${stepClass}`}>
-                      <span className="pipeline-icon">
-                        {stepClass === "completed" ? (
-                          "✓"
-                        ) : stepClass === "active" ? (
-                          <span className="spinner small" />
-                        ) : (
-                          "•"
-                        )}
-                      </span>
-                      <span>{nodeLabels[step] || step}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              <div className="entry-summary">{e.summary || e.raw_text}</div>
             )}
           </div>
         ))
@@ -869,24 +1065,23 @@ function Dashboard({ refreshKey }) {
   );
 }
 
-/* ─── App Shell ─── */
-function App() {
-  const [view, setView] = useState("input");
+export default function App() {
   const [session, setSession] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [view, setView] = useState("landing");
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setLoadingAuth(false);
+      if (session) setView("app");
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) setView("app");
+      else setView("landing");
     });
 
     return () => subscription.unsubscribe();
@@ -894,52 +1089,33 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setSession(null);
-    setView("input");
-    setShowAuth(false);
   };
-
-  if (loadingAuth) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          background: "#f5f0e8",
-        }}
-      >
-        <span className="spinner" />
-      </div>
-    );
-  }
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
-
         :root {
-          --bg: #f5f0e8;
-          --bg-card: #faf7f2;
-          --bg-input: #ffffff;
+          --bg: #f4efe8;
+          --bg-card: rgba(255, 253, 249, 0.72);
+          --bg-card-solid: #fffdf9;
+          --border: rgba(107, 93, 77, 0.16);
+          --border-light: rgba(107, 93, 77, 0.08);
           --text-primary: #2c2418;
-          --text-secondary: #6b5d4d;
-          --text-muted: #9a8b78;
-          --border: #e0d8cc;
-          --border-light: #ebe5db;
-          --accent-green: #8a9a7a;
-          --accent-olive: #6b7a5a;
+          --text-secondary: #5f5244;
+          --text-muted: #8b7b69;
+          --accent: #8a9a7a;
+          --accent-soft: #d4ddd4;
           --accent-warm: #c4695a;
-          --accent-amber: #d4a574;
-          --shadow: 0 1px 3px rgba(44, 36, 24, 0.06);
-          --shadow-md: 0 4px 12px rgba(44, 36, 24, 0.08);
-          --radius: 12px;
-          --radius-sm: 8px;
-          --radius-pill: 20px;
-          --font-display: 'Instrument Serif', Georgia, serif;
-          --font-body: 'DM Sans', -apple-system, sans-serif;
+          --accent-warm-soft: #f5e6e4;
+          --font-display: "Georgia", "Times New Roman", serif;
+          --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          --radius-lg: 20px;
+          --radius-md: 14px;
+          --radius-sm: 10px;
+          --radius-pill: 999px;
+          --shadow-sm: 0 2px 12px rgba(44, 36, 24, 0.03);
+          --shadow-md: 0 8px 28px rgba(44, 36, 24, 0.06);
+          --shadow-lg: 0 16px 42px rgba(44, 36, 24, 0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -982,169 +1158,123 @@ function App() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           font-size: 12px;
-          font-weight: 500;
-          color: var(--text-muted);
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
+          color: var(--text-secondary);
           margin-bottom: 20px;
+          backdrop-filter: blur(12px);
         }
         .hero-title {
           font-family: var(--font-display);
-          font-size: clamp(42px, 8vw, 64px);
+          font-size: clamp(52px, 10vw, 72px);
           font-weight: 400;
-          color: var(--text-primary);
-          letter-spacing: -0.02em;
-          line-height: 1.1;
+          line-height: 1;
           margin-bottom: 16px;
+          letter-spacing: -0.03em;
         }
         .hero-subtitle {
-          font-family: var(--font-display);
-          font-size: clamp(18px, 3.5vw, 24px);
-          font-weight: 400;
-          color: var(--text-secondary);
+          font-size: 22px;
           line-height: 1.4;
-          margin-bottom: 16px;
-          font-style: italic;
+          color: var(--text-secondary);
+          margin-bottom: 24px;
+          font-weight: 400;
         }
         .hero-desc {
-          font-size: 15px;
-          color: var(--text-muted);
-          max-width: 480px;
-          margin: 0 auto 28px;
+          font-size: 17px;
           line-height: 1.7;
+          color: var(--text-muted);
+          max-width: 620px;
+          margin: 0 auto 32px;
         }
         .hero-cta {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 14px 32px;
+          gap: 10px;
+          padding: 14px 28px;
           border-radius: var(--radius-pill);
           border: none;
           background: var(--text-primary);
-          color: var(--bg);
+          color: #fff;
           font-family: var(--font-body);
           font-size: 15px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.25s ease;
+          transition: all 0.2s ease;
         }
         .hero-cta:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(44, 36, 24, 0.15);
+          box-shadow: var(--shadow-md);
         }
 
         .section-label {
           font-family: var(--font-display);
-          font-size: 11px;
+          font-size: 28px;
           font-weight: 400;
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-          color: var(--text-muted);
           margin-bottom: 20px;
-          text-align: center;
         }
-
-        .how-grid {
+        .how-grid,
+        .features-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 16px;
         }
-        @media (max-width: 600px) {
-          .how-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-        .how-card {
+        .how-card,
+        .feature-card {
           background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 24px 20px;
-          text-align: center;
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 24px;
+          backdrop-filter: blur(20px);
+          box-shadow: var(--shadow-sm);
         }
         .how-num {
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          background: var(--accent-green);
-          color: white;
-          display: inline-flex;
+          background: var(--accent-soft);
+          display: flex;
           align-items: center;
           justify-content: center;
           font-size: 14px;
           font-weight: 600;
-          margin-bottom: 12px;
+          margin-bottom: 16px;
+          color: var(--text-secondary);
         }
-        .how-card h3 {
-          font-family: var(--font-display);
+        .how-card h3,
+        .feature-card h3 {
           font-size: 17px;
-          font-weight: 400;
+          font-weight: 500;
           margin-bottom: 8px;
-          color: var(--text-primary);
         }
-        .how-card p {
-          font-size: 13px;
+        .how-card p,
+        .feature-card p {
+          font-size: 14px;
           color: var(--text-muted);
-          line-height: 1.6;
-        }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-        @media (max-width: 600px) {
-          .features-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-        .feature-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 20px 16px;
+          line-height: 1.65;
         }
         .feature-icon {
-          font-size: 22px;
+          font-size: 28px;
           display: block;
-          margin-bottom: 8px;
-        }
-        .feature-card h3 {
-          font-family: var(--font-display);
-          font-size: 15px;
-          font-weight: 400;
-          margin-bottom: 4px;
-          color: var(--text-primary);
-        }
-        .feature-card p {
-          font-size: 12px;
-          color: var(--text-muted);
-          line-height: 1.5;
+          margin-bottom: 14px;
         }
 
         .stack-pills {
           display: flex;
           flex-wrap: wrap;
-          justify-content: center;
-          gap: 8px;
+          gap: 10px;
         }
         .stack-pill {
-          padding: 6px 16px;
+          padding: 8px 16px;
           border-radius: var(--radius-pill);
           background: var(--bg-card);
           border: 1px solid var(--border);
           font-size: 13px;
           color: var(--text-secondary);
-          font-weight: 500;
         }
-
         .bottom-cta {
           text-align: center;
-          padding: 32px 0;
+          padding: 24px 0 0;
         }
         .bottom-cta p {
-          font-family: var(--font-display);
-          font-size: 20px;
-          font-style: italic;
+          font-size: 18px;
           color: var(--text-secondary);
           margin-bottom: 20px;
         }
@@ -1159,24 +1289,27 @@ function App() {
         }
         .auth-card {
           width: 100%;
-          max-width: 380px;
+          max-width: 420px;
           background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 36px 28px;
-          box-shadow: var(--shadow-md);
+          border: 1px solid var(--border);
+          border-radius: 28px;
+          padding: 36px;
+          backdrop-filter: blur(24px);
+          box-shadow: var(--shadow-lg);
+          position: relative;
         }
         .auth-back {
-          display: flex;
+          position: absolute;
+          top: 18px;
+          left: 18px;
+          display: inline-flex;
           align-items: center;
-          gap: 4px;
-          background: none;
+          gap: 6px;
+          background: transparent;
           border: none;
           color: var(--text-muted);
-          font-family: var(--font-body);
           font-size: 13px;
           cursor: pointer;
-          margin-bottom: 20px;
           transition: color 0.2s;
         }
         .auth-back:hover {
@@ -1184,144 +1317,148 @@ function App() {
         }
         .auth-title {
           font-family: var(--font-display);
-          font-size: 32px;
+          font-size: 42px;
           font-weight: 400;
           text-align: center;
-          color: var(--text-primary);
-          margin-bottom: 4px;
+          margin-bottom: 8px;
         }
         .auth-subtitle {
           text-align: center;
-          font-size: 14px;
           color: var(--text-muted);
-          margin-bottom: 24px;
+          margin-bottom: 28px;
+          font-size: 14px;
         }
         .auth-tabs {
           display: flex;
-          margin-bottom: 20px;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          overflow: hidden;
+          gap: 8px;
+          margin-bottom: 24px;
+          padding: 4px;
+          background: rgba(255,255,255,0.45);
+          border-radius: var(--radius-pill);
         }
         .auth-tab {
           flex: 1;
           padding: 10px;
           border: none;
+          border-radius: var(--radius-pill);
           background: transparent;
-          font-family: var(--font-body);
-          font-size: 13px;
-          font-weight: 500;
           color: var(--text-muted);
+          font-family: var(--font-body);
+          font-size: 14px;
           cursor: pointer;
           transition: all 0.2s;
         }
         .auth-tab.active {
-          background: var(--text-primary);
-          color: var(--bg);
+          background: var(--bg-card-solid);
+          color: var(--text-primary);
+          box-shadow: var(--shadow-sm);
         }
         .auth-form {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
         .auth-input {
-          padding: 12px 14px;
+          width: 100%;
+          padding: 14px 16px;
+          border-radius: var(--radius-md);
           border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
+          background: rgba(255,255,255,0.7);
+          font-size: 15px;
           font-family: var(--font-body);
-          font-size: 14px;
           color: var(--text-primary);
-          background: var(--bg-input);
           outline: none;
-          transition: border-color 0.2s;
+          transition: all 0.2s;
         }
         .auth-input:focus {
-          border-color: var(--text-muted);
-        }
-        .auth-input::placeholder {
-          color: var(--text-muted);
+          border-color: var(--accent);
+          background: #fff;
         }
         .auth-submit {
-          padding: 12px;
+          margin-top: 8px;
+          padding: 14px;
+          border-radius: var(--radius-pill);
           border: none;
-          border-radius: var(--radius-sm);
           background: var(--text-primary);
-          color: var(--bg);
+          color: #fff;
           font-family: var(--font-body);
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 500;
           cursor: pointer;
-          transition: opacity 0.2s;
+          transition: all 0.2s;
           display: flex;
-          align-items: center;
           justify-content: center;
-          min-height: 44px;
+          align-items: center;
+          min-height: 48px;
         }
-        .auth-submit:hover {
-          opacity: 0.9;
+        .auth-submit:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
         .auth-submit:disabled {
-          opacity: 0.5;
+          opacity: 0.6;
           cursor: not-allowed;
         }
-        .auth-error {
-          margin-top: 12px;
-          padding: 10px 14px;
-          border-radius: var(--radius-sm);
-          background: #f5e6e4;
-          color: var(--accent-warm);
+        .auth-error,
+        .auth-info {
+          margin-top: 16px;
+          padding: 12px 14px;
+          border-radius: var(--radius-md);
           font-size: 13px;
-          text-align: center;
+          line-height: 1.5;
+        }
+        .auth-error {
+          background: var(--accent-warm-soft);
+          color: var(--accent-warm);
         }
         .auth-info {
-          margin-top: 12px;
-          padding: 10px 14px;
-          border-radius: var(--radius-sm);
-          background: #e6ede4;
-          color: var(--accent-olive);
-          font-size: 13px;
-          text-align: center;
+          background: rgba(138, 154, 122, 0.12);
+          color: #4f5c45;
         }
 
-        /* App Shell */
+        /* App shell */
         .app-shell {
-          max-width: 720px;
-          margin: 0 auto;
-          padding: 24px 16px 60px;
           min-height: 100vh;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 24px;
         }
-        .header {
+        .topbar {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 28px;
-          padding-bottom: 16px;
-          border-bottom: 1px solid var(--border-light);
+          padding: 8px 0;
         }
-        .header h1 {
+        .brand {
           font-family: var(--font-display);
-          font-size: clamp(22px, 5vw, 30px);
+          font-size: 34px;
           font-weight: 400;
-          color: var(--text-primary);
-          letter-spacing: -0.01em;
+          letter-spacing: -0.02em;
         }
-        .header-right {
+        .topbar-right {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
         }
-        .nav-btns {
+        .nav-toggle {
           display: flex;
-          gap: 4px;
+          align-items: center;
+          gap: 6px;
+          padding: 4px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-pill);
+          backdrop-filter: blur(14px);
         }
         .nav-btn {
-          padding: 8px 18px;
+          padding: 8px 16px;
           border-radius: var(--radius-pill);
-          border: 1px solid var(--border);
+          border: none;
           background: transparent;
-          color: var(--text-secondary);
+          color: var(--text-muted);
           font-family: var(--font-body);
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -1362,224 +1499,287 @@ function App() {
 
         /* Input */
         .input-view {
+          max-width: 860px;
+          margin: 10vh auto 0;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 18px;
         }
         .input-card {
           background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 20px;
-          box-shadow: var(--shadow);
+          border: 1px solid var(--border);
+          border-radius: 28px;
+          padding: 28px 28px 20px;
+          backdrop-filter: blur(24px);
+          box-shadow: var(--shadow-md);
         }
         .input-card textarea {
           width: 100%;
-          min-height: 180px;
+          min-height: 220px;
           border: none;
           outline: none;
-          resize: vertical;
+          resize: none;
+          background: transparent;
           font-family: var(--font-body);
-          font-size: 16px;
+          font-size: 20px;
           line-height: 1.7;
           color: var(--text-primary);
-          background: transparent;
-          padding: 0;
         }
         .input-card textarea::placeholder {
-          color: var(--text-muted);
+          color: #a89a89;
         }
         .input-actions {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 12px;
-          padding-top: 12px;
+          margin-top: 20px;
+          padding-top: 18px;
           border-top: 1px solid var(--border-light);
         }
         .input-hint {
-          font-size: 12px;
+          font-size: 13px;
           color: var(--text-muted);
         }
         .submit-btn {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          border: 1px solid var(--border);
-          background: var(--bg-card);
-          color: var(--text-secondary);
-          cursor: pointer;
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
+          gap: 8px;
+          padding: 12px 22px;
+          border-radius: var(--radius-pill);
+          border: none;
+          background: var(--text-primary);
+          color: #fff;
+          font-family: var(--font-body);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
           transition: all 0.2s ease;
         }
         .submit-btn:hover:not(:disabled) {
-          background: var(--text-primary);
-          color: var(--bg);
-          border-color: var(--text-primary);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
         .submit-btn:disabled {
-          opacity: 0.4;
+          opacity: 0.55;
           cursor: not-allowed;
         }
-
-        .confirmation-banner {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 18px;
-          border-radius: var(--radius);
-          background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-left: 3px solid var(--accent-green);
-          box-shadow: var(--shadow);
-          animation: fadeIn 0.3s ease;
+        .result-card {
+          padding: 16px 18px;
+          border-radius: 16px;
+          background: rgba(138, 154, 122, 0.12);
+          color: #4f5c45;
+          border: 1px solid rgba(138, 154, 122, 0.18);
         }
-        .confirmation-banner.error {
-          border-left-color: var(--accent-warm);
-        }
-        .confirmation-icon {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: var(--accent-green);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 13px;
-          flex-shrink: 0;
-        }
-        .confirmation-banner.error .confirmation-icon {
-          background: var(--accent-warm);
-        }
-        .confirmation-text {
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.5;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .spinner {
-          width: 16px;
-          height: 16px;
-          border: 2px solid var(--border);
-          border-top-color: var(--text-secondary);
-          border-radius: 50%;
-          animation: spin 0.6s linear infinite;
-          display: inline-block;
-        }
-        .spinner.small {
-          width: 12px;
-          height: 12px;
-          border-width: 1.5px;
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        .result-card.error {
+          background: var(--accent-warm-soft);
+          color: var(--accent-warm);
+          border-color: rgba(196, 105, 90, 0.18);
         }
 
         /* Dashboard */
         .dashboard {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 18px;
         }
-        .ask-card {
+        .ask-card,
+        .grid-card,
+        .entry-card {
           background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 20px;
-          box-shadow: var(--shadow);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 18px 20px;
+          backdrop-filter: blur(20px);
+          box-shadow: var(--shadow-sm);
         }
         .ask-label {
-          font-family: var(--font-display);
-          font-size: 18px;
+          font-size: 13px;
+          color: var(--text-muted);
           margin-bottom: 10px;
-          color: var(--text-primary);
         }
         .ask-row {
           display: flex;
-          gap: 8px;
+          gap: 10px;
         }
         .ask-row input {
           flex: 1;
-          min-width: 0;
-          padding: 10px 14px;
-          border-radius: var(--radius-sm);
+          padding: 12px 14px;
+          border-radius: 12px;
           border: 1px solid var(--border);
-          font-family: var(--font-body);
+          background: rgba(255,255,255,0.7);
           font-size: 14px;
-          background: var(--bg-input);
           color: var(--text-primary);
           outline: none;
-          transition: border-color 0.2s;
         }
-        .ask-row input:focus {
-          border-color: var(--text-muted);
-        }
-        .ask-row input::placeholder {
-          color: var(--text-muted);
-        }
-        .ask-row button {
-          padding: 10px 20px;
-          border-radius: var(--radius-sm);
-          border: 1px solid var(--border);
+        .ask-row button,
+        .refresh-btn {
+          padding: 10px 16px;
+          border-radius: var(--radius-pill);
+          border: none;
           background: var(--text-primary);
-          color: var(--bg);
+          color: #fff;
           font-family: var(--font-body);
           font-size: 13px;
-          font-weight: 500;
           cursor: pointer;
-          white-space: nowrap;
-          transition: opacity 0.2s;
+          transition: all 0.2s ease;
         }
-        .ask-row button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+        .ask-row button:hover,
+        .refresh-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-sm);
         }
         .ask-answer {
           margin-top: 14px;
           padding-top: 14px;
           border-top: 1px solid var(--border-light);
-          font-size: 14px;
-          line-height: 1.7;
           color: var(--text-secondary);
         }
-        .ask-answer p {
-          margin-bottom: 8px;
-        }
-        .ask-answer ul,
-        .ask-answer ol {
-          margin: 8px 0 8px 20px;
-        }
-        .ask-answer li {
-          margin-bottom: 4px;
-        }
-        .ask-answer strong {
-          color: var(--text-primary);
-        }
-
         .dashboard-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 16px;
+        }
+
+        .mind-card-span {
+          grid-column: 1 / -1;
+        }
+        .mind-card {
+          padding: 20px;
+          background:
+            radial-gradient(circle at top, rgba(212, 165, 116, 0.08), transparent 38%),
+            linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.06)),
+            var(--bg-card);
+        }
+        .mind-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 12px;
+        }
+        .mind-card-subtext {
+          font-size: 13px;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin-top: -4px;
+        }
+        .mind-map-shell {
+          position: relative;
+          height: 290px;
+          border-radius: 16px;
+          background:
+            radial-gradient(circle at 50% 44%, rgba(138, 154, 122, 0.10), transparent 20%),
+            linear-gradient(180deg, rgba(255,255,255,0.45), rgba(245,240,232,0.55));
+          border: 1px solid var(--border-light);
+          overflow: hidden;
+        }
+        .mind-lines {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+        .mind-line {
+          fill: none;
+          stroke: rgba(107, 93, 77, 0.32);
+          stroke-width: 1.25;
+          stroke-linecap: round;
+          stroke-dasharray: 4 5;
+          transition: opacity 0.25s ease, stroke 0.25s ease;
+        }
+        .mind-node {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: rgba(250, 247, 242, 0.94);
+          color: var(--text-primary);
+          box-shadow: 0 8px 24px rgba(44, 36, 24, 0.08);
+          padding: 10px 14px;
+          min-width: 92px;
+          max-width: 150px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+          transition:
+            transform 0.22s ease,
+            box-shadow 0.22s ease,
+            border-color 0.22s ease,
+            background 0.22s ease;
+        }
+        .mind-node:hover {
+          transform: translate(-50%, -50%) translateY(-2px) scale(1.02);
+          box-shadow: 0 12px 30px rgba(44, 36, 24, 0.12);
+          border-color: rgba(107, 93, 77, 0.35);
+        }
+        .mind-node.active {
+          background: #fffdf9;
+          border-color: rgba(107, 93, 77, 0.45);
+          box-shadow: 0 14px 30px rgba(44, 36, 24, 0.14);
+        }
+        .mind-node.self {
+          min-width: 104px;
+          padding: 14px 18px;
+          background: linear-gradient(180deg, #f7f3ec, #f2ece2);
+          border-color: rgba(138, 154, 122, 0.45);
+        }
+        .mind-node.project {
+          background: linear-gradient(
+            180deg,
+            rgba(212, 221, 212, 0.95),
+            rgba(250, 247, 242, 0.96)
+          );
+        }
+        .mind-node.entity {
+          background: linear-gradient(
+            180deg,
+            rgba(232, 224, 212, 0.92),
+            rgba(250, 247, 242, 0.96)
+          );
+        }
+        .mind-node-label {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        .mind-node-count {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: rgba(44, 36, 24, 0.08);
+          color: var(--text-secondary);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          flex-shrink: 0;
+        }
+        .mind-detail-box {
+          margin-top: 12px;
+          padding: 12px 14px;
+          border-top: 1px solid var(--border-light);
+          font-size: 13px;
+          color: var(--text-secondary);
+          line-height: 1.65;
+          min-height: 56px;
         }
         @media (max-width: 560px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
+          .mind-map-shell {
+            height: 320px;
           }
-        }
-        .grid-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 18px;
-          box-shadow: var(--shadow);
+          .mind-node {
+            min-width: 84px;
+            max-width: 120px;
+            padding: 9px 12px;
+          }
+          .mind-node.self {
+            min-width: 92px;
+          }
         }
         .grid-card h3 {
           font-family: var(--font-display);
@@ -1601,9 +1801,8 @@ function App() {
           border-bottom: none;
         }
         .project-name {
-          font-size: 14px;
           font-weight: 500;
-          color: var(--text-primary);
+          margin-bottom: 4px;
         }
         .project-meta {
           font-size: 12px;
@@ -1611,23 +1810,25 @@ function App() {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-top: 2px;
+          flex-wrap: wrap;
         }
         .status-badge {
-          padding: 2px 10px;
+          display: inline-flex;
+          padding: 3px 8px;
           border-radius: var(--radius-pill);
           font-size: 11px;
           font-weight: 500;
         }
         .status-badge.active {
-          background: var(--accent-green);
-          color: white;
+          background: rgba(138, 154, 122, 0.14);
+          color: #4f5c45;
         }
 
         .deadline-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          gap: 12px;
           padding: 8px 0;
           border-bottom: 1px solid var(--border-light);
         }
@@ -1636,38 +1837,39 @@ function App() {
         }
         .deadline-desc {
           font-size: 14px;
-          color: var(--text-primary);
+          color: var(--text-secondary);
         }
         .deadline-badge {
-          padding: 3px 12px;
+          padding: 4px 10px;
           border-radius: var(--radius-pill);
           font-size: 11px;
-          font-weight: 500;
+          font-weight: 600;
           white-space: nowrap;
         }
 
         .entity-group {
           display: flex;
           flex-wrap: wrap;
-          gap: 6px;
+          gap: 8px;
         }
         .entity-chip {
-          padding: 4px 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 12px;
           border-radius: var(--radius-pill);
           font-size: 12px;
           font-weight: 500;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
         }
         .mention-count {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: rgba(0,0,0,0.08);
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          border-radius: 999px;
+          background: rgba(0,0,0,0.08);
           font-size: 10px;
         }
 
@@ -1679,192 +1881,196 @@ function App() {
           border-bottom: none;
         }
         .pattern-title {
-          font-family: var(--font-display);
-          font-size: 15px;
-          font-weight: 400;
-          color: var(--text-primary);
-          margin-bottom: 2px;
+          font-weight: 500;
+          margin-bottom: 4px;
         }
         .pattern-obs {
           font-size: 13px;
           color: var(--text-muted);
-          line-height: 1.5;
+          line-height: 1.6;
         }
 
         .section-title {
           font-family: var(--font-display);
-          font-size: 18px;
+          font-size: 22px;
           font-weight: 400;
-          color: var(--text-primary);
-          margin-top: 4px;
+          margin: 0;
         }
-        .refresh-btn {
-          padding: 6px 16px;
-          border-radius: var(--radius-pill);
-          border: 1px solid var(--border);
-          background: transparent;
-          color: var(--text-muted);
-          font-family: var(--font-body);
-          font-size: 12px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .refresh-btn:hover {
-          background: var(--bg-card);
-          color: var(--text-secondary);
-          border-color: var(--text-secondary);
-        }
-
         .entry-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius);
-          padding: 16px;
-          box-shadow: var(--shadow);
+          transition: all 0.2s ease;
+        }
+        .entry-card.processing:hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
         .entry-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          gap: 8px;
-          margin-bottom: 4px;
+          gap: 16px;
+          margin-bottom: 10px;
         }
         .entry-title {
-          font-family: var(--font-display);
-          font-size: 16px;
+          font-weight: 600;
           color: var(--text-primary);
+        }
+        .processing-title {
+          display: inline-flex;
+          align-items: center;
         }
         .entry-date {
           font-size: 12px;
           color: var(--text-muted);
           white-space: nowrap;
-          flex-shrink: 0;
         }
         .entry-summary {
-          font-size: 14px;
           color: var(--text-secondary);
-          line-height: 1.6;
+          line-height: 1.7;
         }
 
-        .entry-card.processing {
-          border-left: 3px solid var(--accent-amber);
-          animation: pulse 2s ease-in-out infinite;
+        .pipeline-tracker {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 10px;
+          margin-top: 8px;
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.85; }
-        }
-        .processing-title {
-          display: flex;
-          align-items: center;
-          color: var(--text-muted);
-        }
-        .processing-text {
-          color: var(--text-muted);
-        }
-
-        .pipeline-status {
-          margin-top: 12px;
-          padding-top: 12px;
-          border-top: 1px solid var(--border-light);
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          animation: fadeIn 0.3s ease;
-        }
-        .pipeline-step {
+        .pipeline-node {
           display: flex;
           align-items: center;
           gap: 10px;
-          font-size: 13px;
+          padding: 10px 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.35);
+          border: 1px solid var(--border-light);
           color: var(--text-muted);
-          padding: 3px 0;
         }
-        .pipeline-step.completed {
-          color: var(--text-secondary);
+        .pipeline-node.done {
+          background: rgba(138, 154, 122, 0.10);
+          color: #4f5c45;
         }
-        .pipeline-step.active {
-          color: var(--text-primary);
-          font-weight: 500;
+        .pipeline-node.active {
+          background: rgba(212, 165, 116, 0.14);
+          color: #6a4d2a;
+          border-color: rgba(212, 165, 116, 0.24);
         }
-        .pipeline-icon {
-          width: 20px;
-          height: 20px;
+        .pipeline-dot {
+          width: 10px;
+          height: 10px;
           border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
+          background: currentColor;
           flex-shrink: 0;
         }
-        .pipeline-step.completed .pipeline-icon {
-          background: var(--accent-green);
-          color: white;
+        .pipeline-label {
+          font-size: 13px;
+          line-height: 1.4;
         }
-        .pipeline-step.active .pipeline-icon {
-          background: transparent;
+
+        .spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(0,0,0,0.12);
+          border-top-color: currentColor;
+          border-radius: 50%;
+          display: inline-block;
+          animation: spin 0.8s linear infinite;
         }
-        .pipeline-step.pending .pipeline-icon {
-          background: var(--border);
-          color: var(--text-muted);
-          font-size: 8px;
+        .spinner.small {
+          width: 14px;
+          height: 14px;
+          border-width: 2px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 900px) {
+          .topbar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+          }
+          .topbar-right {
+            width: 100%;
+            justify-content: space-between;
+          }
+          .ask-row {
+            flex-direction: column;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .app-shell {
+            padding: 16px;
+          }
+          .brand {
+            font-size: 28px;
+          }
+          .auth-card {
+            padding: 28px 20px;
+          }
+          .input-card {
+            padding: 22px 18px 18px;
+            border-radius: 22px;
+          }
+          .input-card textarea {
+            min-height: 180px;
+            font-size: 18px;
+          }
+          .input-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+          }
+          .entry-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+          }
         }
       `}</style>
 
-      {!session ? (
-        showAuth ? (
-          <AuthView onAuth={setSession} onBack={() => setShowAuth(false)} />
-        ) : (
-          <LandingPage onGetStarted={() => setShowAuth(true)} />
-        )
-      ) : (
+      {view === "landing" && (
+        <LandingPage onGetStarted={() => setView("auth")} />
+      )}
+
+      {view === "auth" && (
+        <AuthView
+          onAuth={(session) => {
+            setSession(session);
+            setView("app");
+          }}
+          onBack={() => setView("landing")}
+        />
+      )}
+
+      {view === "app" && session && (
         <div className="app-shell">
-          <div className="header">
-            <h1>MindGraph</h1>
+          <div className="topbar">
+            <div className="brand">MindGraph</div>
 
-            <div className="header-right">
-              <div className="nav-btns">
+            <div className="topbar-right">
+              <div className="nav-toggle">
                 <button
-                  className={`nav-btn ${view === "input" ? "active" : ""}`}
-                  onClick={() => setView("input")}
-                >
-                  Write
-                </button>
-
-                <button
-                  className={`nav-btn ${view === "dashboard" ? "active" : ""}`}
-                  onClick={() => setView("dashboard")}
+                  className={`nav-btn ${view === "app" ? "active" : ""}`}
+                  onClick={() => setView("app")}
                 >
                   Dashboard
                 </button>
-
-                {view === "dashboard" && (
-                  <button
-                    className="nav-btn"
-                    onClick={() => setRefreshKey((k) => k + 1)}
-                    title="Refresh"
-                  >
-                    ↺
-                  </button>
-                )}
               </div>
 
-              <span className="user-email">{session.user?.email}</span>
+              <div className="user-email">{session.user?.email}</div>
+
               <button className="logout-btn" onClick={handleLogout}>
                 Log out
               </button>
             </div>
           </div>
 
-          {view === "input" ? (
-            <InputView />
-          ) : (
-            <Dashboard refreshKey={refreshKey} />
-          )}
+          <InputView />
+          <div style={{ height: 20 }} />
+          <Dashboard refreshKey={refreshKey} />
         </div>
       )}
     </>
   );
 }
-
-export default App;
