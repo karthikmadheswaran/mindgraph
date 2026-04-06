@@ -31,6 +31,16 @@ DedupCheckResult = Literal[
     "uncertain"
 ]
 
+RelationType = Literal[
+    "uses",
+    "built_with",
+    "works_on",
+    "works_with",
+    "located_at",
+    "belongs_to",
+    "part_of",
+]
+
 def keep_latest(existing, new):
     if new is None or new == [] or new == "" or new == False:
         return existing
@@ -44,6 +54,14 @@ class DeadlineNode(TypedDict):
     description: str
     due_at: datetime
     raw_text: str
+
+
+class RelationEdge(TypedDict):
+    source: str
+    source_type: EntityType
+    target: str
+    target_type: EntityType
+    relation: RelationType
 
 class JournalState(TypedDict):
     user_id: str
@@ -60,6 +78,7 @@ class JournalState(TypedDict):
     duplicate_of: Annotated[Optional[str], keep_latest]
     dedup_check_result: Annotated[Optional[str], keep_latest]
     entry_id: Annotated[Optional[str], keep_latest]
+    relations: Annotated[list, keep_latest]
 
 
 

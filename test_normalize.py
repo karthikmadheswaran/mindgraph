@@ -18,7 +18,7 @@ async def test():
             "cleaned_text": "",
             "user_id": "", "auto_title": "", "summary": "",
             "input_type": "text", "attachment_url": "",
-            "classifier": [], "core_entities": [], "deadline": [],
+            "classifier": [], "core_entities": [], "deadline": [], "relations": [],
             "trigger_check": False, "duplicate_of": None,
             "dedup_check_result": None,
         }

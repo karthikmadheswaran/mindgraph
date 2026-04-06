@@ -60,6 +60,7 @@ test_state = {
             "raw_text": "tomorrow",
         },
     ],
+    "relations": [],
     "trigger_check": False,
     "duplicate_of": None,
     "dedup_check_result": None,

@@ -5,6 +5,7 @@ from app.nodes.deadline import extract_deadlines
 from app.state import JournalState
 from app.nodes.classify import classify
 from app.nodes.extract_entities import extract_entities
+from app.nodes.extract_relations import extract_relations
 from app.nodes.normalize import normalize
 from app.nodes.store import store_node
 
@@ -22,6 +23,7 @@ def build_graph():
     builder.add_node("entities",extract_entities)
     builder.add_node("deadline",extract_deadlines)
     builder.add_node("title_summary",title_summary)
+    builder.add_node("extract_relations", extract_relations)
     builder.add_node("store",store_node)
 
 
@@ -30,7 +32,8 @@ def build_graph():
 
     builder.add_conditional_edges("dedup",dedup_router)
 
-    builder.add_edge(["title_summary", "classify", "entities", "deadline"], "store")
+    builder.add_edge(["title_summary", "classify", "entities", "deadline"], "extract_relations")
+    builder.add_edge("extract_relations", "store")
     builder.add_edge("store", END)
 
     workflow = builder.compile()

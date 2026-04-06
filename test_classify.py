@@ -16,6 +16,7 @@ base_state = {
     "classifier": [],
     "core_entities": [],
     "deadline": [],
+    "relations": [],
     "trigger_check": False,
     "duplicate_of": None,
     "dedup_check_result": None,

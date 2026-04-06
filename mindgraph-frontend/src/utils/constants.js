@@ -5,6 +5,7 @@ export const nodeLabels = {
   entities: "Extracting people & projects",
   deadline: "Finding deadlines",
   title_summary: "Generating title & summary",
+  extract_relations: "Mapping relations",
   store: "Saving to database",
 };
 
@@ -25,5 +26,6 @@ export const pipelineOrder = [
   "entities",
   "deadline",
   "title_summary",
+  "extract_relations",
   "store",
 ];

@@ -9,7 +9,10 @@ load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 model = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.3)
-supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+supabase: Client = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
+)
 
 
 # ---------------------------------------------------------------------------

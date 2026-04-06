@@ -36,6 +36,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [entities, setEntities] = useState([]);
+  const [relations, setRelations] = useState([]);
   const [patterns, setPatterns] = useState({});
   const [loadingData, setLoadingData] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,6 +55,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     setEntries(snapshot.entries || []);
     setDeadlines(snapshot.deadlines || []);
     setEntities(snapshot.entities || []);
+    setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
     setRefreshing(false);
     setLastSynced(
@@ -72,11 +74,14 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const fetchSnapshot = useCallback(async () => {
     const headers = await authHeaders();
 
-    const [entriesData, deadlinesData, entitiesData, patternsData] =
+    const [entriesData, deadlinesData, entitiesData, relationsData, patternsData] =
       await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
         fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
+        fetch(`${API}/entity-relations`, { headers })
+          .then((r) => r.json())
+          .catch(() => ({ relations: [] })),
         fetch(`${API}/insights/patterns`, { headers })
           .then((r) => r.json())
           .catch(() => ({ data: {} })),
@@ -86,6 +91,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       entries: entriesData.entries || [],
       deadlines: deadlinesData.deadlines || [],
       entities: entitiesData.entities || [],
+      relations: relationsData.relations || [],
       patterns: patternsData.data || {},
     };
   }, []);
@@ -287,6 +293,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
             entities={entities}
             entries={entries}
             deadlines={deadlines}
+            relations={relations}
           />
 
           <motion.div

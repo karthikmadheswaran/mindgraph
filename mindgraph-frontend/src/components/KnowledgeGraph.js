@@ -3,8 +3,9 @@ import "../styles/knowledge-graph.css";
 
 const SELF_ID = "you";
 const MOBILE_BREAKPOINT = 768;
-const MOBILE_HEIGHT = 280;
-const DESKTOP_HEIGHT = 380;
+const MOBILE_HEIGHT = 300;
+const DESKTOP_HEIGHT = 420;
+const MAX_ENTRY_CLUSTERS = 6;
 
 function normalizeText(value) {
   return String(value || "").toLowerCase().trim();
@@ -16,8 +17,9 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-function truncateLabel(label, max = 14) {
+function truncateLabel(label, kind = "other") {
   if (!label) return "";
+  const max = kind === "entry" ? 10 : 12;
   if (label.length <= max) return label;
   return `${label.slice(0, max - 3)}...`;
 }
@@ -51,6 +53,8 @@ function formatKindLabel(kind) {
       return "Place";
     case "entry":
       return "Entry cluster";
+    case "overflow":
+      return "More entries";
     case "deadline":
       return "Deadline";
     default:
@@ -58,38 +62,144 @@ function formatKindLabel(kind) {
   }
 }
 
-function getNodeRadius(node, maxMentionCount) {
-  if (node.kind === "self") return 22;
-  if (node.kind === "deadline") return 10;
+function formatRelationTypeLabel(relationType) {
+  return String(relationType || "").replace(/_/g, " ").trim();
+}
+
+function formatOutgoingRelation(relationType, otherLabel) {
+  return `${formatRelationTypeLabel(relationType)} ${otherLabel}`.trim();
+}
+
+function formatIncomingRelation(relationType, otherLabel) {
+  switch (relationType) {
+    case "uses":
+      return `used by ${otherLabel}`;
+    case "built_with":
+      return `used in ${otherLabel}`;
+    case "works_on":
+      return `worked on by ${otherLabel}`;
+    case "located_at":
+      return `location of ${otherLabel}`;
+    case "belongs_to":
+      return `has member ${otherLabel}`;
+    case "part_of":
+      return `contains ${otherLabel}`;
+    default:
+      return `${formatRelationTypeLabel(relationType)} ${otherLabel}`.trim();
+  }
+}
+
+function addRelationSummary(summaryMap, nodeId, line) {
+  if (!line) return;
+
+  if (!summaryMap.has(nodeId)) {
+    summaryMap.set(nodeId, new Set());
+  }
+
+  summaryMap.get(nodeId).add(line);
+}
+
+function getNodeRadius(node) {
+  if (node.kind === "self") return 18;
+  if (node.kind === "overflow") return 6;
 
   const rawCount = Number(node.mentionCount || node.count || 1);
   const safeCount = Number.isFinite(rawCount) && rawCount > 0 ? rawCount : 1;
-  const maxCount = Math.max(1, maxMentionCount);
-  const scale = maxCount === 1 ? 0.5 : (safeCount - 1) / (maxCount - 1);
-
-  return 8 + scale * 20;
+  const min = node.kind === "entry" ? 5 : 7;
+  const max = node.kind === "project" ? 18 : 14;
+  return Math.min(max, min + Math.sqrt(safeCount) * 3);
 }
 
 function getLinkDistance(link, nodeById) {
+  const source = nodeById.get(
+    typeof link.source === "string" ? link.source : link.source?.id
+  );
   const target = nodeById.get(
     typeof link.target === "string" ? link.target : link.target?.id
   );
 
-  if (link.kind === "project-deadline") return 66;
-  if (link.kind === "entity-entry") return 74;
-
-  switch (target?.kind) {
-    case "project":
-      return 92;
-    case "person":
-      return 116;
-    case "place":
-      return 122;
-    case "entry":
-      return 156;
-    default:
-      return 132;
+  if (link.kind === "semantic") return 80;
+  if (
+    source?.kind === "entry" ||
+    target?.kind === "entry" ||
+    source?.kind === "overflow" ||
+    target?.kind === "overflow"
+  ) {
+    return 140;
   }
+
+  return 100;
+}
+
+function getLinkStroke(link) {
+  if (link.kind === "semantic") {
+    return "var(--accent, #8a9a7a)";
+  }
+
+  if (link.kind === "project-deadline") {
+    return "var(--accent-warm, #c4695a)";
+  }
+
+  if (link.kind === "entity-entry") {
+    return "var(--text-muted, #6b5d4d)";
+  }
+
+  return "var(--border)";
+}
+
+function getLinkOpacity(link) {
+  if (link.kind === "semantic") return 0.35;
+  if (link.kind === "project-deadline") return 0.22;
+  if (link.kind === "entity-entry") return 0.18;
+  return 0.12;
+}
+
+function getLinkWidth(link) {
+  if (link.kind === "semantic") return 1.5;
+  if (link.kind === "project-deadline") return 1;
+  if (link.kind === "entity-entry") return 0.8;
+  return 0.5;
+}
+
+function getNodeBaseOpacity(node) {
+  if (node.kind === "self" || node.kind === "project" || node.kind === "person") {
+    return 1;
+  }
+
+  if (
+    node.kind === "place" ||
+    node.kind === "organization" ||
+    node.kind === "tool" ||
+    node.kind === "deadline" ||
+    node.kind === "other"
+  ) {
+    return 0.85;
+  }
+
+  if (node.kind === "entry") return 0.55;
+  if (node.kind === "overflow") return 0.35;
+  return 0.85;
+}
+
+function getNodeLabelFill(node) {
+  if (node.kind === "entry" || node.kind === "overflow") {
+    return "var(--text-muted, #8b7b69)";
+  }
+
+  return getNodeColors(node).label;
+}
+
+function getNodeLabelFontSize(node) {
+  if (node.kind === "self") return 13;
+  if (node.kind === "project" || node.kind === "person") return 11;
+  return 10;
+}
+
+function getNodeLabelWeight(node) {
+  if (node.kind === "self") return 600;
+  if (node.kind === "project" || node.kind === "person") return 500;
+  if (node.kind === "entry") return 400;
+  return 400;
 }
 
 function getNodeColors(node) {
@@ -122,7 +232,13 @@ function getNodeColors(node) {
       return {
         fill: "var(--accent-soft, #d4ddd4)",
         stroke: "rgba(107, 93, 77, 0.18)",
-        label: "var(--text-primary, #2c2418)",
+        label: "var(--text-muted, #8b7b69)",
+      };
+    case "overflow":
+      return {
+        fill: "var(--border, rgba(107, 93, 77, 0.16))",
+        stroke: "rgba(107, 93, 77, 0.3)",
+        label: "var(--text-muted, #8b7b69)",
       };
     case "deadline":
       return {
@@ -143,6 +259,7 @@ export default function KnowledgeGraph({
   entities = [],
   entries = [],
   deadlines = [],
+  relations = [],
 }) {
   const shellRef = useRef(null);
   const svgRef = useRef(null);
@@ -240,7 +357,7 @@ export default function KnowledgeGraph({
       };
     });
 
-    const entryNodes = Array.from(entryClusterMap.values())
+    const sortedEntryClusters = Array.from(entryClusterMap.values())
       .sort((a, b) => {
         const countDiff = (b.count || 0) - (a.count || 0);
         if (countDiff !== 0) return countDiff;
@@ -254,6 +371,21 @@ export default function KnowledgeGraph({
         id: cluster.nodeId,
       }));
 
+    const visibleEntryNodes = sortedEntryClusters.slice(0, MAX_ENTRY_CLUSTERS);
+    const hiddenEntryNodes = sortedEntryClusters.slice(MAX_ENTRY_CLUSTERS);
+    const overflowNode =
+      hiddenEntryNodes.length > 0
+        ? {
+            id: "entry-overflow",
+            label: `+${hiddenEntryNodes.length} more`,
+            kind: "overflow",
+            mentionCount: hiddenEntryNodes.length,
+            count: hiddenEntryNodes.length,
+            lastMentioned: hiddenEntryNodes[0]?.lastMentioned || null,
+            isInteractive: false,
+          }
+        : null;
+
     const selfNode = {
       id: SELF_ID,
       label: "You",
@@ -262,23 +394,86 @@ export default function KnowledgeGraph({
       lastMentioned: null,
     };
 
-    const nodes = [selfNode, ...entityNodes, ...entryNodes];
-    const links = nodes
-      .filter((node) => node.id !== SELF_ID)
-      .map((node) => ({
-        id: `link-${SELF_ID}-${node.id}`,
-        source: SELF_ID,
-        target: node.id,
-        kind: "primary",
-      }));
+    const primaryLinks = [...entityNodes, ...visibleEntryNodes, ...(overflowNode ? [overflowNode] : [])].map((node) => ({
+      id: `link-${SELF_ID}-${node.id}`,
+      source: SELF_ID,
+      target: node.id,
+      kind: "primary",
+    }));
+
+    const entityNodeBySourceId = new Map(
+      entityNodes
+        .filter((node) => node.sourceId != null)
+        .map((node) => [String(node.sourceId), node])
+    );
+    const semanticNeighborIdsByNodeId = new Map();
+    const relationSummariesByNodeId = new Map();
+    const semanticLinks = [];
+
+    const addSemanticNeighbor = (nodeId, neighborId) => {
+      if (!semanticNeighborIdsByNodeId.has(nodeId)) {
+        semanticNeighborIdsByNodeId.set(nodeId, new Set());
+      }
+      semanticNeighborIdsByNodeId.get(nodeId).add(neighborId);
+    };
+
+    relations.forEach((relation, index) => {
+      const sourceNode = entityNodeBySourceId.get(String(relation.source_id));
+      const targetNode = entityNodeBySourceId.get(String(relation.target_id));
+
+      if (!sourceNode || !targetNode || sourceNode.id === targetNode.id) {
+        return;
+      }
+
+      const linkId = `semantic-${relation.relation_type}-${relation.source_id}-${relation.target_id}-${index}`;
+      semanticLinks.push({
+        id: linkId,
+        source: sourceNode.id,
+        target: targetNode.id,
+        kind: "semantic",
+        relationType: relation.relation_type,
+      });
+
+      addSemanticNeighbor(sourceNode.id, targetNode.id);
+      addSemanticNeighbor(targetNode.id, sourceNode.id);
+
+      if (relation.relation_type === "works_with") {
+        addRelationSummary(
+          relationSummariesByNodeId,
+          sourceNode.id,
+          formatOutgoingRelation(relation.relation_type, targetNode.label)
+        );
+        addRelationSummary(
+          relationSummariesByNodeId,
+          targetNode.id,
+          formatOutgoingRelation(relation.relation_type, sourceNode.label)
+        );
+      } else {
+        addRelationSummary(
+          relationSummariesByNodeId,
+          sourceNode.id,
+          formatOutgoingRelation(relation.relation_type, targetNode.label)
+        );
+        addRelationSummary(
+          relationSummariesByNodeId,
+          targetNode.id,
+          formatIncomingRelation(relation.relation_type, sourceNode.label)
+        );
+      }
+    });
+
+    const nodes = [selfNode, ...entityNodes, ...visibleEntryNodes, ...(overflowNode ? [overflowNode] : [])];
+    const links = [...primaryLinks, ...semanticLinks];
 
     return {
       nodes,
       links,
       nodeMap: new Map(nodes.map((node) => [node.id, node])),
-      entryClusters: entryNodes,
+      entryClusters: visibleEntryNodes,
+      semanticNeighborIdsByNodeId,
+      relationSummariesByNodeId,
     };
-  }, [deadlines, entities, processedEntries]);
+  }, [deadlines, entities, processedEntries, relations]);
 
   const expansion = useMemo(() => {
     if (!expandedNodeId) {
@@ -353,14 +548,6 @@ export default function KnowledgeGraph({
     () => [...baseGraph.links, ...expansion.links],
     [baseGraph.links, expansion.links]
   );
-
-  const maxMentionCount = useMemo(() => {
-    return graphNodes.reduce((maxValue, node) => {
-      if (node.kind === "self" || node.kind === "deadline") return maxValue;
-      const value = Number(node.mentionCount || node.count || 1) || 1;
-      return Math.max(maxValue, value);
-    }, 1);
-  }, [graphNodes]);
 
   const hasData = entities.length > 0 || processedEntries.length > 0;
 
@@ -449,7 +636,7 @@ export default function KnowledgeGraph({
       svg.call(zoom).call(zoom.transform, transform);
 
       const nodes = graphNodes.map((node, index) => {
-        const radius = getNodeRadius(node, maxMentionCount);
+        const radius = getNodeRadius(node);
         const previousPosition = positionsRef.current.get(node.id);
         const parentPosition = node.parentId
           ? positionsRef.current.get(node.parentId)
@@ -497,12 +684,85 @@ export default function KnowledgeGraph({
         .selectAll("line")
         .data(links, (link) => link.id)
         .join("line")
-        .attr("class", (link) =>
-          link.kind === "entity-entry"
-            ? "knowledge-link knowledge-link-expanded"
-            : "knowledge-link"
-        )
-        .attr("vector-effect", "non-scaling-stroke");
+        .attr("class", (link) => {
+          const classes = ["knowledge-link"];
+          if (link.kind === "semantic") classes.push("knowledge-link-semantic");
+          if (link.kind === "primary") classes.push("knowledge-link-primary");
+          if (link.kind === "entity-entry") classes.push("knowledge-link-expanded");
+          if (link.kind === "project-deadline") classes.push("knowledge-link-deadline");
+          return classes.join(" ");
+        })
+        .attr("vector-effect", "non-scaling-stroke")
+        .attr("stroke", (link) => getLinkStroke(link))
+        .attr("stroke-width", (link) => getLinkWidth(link))
+        .attr("stroke-opacity", (link) => getLinkOpacity(link));
+
+      const resetHoverState = () => {
+        nodeSelection.style("opacity", (node) => getNodeBaseOpacity(node));
+        linkSelection
+          .attr("stroke", (link) => getLinkStroke(link))
+          .attr("stroke-width", (link) => getLinkWidth(link))
+          .attr("stroke-opacity", (link) => getLinkOpacity(link));
+      };
+
+      const applyHoverState = (nodeId) => {
+        const highlightedNodeIds = new Set([nodeId]);
+
+        links.forEach((link) => {
+          const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+          const targetId = typeof link.target === "string" ? link.target : link.target.id;
+
+          if (sourceId === nodeId) {
+            highlightedNodeIds.add(targetId);
+          }
+
+          if (targetId === nodeId) {
+            highlightedNodeIds.add(sourceId);
+          }
+        });
+
+        nodeSelection.style("opacity", (node) =>
+          highlightedNodeIds.has(node.id) ? 1 : 0.1
+        );
+
+        linkSelection
+          .attr("stroke", (link) => getLinkStroke(link))
+          .attr("stroke-width", (link) => {
+            const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+            const targetId = typeof link.target === "string" ? link.target : link.target.id;
+            const touchesHoveredNode = sourceId === nodeId || targetId === nodeId;
+
+            if (link.kind === "semantic" && touchesHoveredNode) {
+              return 1.9;
+            }
+
+            return getLinkWidth(link);
+          })
+          .attr("stroke-opacity", (link) => {
+            const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+            const targetId = typeof link.target === "string" ? link.target : link.target.id;
+            const touchesHoveredNode = sourceId === nodeId || targetId === nodeId;
+            const fullyWithinHighlightedSet =
+              highlightedNodeIds.has(sourceId) && highlightedNodeIds.has(targetId);
+
+            if (link.kind === "semantic" && touchesHoveredNode) {
+              return 0.8;
+            }
+
+            if (link.kind === "primary" && fullyWithinHighlightedSet) {
+              return 0.3;
+            }
+
+            if (
+              (link.kind === "entity-entry" || link.kind === "project-deadline")
+              && fullyWithinHighlightedSet
+            ) {
+              return 0.22;
+            }
+
+            return 0.03;
+          });
+      };
 
       const simulation = d3
         .forceSimulation(nodes)
@@ -512,32 +772,34 @@ export default function KnowledgeGraph({
             .forceLink(links)
             .id((node) => node.id)
             .distance((link) => getLinkDistance(link, nodeById))
-            .strength((link) => (link.kind === "entity-entry" ? 0.22 : 0.14))
+            .strength((link) => (link.kind === "semantic" ? 0.7 : 0.3))
         )
         .force(
           "charge",
           d3.forceManyBody().strength((node) => {
-            if (node.kind === "self") return -240;
-            if (node.kind === "deadline") return -60;
-            return -120;
+            if (node.kind === "self") return -300;
+            if (node.kind === "project") return -120;
+            if (node.kind === "entry") return -40;
+            if (node.kind === "overflow") return -24;
+            return -80;
           })
         )
         .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
         .force(
           "collision",
-          d3.forceCollide().radius((node) => node.radius + 16)
+          d3.forceCollide().radius((node) => node.radius + 8).strength(0.8)
         )
         .force(
           "x",
           d3
             .forceX(dimensions.width / 2)
-            .strength((node) => (node.kind === "self" ? 0.36 : 0.03))
+            .strength(0.04)
         )
         .force(
           "y",
           d3
             .forceY(dimensions.height / 2)
-            .strength((node) => (node.kind === "self" ? 0.36 : 0.03))
+            .strength(0.04)
         )
         .alpha(1)
         .alphaTarget(0);
@@ -583,17 +845,18 @@ export default function KnowledgeGraph({
         })
         .style("opacity", 0)
         .style("cursor", (node) =>
-          node.kind === "self" ? "grab" : node.kind === "deadline" ? "pointer" : "pointer"
+          node.kind === "self" ? "grab" : node.kind === "overflow" ? "default" : "pointer"
         )
         .call(dragBehavior)
         .on("click", (event, node) => {
           event.stopPropagation();
-          if (node.kind === "self" || node.kind === "deadline") return;
+          if (node.kind === "self" || node.kind === "deadline" || node.kind === "overflow") return;
           setExpandedNodeId((current) => (current === node.id ? null : node.id));
         })
         .on("mouseenter", (event, node) => {
-          if (node.kind === "self") return;
+          if (node.kind === "self" || node.kind === "overflow") return;
 
+          applyHoverState(node.id);
           const [x, y] = d3.pointer(event, shellRef.current);
           setTooltip({
             node,
@@ -602,7 +865,7 @@ export default function KnowledgeGraph({
           });
         })
         .on("mousemove", (event, node) => {
-          if (node.kind === "self") return;
+          if (node.kind === "self" || node.kind === "overflow") return;
 
           const [x, y] = d3.pointer(event, shellRef.current);
           setTooltip({
@@ -612,6 +875,7 @@ export default function KnowledgeGraph({
           });
         })
         .on("mouseleave", () => {
+          resetHoverState();
           setTooltip(null);
         });
 
@@ -651,14 +915,18 @@ export default function KnowledgeGraph({
         )
         .attr("text-anchor", "middle")
         .attr("y", (node) => node.radius + 10)
-        .attr("fill", (node) => getNodeColors(node).label)
-        .text((node) => truncateLabel(node.label));
+        .attr("fill", (node) => getNodeLabelFill(node))
+        .attr("font-size", (node) => getNodeLabelFontSize(node))
+        .attr("font-weight", (node) => getNodeLabelWeight(node))
+        .text((node) => truncateLabel(node.label, node.kind));
 
       nodeSelection
         .transition()
         .delay((_, index) => index * 45)
         .duration(420)
-        .style("opacity", 1);
+        .style("opacity", (node) => getNodeBaseOpacity(node));
+
+      resetHoverState();
 
       simulation.on("tick", () => {
         nodes.forEach((node) => {
@@ -701,7 +969,6 @@ export default function KnowledgeGraph({
     expansion.connectedNodeIds,
     graphLinks,
     graphNodes,
-    maxMentionCount,
   ]);
 
   const handleResetZoom = () => {
@@ -729,8 +996,18 @@ export default function KnowledgeGraph({
         dueDate: formatShortDate(
           tooltip.node.dueDate || tooltip.node.deadline?.due_date
         ),
+        relationLines: Array.from(
+          baseGraph.relationSummariesByNodeId.get(tooltip.node.id) || []
+        ).slice(0, 5),
       }
     : null;
+
+  const legendItems = [
+    { label: "You", kind: "self" },
+    { label: "Projects", kind: "project" },
+    { label: "People", kind: "person" },
+    { label: "Entries", kind: "entry" },
+  ];
 
   return (
     <section className="knowledge-graph-section">
@@ -738,8 +1015,25 @@ export default function KnowledgeGraph({
         <div>
           <h2 className="knowledge-graph-title">Your Mind Lately</h2>
           <p className="knowledge-graph-subtitle">
-            Click a node to explore connections. Drag to rearrange.
+            Drag to rearrange. Scroll to zoom. Hover for details.
           </p>
+        </div>
+        <div className="knowledge-graph-legend" aria-hidden="true">
+          {legendItems.map((item) => {
+            const colors = getNodeColors({ kind: item.kind });
+            return (
+              <div key={item.label} className="knowledge-graph-legend-item">
+                <span
+                  className="knowledge-graph-legend-dot"
+                  style={{
+                    background: colors.fill,
+                    borderColor: `color-mix(in srgb, ${colors.fill} 30%, transparent)`,
+                  }}
+                />
+                <span className="knowledge-graph-legend-label">{item.label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -790,6 +1084,16 @@ export default function KnowledgeGraph({
               <div className="knowledge-graph-tooltip-line">
                 Due: {tooltipContent.dueDate}
               </div>
+            )}
+            {tooltipContent.relationLines.length > 0 && (
+              <>
+                <div className="knowledge-graph-tooltip-divider" />
+                {tooltipContent.relationLines.map((line) => (
+                  <div key={line} className="knowledge-graph-tooltip-line">
+                    {line}
+                  </div>
+                ))}
+              </>
             )}
           </div>
         )}
