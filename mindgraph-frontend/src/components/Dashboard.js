@@ -10,8 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
 import { deadlineColor, deadlineLabel } from "../utils/dateHelpers";
-import MindLatelyCard from "./MindLatelyCard";
 import AnimatedView from "./AnimatedView";
+import KnowledgeGraph from "./KnowledgeGraph";
 import "../styles/dashboard.css";
 
 const staggerContainer = {
@@ -42,7 +42,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [lastSynced, setLastSynced] = useState("");
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
-  const [selectedMindNodeId, setSelectedMindNodeId] = useState("you");
   const [hasActivated, setHasActivated] = useState(isActive);
 
   const hasLoadedRef = useRef(false);
@@ -231,95 +230,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     (entity) => !["project", "person", "place"].includes(entity.entity_type)
   );
 
-  const getRecencyTs = (item) => {
-    const raw =
-      item?.last_mentioned_at ||
-      item?.updated_at ||
-      item?.created_at ||
-      item?.last_seen_at ||
-      null;
-
-    const ts = raw ? new Date(raw).getTime() : 0;
-    return Number.isNaN(ts) ? 0 : ts;
-  };
-
-  const formatMindDate = (value) => {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("en", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const sortRecentAndRelevant = (items) =>
-    [...items].sort((a, b) => {
-      const recencyDiff = getRecencyTs(b) - getRecencyTs(a);
-      if (recencyDiff !== 0) return recencyDiff;
-
-      const mentionDiff = (b.mention_count || 0) - (a.mention_count || 0);
-      if (mentionDiff !== 0) return mentionDiff;
-
-      return (a.name || "").localeCompare(b.name || "");
-    });
-
-  const mindProjects = sortRecentAndRelevant(projects).slice(0, 2);
-  const mindEntities = sortRecentAndRelevant([
-    ...people,
-    ...places,
-    ...others,
-  ]).slice(0, 3);
-
-  const mindNodes = [
-    {
-      id: "you",
-      label: "You",
-      kind: "self",
-      x: 50,
-      y: 46,
-      mentionCount: 0,
-      lastMentionedLabel: "",
-    },
-    ...mindProjects.map((item, index) => ({
-      id: `project-${item.id ?? item.name ?? index}`,
-      label: item.name,
-      kind: "project",
-      x: index === 0 ? 24 : 76,
-      y: index === 0 ? 22 : 26,
-      mentionCount: item.mention_count || 0,
-      lastMentionedLabel: formatMindDate(
-        item.last_mentioned_at || item.updated_at || item.created_at
-      ),
-    })),
-    ...mindEntities.map((item, index) => {
-      const positions = [
-        { x: 20, y: 68 },
-        { x: 50, y: 78 },
-        { x: 80, y: 66 },
-      ];
-      const pos = positions[index] || { x: 50, y: 70 };
-
-      return {
-        id: `entity-${item.id ?? item.name ?? index}`,
-        label: item.name,
-        kind: "entity",
-        x: pos.x,
-        y: pos.y,
-        mentionCount: item.mention_count || 0,
-        lastMentionedLabel: formatMindDate(
-          item.last_mentioned_at || item.updated_at || item.created_at
-        ),
-      };
-    }),
-  ];
-
-  const resolvedSelectedMindNodeId = mindNodes.some(
-    (node) => node.id === selectedMindNodeId
-  )
-    ? selectedMindNodeId
-    : "you";
-
   const dashboardMotionState = hasActivated ? "animate" : "initial";
 
   return (
@@ -373,6 +283,12 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
             </div>
           </div>
 
+          <KnowledgeGraph
+            entities={entities}
+            entries={entries}
+            deadlines={deadlines}
+          />
+
           <motion.div
             className="dashboard-columns"
             variants={staggerContainer}
@@ -380,14 +296,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
             animate={dashboardMotionState}
           >
             <div className="dashboard-col-left">
-              <motion.div variants={cardEntrance}>
-                <MindLatelyCard
-                  nodes={mindNodes}
-                  selectedNodeId={resolvedSelectedMindNodeId}
-                  onSelectNode={setSelectedMindNodeId}
-                />
-              </motion.div>
-
               <motion.div variants={cardEntrance}>
                 <div className="grid-card">
                   <h3>Patterns Detected</h3>
