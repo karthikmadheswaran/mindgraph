@@ -1,0 +1,23 @@
+:root {
+  --bg: #f4efe8;
+  --bg-card: rgba(255, 253, 249, 0.72);
+  --bg-card-solid: #fffdf9;
+  --border: rgba(107, 93, 77, 0.16);
+  --border-light: rgba(107, 93, 77, 0.08);
+  --text-primary: #2c2418;
+  --text-secondary: #5f5244;
+  --text-muted: #8b7b69;
+  --accent: #8a9a7a;
+  --accent-soft: #d4ddd4;
+  --accent-warm: #c4695a;
+  --accent-warm-soft: #f5e6e4;
+  --font-display: "Georgia", "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 2px 12px rgba(44, 36, 24, 0.03);
+  --shadow-md: 0 8px 28px rgba(44, 36, 24, 0.06);
+  --shadow-lg: 0 16px 42px rgba(44, 36, 24, 0.08);
+}
