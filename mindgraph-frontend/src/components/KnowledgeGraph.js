@@ -3,8 +3,8 @@ import "../styles/knowledge-graph.css";
 
 const SELF_ID = "you";
 const MOBILE_BREAKPOINT = 768;
-const MOBILE_HEIGHT = 300;
-const DESKTOP_HEIGHT = 420;
+const MOBILE_HEIGHT = 320;
+const DESKTOP_HEIGHT = 440;
 const MAX_ENTRY_CLUSTERS = 6;
 
 function normalizeText(value) {
@@ -38,6 +38,8 @@ function getEntityKind(type) {
   if (type === "project") return "project";
   if (type === "person") return "person";
   if (type === "place") return "place";
+  if (type === "organization") return "organization";
+  if (type === "tool") return "tool";
   return "other";
 }
 
@@ -118,17 +120,18 @@ function getLinkDistance(link, nodeById) {
     typeof link.target === "string" ? link.target : link.target?.id
   );
 
-  if (link.kind === "semantic") return 80;
+  if (link.kind === "semantic") return 92;
+  if (link.kind === "project-deadline") return 82;
   if (
     source?.kind === "entry" ||
     target?.kind === "entry" ||
     source?.kind === "overflow" ||
     target?.kind === "overflow"
   ) {
-    return 140;
+    return 176;
   }
 
-  return 100;
+  return 112;
 }
 
 function getLinkStroke(link) {
@@ -141,24 +144,24 @@ function getLinkStroke(link) {
   }
 
   if (link.kind === "entity-entry") {
-    return "var(--text-muted, #6b5d4d)";
+    return "rgba(123, 106, 87, 0.68)";
   }
 
-  return "var(--border)";
+  return "rgba(123, 106, 87, 0.68)";
 }
 
 function getLinkOpacity(link) {
-  if (link.kind === "semantic") return 0.35;
-  if (link.kind === "project-deadline") return 0.22;
-  if (link.kind === "entity-entry") return 0.18;
-  return 0.12;
+  if (link.kind === "semantic") return 0.44;
+  if (link.kind === "project-deadline") return 0.34;
+  if (link.kind === "entity-entry") return 0.22;
+  return 0.22;
 }
 
 function getLinkWidth(link) {
   if (link.kind === "semantic") return 1.5;
-  if (link.kind === "project-deadline") return 1;
-  if (link.kind === "entity-entry") return 0.8;
-  return 0.5;
+  if (link.kind === "project-deadline") return 1.05;
+  if (link.kind === "entity-entry") return 0.9;
+  return 0.9;
 }
 
 function getNodeBaseOpacity(node) {
@@ -176,14 +179,14 @@ function getNodeBaseOpacity(node) {
     return 0.85;
   }
 
-  if (node.kind === "entry") return 0.55;
-  if (node.kind === "overflow") return 0.35;
+  if (node.kind === "entry") return 0.74;
+  if (node.kind === "overflow") return 0.62;
   return 0.85;
 }
 
 function getNodeLabelFill(node) {
   if (node.kind === "entry" || node.kind === "overflow") {
-    return "var(--text-muted, #8b7b69)";
+    return "#6a5947";
   }
 
   return getNodeColors(node).label;
@@ -228,17 +231,29 @@ function getNodeColors(node) {
         stroke: "rgba(107, 93, 77, 0.18)",
         label: "var(--text-primary, #2c2418)",
       };
+    case "organization":
+      return {
+        fill: "#c9d8cf",
+        stroke: "rgba(107, 93, 77, 0.2)",
+        label: "var(--text-primary, #2c2418)",
+      };
+    case "tool":
+      return {
+        fill: "#ddd3c6",
+        stroke: "rgba(107, 93, 77, 0.24)",
+        label: "var(--text-primary, #2c2418)",
+      };
     case "entry":
       return {
-        fill: "var(--accent-soft, #d4ddd4)",
-        stroke: "rgba(107, 93, 77, 0.18)",
-        label: "var(--text-muted, #8b7b69)",
+        fill: "rgba(212, 221, 212, 0.92)",
+        stroke: "rgba(107, 93, 77, 0.24)",
+        label: "#6a5947",
       };
     case "overflow":
       return {
-        fill: "var(--border, rgba(107, 93, 77, 0.16))",
-        stroke: "rgba(107, 93, 77, 0.3)",
-        label: "var(--text-muted, #8b7b69)",
+        fill: "rgba(107, 93, 77, 0.12)",
+        stroke: "rgba(107, 93, 77, 0.36)",
+        label: "#6a5947",
       };
     case "deadline":
       return {
@@ -248,8 +263,8 @@ function getNodeColors(node) {
       };
     default:
       return {
-        fill: "var(--border, rgba(107, 93, 77, 0.16))",
-        stroke: "rgba(107, 93, 77, 0.34)",
+        fill: "#ece3d7",
+        stroke: "rgba(107, 93, 77, 0.28)",
         label: "var(--text-primary, #2c2418)",
       };
   }
@@ -644,12 +659,24 @@ export default function KnowledgeGraph({
         const angle = (index / Math.max(1, graphNodes.length - 1)) * Math.PI * 2;
         const radialDistance =
           node.kind === "project"
-            ? 96
-            : node.kind === "entry"
-              ? 154
+            ? 112
+            : node.kind === "person"
+              ? 126
+              : node.kind === "place"
+                ? 150
+                : node.kind === "organization"
+                  ? 142
+                  : node.kind === "tool"
+                    ? 154
+                : node.kind === "other"
+                  ? 146
+                  : node.kind === "entry"
+              ? 196
+              : node.kind === "overflow"
+                ? 214
               : node.kind === "deadline"
-                ? 56
-                : 122;
+                ? 72
+                : 138;
 
         const x =
           previousPosition?.x ??
@@ -736,6 +763,10 @@ export default function KnowledgeGraph({
               return 1.9;
             }
 
+            if (link.kind === "primary" && touchesHoveredNode) {
+              return 1.05;
+            }
+
             return getLinkWidth(link);
           })
           .attr("stroke-opacity", (link) => {
@@ -746,21 +777,25 @@ export default function KnowledgeGraph({
               highlightedNodeIds.has(sourceId) && highlightedNodeIds.has(targetId);
 
             if (link.kind === "semantic" && touchesHoveredNode) {
-              return 0.8;
+              return 0.88;
+            }
+
+            if (link.kind === "primary" && touchesHoveredNode) {
+              return 0.42;
             }
 
             if (link.kind === "primary" && fullyWithinHighlightedSet) {
-              return 0.3;
+              return 0.24;
             }
 
             if (
               (link.kind === "entity-entry" || link.kind === "project-deadline")
-              && fullyWithinHighlightedSet
+              && touchesHoveredNode
             ) {
-              return 0.22;
+              return 0.3;
             }
 
-            return 0.03;
+            return 0.05;
           });
       };
 
@@ -787,7 +822,7 @@ export default function KnowledgeGraph({
         .force("center", d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
         .force(
           "collision",
-          d3.forceCollide().radius((node) => node.radius + 8).strength(0.8)
+          d3.forceCollide().radius((node) => node.radius + 12).strength(0.9)
         )
         .force(
           "x",
@@ -914,7 +949,7 @@ export default function KnowledgeGraph({
             : "knowledge-node-label"
         )
         .attr("text-anchor", "middle")
-        .attr("y", (node) => node.radius + 10)
+        .attr("y", (node) => node.radius + (node.kind === "entry" || node.kind === "overflow" ? 11 : 12))
         .attr("fill", (node) => getNodeLabelFill(node))
         .attr("font-size", (node) => getNodeLabelFontSize(node))
         .attr("font-weight", (node) => getNodeLabelWeight(node))

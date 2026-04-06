@@ -24,7 +24,7 @@
   margin-top: 4px;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .knowledge-graph-legend {
@@ -51,7 +51,7 @@
 
 .knowledge-graph-legend-label {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-primary);
 }
 
 .knowledge-graph-reset {
@@ -79,7 +79,7 @@
 .knowledge-graph-shell {
   position: relative;
   width: 100%;
-  height: 420px;
+  height: 440px;
   overflow: hidden;
 }
 
@@ -93,22 +93,19 @@
 
 .knowledge-link {
   transition: stroke-opacity 0.16s ease, stroke-width 0.16s ease;
+  stroke-linecap: round;
 }
 
 .knowledge-link-primary {
-  stroke: var(--border);
 }
 
 .knowledge-link-semantic {
-  stroke: var(--accent, #8a9a7a);
 }
 
 .knowledge-link-deadline {
-  stroke: var(--accent-warm, #c4695a);
 }
 
 .knowledge-link-expanded {
-  stroke: var(--text-muted);
 }
 
 .knowledge-node-label {
@@ -117,8 +114,10 @@
   pointer-events: none;
   paint-order: stroke;
   stroke: var(--bg);
-  stroke-width: 3px;
+  stroke-width: 4px;
   stroke-linejoin: round;
+  letter-spacing: 0.01em;
+  dominant-baseline: hanging;
 }
 
 .knowledge-node-label-self {
@@ -165,7 +164,7 @@
   margin-top: 2px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .knowledge-graph-tooltip-line {
@@ -189,7 +188,7 @@
   text-align: center;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   pointer-events: none;
 }
 
@@ -220,6 +219,6 @@
   }
 
   .knowledge-graph-shell {
-    height: 300px;
+    height: 320px;
   }
 }
