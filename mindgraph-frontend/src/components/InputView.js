@@ -56,7 +56,10 @@ function InputView() {
           }}
         />
         <div className="input-actions">
-          <span className="input-hint">Ctrl+Enter to submit</span>
+          <span className="input-hint">
+            {text.trim() ? `${text.trim().split(/\s+/).length} words - ` : ""}
+            Ctrl+Enter to submit
+          </span>
           <button
             className="submit-btn"
             onClick={handleSubmit}

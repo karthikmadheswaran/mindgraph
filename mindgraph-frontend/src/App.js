@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
+import Sidebar from "./components/Sidebar";
 import InputView from "./components/InputView";
 import Dashboard from "./components/Dashboard";
+import AskView from "./components/AskView";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./styles/app-shell.css";
@@ -12,7 +14,7 @@ import "./styles/responsive.css";
 export default function App() {
   const [session, setSession] = useState(null);
   const [view, setView] = useState("landing");
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [currentView, setCurrentView] = useState("dashboard");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,31 +54,19 @@ export default function App() {
       )}
 
       {view === "app" && session && (
-        <div className="app-shell">
-          <div className="topbar">
-            <div className="brand">MindGraph</div>
+        <div className="app-layout">
+          <Sidebar
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            userEmail={session.user?.email}
+            onLogout={handleLogout}
+          />
 
-            <div className="topbar-right">
-              <div className="nav-toggle">
-                <button
-                  className={`nav-btn ${view === "app" ? "active" : ""}`}
-                  onClick={() => setView("app")}
-                >
-                  Dashboard
-                </button>
-              </div>
-
-              <div className="user-email">{session.user?.email}</div>
-
-              <button className="logout-btn" onClick={handleLogout}>
-                Log out
-              </button>
-            </div>
-          </div>
-
-          <InputView />
-          <div style={{ height: 20 }} />
-          <Dashboard refreshKey={refreshKey} />
+          <main className="main-content">
+            {currentView === "write" && <InputView />}
+            {currentView === "dashboard" && <Dashboard />}
+            {currentView === "ask" && <AskView />}
+          </main>
         </div>
       )}
     </>

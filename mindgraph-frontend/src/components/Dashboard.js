@@ -1,20 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import ReactMarkdown from "react-markdown";
 import { API, authHeaders } from "../utils/auth";
 import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
 import { deadlineColor, deadlineLabel } from "../utils/dateHelpers";
 import MindLatelyCard from "./MindLatelyCard";
 import "../styles/dashboard.css";
 
-function Dashboard({ refreshKey }) {
+function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [entities, setEntities] = useState([]);
   const [patterns, setPatterns] = useState({});
-  const [askQuery, setAskQuery] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [asking, setAsking] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastSynced, setLastSynced] = useState("");
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
   const [selectedMindNodeId, setSelectedMindNodeId] = useState("you");
@@ -30,6 +28,13 @@ function Dashboard({ refreshKey }) {
     setDeadlines(snapshot.deadlines || []);
     setEntities(snapshot.entities || []);
     setPatterns(snapshot.patterns || {});
+    setRefreshing(false);
+    setLastSynced(
+      new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
   }, []);
 
   const fetchEntries = useCallback(async () => {
@@ -66,6 +71,7 @@ function Dashboard({ refreshKey }) {
       hasLoadedRef.current = true;
     } catch (err) {
       console.error("Initial dashboard load failed:", err);
+      setRefreshing(false);
     } finally {
       setLoadingData(false);
     }
@@ -85,6 +91,7 @@ function Dashboard({ refreshKey }) {
       hasLoadedRef.current = true;
     } catch (err) {
       console.error("Silent refresh failed:", err);
+      setRefreshing(false);
       clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = setTimeout(() => {
         runSilentRefresh();
@@ -115,11 +122,6 @@ function Dashboard({ refreshKey }) {
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
-    scheduleSilentRefresh(0);
-  }, [refreshKey, scheduleSilentRefresh]);
-
-  useEffect(() => {
-    if (!hasLoadedRef.current) return;
 
     const interval = setInterval(() => {
       scheduleSilentRefresh(0);
@@ -129,7 +131,7 @@ function Dashboard({ refreshKey }) {
   }, [scheduleSilentRefresh]);
 
   useEffect(() => {
-    if (!entries.some((e) => e.status === "processing")) return;
+    if (!entries.some((entry) => entry.status === "processing")) return;
 
     const interval = setInterval(async () => {
       try {
@@ -146,7 +148,7 @@ function Dashboard({ refreshKey }) {
   useEffect(() => {
     if (!expandedEntryId) return;
 
-    const entry = entries.find((e) => e.id === expandedEntryId);
+    const entry = entries.find((item) => item.id === expandedEntryId);
     if (!entry || entry.status !== "processing") return;
 
     setLiveStage(entry.pipeline_stage);
@@ -179,35 +181,12 @@ function Dashboard({ refreshKey }) {
       clearTimeout(retryTimeoutRef.current);
     };
   }, []);
-  const handleAsk = async () => {
-    if (!askQuery.trim()) return;
 
-    setAsking(true);
-    setAnswer("");
-
-    try {
-      const headers = await authHeaders();
-      const res = await fetch(
-        `${API}/ask?question=${encodeURIComponent(askQuery)}`,
-        {
-          method: "POST",
-          headers,
-        }
-      );
-      const data = await res.json();
-      setAnswer(data.answer);
-    } catch (err) {
-      console.error(err);
-    }
-
-    setAsking(false);
-  };
-
-  const projects = entities.filter((e) => e.entity_type === "project");
-  const people = entities.filter((e) => e.entity_type === "person");
-  const places = entities.filter((e) => e.entity_type === "place");
+  const projects = entities.filter((entity) => entity.entity_type === "project");
+  const people = entities.filter((entity) => entity.entity_type === "person");
+  const places = entities.filter((entity) => entity.entity_type === "place");
   const others = entities.filter(
-    (e) => !["project", "person", "place"].includes(e.entity_type)
+    (entity) => !["project", "person", "place"].includes(entity.entity_type)
   );
 
   const getRecencyTs = (item) => {
@@ -293,11 +272,11 @@ function Dashboard({ refreshKey }) {
     }),
   ];
 
-  useEffect(() => {
-    if (!mindNodes.some((node) => node.id === selectedMindNodeId)) {
-      setSelectedMindNodeId("you");
-    }
-  }, [selectedMindNodeId, mindNodes]);
+  const resolvedSelectedMindNodeId = mindNodes.some(
+    (node) => node.id === selectedMindNodeId
+  )
+    ? selectedMindNodeId
+    : "you";
 
   if (loadingData) {
     return (
@@ -316,208 +295,222 @@ function Dashboard({ refreshKey }) {
 
   return (
     <div className="dashboard">
-      <div className="ask-card">
-        <div className="ask-label">Ask your journal anything</div>
-        <div className="ask-row">
-          <input
-            value={askQuery}
-            onChange={(e) => setAskQuery(e.target.value)}
-            placeholder="What have I been working on lately?"
-            onKeyDown={(e) => e.key === "Enter" && handleAsk()}
-          />
-          <button onClick={handleAsk} disabled={asking}>
-            {asking ? "..." : "Ask"}
+      <div className="dashboard-header">
+        <h2 className="dashboard-title">Dashboard</h2>
+        <div className="dashboard-sync">
+          <span className="sync-time">
+            {lastSynced ? `Synced ${lastSynced}` : ""}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setRefreshing(true);
+              scheduleSilentRefresh(0);
+            }}
+            className="refresh-btn"
+            title="Refresh"
+            disabled={refreshing}
+          >
+            <svg
+              className={`refresh-icon ${refreshing ? "spinning" : ""}`}
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
           </button>
         </div>
-
-        {answer && (
-          <div className="ask-answer">
-            <ReactMarkdown>{answer}</ReactMarkdown>
-          </div>
-        )}
       </div>
 
-      <div className="dashboard-grid">
-        <MindLatelyCard
-          nodes={mindNodes}
-          selectedNodeId={selectedMindNodeId}
-          onSelectNode={setSelectedMindNodeId}
-        />
+      <div className="dashboard-columns">
+        <div className="dashboard-col-left">
+          <MindLatelyCard
+            nodes={mindNodes}
+            selectedNodeId={resolvedSelectedMindNodeId}
+            onSelectNode={setSelectedMindNodeId}
+          />
 
-        <div className="grid-card">
-          <h3>Active Projects</h3>
-          {projects.length === 0 ? (
-            <p className="empty">No projects detected yet</p>
-          ) : (
-            projects.slice(0, 5).map((p) => (
-              <div key={p.id} className="project-item">
-                <div className="project-name">{p.name}</div>
-                <div className="project-meta">
-                  Mentioned {p.mention_count} time{" "}
-                  {p.mention_count !== 1 ? "s" : ""}
-                  <span className="status-badge active">Active</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className="grid-card">
-          <h3>Upcoming Deadlines</h3>
-          {deadlines.length === 0 ? (
-            <p className="empty">No deadlines found</p>
-          ) : (
-            deadlines.slice(0, 5).map((d) => {
-              const color = deadlineColor(d.due_date);
-              const label = deadlineLabel(d.due_date);
-
-              return (
-                <div key={d.id} className="deadline-item">
-                  <span className="deadline-desc">{d.description}</span>
-                  <span
-                    className="deadline-badge"
-                    style={{ background: color.bg, color: color.text }}
-                  >
-                    {label}
-                  </span>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <div className="grid-card">
-          <h3>People & Entities</h3>
-          <div className="entity-group">
-            {[...people, ...places, ...others].slice(0, 15).map((e) => {
-              const color = entityColors[e.entity_type] || entityColors.task;
-
-              return (
-                <span
-                  key={e.id}
-                  className="entity-chip"
-                  style={{ background: color.bg, color: color.text }}
-                >
-                  {e.name}
-                  {e.mention_count > 1 && (
-                    <span className="mention-count">{e.mention_count}</span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid-card">
-          <h3>Patterns Detected</h3>
-          {!patterns.repeated_themes ? (
-            <p className="empty">Analyzing your patterns...</p>
-          ) : patterns.repeated_themes.length === 0 ? (
-            <p className="empty">No patterns yet — keep journaling!</p>
-          ) : (
-            patterns.repeated_themes.map((t, i) => (
-              <div key={i} className="pattern-item">
-                <div className="pattern-title">{t.theme}</div>
-                <div className="pattern-obs">{t.observation}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 4,
-        }}
-      >
-        <h3 className="section-title">Recent Entries</h3>
-        <button
-          onClick={() => scheduleSilentRefresh(0)}
-          className="refresh-btn"
-          title="Refresh"
-        >
-          Refresh
-        </button>
-      </div>
-
-      {entries.length === 0 ? (
-        <p className="empty" style={{ padding: 16 }}>
-          No entries yet. Start writing!
-                </p>
-      ) : (
-        entries.map((e) => (
-          <div
-            key={e.id}
-            className={`entry-card${e.status === "processing" ? " processing" : ""}`}
-            onClick={() => {
-              if (e.status === "processing") {
-                setExpandedEntryId(expandedEntryId === e.id ? null : e.id);
-              }
-            }}
-            style={e.status === "processing" ? { cursor: "pointer" } : {}}
-          >
-            <div className="entry-header">
-              {e.status === "processing" ? (
-                <>
-                  <span className="entry-title processing-title">
-                    <span className="spinner small" style={{ marginRight: 8 }} />
-                    Processing your entry...
-                  </span>
-                  <span className="entry-date">
-                    {new Date(e.created_at).toLocaleString()}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="entry-title">
-                    {e.auto_title || "Untitled Entry"}
-                  </span>
-                  <span className="entry-date">
-                    {new Date(e.created_at).toLocaleString()}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {e.status === "processing" ? (
-              <div className="entry-summary">
-                {expandedEntryId === e.id ? (
-                  <div className="pipeline-tracker">
-                    {pipelineOrder.map((stage, idx) => {
-                      const currentIndex = liveStage
-                        ? pipelineOrder.indexOf(liveStage)
-                        : -1;
-                      const isDone = idx < currentIndex;
-                      const isActive = stage === liveStage;
-
-                      return (
-                        <div
-                          key={stage}
-                          className={`pipeline-node ${
-                            isDone ? "done" : isActive ? "active" : ""
-                          }`}
-                        >
-                          <div className="pipeline-dot" />
-                          <div className="pipeline-label">
-                            {nodeLabels[stage] || stage}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <em>Click to view live progress...</em>
-                )}
-              </div>
+          <div className="grid-card">
+            <h3>Patterns Detected</h3>
+            {!patterns.repeated_themes ? (
+              <p className="empty">Analyzing your patterns...</p>
+            ) : patterns.repeated_themes.length === 0 ? (
+              <p className="empty">No patterns yet - keep journaling!</p>
             ) : (
-              <div className="entry-summary">{e.summary || e.raw_text}</div>
+              patterns.repeated_themes.map((theme, index) => (
+                <div key={`${theme.theme}-${index}`} className="pattern-item">
+                  <div className="pattern-title">{theme.theme}</div>
+                  <div className="pattern-obs">{theme.observation}</div>
+                </div>
+              ))
             )}
           </div>
-        ))
-      )}
+        </div>
+
+        <div className="dashboard-col-right">
+          <div className="grid-card">
+            <h3>Active Projects</h3>
+            {projects.length === 0 ? (
+              <p className="empty">No projects detected yet</p>
+            ) : (
+              projects.slice(0, 5).map((project) => (
+                <div key={project.id} className="project-item">
+                  <div className="project-name">{project.name}</div>
+                  <div className="project-meta">
+                    Mentioned {project.mention_count} time
+                    {project.mention_count !== 1 ? "s" : ""}
+                    <span className="status-badge active">Active</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="grid-card">
+            <h3>Upcoming Deadlines</h3>
+            {deadlines.length === 0 ? (
+              <p className="empty">No deadlines found</p>
+            ) : (
+              deadlines.slice(0, 5).map((deadline) => {
+                const color = deadlineColor(deadline.due_date);
+                const label = deadlineLabel(deadline.due_date);
+
+                return (
+                  <div key={deadline.id} className="deadline-item">
+                    <span className="deadline-desc">{deadline.description}</span>
+                    <span
+                      className="deadline-badge"
+                      style={{ background: color.bg, color: color.text }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="grid-card">
+            <h3>People & Entities</h3>
+            <div className="entity-group">
+              {[...people, ...places, ...others].slice(0, 15).map((entity) => {
+                const color =
+                  entityColors[entity.entity_type] || entityColors.task;
+
+                return (
+                  <span
+                    key={entity.id}
+                    className="entity-chip"
+                    style={{ background: color.bg, color: color.text }}
+                  >
+                    {entity.name}
+                    {entity.mention_count > 1 && (
+                      <span className="mention-count">{entity.mention_count}</span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="entries-section">
+        <div className="entries-header">
+          <h3 className="section-title">Recent Entries</h3>
+        </div>
+
+        {entries.length === 0 ? (
+          <p className="empty" style={{ padding: 16 }}>
+            No entries yet. Start writing!
+          </p>
+        ) : (
+          entries.map((entry) => (
+            <div
+              key={entry.id}
+              className={`entry-card${
+                entry.status === "processing" ? " processing" : ""
+              }`}
+              onClick={() => {
+                if (entry.status === "processing") {
+                  setExpandedEntryId(
+                    expandedEntryId === entry.id ? null : entry.id
+                  );
+                }
+              }}
+              style={entry.status === "processing" ? { cursor: "pointer" } : {}}
+            >
+              <div className="entry-header">
+                {entry.status === "processing" ? (
+                  <>
+                    <span className="entry-title processing-title">
+                      <span className="spinner small" style={{ marginRight: 8 }} />
+                      Processing your entry...
+                    </span>
+                    <span className="entry-date">
+                      {new Date(entry.created_at).toLocaleString()}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="entry-title">
+                      {entry.auto_title || "Untitled Entry"}
+                    </span>
+                    <span className="entry-date">
+                      {new Date(entry.created_at).toLocaleString()}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {entry.status === "processing" ? (
+                <div className="entry-summary">
+                  {expandedEntryId === entry.id ? (
+                    <div className="pipeline-tracker">
+                      {pipelineOrder.map((stage, idx) => {
+                        const currentIndex = liveStage
+                          ? pipelineOrder.indexOf(liveStage)
+                          : -1;
+                        const isDone = idx < currentIndex;
+                        const isActive = stage === liveStage;
+
+                        return (
+                          <div
+                            key={stage}
+                            className={`pipeline-node ${
+                              isDone ? "done" : isActive ? "active" : ""
+                            }`}
+                          >
+                            <div className="pipeline-dot" />
+                            <div className="pipeline-label">
+                              {nodeLabels[stage] || stage}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <em>Click to view live progress...</em>
+                  )}
+                </div>
+              ) : (
+                <div className="entry-summary">
+                  {entry.summary || entry.raw_text}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

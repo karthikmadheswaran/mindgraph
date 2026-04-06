@@ -18,7 +18,7 @@ function MindLatelyCard({ nodes, selectedNodeId, onSelectNode }) {
     }
 
     if (node.kind === "self") {
-      return "You are at the center of this snapshot — the projects, people, places, and ideas your mind has been returning to recently.";
+      return "You are at the center of this snapshot - the projects, people, places, and ideas your mind has been returning to recently.";
     }
 
     const mentionText =
@@ -27,7 +27,7 @@ function MindLatelyCard({ nodes, selectedNodeId, onSelectNode }) {
         : "Recently active";
 
     const recentText = node.lastMentionedLabel
-      ? ` · last seen ${node.lastMentionedLabel}`
+      ? ` - last seen ${node.lastMentionedLabel}`
       : "";
 
     if (node.kind === "project") {
@@ -38,7 +38,7 @@ function MindLatelyCard({ nodes, selectedNodeId, onSelectNode }) {
   };
 
   return (
-    <div className="grid-card mind-card mind-card-span">
+    <div className="grid-card mind-card">
       <div className="mind-card-header">
         <div>
           <h3>Your Mind Lately</h3>
