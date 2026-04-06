@@ -5,7 +5,9 @@ const SELF_ID = "you";
 const MOBILE_BREAKPOINT = 768;
 const MOBILE_HEIGHT = 320;
 const DESKTOP_HEIGHT = 440;
-const MAX_ENTRY_CLUSTERS = 6;
+const MAX_EXPANDED_ENTRY_CLUSTERS = 4;
+const MAX_EXPANDED_SECONDARY_NODES = 5;
+const PRIMARY_NODE_KINDS = new Set(["project", "person"]);
 
 function normalizeText(value) {
   return String(value || "").toLowerCase().trim();
@@ -68,6 +70,40 @@ function formatRelationTypeLabel(relationType) {
   return String(relationType || "").replace(/_/g, " ").trim();
 }
 
+function isPrimaryKind(kind) {
+  return PRIMARY_NODE_KINDS.has(kind);
+}
+
+function makePairKey(left, right) {
+  return [left, right].sort().join("::");
+}
+
+function entryMentionsLabel(entry, label) {
+  const needle = normalizeText(label);
+  if (!needle) return false;
+
+  const haystack = normalizeText(
+    `${entry.auto_title || ""} ${entry.summary || ""} ${entry.raw_text || ""}`
+  );
+
+  return haystack.includes(needle);
+}
+
+function sortNodesByImportance(left, right) {
+  const mentionDiff =
+    Number(right?.mentionCount || right?.count || 0) -
+    Number(left?.mentionCount || left?.count || 0);
+
+  if (mentionDiff !== 0) return mentionDiff;
+
+  const leftTime = left?.lastMentioned ? new Date(left.lastMentioned).getTime() : 0;
+  const rightTime = right?.lastMentioned
+    ? new Date(right.lastMentioned).getTime()
+    : 0;
+
+  return rightTime - leftTime;
+}
+
 function formatOutgoingRelation(relationType, otherLabel) {
   return `${formatRelationTypeLabel(relationType)} ${otherLabel}`.trim();
 }
@@ -121,6 +157,8 @@ function getLinkDistance(link, nodeById) {
   );
 
   if (link.kind === "semantic") return 92;
+  if (link.kind === "focus-primary") return 108;
+  if (link.kind === "focus-secondary") return 124;
   if (link.kind === "project-deadline") return 82;
   if (
     source?.kind === "entry" ||
@@ -139,6 +177,14 @@ function getLinkStroke(link) {
     return "var(--accent, #8a9a7a)";
   }
 
+  if (link.kind === "focus-primary") {
+    return "var(--accent, #8a9a7a)";
+  }
+
+  if (link.kind === "focus-secondary") {
+    return "rgba(123, 106, 87, 0.72)";
+  }
+
   if (link.kind === "project-deadline") {
     return "var(--accent-warm, #c4695a)";
   }
@@ -152,6 +198,8 @@ function getLinkStroke(link) {
 
 function getLinkOpacity(link) {
   if (link.kind === "semantic") return 0.44;
+  if (link.kind === "focus-primary") return 0.34;
+  if (link.kind === "focus-secondary") return 0.3;
   if (link.kind === "project-deadline") return 0.34;
   if (link.kind === "entity-entry") return 0.22;
   return 0.22;
@@ -159,6 +207,8 @@ function getLinkOpacity(link) {
 
 function getLinkWidth(link) {
   if (link.kind === "semantic") return 1.5;
+  if (link.kind === "focus-primary") return 1.15;
+  if (link.kind === "focus-secondary") return 1;
   if (link.kind === "project-deadline") return 1.05;
   if (link.kind === "entity-entry") return 0.9;
   return 0.9;
@@ -372,34 +422,16 @@ export default function KnowledgeGraph({
       };
     });
 
-    const sortedEntryClusters = Array.from(entryClusterMap.values())
-      .sort((a, b) => {
-        const countDiff = (b.count || 0) - (a.count || 0);
-        if (countDiff !== 0) return countDiff;
+    const primaryEntityNodes = entityNodes
+      .filter((node) => isPrimaryKind(node.kind))
+      .sort(sortNodesByImportance);
 
-        const aTime = a.lastMentioned ? new Date(a.lastMentioned).getTime() : 0;
-        const bTime = b.lastMentioned ? new Date(b.lastMentioned).getTime() : 0;
-        return bTime - aTime;
-      })
+    const sortedEntryClusters = Array.from(entryClusterMap.values())
+      .sort(sortNodesByImportance)
       .map((cluster) => ({
         ...cluster,
         id: cluster.nodeId,
       }));
-
-    const visibleEntryNodes = sortedEntryClusters.slice(0, MAX_ENTRY_CLUSTERS);
-    const hiddenEntryNodes = sortedEntryClusters.slice(MAX_ENTRY_CLUSTERS);
-    const overflowNode =
-      hiddenEntryNodes.length > 0
-        ? {
-            id: "entry-overflow",
-            label: `+${hiddenEntryNodes.length} more`,
-            kind: "overflow",
-            mentionCount: hiddenEntryNodes.length,
-            count: hiddenEntryNodes.length,
-            lastMentioned: hiddenEntryNodes[0]?.lastMentioned || null,
-            isInteractive: false,
-          }
-        : null;
 
     const selfNode = {
       id: SELF_ID,
@@ -409,7 +441,7 @@ export default function KnowledgeGraph({
       lastMentioned: null,
     };
 
-    const primaryLinks = [...entityNodes, ...visibleEntryNodes, ...(overflowNode ? [overflowNode] : [])].map((node) => ({
+    const primaryLinks = primaryEntityNodes.map((node) => ({
       id: `link-${SELF_ID}-${node.id}`,
       source: SELF_ID,
       target: node.id,
@@ -424,6 +456,8 @@ export default function KnowledgeGraph({
     const semanticNeighborIdsByNodeId = new Map();
     const relationSummariesByNodeId = new Map();
     const semanticLinks = [];
+    const baseSemanticLinks = [];
+    const primarySemanticLinkKeys = new Set();
 
     const addSemanticNeighbor = (nodeId, neighborId) => {
       if (!semanticNeighborIdsByNodeId.has(nodeId)) {
@@ -441,13 +475,19 @@ export default function KnowledgeGraph({
       }
 
       const linkId = `semantic-${relation.relation_type}-${relation.source_id}-${relation.target_id}-${index}`;
-      semanticLinks.push({
+      const semanticLink = {
         id: linkId,
         source: sourceNode.id,
         target: targetNode.id,
         kind: "semantic",
         relationType: relation.relation_type,
-      });
+      };
+      semanticLinks.push(semanticLink);
+
+      if (isPrimaryKind(sourceNode.kind) && isPrimaryKind(targetNode.kind)) {
+        baseSemanticLinks.push(semanticLink);
+        primarySemanticLinkKeys.add(makePairKey(sourceNode.id, targetNode.id));
+      }
 
       addSemanticNeighbor(sourceNode.id, targetNode.id);
       addSemanticNeighbor(targetNode.id, sourceNode.id);
@@ -477,16 +517,19 @@ export default function KnowledgeGraph({
       }
     });
 
-    const nodes = [selfNode, ...entityNodes, ...visibleEntryNodes, ...(overflowNode ? [overflowNode] : [])];
-    const links = [...primaryLinks, ...semanticLinks];
+    const nodes = [selfNode, ...primaryEntityNodes];
+    const links = [...primaryLinks, ...baseSemanticLinks];
 
     return {
       nodes,
       links,
       nodeMap: new Map(nodes.map((node) => [node.id, node])),
-      entryClusters: visibleEntryNodes,
+      allEntityNodeMap: new Map(entityNodes.map((node) => [node.id, node])),
+      entryClusters: sortedEntryClusters,
+      semanticLinks,
       semanticNeighborIdsByNodeId,
       relationSummariesByNodeId,
+      primarySemanticLinkKeys,
     };
   }, [deadlines, entities, processedEntries, relations]);
 
@@ -496,63 +539,217 @@ export default function KnowledgeGraph({
     }
 
     const expandedNode = baseGraph.nodeMap.get(expandedNodeId);
-    if (!expandedNode || expandedNode.kind === "self") {
+    if (!expandedNode || !isPrimaryKind(expandedNode.kind)) {
       return { nodes: [], links: [], connectedNodeIds: new Set() };
     }
 
-    if (expandedNode.kind === "project" && expandedNode.linkedDeadlines?.length) {
-      const deadlineNodes = expandedNode.linkedDeadlines.map((deadline, index) => ({
-        id: `deadline-${expandedNode.id}-${deadline.id ?? index}`,
-        label: formatShortDate(deadline.due_date) || truncateLabel(deadline.description, 10) || "Due",
-        kind: "deadline",
-        mentionCount: 1,
-        dueDate: deadline.due_date,
-        description: deadline.description,
-        parentId: expandedNode.id,
-      }));
+    const connectedNodeIds = new Set([expandedNode.id]);
+    const expansionNodes = [];
+    const expansionLinks = [];
+    const matchingClusters = baseGraph.entryClusters
+      .filter((cluster) =>
+        cluster.entries.some((entry) => entryMentionsLabel(entry, expandedNode.label))
+      )
+      .sort(sortNodesByImportance);
 
-      return {
-        nodes: deadlineNodes,
-        links: deadlineNodes.map((node) => ({
-          id: `link-${expandedNode.id}-${node.id}`,
-          source: expandedNode.id,
-          target: node.id,
-          kind: "project-deadline",
-        })),
-        connectedNodeIds: new Set(),
-      };
-    }
+    const focusPrimaryIds = new Set();
 
-    if (expandedNode.kind === "person" || expandedNode.kind === "place") {
-      const needle = normalizeText(expandedNode.label);
-      const connectedNodeIds = new Set();
+    baseGraph.semanticLinks.forEach((link) => {
+      const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+      const targetId = typeof link.target === "string" ? link.target : link.target.id;
+      let neighborId = null;
 
-      baseGraph.entryClusters.forEach((cluster) => {
-        const hasMatch = cluster.entries.some((entry) =>
-          normalizeText(`${entry.auto_title || ""} ${entry.raw_text || ""}`).includes(
-            needle
-          )
-        );
+      if (sourceId === expandedNode.id) neighborId = targetId;
+      if (targetId === expandedNode.id) neighborId = sourceId;
+      if (!neighborId) return;
 
-        if (hasMatch) {
-          connectedNodeIds.add(cluster.id);
+      const neighborNode = baseGraph.allEntityNodeMap.get(neighborId);
+      if (neighborNode && isPrimaryKind(neighborNode.kind)) {
+        focusPrimaryIds.add(neighborId);
+      }
+    });
+
+    baseGraph.nodes.forEach((node) => {
+      if (node.id === SELF_ID || node.id === expandedNode.id || !isPrimaryKind(node.kind)) {
+        return;
+      }
+
+      const hasSharedEntry = matchingClusters.some((cluster) =>
+        cluster.entries.some((entry) => entryMentionsLabel(entry, node.label))
+      );
+
+      if (hasSharedEntry) {
+        focusPrimaryIds.add(node.id);
+      }
+    });
+
+    Array.from(focusPrimaryIds)
+      .sort((leftId, rightId) => {
+        const leftNode = baseGraph.nodeMap.get(leftId);
+        const rightNode = baseGraph.nodeMap.get(rightId);
+        return sortNodesByImportance(leftNode, rightNode);
+      })
+      .forEach((nodeId) => {
+        connectedNodeIds.add(nodeId);
+
+        if (!baseGraph.primarySemanticLinkKeys.has(makePairKey(expandedNode.id, nodeId))) {
+          expansionLinks.push({
+            id: `focus-primary-${makePairKey(expandedNode.id, nodeId)}`,
+            source: expandedNode.id,
+            target: nodeId,
+            kind: "focus-primary",
+          });
         }
       });
 
-      return {
-        nodes: [],
-        links: Array.from(connectedNodeIds).map((targetId) => ({
-          id: `link-${expandedNode.id}-${targetId}`,
-          source: expandedNode.id,
-          target: targetId,
-          kind: "entity-entry",
-        })),
-        connectedNodeIds,
+    const secondaryNodeMap = new Map();
+
+    baseGraph.semanticLinks.forEach((link) => {
+      const sourceId = typeof link.source === "string" ? link.source : link.source.id;
+      const targetId = typeof link.target === "string" ? link.target : link.target.id;
+      let neighborId = null;
+
+      if (sourceId === expandedNode.id) neighborId = targetId;
+      if (targetId === expandedNode.id) neighborId = sourceId;
+      if (!neighborId) return;
+
+      const neighborNode = baseGraph.allEntityNodeMap.get(neighborId);
+      if (!neighborNode || isPrimaryKind(neighborNode.kind)) return;
+
+      secondaryNodeMap.set(neighborId, neighborNode);
+    });
+
+    baseGraph.allEntityNodeMap.forEach((node) => {
+      if (
+        node.id === expandedNode.id ||
+        isPrimaryKind(node.kind) ||
+        secondaryNodeMap.has(node.id)
+      ) {
+        return;
+      }
+
+      const appearsInSharedEntries = matchingClusters.some((cluster) =>
+        cluster.entries.some((entry) => entryMentionsLabel(entry, node.label))
+      );
+
+      if (appearsInSharedEntries) {
+        secondaryNodeMap.set(node.id, node);
+      }
+    });
+
+    const visibleEntryCount = Math.min(
+      matchingClusters.length,
+      MAX_EXPANDED_ENTRY_CLUSTERS
+    );
+    const hasOverflow = matchingClusters.length > MAX_EXPANDED_ENTRY_CLUSTERS;
+    const hasDeadline =
+      expandedNode.kind === "project" && expandedNode.linkedDeadlines?.length;
+    const limitedSecondaryNodes = Array.from(secondaryNodeMap.values())
+      .sort(sortNodesByImportance)
+      .slice(0, MAX_EXPANDED_SECONDARY_NODES);
+    const totalChildCount =
+      limitedSecondaryNodes.length +
+      visibleEntryCount +
+      (hasOverflow ? 1 : 0) +
+      (hasDeadline ? 1 : 0);
+
+    const secondaryNodes = limitedSecondaryNodes.map((node, index) => ({
+      ...node,
+      parentId: expandedNode.id,
+      slotIndex: index,
+      slotCount: totalChildCount,
+    }));
+
+    secondaryNodes.forEach((node) => {
+      connectedNodeIds.add(node.id);
+      expansionNodes.push(node);
+      expansionLinks.push({
+        id: `focus-secondary-${expandedNode.id}-${node.id}`,
+        source: expandedNode.id,
+        target: node.id,
+        kind: "focus-secondary",
+      });
+    });
+
+    const visibleEntryNodes = matchingClusters
+      .slice(0, MAX_EXPANDED_ENTRY_CLUSTERS)
+      .map((cluster, index) => ({
+        ...cluster,
+        id: `${expandedNode.id}::${cluster.id}`,
+        clusterId: cluster.id,
+        parentId: expandedNode.id,
+        slotIndex: secondaryNodes.length + index,
+        slotCount: totalChildCount,
+      }));
+
+    visibleEntryNodes.forEach((node) => {
+      connectedNodeIds.add(node.id);
+      expansionNodes.push(node);
+      expansionLinks.push({
+        id: `entity-entry-${expandedNode.id}-${node.id}`,
+        source: expandedNode.id,
+        target: node.id,
+        kind: "entity-entry",
+      });
+    });
+
+    const hiddenEntryClusters = matchingClusters.slice(MAX_EXPANDED_ENTRY_CLUSTERS);
+    if (hasOverflow) {
+      const overflowNode = {
+        id: `${expandedNode.id}::entry-overflow`,
+        label: `+${hiddenEntryClusters.length} more`,
+        kind: "overflow",
+        mentionCount: hiddenEntryClusters.length,
+        count: hiddenEntryClusters.length,
+        lastMentioned: hiddenEntryClusters[0]?.lastMentioned || null,
+        parentId: expandedNode.id,
+        slotIndex: secondaryNodes.length + visibleEntryNodes.length,
+        slotCount: totalChildCount,
+        isInteractive: false,
       };
+
+      connectedNodeIds.add(overflowNode.id);
+      expansionNodes.push(overflowNode);
+      expansionLinks.push({
+        id: `entity-entry-${expandedNode.id}-${overflowNode.id}`,
+        source: expandedNode.id,
+        target: overflowNode.id,
+        kind: "entity-entry",
+      });
     }
 
-    return { nodes: [], links: [], connectedNodeIds: new Set() };
-  }, [baseGraph.entryClusters, baseGraph.nodeMap, expandedNodeId]);
+    if (expandedNode.kind === "project" && expandedNode.linkedDeadlines?.length) {
+      const deadlineNode = {
+        id: `deadline-${expandedNode.id}-${expandedNode.linkedDeadlines[0].id ?? 0}`,
+        label:
+          formatShortDate(expandedNode.linkedDeadlines[0].due_date) ||
+          truncateLabel(expandedNode.linkedDeadlines[0].description, "entry") ||
+          "Due",
+        kind: "deadline",
+        mentionCount: 1,
+        dueDate: expandedNode.linkedDeadlines[0].due_date,
+        description: expandedNode.linkedDeadlines[0].description,
+        parentId: expandedNode.id,
+        slotIndex: totalChildCount - 1,
+        slotCount: totalChildCount,
+      };
+
+      connectedNodeIds.add(deadlineNode.id);
+      expansionNodes.push(deadlineNode);
+      expansionLinks.push({
+        id: `project-deadline-${expandedNode.id}-${deadlineNode.id}`,
+        source: expandedNode.id,
+        target: deadlineNode.id,
+        kind: "project-deadline",
+      });
+    }
+
+    return {
+      nodes: expansionNodes,
+      links: expansionLinks,
+      connectedNodeIds,
+    };
+  }, [baseGraph, expandedNodeId]);
 
   const graphNodes = useMemo(
     () => [...baseGraph.nodes, ...expansion.nodes],
@@ -564,7 +761,7 @@ export default function KnowledgeGraph({
     [baseGraph.links, expansion.links]
   );
 
-  const hasData = entities.length > 0 || processedEntries.length > 0;
+  const hasData = baseGraph.nodes.length > 1;
 
   useEffect(() => {
     if (expandedNodeId && !baseGraph.nodeMap.has(expandedNodeId)) {
@@ -657,36 +854,43 @@ export default function KnowledgeGraph({
           ? positionsRef.current.get(node.parentId)
           : null;
         const angle = (index / Math.max(1, graphNodes.length - 1)) * Math.PI * 2;
+        const childAngle =
+          typeof node.slotIndex === "number" && typeof node.slotCount === "number"
+            ? node.slotCount <= 1
+              ? Math.PI / 2
+              : Math.PI * 0.18 +
+                (node.slotIndex / Math.max(1, node.slotCount - 1)) * Math.PI * 0.64
+            : angle;
         const radialDistance =
           node.kind === "project"
-            ? 112
+            ? 120
             : node.kind === "person"
-              ? 126
+              ? 132
               : node.kind === "place"
-                ? 150
+                ? 118
                 : node.kind === "organization"
-                  ? 142
+                  ? 114
                   : node.kind === "tool"
-                    ? 154
+                    ? 122
                 : node.kind === "other"
-                  ? 146
+                  ? 126
                   : node.kind === "entry"
-              ? 196
+              ? 156
               : node.kind === "overflow"
-                ? 214
+                ? 176
               : node.kind === "deadline"
-                ? 72
+                ? 86
                 : 138;
 
         const x =
           previousPosition?.x ??
           (parentPosition
-            ? parentPosition.x + Math.cos(angle) * radialDistance
+            ? parentPosition.x + Math.cos(childAngle) * radialDistance
             : dimensions.width / 2 + Math.cos(angle) * radialDistance);
         const y =
           previousPosition?.y ??
           (parentPosition
-            ? parentPosition.y + Math.sin(angle) * radialDistance
+            ? parentPosition.y + Math.sin(childAngle) * radialDistance
             : dimensions.height / 2 + Math.sin(angle) * radialDistance);
 
         return {
@@ -715,6 +919,9 @@ export default function KnowledgeGraph({
           const classes = ["knowledge-link"];
           if (link.kind === "semantic") classes.push("knowledge-link-semantic");
           if (link.kind === "primary") classes.push("knowledge-link-primary");
+          if (link.kind === "focus-primary" || link.kind === "focus-secondary") {
+            classes.push("knowledge-link-focus");
+          }
           if (link.kind === "entity-entry") classes.push("knowledge-link-expanded");
           if (link.kind === "project-deadline") classes.push("knowledge-link-deadline");
           return classes.join(" ");
@@ -763,6 +970,10 @@ export default function KnowledgeGraph({
               return 1.9;
             }
 
+            if (link.kind === "focus-primary" && touchesHoveredNode) {
+              return 1.45;
+            }
+
             if (link.kind === "primary" && touchesHoveredNode) {
               return 1.05;
             }
@@ -780,6 +991,14 @@ export default function KnowledgeGraph({
               return 0.88;
             }
 
+            if (link.kind === "focus-primary" && touchesHoveredNode) {
+              return 0.72;
+            }
+
+            if (link.kind === "focus-secondary" && touchesHoveredNode) {
+              return 0.48;
+            }
+
             if (link.kind === "primary" && touchesHoveredNode) {
               return 0.42;
             }
@@ -792,7 +1011,7 @@ export default function KnowledgeGraph({
               (link.kind === "entity-entry" || link.kind === "project-deadline")
               && touchesHoveredNode
             ) {
-              return 0.3;
+              return 0.36;
             }
 
             return 0.05;
@@ -880,12 +1099,16 @@ export default function KnowledgeGraph({
         })
         .style("opacity", 0)
         .style("cursor", (node) =>
-          node.kind === "self" ? "grab" : node.kind === "overflow" ? "default" : "pointer"
+          node.kind === "self"
+            ? "grab"
+            : isPrimaryKind(node.kind)
+              ? "pointer"
+              : "default"
         )
         .call(dragBehavior)
         .on("click", (event, node) => {
           event.stopPropagation();
-          if (node.kind === "self" || node.kind === "deadline" || node.kind === "overflow") return;
+          if (!isPrimaryKind(node.kind)) return;
           setExpandedNodeId((current) => (current === node.id ? null : node.id));
         })
         .on("mouseenter", (event, node) => {
@@ -1050,7 +1273,7 @@ export default function KnowledgeGraph({
         <div>
           <h2 className="knowledge-graph-title">Your Mind Lately</h2>
           <p className="knowledge-graph-subtitle">
-            Drag to rearrange. Scroll to zoom. Hover for details.
+            Projects and people stay visible. Click a node to reveal context.
           </p>
         </div>
         <div className="knowledge-graph-legend" aria-hidden="true">
@@ -1089,7 +1312,7 @@ export default function KnowledgeGraph({
 
         {!hasData && (
           <div className="knowledge-graph-empty-note">
-            Start journaling to see your knowledge graph grow.
+            Keep journaling about projects and people to grow this map.
           </div>
         )}
 
