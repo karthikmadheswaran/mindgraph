@@ -14,6 +14,15 @@
   box-shadow: var(--shadow-sm);
 }
 
+.grid-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -96,6 +105,7 @@
 .empty {
   font-size: 13px;
   color: var(--text-muted);
+  line-height: 1.7;
 }
 
 .project-item {
@@ -184,7 +194,7 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(44, 36, 24, 0.08);
   font-size: 10px;
 }
 
@@ -219,6 +229,16 @@
   margin-bottom: 12px;
 }
 
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entries-empty {
+  padding: 16px;
+}
+
 .section-title {
   font-family: var(--font-display);
   font-size: 22px;
@@ -227,15 +247,12 @@
 }
 
 .entry-card {
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
-.entry-card + .entry-card {
-  margin-top: 16px;
-}
-
-.entry-card.processing:hover {
-  transform: translateY(-1px);
+.entry-card:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -245,6 +262,18 @@
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 10px;
+}
+
+.entry-header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .entry-title {
@@ -263,9 +292,32 @@
   white-space: nowrap;
 }
 
+.entry-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.entry-chevron.expanded {
+  transform: rotate(180deg);
+}
+
 .entry-summary {
   color: var(--text-secondary);
   line-height: 1.7;
+}
+
+.entry-expanded {
+  overflow: hidden;
+}
+
+.entry-raw-text {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 .pipeline-tracker {
@@ -281,7 +333,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--bg-card);
   border: 1px solid var(--border-light);
   color: var(--text-muted);
 }
@@ -319,5 +371,12 @@
 
   .dashboard-columns {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .entry-header-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 }

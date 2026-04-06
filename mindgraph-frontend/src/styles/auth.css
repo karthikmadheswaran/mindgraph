@@ -6,6 +6,7 @@
   justify-content: center;
   padding: 24px;
 }
+
 .auth-card {
   width: 100%;
   max-width: 420px;
@@ -17,6 +18,7 @@
   box-shadow: var(--shadow-lg);
   position: relative;
 }
+
 .auth-back {
   position: absolute;
   top: 18px;
@@ -31,30 +33,41 @@
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .auth-back:hover {
   color: var(--text-primary);
 }
-.auth-title {
+
+.auth-brand {
   font-family: var(--font-display);
   font-size: 42px;
   font-weight: 400;
   text-align: center;
+  width: 100%;
   margin-bottom: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
 }
+
 .auth-subtitle {
   text-align: center;
   color: var(--text-muted);
   margin-bottom: 28px;
   font-size: 14px;
 }
+
 .auth-tabs {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
   padding: 4px;
-  background: rgba(255,255,255,0.45);
+  background: var(--bg-card);
   border-radius: var(--radius-pill);
 }
+
 .auth-tab {
   flex: 1;
   padding: 10px;
@@ -67,32 +80,37 @@
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .auth-tab.active {
   background: var(--bg-card-solid);
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
 }
+
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
+
 .auth-input {
   width: 100%;
   padding: 14px 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.7);
+  background: var(--bg-card-solid);
   font-size: 15px;
   font-family: var(--font-body);
   color: var(--text-primary);
   outline: none;
   transition: all 0.2s;
 }
+
 .auth-input:focus {
   border-color: var(--accent);
-  background: #fff;
+  background: var(--bg-card-solid);
 }
+
 .auth-submit {
   margin-top: 8px;
   padding: 14px;
@@ -110,14 +128,17 @@
   align-items: center;
   min-height: 48px;
 }
+
 .auth-submit:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
+
 .auth-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
 .auth-error,
 .auth-info {
   margin-top: 16px;
@@ -126,10 +147,12 @@
   font-size: 13px;
   line-height: 1.5;
 }
+
 .auth-error {
   background: var(--accent-warm-soft);
   color: var(--accent-warm);
 }
+
 .auth-info {
   background: rgba(138, 154, 122, 0.12);
   color: #4f5c45;

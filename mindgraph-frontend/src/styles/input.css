@@ -75,20 +75,6 @@
   cursor: not-allowed;
 }
 
-.result-card {
-  padding: 16px 18px;
-  border-radius: 16px;
-  background: rgba(138, 154, 122, 0.12);
-  color: #4f5c45;
-  border: 1px solid rgba(138, 154, 122, 0.18);
-}
-
-.result-card.error {
-  background: var(--accent-warm-soft);
-  color: var(--accent-warm);
-  border-color: rgba(196, 105, 90, 0.18);
-}
-
 @media (max-width: 768px) {
   .input-view {
     min-height: calc(100vh - 64px - 48px);

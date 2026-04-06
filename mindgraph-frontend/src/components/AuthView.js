@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import "../styles/auth.css";
 
-function AuthView({ onAuth, onBack }) {
+function AuthView({ onAuth, onBack, onBrandClick }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,7 +60,9 @@ function AuthView({ onAuth, onBack }) {
           Back
         </button>
 
-        <h1 className="auth-title">MindGraph</h1>
+        <button type="button" className="auth-brand" onClick={onBrandClick}>
+          MindGraph
+        </button>
         <p className="auth-subtitle">Your AI-powered journal</p>
 
         <div className="auth-tabs">

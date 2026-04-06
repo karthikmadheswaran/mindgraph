@@ -58,6 +58,7 @@ export default function Sidebar({
   onViewChange,
   userEmail,
   onLogout,
+  onBrandClick,
 }) {
   const navItems = [
     { id: "write", label: "Write", icon: icons.write },
@@ -69,7 +70,13 @@ export default function Sidebar({
     <>
       <aside className="sidebar">
         <div className="sidebar-top">
-          <div className="sidebar-brand">MindGraph</div>
+          <button
+            type="button"
+            className="sidebar-brand"
+            onClick={onBrandClick}
+          >
+            MindGraph
+          </button>
           <nav className="sidebar-nav" aria-label="Primary">
             {navItems.map((item) => (
               <button

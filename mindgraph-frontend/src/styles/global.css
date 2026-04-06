@@ -23,6 +23,7 @@ body {
   height: 14px;
   border-width: 2px;
 }
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

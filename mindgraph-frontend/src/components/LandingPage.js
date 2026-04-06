@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/landing.css";
 
-function LandingPage({ onGetStarted }) {
+function LandingPage({ onGetStarted, onBrandClick }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -9,12 +9,62 @@ function LandingPage({ onGetStarted }) {
     return () => clearTimeout(t);
   }, []);
 
+  const features = [
+    {
+      icon: "\uD83C\uDFAF",
+      title: "Projects & Tasks",
+      desc: "Automatically tracks what you're working on",
+    },
+    {
+      icon: "\uD83D\uDCC5",
+      title: "Deadlines",
+      desc: "Extracts real commitments with dates",
+    },
+    {
+      icon: "\uD83D\uDC65",
+      title: "People",
+      desc: "Maps who you mention and how often",
+    },
+    {
+      icon: "\uD83D\uDD0D",
+      title: "Ask Your Journal",
+      desc: "RAG-powered Q&A over your entries",
+    },
+    {
+      icon: "\uD83E\uDDE0",
+      title: "Pattern Detection",
+      desc: "Finds emotional patterns and recurring themes",
+    },
+    {
+      icon: "\u26A1",
+      title: "7-Second Pipeline",
+      desc: "LangGraph + Gemini for real-time processing",
+    },
+  ];
+
+  const stack = [
+    "LangGraph",
+    "FastAPI",
+    "React",
+    "Supabase",
+    "Gemini API",
+    "pgvector",
+    "Langfuse",
+    "Railway",
+  ];
+
   return (
     <div className={`landing ${visible ? "visible" : ""}`}>
       <div className="landing-inner">
         <div className="hero">
           <div className="hero-badge">AI-Powered Journal</div>
-          <h1 className="hero-title">MindGraph</h1>
+          <button
+            type="button"
+            className="hero-title landing-brand"
+            onClick={onBrandClick}
+          >
+            MindGraph
+          </button>
           <p className="hero-subtitle">
             One textbox. Zero friction.
             <br />
@@ -22,7 +72,7 @@ function LandingPage({ onGetStarted }) {
           </p>
           <p className="hero-desc">
             Write freely. MindGraph&apos;s 7-node AI pipeline extracts people,
-            projects, deadlines, emotions, and patterns from your thoughts —
+            projects, deadlines, emotions, and patterns from your thoughts -
             automatically.
           </p>
           <button className="hero-cta" onClick={onGetStarted}>
@@ -59,7 +109,7 @@ function LandingPage({ onGetStarted }) {
               <h3>AI processes</h3>
               <p>
                 A 7-node LangGraph pipeline classifies, extracts entities,
-                detects deadlines, and summarizes — in under 7 seconds.
+                detects deadlines, and summarizes - in under 7 seconds.
               </p>
             </div>
             <div className="how-card">
@@ -76,71 +126,44 @@ function LandingPage({ onGetStarted }) {
         <div className="features-section">
           <h2 className="section-label">What MindGraph captures</h2>
           <div className="features-grid">
-            {[
-              {
-                icon: "🎯",
-                title: "Projects & Tasks",
-                desc: "Automatically tracks what you're working on",
-              },
-              {
-                icon: "📅",
-                title: "Deadlines",
-                desc: "Extracts real commitments with dates",
-              },
-              {
-                icon: "👥",
-                title: "People",
-                desc: "Maps who you mention and how often",
-              },
-              {
-                icon: "🔍",
-                title: "Ask Your Journal",
-                desc: "RAG-powered Q&A over your entries",
-              },
-              {
-                icon: "🧠",
-                title: "Pattern Detection",
-                desc: "Finds emotional patterns and recurring themes",
-              },
-              {
-                icon: "⚡",
-                title: "7-Second Pipeline",
-                desc: "LangGraph + Gemini for real-time processing",
-              },
-            ].map((f, i) => (
-              <div key={i} className="feature-card">
-                <span className="feature-icon">{f.icon}</span>
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
+            {features.map((feature) => (
+              <div key={feature.title} className="feature-card">
+                <span className="feature-icon">{feature.icon}</span>
+                <h3>{feature.title}</h3>
+                <p>{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="stack-section">
+          <div className="dev-divider">
+            <span className="dev-divider-line" />
+            <span className="dev-divider-text">For Developers</span>
+            <span className="dev-divider-line" />
+          </div>
           <h2 className="section-label">Built with</h2>
           <div className="stack-pills">
-            {[
-              "LangGraph",
-              "FastAPI",
-              "React",
-              "Supabase",
-              "Gemini API",
-              "pgvector",
-              "Langfuse",
-              "Railway",
-            ].map((t) => (
-              <span key={t} className="stack-pill">
-                {t}
+            {stack.map((tech) => (
+              <span key={tech} className="stack-pill">
+                {tech}
               </span>
             ))}
           </div>
+          <a
+            href="https://github.com/karthikmadheswaran/mindgraph"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-link"
+          >
+            View on GitHub -&gt;
+          </a>
         </div>
 
         <div className="bottom-cta">
           <p>Your thoughts deserve better than a blank notes app.</p>
           <button className="hero-cta" onClick={onGetStarted}>
-            Get started — free
+            Get started - free
             <svg
               width="16"
               height="16"

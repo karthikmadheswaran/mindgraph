@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
@@ -15,6 +15,15 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [view, setView] = useState("landing");
   const [currentView, setCurrentView] = useState("dashboard");
+  const dashboardRef = useRef(null);
+
+  const handlePublicBrandClick = () => {
+    setView("landing");
+  };
+
+  const handleAppBrandClick = () => {
+    setCurrentView("dashboard");
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,7 +49,10 @@ export default function App() {
   return (
     <>
       {view === "landing" && (
-        <LandingPage onGetStarted={() => setView("auth")} />
+        <LandingPage
+          onGetStarted={() => setView("auth")}
+          onBrandClick={handlePublicBrandClick}
+        />
       )}
 
       {view === "auth" && (
@@ -50,6 +62,7 @@ export default function App() {
             setView("app");
           }}
           onBack={() => setView("landing")}
+          onBrandClick={handlePublicBrandClick}
         />
       )}
 
@@ -60,12 +73,27 @@ export default function App() {
             onViewChange={setCurrentView}
             userEmail={session.user?.email}
             onLogout={handleLogout}
+            onBrandClick={handleAppBrandClick}
           />
 
           <main className="main-content">
-            {currentView === "write" && <InputView />}
-            {currentView === "dashboard" && <Dashboard />}
-            {currentView === "ask" && <AskView />}
+            <div style={{ display: currentView === "write" ? "block" : "none" }}>
+              <InputView
+                isActive={currentView === "write"}
+                onEntrySubmitted={() => dashboardRef.current?.triggerRefresh()}
+              />
+            </div>
+            <div
+              style={{ display: currentView === "dashboard" ? "block" : "none" }}
+            >
+              <Dashboard
+                ref={dashboardRef}
+                isActive={currentView === "dashboard"}
+              />
+            </div>
+            <div style={{ display: currentView === "ask" ? "block" : "none" }}>
+              <AskView isActive={currentView === "ask"} />
+            </div>
           </main>
         </div>
       )}
