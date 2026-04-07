@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-
+import re
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -14,6 +14,53 @@ supabase = create_client(
     os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
 )
 
+import re
+
+
+def base_normalize(text: str) -> str:
+    """
+    Small shared normalizer for comparison purposes.
+
+    Safe cleanup only:
+    - convert to string
+    - trim outer whitespace
+    - lowercase
+    - collapse repeated internal whitespace
+
+    Do NOT remove punctuation or spaces here.
+    """
+    value = str(text or "").strip().lower()
+    value = " ".join(value.split())
+    return value
+
+def project_match_key(name: str) -> str:
+    """
+    Comparison-only key for project names.
+
+    More aggressive than base_normalize, but only for projects.
+    Keeps meaningful technical symbols like +, but treats dots as separators
+    so variants like:
+    - Node.js Migration
+    - Node JS Migration
+    can align.
+    """
+    value = base_normalize(name)
+    value = re.sub(r"[._-]+", " ", value)      # dot / underscore / hyphen -> space
+    value = re.sub(r"[^a-z0-9 + ]", "", value) # keep spaces and +
+    value = value.replace(" ", "")             # join words for comparison
+    return value
+
+def get_match_key(name: str, entity_type: str) -> str:
+    """
+    Return the comparison key based on entity type.
+
+    For now:
+    - projects use project_match_key()
+    - everything else uses base_normalize()
+    """
+    if entity_type == "project":
+        return project_match_key(name)
+    return base_normalize(name)
 
 def should_accept_semantic_match(incoming_name: str, matched_name: str, similarity: float) -> bool:
     incoming = incoming_name.strip().lower()
@@ -80,21 +127,44 @@ async def resolve_entities(entities: list[dict], user_id: str, summary: str) -> 
         normalized_name = entity_name.lower()
         input_lookup_key = make_entity_lookup_key(entity_name, entity_type)
 
-        exact_match = (
+        existing_same_type_resp = (
             supabase.table("entities")
             .select("id, name, entity_type, mention_count")
             .eq("user_id", user_id)
             .eq("entity_type", entity_type)
-            .ilike("name", entity_name)
-            .limit(1)
             .execute()
         )
 
-        if exact_match.data and len(exact_match.data) > 0:
-            matched = exact_match.data[0]
+        existing_same_type = existing_same_type_resp.data or []
+        incoming_base_name = base_normalize(entity_name)
+
+        print(f"[debug] incoming entity_name={entity_name!r}")
+        print(f"[debug] incoming_base_name={incoming_base_name!r}")
+        print(f"[debug] existing_same_type_count={len(existing_same_type)}")
+
+        for row in existing_same_type:
+            existing_name = row.get("name", "")
+            existing_base_name = base_normalize(existing_name)
+            print(
+                f"[debug] compare existing_name={existing_name!r} "
+                f"existing_base_name={existing_base_name!r} "
+                f"equal={existing_base_name == incoming_base_name}"
+            )
+
+        exact_match_row = next(
+            (
+                row
+                for row in existing_same_type
+                if base_normalize(row.get("name", "")) == incoming_base_name
+            ),
+            None,
+        )
+
+        if exact_match_row:
+            matched = exact_match_row
 
             print(
-                f"EXACT CASE-INSENSITIVE MATCH: incoming='{entity_name}' "
+                f"EXACT BASE-NORMALIZED MATCH: incoming='{entity_name}' "
                 f"normalized='{normalized_name}' matched='{matched['name']}'"
             )
 
@@ -109,6 +179,53 @@ async def resolve_entities(entities: list[dict], user_id: str, summary: str) -> 
             entity_lookup[make_entity_lookup_key(matched["name"], matched["entity_type"])] = matched["id"]
             continue
 
+        normalized_candidates = []
+
+        if entity_type == "project":
+            incoming_key = get_match_key(entity_name, entity_type)
+
+            existing_projects_resp = (
+                supabase.table("entities")
+                .select("id, name, entity_type, mention_count")
+                .eq("user_id", user_id)
+                .eq("entity_type", "project")
+                .execute()
+            )
+
+            existing_projects = existing_projects_resp.data or []
+
+            normalized_candidates = [
+                proj
+                for proj in existing_projects
+                if get_match_key(proj.get("name", ""), "project") == incoming_key
+            ]
+
+            if normalized_candidates:
+                print(
+                    f"[store] normalized project candidates for '{entity_name}': "
+                    f"{[p.get('name') for p in normalized_candidates]}"
+                )
+            
+            if entity_type == "project" and len(normalized_candidates) == 1:
+                    matched = normalized_candidates[0]
+
+                    print(
+                    f"NORMALIZED PROJECT MATCH ACCEPTED: '{entity_name}' -> '{matched['name']}'"
+                    )
+
+                    current_mention_count = matched.get("mention_count", 0) or 0
+
+                    supabase.table("entities").update({
+                        "mention_count": current_mention_count + 1,
+                        "last_seen_at": datetime.now().isoformat(),
+                        "context_summary": summary,
+                    }).eq("id", matched["id"]).execute()
+
+                    entity_ids.append(matched["id"])
+                    entity_lookup[input_lookup_key] = matched["id"]
+                    entity_lookup[make_entity_lookup_key(matched["name"], matched["entity_type"])] = matched["id"]
+                    continue
+            
         description = f"{entity_name} ({entity_type}) - {summary}"
         embedding = await get_embedding(description)
 

@@ -72,8 +72,11 @@ Switched all pipeline nodes from `gemini-3-flash-preview` to `gemini-2.5-flash-l
 ### Async Background Processing
 Railway's proxy breaks long SSE connections. Switched to a "acknowledge fast, process slow" pattern — the frontend gets an instant response while the pipeline runs in the background. Dashboard polls for status with silent background sync.
 
-### Entity Linking with Semantic Gating
-Case-insensitive exact-name lookup first, then embedding similarity with an acceptance gate. Prevents both duplicates ("MindGraph" vs "Mindgraph") and false merges (unrelated entities with high similarity scores).
+### Entity Linking — 3-Stage Matching Pipeline
+Three-tier matching to handle real-world entity name variants without duplicate rows:
+1. **Base-normalized exact match** — case-insensitive, whitespace-collapsed comparison. Catches "MindGraph" vs "mindgraph".
+2. **Project-normalized match** — for `project` entities only: dots, hyphens, and underscores treated as spaces, then words joined. Catches "Node.js Migration" vs "Node JS Migration" vs "Node-JS-Migration".
+3. **Semantic embedding match** with acceptance gating — embedding cosine similarity with a substring-aware threshold (≥0.95 always accepted; ≥0.90 if one name is a substring of the other). Catches paraphrased references while blocking false merges.
 
 ### RAG Evaluation — 4 Runs, Data-Driven Decisions
 Built a 15-test-case evaluation framework measuring retrieval F1, keyword accuracy, and hallucination rate. Used it to:
@@ -85,7 +88,7 @@ Built a 15-test-case evaluation framework measuring retrieval F1, keyword accura
 Dashboard reads cached insights from the database (instant load). Fresh insights regenerate in the background after each new journal entry. Pattern detection powered by Gemini 2.5 Pro.
 
 ### Prompt Engineering with Evaluation Harnesses
-Each LLM node (deadline, entity extraction) has its own test suite with precision/recall/F1 metrics. Entity extraction: 100% precision, F1=0.981. Deadline detection: tightened prompt eliminated false positives like "new possibilities" and "hope for a better day".
+Each LLM node (deadline, entity extraction) has its own test suite with precision/recall/F1 metrics. Entity extraction: **41-test harness, 100% pass rate, F1=1.0** — improved from 75.6% by adding targeted invalid-output examples, reflective-context signal phrases, sub-feature stripping normalization, and unknown-tool/comparison-mention rules. Deadline detection: tightened prompt eliminated false positives like "new possibilities" and "hope for a better day".
 
 ---
 

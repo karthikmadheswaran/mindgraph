@@ -7,6 +7,17 @@ from app.nodes.store import supabase, store_entities
 USER_ID = "0f5acdab-736f-4f44-883e-c897145a5ff2"
 RUN_ID = f"entitytest_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
 
+def should_accept_semantic_match(incoming_name: str, matched_name: str, similarity: float) -> bool:
+    incoming = incoming_name.strip().lower()
+    matched = matched_name.strip().lower()
+
+    if similarity >= 0.95:
+        return True
+
+    if incoming in matched or matched in incoming:
+        return similarity >= 0.90
+
+    return False
 
 def normalize_name(name: str) -> str:
     return " ".join(name.strip().lower().split())
