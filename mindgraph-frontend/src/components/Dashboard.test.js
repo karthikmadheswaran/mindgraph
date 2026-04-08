@@ -2,6 +2,10 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Dashboard from "./Dashboard";
 import { authHeaders } from "../utils/auth";
+import {
+  clearDashboardSnapshotCache,
+  prefetchDashboardSnapshot,
+} from "../utils/dashboardSnapshot";
 
 jest.mock("./AnimatedView", () => ({
   __esModule: true,
@@ -21,6 +25,8 @@ jest.mock("../utils/auth", () => ({
     "Content-Type": "application/json",
   }),
 }));
+
+const TEST_USER_ID = "user-1";
 
 const pendingDeadline = {
   id: "deadline-1",
@@ -52,63 +58,88 @@ const hiddenProject = {
   running_summary: "A junk inferred project",
 };
 
-function jsonResponse(payload) {
+function jsonResponse(payload, ok = true) {
   return Promise.resolve({
-    ok: true,
+    ok,
     json: () => Promise.resolve(payload),
   });
 }
 
-describe("Dashboard deadlines", () => {
+function createFetchHandler({
+  entries = [],
+  deadlines = [pendingDeadline, snoozedDeadline],
+  projects = [activeProject, hiddenProject],
+  onDeadlinePatch,
+  onProjectPatch,
+} = {}) {
+  return (input, options = {}) => {
+    const url = typeof input === "string" ? input : input.url;
+    const method = options.method || "GET";
+
+    if (url.endsWith("/entries")) {
+      return jsonResponse({ entries });
+    }
+
+    if (url === "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed") {
+      return jsonResponse({ deadlines });
+    }
+
+    if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
+      return jsonResponse({ projects });
+    }
+
+    if (url.endsWith("/entities")) {
+      return jsonResponse({ entities: [] });
+    }
+
+    if (url.endsWith("/entity-relations")) {
+      return jsonResponse({ relations: [] });
+    }
+
+    if (url.endsWith("/insights/patterns")) {
+      return jsonResponse({ data: {} });
+    }
+
+    if (url.endsWith(`/deadlines/${pendingDeadline.id}/status`) && method === "PATCH") {
+      return onDeadlinePatch
+        ? onDeadlinePatch(input, options)
+        : jsonResponse({ ...pendingDeadline, status: "snoozed" });
+    }
+
+    if (url.includes("/projects/") && url.endsWith("/status") && method === "PATCH") {
+      return onProjectPatch
+        ? onProjectPatch(input, options)
+        : jsonResponse({ ...activeProject, status: "hidden" });
+    }
+
+    throw new Error(`Unhandled fetch: ${method} ${url}`);
+  };
+}
+
+describe("Dashboard data and actions", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    clearDashboardSnapshotCache();
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    clearDashboardSnapshotCache();
+    jest.clearAllMocks();
   });
 
   test("fetches pending and snoozed deadlines once, then toggles visibility locally", async () => {
     let rejectPatchRequest;
 
-    global.fetch.mockImplementation((input, options = {}) => {
-      const url = typeof input === "string" ? input : input.url;
-      const method = options.method || "GET";
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onDeadlinePatch: () =>
+          new Promise((_, reject) => {
+            rejectPatchRequest = reject;
+          }),
+      })
+    );
 
-      if (url.endsWith("/entries")) {
-        return jsonResponse({ entries: [] });
-      }
-
-      if (url === "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed") {
-        return jsonResponse({ deadlines: [pendingDeadline, snoozedDeadline] });
-      }
-
-      if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
-        return jsonResponse({ projects: [activeProject, hiddenProject] });
-      }
-
-      if (url.endsWith("/entities")) {
-        return jsonResponse({ entities: [] });
-      }
-
-      if (url.endsWith("/entity-relations")) {
-        return jsonResponse({ relations: [] });
-      }
-
-      if (url.endsWith("/insights/patterns")) {
-        return jsonResponse({ data: {} });
-      }
-
-      if (url.endsWith(`/deadlines/${pendingDeadline.id}/status`) && method === "PATCH") {
-        return new Promise((_, reject) => {
-          rejectPatchRequest = reject;
-        });
-      }
-
-      throw new Error(`Unhandled fetch: ${method} ${url}`);
-    });
-
-    render(<Dashboard isActive />);
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
 
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
     expect(screen.queryByText("Send invoice")).not.toBeInTheDocument();
@@ -152,50 +183,23 @@ describe("Dashboard deadlines", () => {
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
   });
 
-  test("fetches active and hidden projects once, then toggles visibility locally", async () => {
+  test("fetches active and hidden projects once, toggles locally, and omits archive", async () => {
     let rejectPatchRequest;
 
-    global.fetch.mockImplementation((input, options = {}) => {
-      const url = typeof input === "string" ? input : input.url;
-      const method = options.method || "GET";
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onProjectPatch: () =>
+          new Promise((_, reject) => {
+            rejectPatchRequest = reject;
+          }),
+      })
+    );
 
-      if (url.endsWith("/entries")) {
-        return jsonResponse({ entries: [] });
-      }
-
-      if (url === "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed") {
-        return jsonResponse({ deadlines: [] });
-      }
-
-      if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
-        return jsonResponse({ projects: [activeProject, hiddenProject] });
-      }
-
-      if (url.endsWith("/entities")) {
-        return jsonResponse({ entities: [] });
-      }
-
-      if (url.endsWith("/entity-relations")) {
-        return jsonResponse({ relations: [] });
-      }
-
-      if (url.endsWith("/insights/patterns")) {
-        return jsonResponse({ data: {} });
-      }
-
-      if (url.endsWith(`/projects/${activeProject.id}/status`) && method === "PATCH") {
-        return new Promise((_, reject) => {
-          rejectPatchRequest = reject;
-        });
-      }
-
-      throw new Error(`Unhandled fetch: ${method} ${url}`);
-    });
-
-    render(<Dashboard isActive />);
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
 
     expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
     expect(screen.queryByText("App.js")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/archive mindgraph/i)).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(
@@ -234,5 +238,61 @@ describe("Dashboard deadlines", () => {
       await screen.findByText("Failed to update project. Please try again.")
     ).toBeInTheDocument();
     expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+  });
+
+  test("uses a prefetched snapshot cache without showing the loading state", async () => {
+    global.fetch.mockImplementation(createFetchHandler());
+
+    await prefetchDashboardSnapshot({ userId: TEST_USER_ID });
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(screen.queryByText(/loading your journal/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Mindgraph")).toBeInTheDocument();
+
+    const projectFetchCount = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/projects?status=active,hidden"
+    ).length;
+
+    expect(projectFetchCount).toBe(1);
+  });
+
+  test("falls back to a fresh mount fetch after a failed prefetch", async () => {
+    const successfulHandler = createFetchHandler();
+    let failDeadlineOnce = true;
+
+    global.fetch.mockImplementation((input, options = {}) => {
+      const url = typeof input === "string" ? input : input.url;
+
+      if (
+        failDeadlineOnce &&
+        url ===
+          "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed"
+      ) {
+        failDeadlineOnce = false;
+        return jsonResponse({}, false);
+      }
+
+      return successfulHandler(input, options);
+    });
+
+    await expect(
+      prefetchDashboardSnapshot({ userId: TEST_USER_ID })
+    ).rejects.toThrow("Failed to fetch deadlines");
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+    expect(screen.queryByText(/loading your journal/i)).not.toBeInTheDocument();
+
+    const deadlineFetchCount = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed"
+    ).length;
+
+    expect(deadlineFetchCount).toBe(2);
   });
 });

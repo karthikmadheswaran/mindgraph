@@ -1,15 +1,14 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
 import { deadlineColor, deadlineLabel } from "../utils/dateHelpers";
+import {
+  getCachedDashboardSnapshot,
+  loadDashboardSnapshot,
+  subscribeDashboardSnapshot,
+  updateDashboardSnapshot,
+} from "../utils/dashboardSnapshot";
 import AnimatedView from "./AnimatedView";
 import KnowledgeGraph from "./KnowledgeGraph";
 import Toast from "./Toast";
@@ -46,43 +45,48 @@ const normalizeProject = (project) => ({
 const normalizeDeadlines = (items = []) => items.map(normalizeDeadline);
 const normalizeProjects = (items = []) => items.map(normalizeProject);
 
+const formatSyncTime = (timestamp = Date.now()) =>
+  new Date(timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 const sortDeadlines = (items) =>
   [...items].sort(
     (left, right) => new Date(left.due_date || 0) - new Date(right.due_date || 0)
   );
 
-const sortProjects = (items) =>
-  [...items].sort((left, right) => {
-    const mentionDiff = (right.mention_count || 0) - (left.mention_count || 0);
-    if (mentionDiff !== 0) return mentionDiff;
+function Dashboard({ isActive, userId }) {
+  const cachedSnapshot = getCachedDashboardSnapshot({ userId });
 
-    return (left.name || "").localeCompare(right.name || "");
-  });
-
-const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
-  const [entries, setEntries] = useState([]);
-  const [allDeadlines, setAllDeadlines] = useState([]);
-  const [allProjects, setAllProjects] = useState([]);
-  const [entities, setEntities] = useState([]);
-  const [relations, setRelations] = useState([]);
-  const [patterns, setPatterns] = useState({});
-  const [loadingData, setLoadingData] = useState(true);
+  const [entries, setEntries] = useState(cachedSnapshot?.entries || []);
+  const [allDeadlines, setAllDeadlines] = useState(
+    normalizeDeadlines(cachedSnapshot?.deadlines || [])
+  );
+  const [allProjects, setAllProjects] = useState(
+    normalizeProjects(cachedSnapshot?.projects || [])
+  );
+  const [entities, setEntities] = useState(cachedSnapshot?.entities || []);
+  const [relations, setRelations] = useState(cachedSnapshot?.relations || []);
+  const [patterns, setPatterns] = useState(cachedSnapshot?.patterns || {});
+  const [loadingData, setLoadingData] = useState(!cachedSnapshot);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastSynced, setLastSynced] = useState("");
+  const [lastSynced, setLastSynced] = useState(
+    cachedSnapshot?.fetchedAt ? formatSyncTime(cachedSnapshot.fetchedAt) : ""
+  );
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
   const [hasActivated, setHasActivated] = useState(isActive);
+  const [snapshotReady, setSnapshotReady] = useState(Boolean(cachedSnapshot));
   const [showHidden, setShowHidden] = useState(false);
   const [showSnoozed, setShowSnoozed] = useState(false);
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [toast, setToast] = useState(null);
 
-  const hasLoadedRef = useRef(false);
+  const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
   const retryTimeoutRef = useRef(null);
-  const refreshInFlightRef = useRef(false);
-  const queuedRefreshRef = useRef(false);
 
   const applySnapshot = useCallback((snapshot) => {
     setEntries(snapshot.entries || []);
@@ -91,13 +95,10 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
+    setLoadingData(false);
     setRefreshing(false);
-    setLastSynced(
-      new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    );
+    setSnapshotReady(true);
+    setLastSynced(formatSyncTime(snapshot.fetchedAt));
   }, []);
 
   const fetchEntries = useCallback(async () => {
@@ -105,92 +106,13 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return fetch(`${API}/entries`, { headers }).then((r) => r.json());
   }, []);
 
-  const fetchDeadlines = useCallback(async () => {
-    const headers = await authHeaders();
-    const response = await fetch(`${API}/deadlines?status=pending,snoozed`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch deadlines");
-    }
-
-    return response.json();
-  }, []);
-
-  const fetchProjects = useCallback(async () => {
-    const headers = await authHeaders();
-    const response = await fetch(`${API}/projects?status=active,hidden`, {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch projects");
-    }
-
-    return response.json();
-  }, []);
-
-  const fetchSnapshot = useCallback(async () => {
-    const headers = await authHeaders();
-
-    const [
-      entriesData,
-      deadlinesData,
-      projectsData,
-      entitiesData,
-      relationsData,
-      patternsData,
-    ] =
-      await Promise.all([
-        fetch(`${API}/entries`, { headers }).then((r) => r.json()),
-        fetchDeadlines(),
-        fetchProjects(),
-        fetch(`${API}/entities`, { headers }).then((r) => r.json()),
-        fetch(`${API}/entity-relations`, { headers })
-          .then((r) => r.json())
-          .catch(() => ({ relations: [] })),
-        fetch(`${API}/insights/patterns`, { headers })
-          .then((r) => r.json())
-          .catch(() => ({ data: {} })),
-      ]);
-
-    return {
-      entries: entriesData.entries || [],
-      deadlines: deadlinesData.deadlines || [],
-      projects: projectsData.projects || [],
-      entities: entitiesData.entities || [],
-      relations: relationsData.relations || [],
-      patterns: patternsData.data || {},
-    };
-  }, [fetchDeadlines, fetchProjects]);
-
-  const initialLoad = useCallback(async () => {
-    if (hasLoadedRef.current) return;
-
-    setLoadingData(true);
-    try {
-      const snapshot = await fetchSnapshot();
-      applySnapshot(snapshot);
-      hasLoadedRef.current = true;
-    } catch {
-      setRefreshing(false);
-    } finally {
-      setLoadingData(false);
-    }
-  }, [fetchSnapshot, applySnapshot]);
-
   const runSilentRefresh = useCallback(async () => {
-    if (refreshInFlightRef.current) {
-      queuedRefreshRef.current = true;
+    if (!userId) {
       return;
     }
 
-    refreshInFlightRef.current = true;
-
     try {
-      const snapshot = await fetchSnapshot();
-      applySnapshot(snapshot);
+      await loadDashboardSnapshot({ force: true, userId });
       hasLoadedRef.current = true;
     } catch {
       setRefreshing(false);
@@ -198,15 +120,8 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       retryTimeoutRef.current = setTimeout(() => {
         runSilentRefresh();
       }, 1500);
-    } finally {
-      refreshInFlightRef.current = false;
-
-      if (queuedRefreshRef.current) {
-        queuedRefreshRef.current = false;
-        runSilentRefresh();
-      }
     }
-  }, [fetchSnapshot, applySnapshot]);
+  }, [userId]);
 
   const scheduleSilentRefresh = useCallback(
     (delay = 500) => {
@@ -218,17 +133,49 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     [runSilentRefresh]
   );
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      triggerRefresh: () => scheduleSilentRefresh(0),
-    }),
-    [scheduleSilentRefresh]
-  );
+  useEffect(() => {
+    if (!userId) {
+      return undefined;
+    }
+
+    return subscribeDashboardSnapshot((snapshot) => {
+      if (!snapshot) {
+        return;
+      }
+
+      hasLoadedRef.current = true;
+      applySnapshot(snapshot);
+    });
+  }, [applySnapshot, userId]);
 
   useEffect(() => {
-    initialLoad();
-  }, [initialLoad]);
+    if (!userId || hasLoadedRef.current) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    setLoadingData(true);
+
+    loadDashboardSnapshot({ userId })
+      .then((snapshot) => {
+        if (cancelled || hasLoadedRef.current || !snapshot) {
+          return;
+        }
+
+        hasLoadedRef.current = true;
+        applySnapshot(snapshot);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRefreshing(false);
+          setLoadingData(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applySnapshot, userId]);
 
   useEffect(() => {
     if (isActive && !hasActivated) {
@@ -237,14 +184,14 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   }, [isActive, hasActivated]);
 
   useEffect(() => {
-    if (!hasLoadedRef.current) return;
+    if (!snapshotReady) return;
 
     const interval = setInterval(() => {
       scheduleSilentRefresh(0);
     }, 45000);
 
     return () => clearInterval(interval);
-  }, [scheduleSilentRefresh]);
+  }, [scheduleSilentRefresh, snapshotReady]);
 
   useEffect(() => {
     if (!entries.some((entry) => entry.status === "processing")) return;
@@ -252,14 +199,31 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     const interval = setInterval(async () => {
       try {
         const data = await fetchEntries();
-        setEntries(data.entries || []);
+        const nextEntries = data.entries || [];
+
+        setEntries(nextEntries);
+        updateDashboardSnapshot(
+          (snapshot) =>
+            snapshot
+              ? {
+                  ...snapshot,
+                  entries: nextEntries,
+                }
+              : snapshot,
+          { userId }
+        );
+
+        if (!nextEntries.some((entry) => entry.status === "processing")) {
+          clearInterval(interval);
+          scheduleSilentRefresh(0);
+        }
       } catch {
         // silently fail
       }
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [entries, fetchEntries]);
+  }, [entries, fetchEntries, scheduleSilentRefresh, userId]);
 
   useEffect(() => {
     if (!expandedEntryId) return;
@@ -336,9 +300,54 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return response.json();
   }, []);
 
+  const setProjectsState = useCallback(
+    (updater) => {
+      setAllProjects((current) => {
+        const nextProjects =
+          typeof updater === "function" ? updater(current) : updater;
+
+        updateDashboardSnapshot(
+          (snapshot) =>
+            snapshot
+              ? {
+                  ...snapshot,
+                  projects: nextProjects,
+                }
+              : snapshot,
+          { userId }
+        );
+
+        return nextProjects;
+      });
+    },
+    [userId]
+  );
+
+  const setDeadlinesState = useCallback(
+    (updater) => {
+      setAllDeadlines((current) => {
+        const nextDeadlines =
+          typeof updater === "function" ? updater(current) : updater;
+
+        updateDashboardSnapshot(
+          (snapshot) =>
+            snapshot
+              ? {
+                  ...snapshot,
+                  deadlines: nextDeadlines,
+                }
+              : snapshot,
+          { userId }
+        );
+
+        return nextDeadlines;
+      });
+    },
+    [userId]
+  );
+
   const handleProjectStatusChange = useCallback(
     async (project, nextStatus) => {
-      const isTerminalStatus = nextStatus === "archived";
       const normalizedProject = normalizeProject(project);
 
       setProjectActionState((current) => ({
@@ -346,46 +355,28 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         [project.id]: true,
       }));
 
-      if (isTerminalStatus) {
-        setAllProjects((current) =>
-          current.filter((item) => item.id !== project.id)
-        );
-      } else {
-        setAllProjects((current) =>
-          current.map((item) =>
-            item.id === project.id ? { ...item, status: nextStatus } : item
-          )
-        );
-      }
+      setProjectsState((current) =>
+        current.map((item) =>
+          item.id === project.id ? { ...item, status: nextStatus } : item
+        )
+      );
 
       try {
         const updatedProject = normalizeProject(
           await updateProjectStatus(project.id, nextStatus)
         );
 
-        if (!isTerminalStatus) {
-          setAllProjects((current) =>
-            current.map((item) =>
-              item.id === project.id ? updatedProject : item
-            )
-          );
-        }
+        setProjectsState((current) =>
+          current.map((item) =>
+            item.id === project.id ? updatedProject : item
+          )
+        );
       } catch (error) {
-        if (isTerminalStatus) {
-          setAllProjects((current) => {
-            if (current.some((item) => item.id === project.id)) {
-              return current;
-            }
-
-            return sortProjects([...current, normalizedProject]);
-          });
-        } else {
-          setAllProjects((current) =>
-            current.map((item) =>
-              item.id === project.id ? normalizedProject : item
-            )
-          );
-        }
+        setProjectsState((current) =>
+          current.map((item) =>
+            item.id === project.id ? normalizedProject : item
+          )
+        );
 
         setToast({
           message: error.message || "Failed to update project. Please try again.",
@@ -399,7 +390,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         });
       }
     },
-    [updateProjectStatus]
+    [setProjectsState, updateProjectStatus]
   );
 
   const handleDeadlineStatusChange = useCallback(
@@ -413,11 +404,11 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       }));
 
       if (isTerminalStatus) {
-        setAllDeadlines((current) =>
+        setDeadlinesState((current) =>
           current.filter((item) => item.id !== deadline.id)
         );
       } else {
-        setAllDeadlines((current) =>
+        setDeadlinesState((current) =>
           current.map((item) =>
             item.id === deadline.id ? { ...item, status: nextStatus } : item
           )
@@ -430,7 +421,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         );
 
         if (!isTerminalStatus) {
-          setAllDeadlines((current) =>
+          setDeadlinesState((current) =>
             current.map((item) =>
               item.id === deadline.id ? updatedDeadline : item
             )
@@ -438,7 +429,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         }
       } catch (error) {
         if (isTerminalStatus) {
-          setAllDeadlines((current) => {
+          setDeadlinesState((current) => {
             if (current.some((item) => item.id === deadline.id)) {
               return current;
             }
@@ -446,7 +437,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
             return sortDeadlines([...current, normalizedDeadline]);
           });
         } else {
-          setAllDeadlines((current) =>
+          setDeadlinesState((current) =>
             current.map((item) =>
               item.id === deadline.id ? normalizedDeadline : item
             )
@@ -465,7 +456,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         });
       }
     },
-    [updateDeadlineStatus]
+    [setDeadlinesState, updateDeadlineStatus]
   );
 
   const deadlines = showSnoozed
@@ -659,58 +650,32 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
                                   </svg>
                                 </button>
                               ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="deadline-action-btn"
-                                    aria-label={`Hide ${project.name}`}
-                                    title="Hide"
-                                    disabled={isUpdating}
-                                    onClick={() =>
-                                      handleProjectStatusChange(project, "hidden")
-                                    }
+                                <button
+                                  type="button"
+                                  className="deadline-action-btn"
+                                  aria-label={`Hide ${project.name}`}
+                                  title="Hide"
+                                  disabled={isUpdating}
+                                  onClick={() =>
+                                    handleProjectStatusChange(project, "hidden")
+                                  }
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
                                   >
-                                    <svg
-                                      width="14"
-                                      height="14"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      aria-hidden="true"
-                                    >
-                                      <path d="M10.73 5.08A11.2 11.2 0 0 1 12 5c6.5 0 10 7 10 7a17.7 17.7 0 0 1-2.18 2.93" />
-                                      <path d="M6.61 6.61A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.39-1.61" />
-                                      <line x1="2" y1="2" x2="22" y2="22" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="deadline-action-btn"
-                                    aria-label={`Archive ${project.name}`}
-                                    title="Archive"
-                                    disabled={isUpdating}
-                                    onClick={() =>
-                                      handleProjectStatusChange(project, "archived")
-                                    }
-                                  >
-                                    <svg
-                                      width="14"
-                                      height="14"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2.2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      aria-hidden="true"
-                                    >
-                                      <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                  </button>
-                                </>
+                                    <path d="M10.73 5.08A11.2 11.2 0 0 1 12 5c6.5 0 10 7 10 7a17.7 17.7 0 0 1-2.18 2.93" />
+                                    <path d="M6.61 6.61A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.39-1.61" />
+                                    <line x1="2" y1="2" x2="22" y2="22" />
+                                  </svg>
+                                </button>
                               )}
                             </div>
                           </div>
@@ -1054,6 +1019,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       />
     </AnimatedView>
   );
-});
+}
 
 export default Dashboard;

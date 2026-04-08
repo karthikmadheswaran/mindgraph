@@ -1,5 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabaseClient";
+import { API, authHeaders } from "./utils/auth";
+import {
+  clearDashboardSnapshotCache,
+  loadDashboardSnapshot,
+  prefetchDashboardSnapshot,
+  updateDashboardSnapshot,
+} from "./utils/dashboardSnapshot";
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
 import Sidebar from "./components/Sidebar";
@@ -11,55 +18,289 @@ import "./styles/global.css";
 import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
+const APP_VIEWS = new Set(["write", "dashboard", "ask"]);
+const DEFAULT_APP_VIEW = "write";
+
+const getHashView = () => {
+  const hash = window.location.hash.replace(/^#/, "").trim().toLowerCase();
+  return APP_VIEWS.has(hash) ? hash : DEFAULT_APP_VIEW;
+};
+
+const setHashView = (nextView, { replace = false } = {}) => {
+  const normalizedView = APP_VIEWS.has(nextView) ? nextView : DEFAULT_APP_VIEW;
+  const nextHash = `#${normalizedView}`;
+
+  if (replace) {
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}${nextHash}`
+    );
+  } else if (window.location.hash !== nextHash) {
+    window.location.hash = normalizedView;
+  }
+
+  return normalizedView;
+};
+
+const clearHashView = () => {
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${window.location.search}`
+  );
+};
+
+const hasProcessingEntries = (entries = []) =>
+  entries.some((entry) => entry.status === "processing");
+
 export default function App() {
+  const initialAppView = getHashView();
   const [session, setSession] = useState(null);
   const [view, setView] = useState("landing");
-  const [currentView, setCurrentView] = useState("write");
-  const [hasVisitedDashboard, setHasVisitedDashboard] = useState(false);
-  const dashboardRef = useRef(null);
+  const [currentView, setCurrentView] = useState(initialAppView);
+  const [hasVisitedDashboard, setHasVisitedDashboard] = useState(
+    initialAppView === "dashboard"
+  );
+
+  const hasBootstrappedAuthViewRef = useRef(false);
+  const activeUserIdRef = useRef(null);
+  const backgroundEntriesPollRef = useRef(null);
+
+  const stopBackgroundEntriesPolling = useCallback(() => {
+    if (backgroundEntriesPollRef.current) {
+      clearInterval(backgroundEntriesPollRef.current);
+      backgroundEntriesPollRef.current = null;
+    }
+  }, []);
+
+  const syncCurrentViewFromHash = useCallback((replaceInvalid = false) => {
+    const normalizedView = getHashView();
+
+    if (replaceInvalid || window.location.hash !== `#${normalizedView}`) {
+      setHashView(normalizedView, { replace: true });
+    }
+
+    setCurrentView(normalizedView);
+
+    if (normalizedView === "dashboard") {
+      setHasVisitedDashboard(true);
+    }
+
+    return normalizedView;
+  }, []);
+
+  const navigateToAppView = useCallback((nextView) => {
+    const normalizedView = setHashView(nextView);
+    setCurrentView(normalizedView);
+
+    if (normalizedView === "dashboard") {
+      setHasVisitedDashboard(true);
+    }
+  }, []);
+
+  const startBackgroundEntriesPolling = useCallback((userId) => {
+    if (!userId || hasVisitedDashboard || backgroundEntriesPollRef.current) {
+      return;
+    }
+
+    backgroundEntriesPollRef.current = setInterval(async () => {
+      try {
+        const headers = await authHeaders();
+        const data = await fetch(`${API}/entries`, { headers }).then((response) =>
+          response.json()
+        );
+        const nextEntries = data.entries || [];
+
+        updateDashboardSnapshot(
+          (snapshot) =>
+            snapshot
+              ? {
+                  ...snapshot,
+                  entries: nextEntries,
+                }
+              : snapshot,
+          { userId }
+        );
+
+        if (!hasProcessingEntries(nextEntries)) {
+          stopBackgroundEntriesPolling();
+          await loadDashboardSnapshot({ force: true, userId });
+        }
+      } catch {
+        // silently fail
+      }
+    }, 4000);
+  }, [hasVisitedDashboard, stopBackgroundEntriesPolling]);
+
+  const syncBackgroundEntriesPolling = useCallback((entries, userId) => {
+    if (hasVisitedDashboard || !hasProcessingEntries(entries)) {
+      stopBackgroundEntriesPolling();
+      return;
+    }
+
+    startBackgroundEntriesPolling(userId);
+  }, [hasVisitedDashboard, startBackgroundEntriesPolling, stopBackgroundEntriesPolling]);
 
   const handlePublicBrandClick = () => {
     setView("landing");
   };
 
   const handleAppBrandClick = () => {
-    setCurrentView("dashboard");
+    navigateToAppView("write");
   };
 
+  const handleEntrySubmitted = useCallback(() => {
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      return;
+    }
+
+    loadDashboardSnapshot({ force: true, userId })
+      .then((snapshot) => {
+        if (!hasVisitedDashboard) {
+          syncBackgroundEntriesPolling(snapshot?.entries || [], userId);
+        }
+      })
+      .catch(() => {
+        // silently fail
+      });
+  }, [hasVisitedDashboard, session?.user?.id, syncBackgroundEntriesPolling]);
+
   useEffect(() => {
+    const handleHashChange = () => {
+      const normalizedView = getHashView();
+      setCurrentView(normalizedView);
+
+      if (normalizedView === "dashboard") {
+        setHasVisitedDashboard(true);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const handleSignedOut = () => {
+      activeUserIdRef.current = null;
+      hasBootstrappedAuthViewRef.current = false;
+      stopBackgroundEntriesPolling();
+      clearDashboardSnapshotCache();
+      clearHashView();
+      setSession(null);
+      setView("landing");
+      setCurrentView(DEFAULT_APP_VIEW);
+      setHasVisitedDashboard(false);
+    };
+
+    const handleSignedIn = (nextSession) => {
+      const nextUserId = nextSession.user?.id || null;
+
+      if (activeUserIdRef.current && activeUserIdRef.current !== nextUserId) {
+        clearDashboardSnapshotCache();
+        setHasVisitedDashboard(false);
+      }
+
+      activeUserIdRef.current = nextUserId;
+      setSession(nextSession);
+      setView("app");
+
+      if (!hasBootstrappedAuthViewRef.current) {
+        hasBootstrappedAuthViewRef.current = true;
+        syncCurrentViewFromHash(true);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      if (!isMounted) {
+        return;
+      }
+
       if (session) {
-        setCurrentView("write");
-        setView("app");
+        handleSignedIn(session);
+      } else {
+        handleSignedOut();
       }
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      if (session) {
-        if (event === "SIGNED_IN") {
-          setCurrentView("write");
-        }
-        setView("app");
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!isMounted) {
+        return;
       }
-      else setView("landing");
+
+      if (nextSession) {
+        handleSignedIn(nextSession);
+      } else {
+        handleSignedOut();
+      }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+    return () => {
+      isMounted = false;
+      stopBackgroundEntriesPolling();
+      subscription.unsubscribe();
+    };
+  }, [stopBackgroundEntriesPolling, syncCurrentViewFromHash]);
 
   useEffect(() => {
     if (currentView === "dashboard") {
       setHasVisitedDashboard(true);
     }
   }, [currentView]);
+
+  useEffect(() => {
+    if (hasVisitedDashboard) {
+      stopBackgroundEntriesPolling();
+    }
+  }, [hasVisitedDashboard, stopBackgroundEntriesPolling]);
+
+  useEffect(() => {
+    const userId = session?.user?.id;
+
+    if (view !== "app" || !userId || hasVisitedDashboard) {
+      stopBackgroundEntriesPolling();
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    prefetchDashboardSnapshot({ userId })
+      .then((snapshot) => {
+        if (cancelled) {
+          return;
+        }
+
+        syncBackgroundEntriesPolling(snapshot?.entries || [], userId);
+      })
+      .catch(() => {
+        // prefetch failures should not block the app shell
+      });
+
+    return () => {
+      cancelled = true;
+      stopBackgroundEntriesPolling();
+    };
+  }, [
+    hasVisitedDashboard,
+    session?.user?.id,
+    stopBackgroundEntriesPolling,
+    syncBackgroundEntriesPolling,
+    view,
+  ]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <>
@@ -72,9 +313,13 @@ export default function App() {
 
       {view === "auth" && (
         <AuthView
-          onAuth={(session) => {
-            setSession(session);
-            setCurrentView("write");
+          onAuth={(nextSession) => {
+            clearDashboardSnapshotCache();
+            activeUserIdRef.current = nextSession.user?.id || null;
+            hasBootstrappedAuthViewRef.current = true;
+            setSession(nextSession);
+            setHasVisitedDashboard(false);
+            setCurrentView(setHashView(DEFAULT_APP_VIEW, { replace: true }));
             setView("app");
           }}
           onBack={() => setView("landing")}
@@ -86,7 +331,7 @@ export default function App() {
         <div className="app-layout">
           <Sidebar
             currentView={currentView}
-            onViewChange={setCurrentView}
+            onViewChange={navigateToAppView}
             userEmail={session.user?.email}
             onLogout={handleLogout}
             onBrandClick={handleAppBrandClick}
@@ -96,7 +341,7 @@ export default function App() {
             <div style={{ display: currentView === "write" ? "block" : "none" }}>
               <InputView
                 isActive={currentView === "write"}
-                onEntrySubmitted={() => dashboardRef.current?.triggerRefresh()}
+                onEntrySubmitted={handleEntrySubmitted}
               />
             </div>
             {hasVisitedDashboard && (
@@ -104,8 +349,9 @@ export default function App() {
                 style={{ display: currentView === "dashboard" ? "block" : "none" }}
               >
                 <Dashboard
-                  ref={dashboardRef}
+                  key={session.user?.id || session.user?.email}
                   isActive={currentView === "dashboard"}
+                  userId={session.user?.id}
                 />
               </div>
             )}
