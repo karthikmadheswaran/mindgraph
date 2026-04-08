@@ -68,7 +68,7 @@ describe("Dashboard deadlines", () => {
     jest.resetAllMocks();
   });
 
-  test("fetches default deadlines, refetches snoozed deadlines, and rolls back a failed optimistic update", async () => {
+  test("fetches pending and snoozed deadlines once, then toggles visibility locally", async () => {
     let rejectPatchRequest;
 
     global.fetch.mockImplementation((input, options = {}) => {
@@ -79,20 +79,12 @@ describe("Dashboard deadlines", () => {
         return jsonResponse({ entries: [] });
       }
 
-      if (url.includes("/deadlines?status=pending,snoozed")) {
+      if (url === "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed") {
         return jsonResponse({ deadlines: [pendingDeadline, snoozedDeadline] });
       }
 
-      if (url.endsWith("/deadlines")) {
-        return jsonResponse({ deadlines: [pendingDeadline] });
-      }
-
-      if (url.includes("/projects?status=active,hidden")) {
+      if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
         return jsonResponse({ projects: [activeProject, hiddenProject] });
-      }
-
-      if (url.endsWith("/projects")) {
-        return jsonResponse({ projects: [activeProject] });
       }
 
       if (url.endsWith("/entities")) {
@@ -119,21 +111,10 @@ describe("Dashboard deadlines", () => {
     render(<Dashboard isActive />);
 
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
+    expect(screen.queryByText("Send invoice")).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(authHeaders).toHaveBeenCalled();
-      expect(
-        global.fetch.mock.calls.some(
-          ([url]) => url === "https://mindgraph-production.up.railway.app/deadlines"
-        )
-      ).toBe(true);
-    });
-
-    userEvent.click(screen.getByLabelText(/show snoozed/i));
-
-    expect(await screen.findByText("Send invoice")).toBeInTheDocument();
-
-    await waitFor(() => {
       expect(
         global.fetch.mock.calls.some(
           ([url]) =>
@@ -143,11 +124,25 @@ describe("Dashboard deadlines", () => {
       ).toBe(true);
     });
 
+    const deadlineFetchCountBeforeToggle = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed"
+    ).length;
+
+    userEvent.click(screen.getByLabelText(/show snoozed/i));
+
+    expect(await screen.findByText("Send invoice")).toBeInTheDocument();
+    const deadlineFetchCountAfterToggle = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed"
+    ).length;
+    expect(deadlineFetchCountAfterToggle).toBe(deadlineFetchCountBeforeToggle);
+
     userEvent.click(screen.getByLabelText(/snooze finish report/i));
 
-    await waitFor(() => {
-      expect(screen.queryByText("Finish report")).not.toBeInTheDocument();
-    });
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
 
     rejectPatchRequest(new Error("Failed to update deadline. Please try again."));
 
@@ -157,7 +152,7 @@ describe("Dashboard deadlines", () => {
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
   });
 
-  test("fetches default projects, refetches hidden projects, and rolls back a failed optimistic hide", async () => {
+  test("fetches active and hidden projects once, then toggles visibility locally", async () => {
     let rejectPatchRequest;
 
     global.fetch.mockImplementation((input, options = {}) => {
@@ -168,16 +163,12 @@ describe("Dashboard deadlines", () => {
         return jsonResponse({ entries: [] });
       }
 
-      if (url.endsWith("/deadlines")) {
+      if (url === "https://mindgraph-production.up.railway.app/deadlines?status=pending,snoozed") {
         return jsonResponse({ deadlines: [] });
       }
 
-      if (url.includes("/projects?status=active,hidden")) {
+      if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
         return jsonResponse({ projects: [activeProject, hiddenProject] });
-      }
-
-      if (url.endsWith("/projects")) {
-        return jsonResponse({ projects: [activeProject] });
       }
 
       if (url.endsWith("/entities")) {
@@ -204,18 +195,7 @@ describe("Dashboard deadlines", () => {
     render(<Dashboard isActive />);
 
     expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(
-        global.fetch.mock.calls.some(
-          ([url]) => url === "https://mindgraph-production.up.railway.app/projects"
-        )
-      ).toBe(true);
-    });
-
-    userEvent.click(screen.getByLabelText(/show hidden/i));
-
-    expect(await screen.findByText("App.js")).toBeInTheDocument();
+    expect(screen.queryByText("App.js")).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(
@@ -227,11 +207,26 @@ describe("Dashboard deadlines", () => {
       ).toBe(true);
     });
 
+    const projectFetchCountBeforeToggle = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/projects?status=active,hidden"
+    ).length;
+
+    userEvent.click(screen.getByLabelText(/show hidden/i));
+
+    expect(await screen.findByText("App.js")).toBeInTheDocument();
+    const projectFetchCountAfterToggle = global.fetch.mock.calls.filter(
+      ([url]) =>
+        url ===
+        "https://mindgraph-production.up.railway.app/projects?status=active,hidden"
+    ).length;
+    expect(projectFetchCountAfterToggle).toBe(projectFetchCountBeforeToggle);
+
     userEvent.click(screen.getByLabelText(/hide mindgraph/i));
 
-    await waitFor(() => {
-      expect(screen.queryByText("Mindgraph")).not.toBeInTheDocument();
-    });
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+    expect(await screen.findAllByText("Hidden")).toHaveLength(2);
 
     rejectPatchRequest(new Error("Failed to update project. Please try again."));
 

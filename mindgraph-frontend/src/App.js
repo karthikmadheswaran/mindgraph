@@ -14,7 +14,8 @@ import "./styles/responsive.css";
 export default function App() {
   const [session, setSession] = useState(null);
   const [view, setView] = useState("landing");
-  const [currentView, setCurrentView] = useState("dashboard");
+  const [currentView, setCurrentView] = useState("write");
+  const [hasVisitedDashboard, setHasVisitedDashboard] = useState(false);
   const dashboardRef = useRef(null);
 
   const handlePublicBrandClick = () => {
@@ -28,14 +29,22 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) setView("app");
+      if (session) {
+        setCurrentView("write");
+        setView("app");
+      }
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      if (session) setView("app");
+      if (session) {
+        if (event === "SIGNED_IN") {
+          setCurrentView("write");
+        }
+        setView("app");
+      }
       else setView("landing");
     });
 
@@ -45,6 +54,12 @@ export default function App() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
+
+  useEffect(() => {
+    if (currentView === "dashboard") {
+      setHasVisitedDashboard(true);
+    }
+  }, [currentView]);
 
   return (
     <>
@@ -59,6 +74,7 @@ export default function App() {
         <AuthView
           onAuth={(session) => {
             setSession(session);
+            setCurrentView("write");
             setView("app");
           }}
           onBack={() => setView("landing")}
@@ -83,14 +99,16 @@ export default function App() {
                 onEntrySubmitted={() => dashboardRef.current?.triggerRefresh()}
               />
             </div>
-            <div
-              style={{ display: currentView === "dashboard" ? "block" : "none" }}
-            >
-              <Dashboard
-                ref={dashboardRef}
-                isActive={currentView === "dashboard"}
-              />
-            </div>
+            {hasVisitedDashboard && (
+              <div
+                style={{ display: currentView === "dashboard" ? "block" : "none" }}
+              >
+                <Dashboard
+                  ref={dashboardRef}
+                  isActive={currentView === "dashboard"}
+                />
+              </div>
+            )}
             <div style={{ display: currentView === "ask" ? "block" : "none" }}>
               <AskView isActive={currentView === "ask"} />
             </div>

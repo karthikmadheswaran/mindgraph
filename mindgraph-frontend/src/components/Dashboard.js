@@ -61,8 +61,8 @@ const sortProjects = (items) =>
 
 const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [entries, setEntries] = useState([]);
-  const [deadlines, setDeadlines] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [allDeadlines, setAllDeadlines] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [entities, setEntities] = useState([]);
   const [relations, setRelations] = useState([]);
   const [patterns, setPatterns] = useState({});
@@ -86,8 +86,8 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
 
   const applySnapshot = useCallback((snapshot) => {
     setEntries(snapshot.entries || []);
-    setDeadlines(normalizeDeadlines(snapshot.deadlines || []));
-    setProjects(normalizeProjects(snapshot.projects || []));
+    setAllDeadlines(normalizeDeadlines(snapshot.deadlines || []));
+    setAllProjects(normalizeProjects(snapshot.projects || []));
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
@@ -105,35 +105,31 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return fetch(`${API}/entries`, { headers }).then((r) => r.json());
   }, []);
 
-  const fetchDeadlines = useCallback(
-    async (includeSnoozed = showSnoozed) => {
-      const headers = await authHeaders();
-      const query = includeSnoozed ? "?status=pending,snoozed" : "";
-      const response = await fetch(`${API}/deadlines${query}`, { headers });
+  const fetchDeadlines = useCallback(async () => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/deadlines?status=pending,snoozed`, {
+      headers,
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch deadlines");
-      }
+    if (!response.ok) {
+      throw new Error("Failed to fetch deadlines");
+    }
 
-      return response.json();
-    },
-    [showSnoozed]
-  );
+    return response.json();
+  }, []);
 
-  const fetchProjects = useCallback(
-    async (includeHidden = showHidden) => {
-      const headers = await authHeaders();
-      const query = includeHidden ? "?status=active,hidden" : "";
-      const response = await fetch(`${API}/projects${query}`, { headers });
+  const fetchProjects = useCallback(async () => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/projects?status=active,hidden`, {
+      headers,
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch projects");
-      }
+    if (!response.ok) {
+      throw new Error("Failed to fetch projects");
+    }
 
-      return response.json();
-    },
-    [showHidden]
-  );
+    return response.json();
+  }, []);
 
   const fetchSnapshot = useCallback(async () => {
     const headers = await authHeaders();
@@ -148,8 +144,8 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     ] =
       await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
-        fetchDeadlines(showSnoozed),
-        fetchProjects(showHidden),
+        fetchDeadlines(),
+        fetchProjects(),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
         fetch(`${API}/entity-relations`, { headers })
           .then((r) => r.json())
@@ -167,7 +163,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       relations: relationsData.relations || [],
       patterns: patternsData.data || {},
     };
-  }, [fetchDeadlines, fetchProjects, showHidden, showSnoozed]);
+  }, [fetchDeadlines, fetchProjects]);
 
   const initialLoad = useCallback(async () => {
     if (hasLoadedRef.current) return;
@@ -239,13 +235,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       setHasActivated(true);
     }
   }, [isActive, hasActivated]);
-
-  useEffect(() => {
-    if (!hasLoadedRef.current) return;
-
-    setRefreshing(true);
-    scheduleSilentRefresh(0);
-  }, [showHidden, showSnoozed, scheduleSilentRefresh]);
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
@@ -349,8 +338,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
 
   const handleProjectStatusChange = useCallback(
     async (project, nextStatus) => {
-      const currentStatus = project.status || "active";
-      const isUnhide = currentStatus === "hidden" && nextStatus === "active";
+      const isTerminalStatus = nextStatus === "archived";
       const normalizedProject = normalizeProject(project);
 
       setProjectActionState((current) => ({
@@ -358,15 +346,15 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         [project.id]: true,
       }));
 
-      if (isUnhide) {
-        setProjects((current) =>
-          current.map((item) =>
-            item.id === project.id ? { ...item, status: "active" } : item
-          )
+      if (isTerminalStatus) {
+        setAllProjects((current) =>
+          current.filter((item) => item.id !== project.id)
         );
       } else {
-        setProjects((current) =>
-          current.filter((item) => item.id !== project.id)
+        setAllProjects((current) =>
+          current.map((item) =>
+            item.id === project.id ? { ...item, status: nextStatus } : item
+          )
         );
       }
 
@@ -375,33 +363,28 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
           await updateProjectStatus(project.id, nextStatus)
         );
 
-        if (isUnhide) {
-          setProjects((current) =>
+        if (!isTerminalStatus) {
+          setAllProjects((current) =>
             current.map((item) =>
               item.id === project.id ? updatedProject : item
             )
           );
         }
-
-        if (nextStatus === "hidden" && showHidden) {
-          const refreshedProjects = await fetchProjects(true);
-          setProjects(normalizeProjects(refreshedProjects.projects || []));
-        }
       } catch (error) {
-        if (isUnhide) {
-          setProjects((current) =>
-            current.map((item) =>
-              item.id === project.id ? normalizedProject : item
-            )
-          );
-        } else {
-          setProjects((current) => {
+        if (isTerminalStatus) {
+          setAllProjects((current) => {
             if (current.some((item) => item.id === project.id)) {
               return current;
             }
 
             return sortProjects([...current, normalizedProject]);
           });
+        } else {
+          setAllProjects((current) =>
+            current.map((item) =>
+              item.id === project.id ? normalizedProject : item
+            )
+          );
         }
 
         setToast({
@@ -416,13 +399,12 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         });
       }
     },
-    [fetchProjects, showHidden, updateProjectStatus]
+    [updateProjectStatus]
   );
 
   const handleDeadlineStatusChange = useCallback(
     async (deadline, nextStatus) => {
-      const currentStatus = deadline.status || "pending";
-      const isUnsnooze = currentStatus === "snoozed" && nextStatus === "pending";
+      const isTerminalStatus = nextStatus === "done";
       const normalizedDeadline = normalizeDeadline(deadline);
 
       setDeadlineActionState((current) => ({
@@ -430,15 +412,15 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         [deadline.id]: true,
       }));
 
-      if (isUnsnooze) {
-        setDeadlines((current) =>
-          current.map((item) =>
-            item.id === deadline.id ? { ...item, status: "pending" } : item
-          )
+      if (isTerminalStatus) {
+        setAllDeadlines((current) =>
+          current.filter((item) => item.id !== deadline.id)
         );
       } else {
-        setDeadlines((current) =>
-          current.filter((item) => item.id !== deadline.id)
+        setAllDeadlines((current) =>
+          current.map((item) =>
+            item.id === deadline.id ? { ...item, status: nextStatus } : item
+          )
         );
       }
 
@@ -447,33 +429,28 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
           await updateDeadlineStatus(deadline.id, nextStatus)
         );
 
-        if (isUnsnooze) {
-          setDeadlines((current) =>
+        if (!isTerminalStatus) {
+          setAllDeadlines((current) =>
             current.map((item) =>
               item.id === deadline.id ? updatedDeadline : item
             )
           );
         }
-
-        if (nextStatus === "snoozed" && showSnoozed) {
-          const refreshedDeadlines = await fetchDeadlines(true);
-          setDeadlines(normalizeDeadlines(refreshedDeadlines.deadlines || []));
-        }
       } catch (error) {
-        if (isUnsnooze) {
-          setDeadlines((current) =>
-            current.map((item) =>
-              item.id === deadline.id ? normalizedDeadline : item
-            )
-          );
-        } else {
-          setDeadlines((current) => {
+        if (isTerminalStatus) {
+          setAllDeadlines((current) => {
             if (current.some((item) => item.id === deadline.id)) {
               return current;
             }
 
             return sortDeadlines([...current, normalizedDeadline]);
           });
+        } else {
+          setAllDeadlines((current) =>
+            current.map((item) =>
+              item.id === deadline.id ? normalizedDeadline : item
+            )
+          );
         }
 
         setToast({
@@ -488,15 +465,22 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
         });
       }
     },
-    [fetchDeadlines, showSnoozed, updateDeadlineStatus]
+    [updateDeadlineStatus]
   );
+
+  const deadlines = showSnoozed
+    ? allDeadlines
+    : allDeadlines.filter((deadline) => deadline.status === "pending");
+  const projects = showHidden
+    ? allProjects
+    : allProjects.filter((project) => project.status === "active");
 
   const people = entities.filter((entity) => entity.entity_type === "person");
   const places = entities.filter((entity) => entity.entity_type === "place");
   const others = entities.filter(
     (entity) => !["project", "person", "place"].includes(entity.entity_type)
   );
-  const graphDeadlines = deadlines.filter(
+  const graphDeadlines = allDeadlines.filter(
     (deadline) => (deadline.status || "pending") === "pending"
   );
 
