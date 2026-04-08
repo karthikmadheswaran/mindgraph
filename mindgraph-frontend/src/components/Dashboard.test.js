@@ -36,6 +36,22 @@ const snoozedDeadline = {
   status: "snoozed",
 };
 
+const activeProject = {
+  id: "project-1",
+  name: "Mindgraph",
+  status: "active",
+  mention_count: 7,
+  running_summary: "Main product work",
+};
+
+const hiddenProject = {
+  id: "project-2",
+  name: "App.js",
+  status: "hidden",
+  mention_count: 2,
+  running_summary: "A junk inferred project",
+};
+
 function jsonResponse(payload) {
   return Promise.resolve({
     ok: true,
@@ -69,6 +85,14 @@ describe("Dashboard deadlines", () => {
 
       if (url.endsWith("/deadlines")) {
         return jsonResponse({ deadlines: [pendingDeadline] });
+      }
+
+      if (url.includes("/projects?status=active,hidden")) {
+        return jsonResponse({ projects: [activeProject, hiddenProject] });
+      }
+
+      if (url.endsWith("/projects")) {
+        return jsonResponse({ projects: [activeProject] });
       }
 
       if (url.endsWith("/entities")) {
@@ -131,5 +155,89 @@ describe("Dashboard deadlines", () => {
       await screen.findByText("Failed to update deadline. Please try again.")
     ).toBeInTheDocument();
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
+  });
+
+  test("fetches default projects, refetches hidden projects, and rolls back a failed optimistic hide", async () => {
+    let rejectPatchRequest;
+
+    global.fetch.mockImplementation((input, options = {}) => {
+      const url = typeof input === "string" ? input : input.url;
+      const method = options.method || "GET";
+
+      if (url.endsWith("/entries")) {
+        return jsonResponse({ entries: [] });
+      }
+
+      if (url.endsWith("/deadlines")) {
+        return jsonResponse({ deadlines: [] });
+      }
+
+      if (url.includes("/projects?status=active,hidden")) {
+        return jsonResponse({ projects: [activeProject, hiddenProject] });
+      }
+
+      if (url.endsWith("/projects")) {
+        return jsonResponse({ projects: [activeProject] });
+      }
+
+      if (url.endsWith("/entities")) {
+        return jsonResponse({ entities: [] });
+      }
+
+      if (url.endsWith("/entity-relations")) {
+        return jsonResponse({ relations: [] });
+      }
+
+      if (url.endsWith("/insights/patterns")) {
+        return jsonResponse({ data: {} });
+      }
+
+      if (url.endsWith(`/projects/${activeProject.id}/status`) && method === "PATCH") {
+        return new Promise((_, reject) => {
+          rejectPatchRequest = reject;
+        });
+      }
+
+      throw new Error(`Unhandled fetch: ${method} ${url}`);
+    });
+
+    render(<Dashboard isActive />);
+
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        global.fetch.mock.calls.some(
+          ([url]) => url === "https://mindgraph-production.up.railway.app/projects"
+        )
+      ).toBe(true);
+    });
+
+    userEvent.click(screen.getByLabelText(/show hidden/i));
+
+    expect(await screen.findByText("App.js")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        global.fetch.mock.calls.some(
+          ([url]) =>
+            url ===
+            "https://mindgraph-production.up.railway.app/projects?status=active,hidden"
+        )
+      ).toBe(true);
+    });
+
+    userEvent.click(screen.getByLabelText(/hide mindgraph/i));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Mindgraph")).not.toBeInTheDocument();
+    });
+
+    rejectPatchRequest(new Error("Failed to update project. Please try again."));
+
+    expect(
+      await screen.findByText("Failed to update project. Please try again.")
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
   });
 });

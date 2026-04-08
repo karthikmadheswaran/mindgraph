@@ -108,18 +108,54 @@
   line-height: 1.7;
 }
 
+.projects-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.projects-card-header h3 {
+  margin-bottom: 0;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .project-item {
-  padding: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
   border-bottom: 1px solid var(--border-light);
+  transition: opacity 0.2s ease;
 }
 
 .project-item:last-child {
   border-bottom: none;
 }
 
+.project-item.hidden {
+  opacity: 0.72;
+}
+
+.project-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
 .project-name {
   font-weight: 500;
-  margin-bottom: 4px;
 }
 
 .project-meta {
@@ -142,6 +178,18 @@
 .status-badge.active {
   background: rgba(138, 154, 122, 0.14);
   color: #4f5c45;
+}
+
+.status-badge.hidden {
+  background: rgba(107, 93, 77, 0.1);
+  color: var(--text-muted);
+}
+
+.project-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
 }
 
 .deadlines-card-header {

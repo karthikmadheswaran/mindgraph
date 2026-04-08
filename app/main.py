@@ -62,22 +62,30 @@ class DeadlineStatusUpdateRequest(BaseModel):
     status: Literal["pending", "done", "snoozed"]
 
 
+class ProjectStatusUpdateRequest(BaseModel):
+    status: Literal["active", "hidden", "archived"]
+
+
 VALID_DEADLINE_STATUSES = {"pending", "done", "snoozed"}
+VALID_PROJECT_STATUSES = {"active", "hidden", "archived"}
 
 
-def parse_deadline_status_filter(status_param: Optional[str]) -> list[str]:
+def parse_status_filter(
+    status_param: Optional[str],
+    default_statuses: list[str],
+    valid_statuses: set[str],
+    error_detail: str,
+) -> list[str]:
     if status_param is None:
-        return ["pending"]
+        return list(default_statuses)
 
     statuses = [value.strip() for value in status_param.split(",")]
     if not statuses or any(not value for value in statuses):
-        raise HTTPException(status_code=422, detail="Invalid deadline status filter")
+        raise HTTPException(status_code=422, detail=error_detail)
 
-    invalid_statuses = [
-        value for value in statuses if value not in VALID_DEADLINE_STATUSES
-    ]
+    invalid_statuses = [value for value in statuses if value not in valid_statuses]
     if invalid_statuses:
-        raise HTTPException(status_code=422, detail="Invalid deadline status filter")
+        raise HTTPException(status_code=422, detail=error_detail)
 
     deduped_statuses = []
     for value in statuses:
@@ -85,6 +93,24 @@ def parse_deadline_status_filter(status_param: Optional[str]) -> list[str]:
             deduped_statuses.append(value)
 
     return deduped_statuses
+
+
+def parse_deadline_status_filter(status_param: Optional[str]) -> list[str]:
+    return parse_status_filter(
+        status_param,
+        ["pending"],
+        VALID_DEADLINE_STATUSES,
+        "Invalid deadline status filter",
+    )
+
+
+def parse_project_status_filter(status_param: Optional[str]) -> list[str]:
+    return parse_status_filter(
+        status_param,
+        ["active"],
+        VALID_PROJECT_STATUSES,
+        "Invalid project status filter",
+    )
 
 @app.get("/health")
 async def health_check():
@@ -241,6 +267,65 @@ async def update_deadline_status(
         raise HTTPException(status_code=404, detail="Deadline not found")
 
     return updated_result.data[0]
+
+
+@app.get("/projects")
+async def get_projects(
+    status: Optional[str] = Query(default=None),
+    user_id: str = Depends(get_current_user),
+):
+    status_filters = parse_project_status_filter(status)
+    result = (
+        supabase.table("projects")
+        .select(
+            "id, name, status, first_mentioned_at, last_mentioned_at, "
+            "mention_count, running_summary"
+        )
+        .eq("user_id", user_id)
+        .in_("status", status_filters)
+        .order("mention_count", desc=True)
+        .execute()
+    )
+
+    return {"projects": result.data}
+
+
+@app.patch("/projects/{project_id}/status")
+async def update_project_status(
+    project_id: str,
+    update: ProjectStatusUpdateRequest,
+    user_id: str = Depends(get_current_user),
+):
+    project_result = (
+        supabase.table("projects")
+        .select(
+            "id, user_id, name, status, first_mentioned_at, "
+            "last_mentioned_at, mention_count, running_summary"
+        )
+        .eq("id", project_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not project_result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = project_result.data[0]
+    if project.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    updated_result = (
+        supabase.table("projects")
+        .update({"status": update.status}, returning="representation")
+        .eq("id", project_id)
+        .execute()
+    )
+
+    if not updated_result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    return updated_result.data[0]
+
 
 @app.get("/entities")
 async def get_entities(user_id: str = Depends(get_current_user)):

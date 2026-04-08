@@ -38,16 +38,31 @@ const normalizeDeadline = (deadline) => ({
   status: deadline.status || "pending",
 });
 
+const normalizeProject = (project) => ({
+  ...project,
+  status: project.status || "active",
+});
+
 const normalizeDeadlines = (items = []) => items.map(normalizeDeadline);
+const normalizeProjects = (items = []) => items.map(normalizeProject);
 
 const sortDeadlines = (items) =>
   [...items].sort(
     (left, right) => new Date(left.due_date || 0) - new Date(right.due_date || 0)
   );
 
+const sortProjects = (items) =>
+  [...items].sort((left, right) => {
+    const mentionDiff = (right.mention_count || 0) - (left.mention_count || 0);
+    if (mentionDiff !== 0) return mentionDiff;
+
+    return (left.name || "").localeCompare(right.name || "");
+  });
+
 const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [entities, setEntities] = useState([]);
   const [relations, setRelations] = useState([]);
   const [patterns, setPatterns] = useState({});
@@ -57,7 +72,9 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
   const [hasActivated, setHasActivated] = useState(isActive);
+  const [showHidden, setShowHidden] = useState(false);
   const [showSnoozed, setShowSnoozed] = useState(false);
+  const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [toast, setToast] = useState(null);
 
@@ -70,6 +87,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const applySnapshot = useCallback((snapshot) => {
     setEntries(snapshot.entries || []);
     setDeadlines(normalizeDeadlines(snapshot.deadlines || []));
+    setProjects(normalizeProjects(snapshot.projects || []));
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
@@ -102,13 +120,36 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     [showSnoozed]
   );
 
+  const fetchProjects = useCallback(
+    async (includeHidden = showHidden) => {
+      const headers = await authHeaders();
+      const query = includeHidden ? "?status=active,hidden" : "";
+      const response = await fetch(`${API}/projects${query}`, { headers });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
+
+      return response.json();
+    },
+    [showHidden]
+  );
+
   const fetchSnapshot = useCallback(async () => {
     const headers = await authHeaders();
 
-    const [entriesData, deadlinesData, entitiesData, relationsData, patternsData] =
+    const [
+      entriesData,
+      deadlinesData,
+      projectsData,
+      entitiesData,
+      relationsData,
+      patternsData,
+    ] =
       await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
         fetchDeadlines(showSnoozed),
+        fetchProjects(showHidden),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
         fetch(`${API}/entity-relations`, { headers })
           .then((r) => r.json())
@@ -121,11 +162,12 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return {
       entries: entriesData.entries || [],
       deadlines: deadlinesData.deadlines || [],
+      projects: projectsData.projects || [],
       entities: entitiesData.entities || [],
       relations: relationsData.relations || [],
       patterns: patternsData.data || {},
     };
-  }, [fetchDeadlines, showSnoozed]);
+  }, [fetchDeadlines, fetchProjects, showHidden, showSnoozed]);
 
   const initialLoad = useCallback(async () => {
     if (hasLoadedRef.current) return;
@@ -203,7 +245,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
 
     setRefreshing(true);
     scheduleSilentRefresh(0);
-  }, [showSnoozed, scheduleSilentRefresh]);
+  }, [showHidden, showSnoozed, scheduleSilentRefresh]);
 
   useEffect(() => {
     if (!hasLoadedRef.current) return;
@@ -286,6 +328,97 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return response.json();
   }, []);
 
+  const updateProjectStatus = useCallback(async (projectId, newStatus) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/projects/${projectId}/status`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to update project. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
+  const handleProjectStatusChange = useCallback(
+    async (project, nextStatus) => {
+      const currentStatus = project.status || "active";
+      const isUnhide = currentStatus === "hidden" && nextStatus === "active";
+      const normalizedProject = normalizeProject(project);
+
+      setProjectActionState((current) => ({
+        ...current,
+        [project.id]: true,
+      }));
+
+      if (isUnhide) {
+        setProjects((current) =>
+          current.map((item) =>
+            item.id === project.id ? { ...item, status: "active" } : item
+          )
+        );
+      } else {
+        setProjects((current) =>
+          current.filter((item) => item.id !== project.id)
+        );
+      }
+
+      try {
+        const updatedProject = normalizeProject(
+          await updateProjectStatus(project.id, nextStatus)
+        );
+
+        if (isUnhide) {
+          setProjects((current) =>
+            current.map((item) =>
+              item.id === project.id ? updatedProject : item
+            )
+          );
+        }
+
+        if (nextStatus === "hidden" && showHidden) {
+          const refreshedProjects = await fetchProjects(true);
+          setProjects(normalizeProjects(refreshedProjects.projects || []));
+        }
+      } catch (error) {
+        if (isUnhide) {
+          setProjects((current) =>
+            current.map((item) =>
+              item.id === project.id ? normalizedProject : item
+            )
+          );
+        } else {
+          setProjects((current) => {
+            if (current.some((item) => item.id === project.id)) {
+              return current;
+            }
+
+            return sortProjects([...current, normalizedProject]);
+          });
+        }
+
+        setToast({
+          message: error.message || "Failed to update project. Please try again.",
+          type: "error",
+        });
+      } finally {
+        setProjectActionState((current) => {
+          const next = { ...current };
+          delete next[project.id];
+          return next;
+        });
+      }
+    },
+    [fetchProjects, showHidden, updateProjectStatus]
+  );
+
   const handleDeadlineStatusChange = useCallback(
     async (deadline, nextStatus) => {
       const currentStatus = deadline.status || "pending";
@@ -358,7 +491,6 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     [fetchDeadlines, showSnoozed, updateDeadlineStatus]
   );
 
-  const projects = entities.filter((entity) => entity.entity_type === "project");
   const people = entities.filter((entity) => entity.entity_type === "person");
   const places = entities.filter((entity) => entity.entity_type === "place");
   const others = entities.filter(
@@ -462,23 +594,145 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
             <div className="dashboard-col-right">
               <motion.div variants={cardEntrance}>
                 <div className="grid-card">
-                  <h3>Active Projects</h3>
+                  <div className="projects-card-header">
+                    <h3>Active Projects</h3>
+                    <label className="deadline-toggle" htmlFor="show-hidden">
+                      <span className="deadline-toggle-label">Show hidden</span>
+                      <span
+                        className={`deadline-toggle-switch ${
+                          showHidden ? "active" : ""
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <span className="deadline-toggle-thumb" />
+                      </span>
+                      <input
+                        id="show-hidden"
+                        type="checkbox"
+                        checked={showHidden}
+                        onChange={(event) => setShowHidden(event.target.checked)}
+                      />
+                    </label>
+                  </div>
                   {projects.length === 0 ? (
                     <p className="empty">
-                      Your projects will appear here as you journal. Try writing
-                      about something you're working on.
+                      {showHidden
+                        ? "No active or hidden projects right now."
+                        : "Your projects will appear here as you journal. Try writing about something you're working on."}
                     </p>
                   ) : (
-                    projects.slice(0, 5).map((project) => (
-                      <div key={project.id} className="project-item">
-                        <div className="project-name">{project.name}</div>
-                        <div className="project-meta">
-                          Mentioned {project.mention_count} time
-                          {project.mention_count !== 1 ? "s" : ""}
-                          <span className="status-badge active">Active</span>
-                        </div>
-                      </div>
-                    ))
+                    <div className="project-list" role="list">
+                      {projects.map((project) => {
+                        const isHidden = project.status === "hidden";
+                        const isUpdating = Boolean(projectActionState[project.id]);
+
+                        return (
+                          <div
+                            key={project.id}
+                            className={`project-item ${isHidden ? "hidden" : ""}`}
+                            role="listitem"
+                          >
+                            <div className="project-main">
+                              <div className="project-name">{project.name}</div>
+                              <div className="project-meta">
+                                Mentioned {project.mention_count || 0} time
+                                {(project.mention_count || 0) !== 1 ? "s" : ""}
+                                <span
+                                  className={`status-badge ${
+                                    isHidden ? "hidden" : "active"
+                                  }`}
+                                >
+                                  {isHidden ? "Hidden" : "Active"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="project-actions">
+                              {isHidden ? (
+                                <button
+                                  type="button"
+                                  className="deadline-action-btn"
+                                  aria-label={`Unhide ${project.name}`}
+                                  title="Unhide"
+                                  disabled={isUpdating}
+                                  onClick={() =>
+                                    handleProjectStatusChange(project, "active")
+                                  }
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="deadline-action-btn"
+                                    aria-label={`Hide ${project.name}`}
+                                    title="Hide"
+                                    disabled={isUpdating}
+                                    onClick={() =>
+                                      handleProjectStatusChange(project, "hidden")
+                                    }
+                                  >
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <path d="M10.73 5.08A11.2 11.2 0 0 1 12 5c6.5 0 10 7 10 7a17.7 17.7 0 0 1-2.18 2.93" />
+                                      <path d="M6.61 6.61A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.39-1.61" />
+                                      <line x1="2" y1="2" x2="22" y2="22" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="deadline-action-btn"
+                                    aria-label={`Archive ${project.name}`}
+                                    title="Archive"
+                                    disabled={isUpdating}
+                                    onClick={() =>
+                                      handleProjectStatusChange(project, "archived")
+                                    }
+                                  >
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2.2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      aria-hidden="true"
+                                    >
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               </motion.div>
