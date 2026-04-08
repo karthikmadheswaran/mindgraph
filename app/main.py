@@ -1,12 +1,10 @@
 # app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
-from typing import Optional 
+from typing import Literal, Optional
 from app.graph import build_graph
-from fastapi import FastAPI, BackgroundTasks, Depends
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
-from app.nodes.store import supabase
 from app.retrieval import advanced_search
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
@@ -58,6 +56,35 @@ class EntryResponse(BaseModel):
     classifier: list
     core_entities: list
     deadline: list
+
+
+class DeadlineStatusUpdateRequest(BaseModel):
+    status: Literal["pending", "done", "snoozed"]
+
+
+VALID_DEADLINE_STATUSES = {"pending", "done", "snoozed"}
+
+
+def parse_deadline_status_filter(status_param: Optional[str]) -> list[str]:
+    if status_param is None:
+        return ["pending"]
+
+    statuses = [value.strip() for value in status_param.split(",")]
+    if not statuses or any(not value for value in statuses):
+        raise HTTPException(status_code=422, detail="Invalid deadline status filter")
+
+    invalid_statuses = [
+        value for value in statuses if value not in VALID_DEADLINE_STATUSES
+    ]
+    if invalid_statuses:
+        raise HTTPException(status_code=422, detail="Invalid deadline status filter")
+
+    deduped_statuses = []
+    for value in statuses:
+        if value not in deduped_statuses:
+            deduped_statuses.append(value)
+
+    return deduped_statuses
 
 @app.get("/health")
 async def health_check():
@@ -165,14 +192,56 @@ async def ask_question(question: str, user_id: str = Depends(get_current_user)):
     return {"answer": answer}
 
 @app.get("/deadlines")
-async def get_deadlines(user_id: str = Depends(get_current_user)):
-    result = supabase.table("deadlines")\
-        .select("id, description, due_date") \
-        .eq("user_id", user_id)\
-        .order("due_date", desc=False)\
+async def get_deadlines(
+    status: Optional[str] = Query(default=None),
+    user_id: str = Depends(get_current_user),
+):
+    status_filters = parse_deadline_status_filter(status)
+    result = (
+        supabase.table("deadlines")
+        .select("id, description, due_date, status")
+        .eq("user_id", user_id)
+        .in_("status", status_filters)
+        .order("due_date", desc=False)
         .execute()
+    )
     
     return {"deadlines": result.data}
+
+
+@app.patch("/deadlines/{deadline_id}/status")
+async def update_deadline_status(
+    deadline_id: str,
+    update: DeadlineStatusUpdateRequest,
+    user_id: str = Depends(get_current_user),
+):
+    deadline_result = (
+        supabase.table("deadlines")
+        .select("id, user_id, description, due_date, status")
+        .eq("id", deadline_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not deadline_result.data:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = deadline_result.data[0]
+    if deadline.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    updated_result = (
+        supabase.table("deadlines")
+        .update({"status": update.status})
+        .eq("id", deadline_id)
+        .select("id, description, due_date, status")
+        .execute()
+    )
+
+    if not updated_result.data:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    return updated_result.data[0]
 
 @app.get("/entities")
 async def get_entities(user_id: str = Depends(get_current_user)):

@@ -12,6 +12,7 @@ import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
 import { deadlineColor, deadlineLabel } from "../utils/dateHelpers";
 import AnimatedView from "./AnimatedView";
 import KnowledgeGraph from "./KnowledgeGraph";
+import Toast from "./Toast";
 import "../styles/dashboard.css";
 
 const staggerContainer = {
@@ -32,6 +33,18 @@ const cardEntrance = {
   },
 };
 
+const normalizeDeadline = (deadline) => ({
+  ...deadline,
+  status: deadline.status || "pending",
+});
+
+const normalizeDeadlines = (items = []) => items.map(normalizeDeadline);
+
+const sortDeadlines = (items) =>
+  [...items].sort(
+    (left, right) => new Date(left.due_date || 0) - new Date(right.due_date || 0)
+  );
+
 const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [entries, setEntries] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -44,6 +57,9 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [liveStage, setLiveStage] = useState(null);
   const [hasActivated, setHasActivated] = useState(isActive);
+  const [showSnoozed, setShowSnoozed] = useState(false);
+  const [deadlineActionState, setDeadlineActionState] = useState({});
+  const [toast, setToast] = useState(null);
 
   const hasLoadedRef = useRef(false);
   const refreshTimeoutRef = useRef(null);
@@ -53,7 +69,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
 
   const applySnapshot = useCallback((snapshot) => {
     setEntries(snapshot.entries || []);
-    setDeadlines(snapshot.deadlines || []);
+    setDeadlines(normalizeDeadlines(snapshot.deadlines || []));
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
@@ -71,13 +87,28 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     return fetch(`${API}/entries`, { headers }).then((r) => r.json());
   }, []);
 
+  const fetchDeadlines = useCallback(
+    async (includeSnoozed = showSnoozed) => {
+      const headers = await authHeaders();
+      const query = includeSnoozed ? "?status=pending,snoozed" : "";
+      const response = await fetch(`${API}/deadlines${query}`, { headers });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch deadlines");
+      }
+
+      return response.json();
+    },
+    [showSnoozed]
+  );
+
   const fetchSnapshot = useCallback(async () => {
     const headers = await authHeaders();
 
     const [entriesData, deadlinesData, entitiesData, relationsData, patternsData] =
       await Promise.all([
         fetch(`${API}/entries`, { headers }).then((r) => r.json()),
-        fetch(`${API}/deadlines`, { headers }).then((r) => r.json()),
+        fetchDeadlines(showSnoozed),
         fetch(`${API}/entities`, { headers }).then((r) => r.json()),
         fetch(`${API}/entity-relations`, { headers })
           .then((r) => r.json())
@@ -94,7 +125,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
       relations: relationsData.relations || [],
       patterns: patternsData.data || {},
     };
-  }, []);
+  }, [fetchDeadlines, showSnoozed]);
 
   const initialLoad = useCallback(async () => {
     if (hasLoadedRef.current) return;
@@ -170,6 +201,13 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
   useEffect(() => {
     if (!hasLoadedRef.current) return;
 
+    setRefreshing(true);
+    scheduleSilentRefresh(0);
+  }, [showSnoozed, scheduleSilentRefresh]);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+
     const interval = setInterval(() => {
       scheduleSilentRefresh(0);
     }, 45000);
@@ -229,11 +267,105 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
     };
   }, []);
 
+  const updateDeadlineStatus = useCallback(async (deadlineId, newStatus) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/deadlines/${deadlineId}/status`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to update deadline. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
+  const handleDeadlineStatusChange = useCallback(
+    async (deadline, nextStatus) => {
+      const currentStatus = deadline.status || "pending";
+      const isUnsnooze = currentStatus === "snoozed" && nextStatus === "pending";
+      const normalizedDeadline = normalizeDeadline(deadline);
+
+      setDeadlineActionState((current) => ({
+        ...current,
+        [deadline.id]: true,
+      }));
+
+      if (isUnsnooze) {
+        setDeadlines((current) =>
+          current.map((item) =>
+            item.id === deadline.id ? { ...item, status: "pending" } : item
+          )
+        );
+      } else {
+        setDeadlines((current) =>
+          current.filter((item) => item.id !== deadline.id)
+        );
+      }
+
+      try {
+        const updatedDeadline = normalizeDeadline(
+          await updateDeadlineStatus(deadline.id, nextStatus)
+        );
+
+        if (isUnsnooze) {
+          setDeadlines((current) =>
+            current.map((item) =>
+              item.id === deadline.id ? updatedDeadline : item
+            )
+          );
+        }
+
+        if (nextStatus === "snoozed" && showSnoozed) {
+          const refreshedDeadlines = await fetchDeadlines(true);
+          setDeadlines(normalizeDeadlines(refreshedDeadlines.deadlines || []));
+        }
+      } catch (error) {
+        if (isUnsnooze) {
+          setDeadlines((current) =>
+            current.map((item) =>
+              item.id === deadline.id ? normalizedDeadline : item
+            )
+          );
+        } else {
+          setDeadlines((current) => {
+            if (current.some((item) => item.id === deadline.id)) {
+              return current;
+            }
+
+            return sortDeadlines([...current, normalizedDeadline]);
+          });
+        }
+
+        setToast({
+          message: error.message || "Failed to update deadline. Please try again.",
+          type: "error",
+        });
+      } finally {
+        setDeadlineActionState((current) => {
+          const next = { ...current };
+          delete next[deadline.id];
+          return next;
+        });
+      }
+    },
+    [fetchDeadlines, showSnoozed, updateDeadlineStatus]
+  );
+
   const projects = entities.filter((entity) => entity.entity_type === "project");
   const people = entities.filter((entity) => entity.entity_type === "person");
   const places = entities.filter((entity) => entity.entity_type === "place");
   const others = entities.filter(
     (entity) => !["project", "person", "place"].includes(entity.entity_type)
+  );
+  const graphDeadlines = deadlines.filter(
+    (deadline) => (deadline.status || "pending") === "pending"
   );
 
   const dashboardMotionState = hasActivated ? "animate" : "initial";
@@ -292,7 +424,7 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
           <KnowledgeGraph
             entities={entities}
             entries={entries}
-            deadlines={deadlines}
+            deadlines={graphDeadlines}
             relations={relations}
           />
 
@@ -353,31 +485,153 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
 
               <motion.div variants={cardEntrance}>
                 <div className="grid-card">
-                  <h3>Upcoming Deadlines</h3>
+                  <div className="deadlines-card-header">
+                    <h3>Upcoming Deadlines</h3>
+                    <label className="deadline-toggle" htmlFor="show-snoozed">
+                      <span className="deadline-toggle-label">Show snoozed</span>
+                      <span
+                        className={`deadline-toggle-switch ${
+                          showSnoozed ? "active" : ""
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <span className="deadline-toggle-thumb" />
+                      </span>
+                      <input
+                        id="show-snoozed"
+                        type="checkbox"
+                        checked={showSnoozed}
+                        onChange={(event) => setShowSnoozed(event.target.checked)}
+                      />
+                    </label>
+                  </div>
                   {deadlines.length === 0 ? (
                     <p className="empty">
-                      Deadlines you mention will show up here. Try: 'I need to
-                      finish the report by Friday.'
+                      {showSnoozed
+                        ? "No pending or snoozed deadlines right now."
+                        : "Deadlines you mention will show up here. Try: 'I need to finish the report by Friday.'"}
                     </p>
                   ) : (
-                    deadlines.slice(0, 5).map((deadline) => {
-                      const color = deadlineColor(deadline.due_date);
-                      const label = deadlineLabel(deadline.due_date);
+                    <div className="deadline-list" role="list">
+                      {deadlines.map((deadline) => {
+                        const color = deadlineColor(deadline.due_date);
+                        const label = deadlineLabel(deadline.due_date);
+                        const isSnoozed = deadline.status === "snoozed";
+                        const isUpdating = Boolean(deadlineActionState[deadline.id]);
 
-                      return (
-                        <div key={deadline.id} className="deadline-item">
-                          <span className="deadline-desc">
-                            {deadline.description}
-                          </span>
-                          <span
-                            className="deadline-badge"
-                            style={{ background: color.bg, color: color.text }}
+                        return (
+                          <div
+                            key={deadline.id}
+                            className={`deadline-item ${
+                              isSnoozed ? "snoozed" : ""
+                            }`}
+                            role="listitem"
                           >
-                            {label}
-                          </span>
-                        </div>
-                      );
-                    })
+                            <div className="deadline-main">
+                              <span className="deadline-desc">
+                                {deadline.description}
+                              </span>
+                              <div className="deadline-meta">
+                                {isSnoozed && (
+                                  <span className="deadline-status-tag">
+                                    Snoozed
+                                  </span>
+                                )}
+                                <span
+                                  className="deadline-badge"
+                                  style={{
+                                    background: color.bg,
+                                    color: color.text,
+                                  }}
+                                >
+                                  {label}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="deadline-actions">
+                              <button
+                                type="button"
+                                className="deadline-action-btn"
+                                aria-label={`Mark ${deadline.description} as done`}
+                                title="Mark done"
+                                disabled={isUpdating}
+                                onClick={() =>
+                                  handleDeadlineStatusChange(deadline, "done")
+                                }
+                              >
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              </button>
+
+                              {isSnoozed ? (
+                                <button
+                                  type="button"
+                                  className="deadline-action-btn"
+                                  aria-label={`Unsnooze ${deadline.description}`}
+                                  title="Unsnooze"
+                                  disabled={isUpdating}
+                                  onClick={() =>
+                                    handleDeadlineStatusChange(deadline, "pending")
+                                  }
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M12 19V5" />
+                                    <polyline points="7 10 12 5 17 10" />
+                                  </svg>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="deadline-action-btn"
+                                  aria-label={`Snooze ${deadline.description}`}
+                                  title="Snooze"
+                                  disabled={isUpdating}
+                                  onClick={() =>
+                                    handleDeadlineStatusChange(deadline, "snoozed")
+                                  }
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M18 13a6 6 0 1 1-6-6 4 4 0 0 0 6 6Z" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -553,6 +807,13 @@ const Dashboard = forwardRef(function Dashboard({ isActive }, ref) {
           </div>
         </div>
       )}
+
+      <Toast
+        message={toast?.message}
+        type={toast?.type || "success"}
+        visible={!!toast}
+        onDismiss={() => setToast(null)}
+      />
     </AnimatedView>
   );
 });
