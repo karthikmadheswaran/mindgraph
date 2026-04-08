@@ -232,9 +232,8 @@ async def update_deadline_status(
 
     updated_result = (
         supabase.table("deadlines")
-        .update({"status": update.status})
+        .update({"status": update.status}, returning="representation")
         .eq("id", deadline_id)
-        .select("id, description, due_date, status")
         .execute()
     )
 
