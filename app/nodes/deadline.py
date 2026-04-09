@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 import os
 import json
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -13,6 +14,15 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 USE_SEMANTIC_VALIDATOR = False
+
+
+def resolve_reference_date(user_timezone: str) -> str:
+    try:
+        timezone = ZoneInfo(user_timezone or "UTC")
+    except Exception:
+        timezone = ZoneInfo("UTC")
+
+    return datetime.now(timezone).strftime("%Y-%m-%d")
 
 
 def normalize_deadline_description(description: str) -> str:
@@ -91,8 +101,8 @@ def dedup_deadlines(deadlines: list[DeadlineNode]) -> list[DeadlineNode]:
     return unique
 
 
-def build_deadline_prompt(text: str, raw_text: str) -> str:
-    reference_date = datetime.now().strftime("%Y-%m-%d")
+def build_deadline_prompt(text: str, raw_text: str, user_timezone: str) -> str:
+    reference_date = resolve_reference_date(user_timezone)
     return f"""
 You are a strict deadline extraction engine.
 
@@ -130,14 +140,16 @@ Output Rules:
 - If no deadlines exist, return [].
 - Use exactly these keys for each item: "description", "due_at", "raw_text"
 - "description" = short description of what the deadline is for
-- "due_at" = date in YYYY-MM-DD format
+- "due_at" = date in YYYY-MM-DD format, or datetime in YYYY-MM-DDTHH:MM format if a specific time is mentioned. Use YYYY-MM-DD when no time is mentioned.
+- Do not invent times - only include a time if the original text explicitly states one.
 - "raw_text" = the exact deadline phrase from the journal text
 - Resolve relative dates using the Reference Date.
 - Do not include extra fields.
 
 Format:
 [
-  {{"description": "submit visa documents", "due_at": "YYYY-MM-DD", "raw_text": "by Friday"}}
+  {{"description": "submit visa documents", "due_at": "2026-04-10", "raw_text": "by Friday"}},
+  {{"description": "meeting with Manuel", "due_at": "2026-04-09T19:30", "raw_text": "meeting at 19:30 today"}}
 ]
 """.strip()
 
@@ -225,7 +237,7 @@ def parse_deadlines(
         if not description:
             continue
 
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", due_at):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?", due_at):
             continue
 
         if USE_SEMANTIC_VALIDATOR and not is_valid_deadline_candidate(
@@ -236,9 +248,15 @@ def parse_deadlines(
         ):
             continue
 
-        try:
-            due_at_dt = datetime.strptime(due_at, "%Y-%m-%d")
-        except ValueError:
+        due_at_dt = None
+        for datetime_format in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M", "%Y-%m-%d"):
+            try:
+                due_at_dt = datetime.strptime(due_at, datetime_format)
+                break
+            except ValueError:
+                continue
+
+        if due_at_dt is None:
             continue
 
         valid.append(
@@ -256,7 +274,7 @@ async def extract_deadlines(state: JournalState) -> dict:
     text = state["cleaned_text"]
     raw_text = state["raw_text"]
 
-    prompt = build_deadline_prompt(text, raw_text)
+    prompt = build_deadline_prompt(text, raw_text, state.get("user_timezone", "UTC"))
     response = await model.ainvoke(prompt)
     content = extract_text_from_response(response)
 

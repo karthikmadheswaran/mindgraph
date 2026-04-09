@@ -2,6 +2,7 @@
 from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Literal, Optional
+from datetime import datetime
 from app.graph import build_graph
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
@@ -28,6 +29,7 @@ Langfuse(
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import json
+import re
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
@@ -63,12 +65,19 @@ class DeadlineStatusUpdateRequest(BaseModel):
     status: Literal["pending", "done", "snoozed"]
 
 
+class DeadlineDateUpdateRequest(BaseModel):
+    due_date: str
+
+
 class ProjectStatusUpdateRequest(BaseModel):
     status: Literal["active", "hidden", "archived"]
 
 
 VALID_DEADLINE_STATUSES = {"pending", "done", "snoozed"}
 VALID_PROJECT_STATUSES = {"active", "hidden", "archived"}
+DEADLINE_DUE_DATE_PATTERN = re.compile(
+    r"^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?$"
+)
 
 
 def parse_status_filter(
@@ -112,6 +121,20 @@ def parse_project_status_filter(status_param: Optional[str]) -> list[str]:
         VALID_PROJECT_STATUSES,
         "Invalid project status filter",
     )
+
+
+def parse_due_date_value(due_date: str) -> datetime:
+    value = str(due_date or "").strip()
+    if not DEADLINE_DUE_DATE_PATTERN.fullmatch(value):
+        raise HTTPException(status_code=422, detail="Invalid due_date format")
+
+    for datetime_format in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(value, datetime_format)
+        except ValueError:
+            continue
+
+    raise HTTPException(status_code=422, detail="Invalid due_date format")
 
 @app.get("/health")
 async def health_check():
@@ -261,6 +284,42 @@ async def update_deadline_status(
     updated_result = (
         supabase.table("deadlines")
         .update({"status": update.status}, returning="representation")
+        .eq("id", deadline_id)
+        .execute()
+    )
+
+    if not updated_result.data:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    return updated_result.data[0]
+
+
+@app.patch("/deadlines/{deadline_id}/date")
+async def update_deadline_date(
+    deadline_id: str,
+    update: DeadlineDateUpdateRequest,
+    user_id: str = Depends(get_current_user),
+):
+    parsed_due_date = parse_due_date_value(update.due_date)
+
+    deadline_result = (
+        supabase.table("deadlines")
+        .select("id, user_id, description, due_date, status")
+        .eq("id", deadline_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not deadline_result.data:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = deadline_result.data[0]
+    if deadline.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    updated_result = (
+        supabase.table("deadlines")
+        .update({"due_date": parsed_due_date.isoformat()}, returning="representation")
         .eq("id", deadline_id)
         .execute()
     )

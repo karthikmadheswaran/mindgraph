@@ -2,7 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
-import { deadlineColor, deadlineLabel } from "../utils/dateHelpers";
+import {
+  buildDeadlineDueDate,
+  deadlineColor,
+  deadlineLabel,
+  deadlineSortValue,
+  getDeadlineEditorValue,
+} from "../utils/dateHelpers";
 import {
   getCachedDashboardSnapshot,
   loadDashboardSnapshot,
@@ -53,7 +59,8 @@ const formatSyncTime = (timestamp = Date.now()) =>
 
 const sortDeadlines = (items) =>
   [...items].sort(
-    (left, right) => new Date(left.due_date || 0) - new Date(right.due_date || 0)
+    (left, right) =>
+      deadlineSortValue(left.due_date).localeCompare(deadlineSortValue(right.due_date))
   );
 
 function Dashboard({ isActive, userId }) {
@@ -82,6 +89,8 @@ function Dashboard({ isActive, userId }) {
   const [showSnoozed, setShowSnoozed] = useState(false);
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
+  const [editingDeadlineId, setEditingDeadlineId] = useState(null);
+  const [deadlineDrafts, setDeadlineDrafts] = useState({});
   const [toast, setToast] = useState(null);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
@@ -281,6 +290,25 @@ function Dashboard({ isActive, userId }) {
     return response.json();
   }, []);
 
+  const updateDeadlineDate = useCallback(async (deadlineId, dueDate) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/deadlines/${deadlineId}/date`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ due_date: dueDate }),
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to update deadline date. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
   const updateProjectStatus = useCallback(async (projectId, newStatus) => {
     const headers = await authHeaders();
     const response = await fetch(`${API}/projects/${projectId}/status`, {
@@ -457,6 +485,115 @@ function Dashboard({ isActive, userId }) {
       }
     },
     [setDeadlinesState, updateDeadlineStatus]
+  );
+
+  const startDeadlineEdit = useCallback((deadline) => {
+    setEditingDeadlineId(deadline.id);
+    setDeadlineDrafts((current) => ({
+      ...current,
+      [deadline.id]: getDeadlineEditorValue(deadline.due_date),
+    }));
+  }, []);
+
+  const cancelDeadlineEdit = useCallback((deadlineId) => {
+    setEditingDeadlineId((current) =>
+      current === deadlineId ? null : current
+    );
+    setDeadlineDrafts((current) => {
+      const next = { ...current };
+      delete next[deadlineId];
+      return next;
+    });
+  }, []);
+
+  const handleDeadlineDraftChange = useCallback((deadlineId, field, value) => {
+    setDeadlineDrafts((current) => ({
+      ...current,
+      [deadlineId]: {
+        ...(current[deadlineId] || { date: "", time: "" }),
+        [field]: value,
+      },
+    }));
+  }, []);
+
+  const handleDeadlineDateSave = useCallback(
+    async (deadline) => {
+      const normalizedDeadline = normalizeDeadline(deadline);
+      const draft =
+        deadlineDrafts[deadline.id] || getDeadlineEditorValue(deadline.due_date);
+      const nextDueDate = buildDeadlineDueDate(draft.date, draft.time);
+
+      if (!draft.date || !nextDueDate) {
+        setToast({
+          message: "Choose a date before saving the deadline.",
+          type: "error",
+        });
+        return;
+      }
+
+      setDeadlineActionState((current) => ({
+        ...current,
+        [deadline.id]: true,
+      }));
+
+      setEditingDeadlineId((current) =>
+        current === deadline.id ? null : current
+      );
+
+      setDeadlinesState((current) =>
+        sortDeadlines(
+          current.map((item) =>
+            item.id === deadline.id ? { ...item, due_date: nextDueDate } : item
+          )
+        )
+      );
+
+      try {
+        const updatedDeadline = normalizeDeadline(
+          await updateDeadlineDate(deadline.id, nextDueDate)
+        );
+
+        setDeadlinesState((current) =>
+          sortDeadlines(
+            current.map((item) =>
+              item.id === deadline.id ? updatedDeadline : item
+            )
+          )
+        );
+
+        setDeadlineDrafts((current) => {
+          const next = { ...current };
+          delete next[deadline.id];
+          return next;
+        });
+      } catch (error) {
+        setDeadlinesState((current) =>
+          sortDeadlines(
+            current.map((item) =>
+              item.id === deadline.id ? normalizedDeadline : item
+            )
+          )
+        );
+
+        setDeadlineDrafts((current) => ({
+          ...current,
+          [deadline.id]: draft,
+        }));
+        setEditingDeadlineId(deadline.id);
+        setToast({
+          message:
+            error.message || "Failed to update deadline date. Please try again.",
+          type: "error",
+        });
+      } finally {
+        setDeadlineActionState((current) => {
+          const next = { ...current };
+          delete next[deadline.id];
+          return next;
+        });
+      }
+    },
+    [deadlineDrafts, setDeadlinesState, updateDeadlineDate]
   );
 
   const deadlines = showSnoozed
@@ -721,6 +858,10 @@ function Dashboard({ isActive, userId }) {
                         const label = deadlineLabel(deadline.due_date);
                         const isSnoozed = deadline.status === "snoozed";
                         const isUpdating = Boolean(deadlineActionState[deadline.id]);
+                        const isEditing = editingDeadlineId === deadline.id;
+                        const draft =
+                          deadlineDrafts[deadline.id] ||
+                          getDeadlineEditorValue(deadline.due_date);
 
                         return (
                           <div
@@ -740,15 +881,162 @@ function Dashboard({ isActive, userId }) {
                                     Snoozed
                                   </span>
                                 )}
-                                <span
-                                  className="deadline-badge"
-                                  style={{
-                                    background: color.bg,
-                                    color: color.text,
-                                  }}
-                                >
-                                  {label}
-                                </span>
+                                <AnimatePresence initial={false} mode="wait">
+                                  {isEditing ? (
+                                    <motion.div
+                                      key="editor"
+                                      initial={{ opacity: 0, y: -6 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -6 }}
+                                      transition={{ duration: 0.16 }}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                        flexWrap: "wrap",
+                                      }}
+                                    >
+                                      <input
+                                        type="date"
+                                        aria-label={`${deadline.description} date`}
+                                        value={draft.date}
+                                        disabled={isUpdating}
+                                        onChange={(event) =>
+                                          handleDeadlineDraftChange(
+                                            deadline.id,
+                                            "date",
+                                            event.target.value
+                                          )
+                                        }
+                                        style={{
+                                          padding: "6px 10px",
+                                          borderRadius: 999,
+                                          border: "1px solid var(--border)",
+                                          background: "var(--bg-card-solid)",
+                                          color: "var(--text-primary)",
+                                          fontSize: 12,
+                                        }}
+                                      />
+                                      <input
+                                        type="time"
+                                        aria-label={`${deadline.description} time`}
+                                        value={draft.time}
+                                        disabled={isUpdating}
+                                        onChange={(event) =>
+                                          handleDeadlineDraftChange(
+                                            deadline.id,
+                                            "time",
+                                            event.target.value
+                                          )
+                                        }
+                                        style={{
+                                          padding: "6px 10px",
+                                          borderRadius: 999,
+                                          border: "1px solid var(--border)",
+                                          background: "var(--bg-card-solid)",
+                                          color: "var(--text-primary)",
+                                          fontSize: 12,
+                                        }}
+                                      />
+                                      <button
+                                        type="button"
+                                        className="deadline-action-btn"
+                                        aria-label={`Save ${deadline.description} date`}
+                                        title="Save date"
+                                        disabled={isUpdating}
+                                        onClick={() =>
+                                          handleDeadlineDateSave(deadline)
+                                        }
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2.2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="deadline-action-btn"
+                                        aria-label={`Cancel editing ${deadline.description}`}
+                                        title="Cancel"
+                                        disabled={isUpdating}
+                                        onClick={() =>
+                                          cancelDeadlineEdit(deadline.id)
+                                        }
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <line x1="18" y1="6" x2="6" y2="18" />
+                                          <line x1="6" y1="6" x2="18" y2="18" />
+                                        </svg>
+                                      </button>
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div
+                                      key="badge"
+                                      initial={{ opacity: 0, y: -6 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -6 }}
+                                      transition={{ duration: 0.16 }}
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 6,
+                                      }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="deadline-badge"
+                                        aria-label={`Edit date for ${deadline.description}`}
+                                        title="Edit date and time"
+                                        disabled={isUpdating}
+                                        onClick={() => startDeadlineEdit(deadline)}
+                                        style={{
+                                          background: color.bg,
+                                          color: color.text,
+                                          border: "none",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                          cursor: isUpdating ? "not-allowed" : "pointer",
+                                        }}
+                                      >
+                                        <span>{label}</span>
+                                        <svg
+                                          width="12"
+                                          height="12"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <path d="M12 20h9" />
+                                          <path d="m16.5 3.5 4 4L7 21l-4 1 1-4Z" />
+                                        </svg>
+                                      </button>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </div>
                             </div>
 
