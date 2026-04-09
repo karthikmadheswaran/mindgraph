@@ -35,6 +35,24 @@ const icons = {
       <rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   ),
+  progress: (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M8 21h8" />
+      <path d="M12 17v4" />
+      <path d="M7 4h10l-1 5a4 4 0 0 1-4 3 4 4 0 0 1-4-3L7 4Z" />
+      <path d="M5 4h14" />
+    </svg>
+  ),
   ask: (
     <svg
       width="20"
@@ -63,6 +81,7 @@ export default function Sidebar({
   const navItems = [
     { id: "write", label: "Write", icon: icons.write },
     { id: "dashboard", label: "Dashboard", icon: icons.dashboard },
+    { id: "progress", label: "My Progress", icon: icons.progress },
     { id: "ask", label: "Ask", icon: icons.ask },
   ];
 

@@ -2,7 +2,7 @@
 from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Literal, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.graph import build_graph
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
@@ -62,7 +62,7 @@ class EntryResponse(BaseModel):
 
 
 class DeadlineStatusUpdateRequest(BaseModel):
-    status: Literal["pending", "done", "snoozed"]
+    status: Literal["pending", "done", "missed", "snoozed"]
 
 
 class DeadlineDateUpdateRequest(BaseModel):
@@ -70,11 +70,11 @@ class DeadlineDateUpdateRequest(BaseModel):
 
 
 class ProjectStatusUpdateRequest(BaseModel):
-    status: Literal["active", "hidden", "archived"]
+    status: Literal["active", "hidden", "completed"]
 
 
-VALID_DEADLINE_STATUSES = {"pending", "done", "snoozed"}
-VALID_PROJECT_STATUSES = {"active", "hidden", "archived"}
+VALID_DEADLINE_STATUSES = {"pending", "done", "missed", "snoozed"}
+VALID_PROJECT_STATUSES = {"active", "hidden", "completed"}
 DEADLINE_DUE_DATE_PATTERN = re.compile(
     r"^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?$"
 )
@@ -135,6 +135,59 @@ def parse_due_date_value(due_date: str) -> datetime:
             continue
 
     raise HTTPException(status_code=422, detail="Invalid due_date format")
+
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def get_suppressed_project_entity_ids(user_id: str) -> set[str]:
+    result = (
+        supabase.table("suppressed_project_entities")
+        .select("entity_id")
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    return {
+        row["entity_id"]
+        for row in (result.data or [])
+        if row.get("entity_id")
+    }
+
+
+def mark_overdue_deadlines_as_missed(user_id: str) -> None:
+    now_iso = utc_now_iso()
+    (
+        supabase.table("deadlines")
+        .update(
+            {
+                "status": "missed",
+                "status_changed_at": now_iso,
+            }
+        )
+        .eq("user_id", user_id)
+        .eq("status", "pending")
+        .lt("due_date", now_iso)
+        .execute()
+    )
+
+
+def clear_deadline_project_links(project_id: str) -> None:
+    try:
+        (
+            supabase.table("deadlines")
+            .update({"project_id": None})
+            .eq("project_id", project_id)
+            .execute()
+        )
+    except Exception as exc:
+        message = str(exc).lower()
+        if "project_id" in message and (
+            "column" in message or "schema cache" in message
+        ):
+            return
+        raise
 
 @app.get("/health")
 async def health_check():
@@ -247,10 +300,11 @@ async def get_deadlines(
     status: Optional[str] = Query(default=None),
     user_id: str = Depends(get_current_user),
 ):
+    mark_overdue_deadlines_as_missed(user_id)
     status_filters = parse_deadline_status_filter(status)
     result = (
         supabase.table("deadlines")
-        .select("id, description, due_date, status")
+        .select("id, description, due_date, status, status_changed_at")
         .eq("user_id", user_id)
         .in_("status", status_filters)
         .order("due_date", desc=False)
@@ -268,7 +322,7 @@ async def update_deadline_status(
 ):
     deadline_result = (
         supabase.table("deadlines")
-        .select("id, user_id, description, due_date, status")
+        .select("id, user_id, description, due_date, status, status_changed_at")
         .eq("id", deadline_id)
         .limit(1)
         .execute()
@@ -283,7 +337,13 @@ async def update_deadline_status(
 
     updated_result = (
         supabase.table("deadlines")
-        .update({"status": update.status}, returning="representation")
+        .update(
+            {
+                "status": update.status,
+                "status_changed_at": utc_now_iso(),
+            },
+            returning="representation",
+        )
         .eq("id", deadline_id)
         .execute()
     )
@@ -304,7 +364,7 @@ async def update_deadline_date(
 
     deadline_result = (
         supabase.table("deadlines")
-        .select("id, user_id, description, due_date, status")
+        .select("id, user_id, description, due_date, status, status_changed_at")
         .eq("id", deadline_id)
         .limit(1)
         .execute()
@@ -330,6 +390,30 @@ async def update_deadline_date(
     return updated_result.data[0]
 
 
+@app.delete("/deadlines/{deadline_id}")
+async def delete_deadline(
+    deadline_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    deadline_result = (
+        supabase.table("deadlines")
+        .select("id, user_id")
+        .eq("id", deadline_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not deadline_result.data:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+
+    deadline = deadline_result.data[0]
+    if deadline.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    supabase.table("deadlines").delete().eq("id", deadline_id).execute()
+    return {"success": True, "id": deadline_id}
+
+
 @app.get("/projects")
 async def get_projects(
     status: Optional[str] = Query(default=None),
@@ -340,7 +424,7 @@ async def get_projects(
         supabase.table("projects")
         .select(
             "id, name, status, first_mentioned_at, last_mentioned_at, "
-            "mention_count, running_summary"
+            "mention_count, running_summary, status_changed_at"
         )
         .eq("user_id", user_id)
         .in_("status", status_filters)
@@ -361,7 +445,8 @@ async def update_project_status(
         supabase.table("projects")
         .select(
             "id, user_id, name, status, first_mentioned_at, "
-            "last_mentioned_at, mention_count, running_summary"
+            "last_mentioned_at, mention_count, running_summary, "
+            "status_changed_at, source_entity_id"
         )
         .eq("id", project_id)
         .limit(1)
@@ -377,7 +462,13 @@ async def update_project_status(
 
     updated_result = (
         supabase.table("projects")
-        .update({"status": update.status}, returning="representation")
+        .update(
+            {
+                "status": update.status,
+                "status_changed_at": utc_now_iso(),
+            },
+            returning="representation",
+        )
         .eq("id", project_id)
         .execute()
     )
@@ -388,20 +479,100 @@ async def update_project_status(
     return updated_result.data[0]
 
 
+@app.delete("/projects/{project_id}")
+async def delete_project(
+    project_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    project_result = (
+        supabase.table("projects")
+        .select("id, user_id, source_entity_id")
+        .eq("id", project_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not project_result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = project_result.data[0]
+    if project.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    source_entity_id = project.get("source_entity_id")
+    if source_entity_id:
+        (
+            supabase.table("suppressed_project_entities")
+            .upsert(
+                {"user_id": user_id, "entity_id": source_entity_id},
+                on_conflict="user_id,entity_id",
+            )
+            .execute()
+        )
+
+    clear_deadline_project_links(project_id)
+    supabase.table("projects").delete().eq("id", project_id).execute()
+    return {"success": True, "id": project_id}
+
+
+@app.get("/progress")
+async def get_progress(user_id: str = Depends(get_current_user)):
+    mark_overdue_deadlines_as_missed(user_id)
+
+    deadline_result = (
+        supabase.table("deadlines")
+        .select("id, description, due_date, status, status_changed_at")
+        .eq("user_id", user_id)
+        .in_("status", ["done", "missed"])
+        .order("status_changed_at", desc=True)
+        .execute()
+    )
+
+    project_result = (
+        supabase.table("projects")
+        .select(
+            "id, name, mention_count, first_mentioned_at, status, "
+            "status_changed_at"
+        )
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .order("status_changed_at", desc=True)
+        .execute()
+    )
+
+    return {
+        "deadlines": deadline_result.data or [],
+        "projects": project_result.data or [],
+    }
+
+
 @app.get("/entities")
 async def get_entities(user_id: str = Depends(get_current_user)):
-    result = supabase.table("entities") \
-        .select("id, name, entity_type, mention_count") \
-        .eq("user_id", user_id) \
-        .order("mention_count", desc=True) \
-        .limit(20) \
+    suppressed_entity_ids = get_suppressed_project_entity_ids(user_id)
+    result = (
+        supabase.table("entities")
+        .select("id, name, entity_type, mention_count")
+        .eq("user_id", user_id)
+        .order("mention_count", desc=True)
+        .limit(60)
         .execute()
-    
-    return {"entities": result.data}
+    )
+
+    entities = [
+        entity
+        for entity in (result.data or [])
+        if not (
+            entity.get("entity_type") == "project"
+            and entity.get("id") in suppressed_entity_ids
+        )
+    ][:20]
+
+    return {"entities": entities}
 
 
 @app.get("/entity-relations")
 async def get_entity_relations(user_id: str = Depends(get_current_user)):
+    suppressed_entity_ids = get_suppressed_project_entity_ids(user_id)
     relation_result = (
         supabase.table("entity_relations")
         .select(
@@ -414,7 +585,12 @@ async def get_entity_relations(user_id: str = Depends(get_current_user)):
         .execute()
     )
 
-    relation_rows = relation_result.data or []
+    relation_rows = [
+        row
+        for row in (relation_result.data or [])
+        if row.get("source_entity_id") not in suppressed_entity_ids
+        and row.get("target_entity_id") not in suppressed_entity_ids
+    ]
     entity_ids = sorted(
         {
             row["source_entity_id"]

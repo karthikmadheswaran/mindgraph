@@ -59,6 +59,7 @@ jest.mock("./components/Sidebar", () => ({
       <button onClick={onBrandClick}>Brand</button>
       <button onClick={() => onViewChange("write")}>Go Write</button>
       <button onClick={() => onViewChange("dashboard")}>Go Dashboard</button>
+      <button onClick={() => onViewChange("progress")}>Go Progress</button>
       <button onClick={() => onViewChange("ask")}>Go Ask</button>
     </div>
   ),
@@ -77,6 +78,11 @@ jest.mock("./components/InputView", () => ({
 jest.mock("./components/Dashboard", () => ({
   __esModule: true,
   default: () => <div data-testid="dashboard-view">Dashboard view</div>,
+}));
+
+jest.mock("./components/MyProgress", () => ({
+  __esModule: true,
+  default: () => <div data-testid="progress-view">Progress view</div>,
 }));
 
 jest.mock("./components/AskView", () => ({
@@ -204,4 +210,31 @@ test("hash changes update the active authenticated view", async () => {
   });
 
   expect(await screen.findByTestId("dashboard-view")).toBeInTheDocument();
+});
+
+test("slash-prefixed progress hash resolves to the progress view", async () => {
+  window.history.replaceState({}, "", "/#/progress");
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("progress-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#/progress");
+});
+
+test("sidebar navigation can move into the progress view", async () => {
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
+
+  userEvent.click(screen.getByRole("button", { name: /go progress/i }));
+
+  expect(await screen.findByTestId("progress-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#/progress");
 });

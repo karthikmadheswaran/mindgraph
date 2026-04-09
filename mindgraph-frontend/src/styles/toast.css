@@ -12,6 +12,8 @@
   align-items: center;
   gap: 8px;
   box-shadow: var(--shadow-lg);
+  min-width: min(440px, calc(100vw - 32px));
+  justify-content: center;
 }
 
 .toast.success {
@@ -36,8 +38,31 @@
   flex-shrink: 0;
 }
 
+.toast-message {
+  min-width: 0;
+}
+
+.toast-action {
+  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.toast-action:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
   .toast {
     bottom: 80px;
+    min-width: calc(100vw - 24px);
+    padding: 12px 16px;
   }
 }

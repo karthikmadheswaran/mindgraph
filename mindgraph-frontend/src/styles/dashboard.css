@@ -359,6 +359,12 @@
   background: var(--bg-card-solid);
 }
 
+.deadline-action-btn.danger:hover:not(:disabled) {
+  color: var(--accent-warm);
+  border-color: rgba(196, 105, 90, 0.22);
+  background: rgba(245, 230, 228, 0.7);
+}
+
 .deadline-action-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;

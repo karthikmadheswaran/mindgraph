@@ -12,23 +12,43 @@ import AuthView from "./components/AuthView";
 import Sidebar from "./components/Sidebar";
 import InputView from "./components/InputView";
 import Dashboard from "./components/Dashboard";
+import MyProgress from "./components/MyProgress";
 import AskView from "./components/AskView";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
-const APP_VIEWS = new Set(["write", "dashboard", "ask"]);
+const APP_VIEWS = new Set(["write", "dashboard", "progress", "ask"]);
 const DEFAULT_APP_VIEW = "write";
 
+const normalizeHashView = (hashValue) => {
+  const hash = String(hashValue || "")
+    .replace(/^#/, "")
+    .trim()
+    .toLowerCase();
+  const normalizedHash = hash.startsWith("/") ? hash.slice(1) : hash;
+
+  return APP_VIEWS.has(normalizedHash) ? normalizedHash : DEFAULT_APP_VIEW;
+};
+
+const formatHashView = (view) =>
+  view === "progress" ? "#/progress" : `#${view}`;
+
+const isHashForView = (hashValue, view) => {
+  const normalizedHash = String(hashValue || "").trim().toLowerCase();
+  return (
+    normalizedHash === `#${view}` || normalizedHash === `#/${view}`
+  );
+};
+
 const getHashView = () => {
-  const hash = window.location.hash.replace(/^#/, "").trim().toLowerCase();
-  return APP_VIEWS.has(hash) ? hash : DEFAULT_APP_VIEW;
+  return normalizeHashView(window.location.hash);
 };
 
 const setHashView = (nextView, { replace = false } = {}) => {
   const normalizedView = APP_VIEWS.has(nextView) ? nextView : DEFAULT_APP_VIEW;
-  const nextHash = `#${normalizedView}`;
+  const nextHash = formatHashView(normalizedView);
 
   if (replace) {
     window.history.replaceState(
@@ -37,7 +57,7 @@ const setHashView = (nextView, { replace = false } = {}) => {
       `${window.location.pathname}${window.location.search}${nextHash}`
     );
   } else if (window.location.hash !== nextHash) {
-    window.location.hash = normalizedView;
+    window.location.hash = nextHash;
   }
 
   return normalizedView;
@@ -77,7 +97,7 @@ export default function App() {
   const syncCurrentViewFromHash = useCallback((replaceInvalid = false) => {
     const normalizedView = getHashView();
 
-    if (replaceInvalid || window.location.hash !== `#${normalizedView}`) {
+    if (replaceInvalid || !isHashForView(window.location.hash, normalizedView)) {
       setHashView(normalizedView, { replace: true });
     }
 
@@ -355,6 +375,12 @@ export default function App() {
                 />
               </div>
             )}
+            <div style={{ display: currentView === "progress" ? "block" : "none" }}>
+              <MyProgress
+                isActive={currentView === "progress"}
+                userId={session.user?.id}
+              />
+            </div>
             <div style={{ display: currentView === "ask" ? "block" : "none" }}>
               <AskView isActive={currentView === "ask"} />
             </div>

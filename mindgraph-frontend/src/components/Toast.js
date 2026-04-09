@@ -42,15 +42,19 @@ function ToastIcon({ type }) {
 export default function Toast({
   message,
   type = "success",
+  actionLabel,
+  actionAriaLabel,
+  onAction,
+  duration = 4000,
   visible,
   onDismiss,
 }) {
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || duration == null) return;
 
-    const timer = setTimeout(() => onDismiss(), 4000);
+    const timer = setTimeout(() => onDismiss(), duration);
     return () => clearTimeout(timer);
-  }, [visible, message, type, onDismiss]);
+  }, [visible, message, type, onDismiss, duration]);
 
   return (
     <AnimatePresence>
@@ -65,7 +69,20 @@ export default function Toast({
           <span className="toast-icon">
             <ToastIcon type={type} />
           </span>
-          {message}
+          <span className="toast-message">{message}</span>
+          {actionLabel && typeof onAction === "function" && (
+            <button
+              type="button"
+              className="toast-action"
+              aria-label={actionAriaLabel || actionLabel}
+              onClick={() => {
+                onAction();
+                onDismiss();
+              }}
+            >
+              {actionLabel}
+            </button>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

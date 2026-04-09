@@ -62,6 +62,11 @@ const sortDeadlines = (items) =>
       deadlineSortValue(left.due_date).localeCompare(deadlineSortValue(right.due_date))
   );
 
+const sortProjects = (items) =>
+  [...items].sort(
+    (left, right) => (right?.mention_count || 0) - (left?.mention_count || 0)
+  );
+
 function Dashboard({ isActive, userId }) {
   const cachedSnapshot = getCachedDashboardSnapshot({ userId });
 
@@ -89,17 +94,36 @@ function Dashboard({ isActive, userId }) {
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
+  const [pendingDeletion, setPendingDeletion] = useState(null);
   const [toast, setToast] = useState(null);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const deadlineBadgeRefs = useRef({});
+  const pendingDeletionRef = useRef(null);
+  const pendingDeletionTimerRef = useRef(null);
 
   const applySnapshot = useCallback((snapshot) => {
+    const activePendingDeletion = pendingDeletionRef.current;
+    const nextDeadlines = normalizeDeadlines(snapshot.deadlines || []).filter(
+      (deadline) =>
+        !(
+          activePendingDeletion?.kind === "deadline" &&
+          activePendingDeletion.item.id === deadline.id
+        )
+    );
+    const nextProjects = normalizeProjects(snapshot.projects || []).filter(
+      (project) =>
+        !(
+          activePendingDeletion?.kind === "project" &&
+          activePendingDeletion.item.id === project.id
+        )
+    );
+
     setEntries(snapshot.entries || []);
-    setAllDeadlines(normalizeDeadlines(snapshot.deadlines || []));
-    setAllProjects(normalizeProjects(snapshot.projects || []));
+    setAllDeadlines(nextDeadlines);
+    setAllProjects(nextProjects);
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setPatterns(snapshot.patterns || {});
@@ -108,6 +132,10 @@ function Dashboard({ isActive, userId }) {
     setSnapshotReady(true);
     setLastSynced(formatSyncTime(snapshot.fetchedAt));
   }, []);
+
+  useEffect(() => {
+    pendingDeletionRef.current = pendingDeletion;
+  }, [pendingDeletion]);
 
   const fetchEntries = useCallback(async () => {
     const headers = await authHeaders();
@@ -267,6 +295,7 @@ function Dashboard({ isActive, userId }) {
     return () => {
       clearTimeout(refreshTimeoutRef.current);
       clearTimeout(retryTimeoutRef.current);
+      clearTimeout(pendingDeletionTimerRef.current);
     };
   }, []);
 
@@ -327,6 +356,42 @@ function Dashboard({ isActive, userId }) {
     return response.json();
   }, []);
 
+  const deleteDeadline = useCallback(async (deadlineId) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/deadlines/${deadlineId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to delete deadline. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
+  const deleteProject = useCallback(async (projectId) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/projects/${projectId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to delete project. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
   const setProjectsState = useCallback(
     (updater) => {
       setAllProjects((current) => {
@@ -373,8 +438,140 @@ function Dashboard({ isActive, userId }) {
     [userId]
   );
 
+  const restoreDeletedItem = useCallback(
+    (deletion) => {
+      if (!deletion?.item) {
+        return;
+      }
+
+      if (deletion.kind === "deadline") {
+        setDeadlinesState((current) => {
+          if (current.some((item) => item.id === deletion.item.id)) {
+            return current;
+          }
+
+          return sortDeadlines([...current, deletion.item]);
+        });
+        return;
+      }
+
+      setProjectsState((current) => {
+        if (current.some((item) => item.id === deletion.item.id)) {
+          return current;
+        }
+
+        return sortProjects([...current, deletion.item]);
+      });
+    },
+    [setDeadlinesState, setProjectsState]
+  );
+
+  const clearPendingDeleteTimer = useCallback(() => {
+    if (pendingDeletionTimerRef.current) {
+      clearTimeout(pendingDeletionTimerRef.current);
+      pendingDeletionTimerRef.current = null;
+    }
+  }, []);
+
+  const finalizePendingDeletion = useCallback(
+    async (deletion) => {
+      if (!deletion?.item) {
+        return;
+      }
+
+      clearPendingDeleteTimer();
+      pendingDeletionRef.current = null;
+      setPendingDeletion(null);
+      setToast(null);
+
+      try {
+        if (deletion.kind === "deadline") {
+          await deleteDeadline(deletion.item.id);
+        } else {
+          await deleteProject(deletion.item.id);
+        }
+      } catch (error) {
+        restoreDeletedItem(deletion);
+        setToast({
+          message:
+            error.message ||
+            `Failed to delete ${deletion.kind}. Please try again.`,
+          type: "error",
+        });
+      }
+    },
+    [clearPendingDeleteTimer, deleteDeadline, deleteProject, restoreDeletedItem]
+  );
+
+  const undoPendingDeletion = useCallback(() => {
+    const deletion = pendingDeletionRef.current;
+    if (!deletion?.item) {
+      return;
+    }
+
+    clearPendingDeleteTimer();
+    pendingDeletionRef.current = null;
+    restoreDeletedItem(deletion);
+    setPendingDeletion(null);
+    setToast(null);
+  }, [clearPendingDeleteTimer, restoreDeletedItem]);
+
+  const scheduleDelete = useCallback(
+    (kind, item) => {
+      if (!item || pendingDeletionRef.current) {
+        return;
+      }
+
+      if (kind === "deadline" && editingDeadlineId === item.id) {
+        setEditingDeadlineId(null);
+      }
+
+      const deletion = {
+        kind,
+        item: kind === "deadline" ? normalizeDeadline(item) : normalizeProject(item),
+      };
+
+      pendingDeletionRef.current = deletion;
+
+      if (kind === "deadline") {
+        setDeadlinesState((current) =>
+          current.filter((deadline) => deadline.id !== item.id)
+        );
+      } else {
+        setProjectsState((current) =>
+          current.filter((project) => project.id !== item.id)
+        );
+      }
+
+      setPendingDeletion(deletion);
+      setToast({
+        message: kind === "deadline" ? "Deadline deleted." : "Project deleted.",
+        type: "success",
+        actionLabel: "Undo",
+        actionAriaLabel:
+          kind === "deadline"
+            ? `Undo deadline delete for ${item.description}`
+            : `Undo project delete for ${item.name}`,
+        onAction: undoPendingDeletion,
+        duration: 5000,
+      });
+
+      pendingDeletionTimerRef.current = setTimeout(() => {
+        finalizePendingDeletion(deletion);
+      }, 5000);
+    },
+    [
+      editingDeadlineId,
+      finalizePendingDeletion,
+      setDeadlinesState,
+      setProjectsState,
+      undoPendingDeletion,
+    ]
+  );
+
   const handleProjectStatusChange = useCallback(
     async (project, nextStatus) => {
+      const isTerminalStatus = nextStatus === "completed";
       const normalizedProject = normalizeProject(project);
 
       setProjectActionState((current) => ({
@@ -382,28 +579,46 @@ function Dashboard({ isActive, userId }) {
         [project.id]: true,
       }));
 
-      setProjectsState((current) =>
-        current.map((item) =>
-          item.id === project.id ? { ...item, status: nextStatus } : item
-        )
-      );
+      if (isTerminalStatus) {
+        setProjectsState((current) =>
+          current.filter((item) => item.id !== project.id)
+        );
+      } else {
+        setProjectsState((current) =>
+          current.map((item) =>
+            item.id === project.id ? { ...item, status: nextStatus } : item
+          )
+        );
+      }
 
       try {
         const updatedProject = normalizeProject(
           await updateProjectStatus(project.id, nextStatus)
         );
 
-        setProjectsState((current) =>
-          current.map((item) =>
-            item.id === project.id ? updatedProject : item
-          )
-        );
+        if (!isTerminalStatus) {
+          setProjectsState((current) =>
+            current.map((item) =>
+              item.id === project.id ? updatedProject : item
+            )
+          );
+        }
       } catch (error) {
-        setProjectsState((current) =>
-          current.map((item) =>
-            item.id === project.id ? normalizedProject : item
-          )
-        );
+        if (isTerminalStatus) {
+          setProjectsState((current) => {
+            if (current.some((item) => item.id === project.id)) {
+              return current;
+            }
+
+            return sortProjects([...current, normalizedProject]);
+          });
+        } else {
+          setProjectsState((current) =>
+            current.map((item) =>
+              item.id === project.id ? normalizedProject : item
+            )
+          );
+        }
 
         setToast({
           message: error.message || "Failed to update project. Please try again.",
@@ -563,6 +778,7 @@ function Dashboard({ isActive, userId }) {
   const projects = showHidden
     ? allProjects
     : allProjects.filter((project) => project.status === "active");
+  const deleteLocked = Boolean(pendingDeletion);
   const activePickerDeadline =
     deadlines.find((deadline) => deadline.id === editingDeadlineId) || null;
 
@@ -729,6 +945,33 @@ function Dashboard({ isActive, userId }) {
                             </div>
 
                             <div className="project-actions">
+                              {!isHidden && (
+                                <button
+                                  type="button"
+                                  className="deadline-action-btn"
+                                  aria-label={`Complete ${project.name}`}
+                                  title="Complete"
+                                  disabled={isUpdating}
+                                  onClick={() =>
+                                    handleProjectStatusChange(project, "completed")
+                                  }
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                  >
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                </button>
+                              )}
+
                               {isHidden ? (
                                 <button
                                   type="button"
@@ -783,6 +1026,33 @@ function Dashboard({ isActive, userId }) {
                                   </svg>
                                 </button>
                               )}
+
+                              <button
+                                type="button"
+                                className="deadline-action-btn danger"
+                                aria-label={`Delete ${project.name}`}
+                                title="Delete"
+                                disabled={isUpdating || deleteLocked}
+                                onClick={() => scheduleDelete("project", project)}
+                              >
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M3 6h18" />
+                                  <path d="M8 6V4h8v2" />
+                                  <path d="M19 6l-1 14H6L5 6" />
+                                  <path d="M10 11v6" />
+                                  <path d="M14 11v6" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         );
@@ -951,6 +1221,33 @@ function Dashboard({ isActive, userId }) {
                                   </svg>
                                 </button>
                               )}
+
+                              <button
+                                type="button"
+                                className="deadline-action-btn danger"
+                                aria-label={`Delete ${deadline.description}`}
+                                title="Delete"
+                                disabled={isUpdating || deleteLocked}
+                                onClick={() => scheduleDelete("deadline", deadline)}
+                              >
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M3 6h18" />
+                                  <path d="M8 6V4h8v2" />
+                                  <path d="M19 6l-1 14H6L5 6" />
+                                  <path d="M10 11v6" />
+                                  <path d="M14 11v6" />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         );
@@ -1150,6 +1447,10 @@ function Dashboard({ isActive, userId }) {
       <Toast
         message={toast?.message}
         type={toast?.type || "success"}
+        actionLabel={toast?.actionLabel}
+        actionAriaLabel={toast?.actionAriaLabel}
+        onAction={toast?.onAction}
+        duration={toast?.duration}
         visible={!!toast}
         onDismiss={() => setToast(null)}
       />

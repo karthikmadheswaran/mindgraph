@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Dashboard from "./Dashboard";
 import { authHeaders } from "../utils/auth";
@@ -72,6 +72,8 @@ function createFetchHandler({
   onDeadlinePatch,
   onDeadlineDatePatch,
   onProjectPatch,
+  onDeadlineDelete,
+  onProjectDelete,
 } = {}) {
   return (input, options = {}) => {
     const url = typeof input === "string" ? input : input.url;
@@ -104,7 +106,7 @@ function createFetchHandler({
     if (url.endsWith(`/deadlines/${pendingDeadline.id}/status`) && method === "PATCH") {
       return onDeadlinePatch
         ? onDeadlinePatch(input, options)
-        : jsonResponse({ ...pendingDeadline, status: "snoozed" });
+        : jsonResponse({ ...pendingDeadline, status: JSON.parse(options.body).status });
     }
 
     if (url.endsWith(`/deadlines/${pendingDeadline.id}/date`) && method === "PATCH") {
@@ -113,10 +115,22 @@ function createFetchHandler({
         : jsonResponse({ ...pendingDeadline, due_date: "2026-04-10" });
     }
 
+    if (url.endsWith(`/deadlines/${pendingDeadline.id}`) && method === "DELETE") {
+      return onDeadlineDelete
+        ? onDeadlineDelete(input, options)
+        : jsonResponse({ success: true, id: pendingDeadline.id });
+    }
+
     if (url.includes("/projects/") && url.endsWith("/status") && method === "PATCH") {
       return onProjectPatch
         ? onProjectPatch(input, options)
-        : jsonResponse({ ...activeProject, status: "hidden" });
+        : jsonResponse({ ...activeProject, status: JSON.parse(options.body).status });
+    }
+
+    if (url.endsWith(`/projects/${activeProject.id}`) && method === "DELETE") {
+      return onProjectDelete
+        ? onProjectDelete(input, options)
+        : jsonResponse({ success: true, id: activeProject.id });
     }
 
     throw new Error(`Unhandled fetch: ${method} ${url}`);
@@ -131,6 +145,7 @@ describe("Dashboard data and actions", () => {
 
   afterEach(() => {
     clearDashboardSnapshotCache();
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -284,6 +299,106 @@ describe("Dashboard data and actions", () => {
           return JSON.parse(options.body).due_date === "2026-04-10";
         })
       ).toBe(true);
+    });
+  });
+
+  test("marks a project as completed and removes it from the active list immediately", async () => {
+    global.fetch.mockImplementation(createFetchHandler());
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+
+    userEvent.click(screen.getByLabelText(/complete mindgraph/i));
+
+    expect(screen.queryByText("Mindgraph")).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        global.fetch.mock.calls.some(([url, options]) => {
+          if (
+            url !==
+              "https://mindgraph-production.up.railway.app/projects/project-1/status" ||
+            options?.method !== "PATCH"
+          ) {
+            return false;
+          }
+
+          return JSON.parse(options.body).status === "completed";
+        })
+      ).toBe(true);
+    });
+  });
+
+  test("keeps deadline delete pending for 5 seconds and supports undo before the API call", async () => {
+    jest.useFakeTimers();
+    const deleteSpy = jest.fn(() =>
+      jsonResponse({ success: true, id: pendingDeadline.id })
+    );
+
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onDeadlineDelete: deleteSpy,
+      })
+    );
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/delete finish report/i));
+
+    expect(screen.queryByText("Finish report")).not.toBeInTheDocument();
+    expect(await screen.findByText("Deadline deleted.")).toBeInTheDocument();
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /undo deadline delete for finish report/i,
+      })
+    );
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+    expect(deleteSpy).not.toHaveBeenCalled();
+  });
+
+  test("fires project delete only after the 5 second undo window passes", async () => {
+    jest.useFakeTimers();
+    const deleteSpy = jest.fn(() =>
+      jsonResponse({ success: true, id: activeProject.id })
+    );
+
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onProjectDelete: deleteSpy,
+      })
+    );
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/delete mindgraph/i));
+
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(4999);
+    });
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
     });
   });
 
