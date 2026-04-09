@@ -866,25 +866,9 @@ function Dashboard({ isActive, userId }) {
                                     border: "none",
                                     display: "inline-flex",
                                     alignItems: "center",
-                                    gap: 6,
-                                    cursor: isUpdating ? "not-allowed" : "pointer",
                                   }}
                                 >
                                   <span>{label}</span>
-                                  <svg
-                                    width="12"
-                                    height="12"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <path d="M12 20h9" />
-                                    <path d="m16.5 3.5 4 4L7 21l-4 1 1-4Z" />
-                                  </svg>
                                 </button>
                               </div>
                             </div>
