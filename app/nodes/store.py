@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 import re
 from dotenv import load_dotenv
+from postgrest.exceptions import APIError
 from supabase import create_client
 
 from app.embeddings import get_embedding
@@ -81,6 +82,48 @@ def normalize_text(value: str) -> str:
 
 def make_entity_lookup_key(name: str, entity_type: str) -> str:
     return f"{normalize_text(name)}|{normalize_text(entity_type)}"
+
+
+def normalize_deadline_description(value: str) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def make_deadline_due_date_key(value) -> str:
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+
+    text = str(value or "").strip()
+    if "T" in text:
+        return text.split("T", 1)[0]
+    return text
+
+
+def dedup_deadline_rows(deadlines: list[dict]) -> list[dict]:
+    seen: set[tuple[str, str]] = set()
+    unique_deadlines: list[dict] = []
+
+    for deadline in deadlines:
+        key = (
+            normalize_deadline_description(deadline.get("description", "")),
+            make_deadline_due_date_key(deadline.get("due_at")),
+        )
+        if key in seen:
+            continue
+
+        seen.add(key)
+        unique_deadlines.append(deadline)
+
+    return unique_deadlines
+
+
+def is_duplicate_constraint_error(exc: Exception) -> bool:
+    if isinstance(exc, APIError):
+        code = getattr(exc, "code", None)
+        if code == "23505":
+            return True
+
+    message = str(exc).lower()
+    return "23505" in message or "duplicate key value violates unique constraint" in message
 
 
 async def store_entry(state: JournalState) -> dict:
@@ -314,6 +357,8 @@ async def store_entry_deadlines(entry_id: int, deadlines: list[dict], user_id: s
     if not deadlines:
         return {"success": True}
 
+    unique_deadlines = dedup_deadline_rows(deadlines)
+
     deadline_data = [
         {
             "source_entry_id": entry_id,
@@ -321,10 +366,28 @@ async def store_entry_deadlines(entry_id: int, deadlines: list[dict], user_id: s
             "description": deadline["description"],
             "due_date": deadline["due_at"].isoformat(),
         }
-        for deadline in deadlines
+        for deadline in unique_deadlines
     ]
-    result = supabase.table("deadlines").insert(deadline_data).execute()
-    return {"success": True} if result.data else {"error": "Failed to store deadlines"}
+
+    stored = 0
+    skipped_duplicates = len(deadlines) - len(unique_deadlines)
+
+    for row in deadline_data:
+        try:
+            result = supabase.table("deadlines").insert(row).execute()
+            if result.data:
+                stored += 1
+        except Exception as exc:
+            if is_duplicate_constraint_error(exc):
+                skipped_duplicates += 1
+                continue
+            return {"error": f"Failed to store deadlines: {exc}"}
+
+    return {
+        "success": True,
+        "stored": stored,
+        "skipped_duplicates": skipped_duplicates,
+    }
 
 
 async def store_entry_entities(entry_id: str, entity_ids: list[str]) -> dict:

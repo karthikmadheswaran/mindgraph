@@ -15,6 +15,82 @@ model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 USE_SEMANTIC_VALIDATOR = False
 
 
+def normalize_deadline_description(description: str) -> str:
+    return " ".join(str(description or "").strip().lower().split())
+
+
+def make_deadline_date_key(due_at) -> str:
+    if isinstance(due_at, datetime):
+        return due_at.date().isoformat()
+
+    value = str(due_at or "").strip()
+    if "T" in value:
+        return value.split("T", 1)[0]
+    return value
+
+
+def prefer_deadline_candidate(existing: DeadlineNode, candidate: DeadlineNode) -> DeadlineNode:
+    existing_desc = normalize_deadline_description(existing["description"])
+    candidate_desc = normalize_deadline_description(candidate["description"])
+
+    if len(candidate_desc) < len(existing_desc):
+        return candidate
+    if len(existing_desc) < len(candidate_desc):
+        return existing
+
+    existing_raw = " ".join(existing["raw_text"].strip().split())
+    candidate_raw = " ".join(candidate["raw_text"].strip().split())
+    return candidate if len(candidate_raw) > len(existing_raw) else existing
+
+
+def dedup_deadlines(deadlines: list[DeadlineNode]) -> list[DeadlineNode]:
+    exact_deduped: dict[tuple[str, str], DeadlineNode] = {}
+
+    for deadline in deadlines:
+        key = (
+            normalize_deadline_description(deadline["description"]),
+            make_deadline_date_key(deadline["due_at"]),
+        )
+
+        existing = exact_deduped.get(key)
+        if existing is None:
+            exact_deduped[key] = deadline
+            continue
+
+        exact_deduped[key] = prefer_deadline_candidate(existing, deadline)
+
+    unique: list[DeadlineNode] = []
+
+    for deadline in sorted(
+        exact_deduped.values(),
+        key=lambda item: (
+            make_deadline_date_key(item["due_at"]),
+            len(normalize_deadline_description(item["description"])),
+            normalize_deadline_description(item["description"]),
+        ),
+    ):
+        deadline_desc = normalize_deadline_description(deadline["description"])
+        deadline_date = make_deadline_date_key(deadline["due_at"])
+        merged = False
+
+        for index, existing in enumerate(unique):
+            existing_desc = normalize_deadline_description(existing["description"])
+            existing_date = make_deadline_date_key(existing["due_at"])
+
+            if deadline_date != existing_date:
+                continue
+
+            if deadline_desc in existing_desc or existing_desc in deadline_desc:
+                unique[index] = prefer_deadline_candidate(existing, deadline)
+                merged = True
+                break
+
+        if not merged:
+            unique.append(deadline)
+
+    return unique
+
+
 def build_deadline_prompt(text: str, raw_text: str) -> str:
     reference_date = datetime.now().strftime("%Y-%m-%d")
     return f"""
@@ -36,6 +112,7 @@ Rules:
 - The time reference must be tied to a real task, obligation, meeting, payment, submission, appointment, or event.
 - Do not extract hopes, vague future thoughts, reflections, metadata dates, or project/status phrases.
 - Do not invent deadlines that are not in the text.
+- If the same event is mentioned multiple times, extract it only once. Do not create separate items for repeated references to the same event on the same date.
 - If a date is ambiguous and cannot be resolved confidently, skip it.
 
 Do NOT extract examples like:
@@ -43,6 +120,8 @@ Do NOT extract examples like:
 - hope for a better day
 - entry date
 - project progress
+- [{{"description": "meeting with X", "due_at": "2026-04-09", "raw_text": "meeting tomorrow"}}, {{"description": "meeting with X", "due_at": "2026-04-09", "raw_text": "scheduled for tomorrow"}}]
+  -> This is ONE event, extract it only once.
 
 Output Rules:
 - Return STRICT JSON only.
@@ -186,5 +265,6 @@ async def extract_deadlines(state: JournalState) -> dict:
         raw_source_text=raw_text,
         cleaned_source_text=text,
     )
+    deadlines = dedup_deadlines(deadlines)
 
     return {"deadline": deadlines}
