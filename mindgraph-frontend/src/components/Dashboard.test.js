@@ -70,6 +70,7 @@ function createFetchHandler({
   deadlines = [pendingDeadline, snoozedDeadline],
   projects = [activeProject, hiddenProject],
   onDeadlinePatch,
+  onDeadlineDatePatch,
   onProjectPatch,
 } = {}) {
   return (input, options = {}) => {
@@ -104,6 +105,12 @@ function createFetchHandler({
       return onDeadlinePatch
         ? onDeadlinePatch(input, options)
         : jsonResponse({ ...pendingDeadline, status: "snoozed" });
+    }
+
+    if (url.endsWith(`/deadlines/${pendingDeadline.id}/date`) && method === "PATCH") {
+      return onDeadlineDatePatch
+        ? onDeadlineDatePatch(input, options)
+        : jsonResponse({ ...pendingDeadline, due_date: "2026-04-10" });
     }
 
     if (url.includes("/projects/") && url.endsWith("/status") && method === "PATCH") {
@@ -238,6 +245,46 @@ describe("Dashboard data and actions", () => {
       await screen.findByText("Failed to update project. Please try again.")
     ).toBeInTheDocument();
     expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+  });
+
+  test("opens the custom picker from the deadline badge and saves through the date endpoint", async () => {
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onDeadlineDatePatch: (_input, options) =>
+          jsonResponse({
+            ...pendingDeadline,
+            due_date: JSON.parse(options.body).due_date,
+          }),
+      })
+    );
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+
+    userEvent.click(screen.getByLabelText(/edit date for finish report/i));
+
+    expect(
+      await screen.findByRole("dialog", { name: /deadline date picker/i })
+    ).toBeInTheDocument();
+
+    userEvent.click(screen.getByRole("button", { name: /save deadline date/i }));
+
+    await waitFor(() => {
+      expect(
+        global.fetch.mock.calls.some(([url, options]) => {
+          if (
+            url !==
+              "https://mindgraph-production.up.railway.app/deadlines/deadline-1/date" ||
+            options?.method !== "PATCH"
+          ) {
+            return false;
+          }
+
+          return JSON.parse(options.body).due_date === "2026-04-10";
+        })
+      ).toBe(true);
+    });
   });
 
   test("uses a prefetched snapshot cache without showing the loading state", async () => {

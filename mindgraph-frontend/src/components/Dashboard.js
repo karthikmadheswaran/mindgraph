@@ -3,11 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
 import {
-  buildDeadlineDueDate,
   deadlineColor,
   deadlineLabel,
   deadlineSortValue,
-  getDeadlineEditorValue,
 } from "../utils/dateHelpers";
 import {
   getCachedDashboardSnapshot,
@@ -16,6 +14,7 @@ import {
   updateDashboardSnapshot,
 } from "../utils/dashboardSnapshot";
 import AnimatedView from "./AnimatedView";
+import DateTimePicker from "./DateTimePicker";
 import KnowledgeGraph from "./KnowledgeGraph";
 import Toast from "./Toast";
 import "../styles/dashboard.css";
@@ -90,12 +89,12 @@ function Dashboard({ isActive, userId }) {
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
-  const [deadlineDrafts, setDeadlineDrafts] = useState({});
   const [toast, setToast] = useState(null);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
   const retryTimeoutRef = useRef(null);
+  const deadlineBadgeRefs = useRef({});
 
   const applySnapshot = useCallback((snapshot) => {
     setEntries(snapshot.entries || []);
@@ -426,6 +425,10 @@ function Dashboard({ isActive, userId }) {
       const isTerminalStatus = nextStatus === "done";
       const normalizedDeadline = normalizeDeadline(deadline);
 
+      if (editingDeadlineId === deadline.id) {
+        setEditingDeadlineId(null);
+      }
+
       setDeadlineActionState((current) => ({
         ...current,
         [deadline.id]: true,
@@ -484,61 +487,31 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [setDeadlinesState, updateDeadlineStatus]
+    [editingDeadlineId, setDeadlinesState, updateDeadlineStatus]
   );
 
-  const startDeadlineEdit = useCallback((deadline) => {
-    setEditingDeadlineId(deadline.id);
-    setDeadlineDrafts((current) => ({
-      ...current,
-      [deadline.id]: getDeadlineEditorValue(deadline.due_date),
-    }));
-  }, []);
-
-  const cancelDeadlineEdit = useCallback((deadlineId) => {
+  const closeDeadlinePicker = useCallback((deadlineId = null) => {
     setEditingDeadlineId((current) =>
-      current === deadlineId ? null : current
+      deadlineId === null || current === deadlineId ? null : current
     );
-    setDeadlineDrafts((current) => {
-      const next = { ...current };
-      delete next[deadlineId];
-      return next;
-    });
   }, []);
 
-  const handleDeadlineDraftChange = useCallback((deadlineId, field, value) => {
-    setDeadlineDrafts((current) => ({
-      ...current,
-      [deadlineId]: {
-        ...(current[deadlineId] || { date: "", time: "" }),
-        [field]: value,
-      },
-    }));
+  const toggleDeadlinePicker = useCallback((deadlineId) => {
+    setEditingDeadlineId((current) =>
+      current === deadlineId ? null : deadlineId
+    );
   }, []);
 
   const handleDeadlineDateSave = useCallback(
-    async (deadline) => {
+    async (deadline, nextDueDate) => {
       const normalizedDeadline = normalizeDeadline(deadline);
-      const draft =
-        deadlineDrafts[deadline.id] || getDeadlineEditorValue(deadline.due_date);
-      const nextDueDate = buildDeadlineDueDate(draft.date, draft.time);
-
-      if (!draft.date || !nextDueDate) {
-        setToast({
-          message: "Choose a date before saving the deadline.",
-          type: "error",
-        });
-        return;
-      }
 
       setDeadlineActionState((current) => ({
         ...current,
         [deadline.id]: true,
       }));
 
-      setEditingDeadlineId((current) =>
-        current === deadline.id ? null : current
-      );
+      closeDeadlinePicker(deadline.id);
 
       setDeadlinesState((current) =>
         sortDeadlines(
@@ -560,12 +533,6 @@ function Dashboard({ isActive, userId }) {
             )
           )
         );
-
-        setDeadlineDrafts((current) => {
-          const next = { ...current };
-          delete next[deadline.id];
-          return next;
-        });
       } catch (error) {
         setDeadlinesState((current) =>
           sortDeadlines(
@@ -574,12 +541,6 @@ function Dashboard({ isActive, userId }) {
             )
           )
         );
-
-        setDeadlineDrafts((current) => ({
-          ...current,
-          [deadline.id]: draft,
-        }));
-        setEditingDeadlineId(deadline.id);
         setToast({
           message:
             error.message || "Failed to update deadline date. Please try again.",
@@ -593,7 +554,7 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [deadlineDrafts, setDeadlinesState, updateDeadlineDate]
+    [closeDeadlinePicker, setDeadlinesState, updateDeadlineDate]
   );
 
   const deadlines = showSnoozed
@@ -602,6 +563,8 @@ function Dashboard({ isActive, userId }) {
   const projects = showHidden
     ? allProjects
     : allProjects.filter((project) => project.status === "active");
+  const activePickerDeadline =
+    deadlines.find((deadline) => deadline.id === editingDeadlineId) || null;
 
   const people = entities.filter((entity) => entity.entity_type === "person");
   const places = entities.filter((entity) => entity.entity_type === "place");
@@ -613,6 +576,12 @@ function Dashboard({ isActive, userId }) {
   );
 
   const dashboardMotionState = hasActivated ? "animate" : "initial";
+
+  useEffect(() => {
+    if (editingDeadlineId && !activePickerDeadline) {
+      setEditingDeadlineId(null);
+    }
+  }, [activePickerDeadline, editingDeadlineId]);
 
   return (
     <AnimatedView viewKey="dashboard" isActive={isActive}>
@@ -858,10 +827,6 @@ function Dashboard({ isActive, userId }) {
                         const label = deadlineLabel(deadline.due_date);
                         const isSnoozed = deadline.status === "snoozed";
                         const isUpdating = Boolean(deadlineActionState[deadline.id]);
-                        const isEditing = editingDeadlineId === deadline.id;
-                        const draft =
-                          deadlineDrafts[deadline.id] ||
-                          getDeadlineEditorValue(deadline.due_date);
 
                         return (
                           <div
@@ -881,162 +846,46 @@ function Dashboard({ isActive, userId }) {
                                     Snoozed
                                   </span>
                                 )}
-                                <AnimatePresence initial={false} mode="wait">
-                                  {isEditing ? (
-                                    <motion.div
-                                      key="editor"
-                                      initial={{ opacity: 0, y: -6 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, y: -6 }}
-                                      transition={{ duration: 0.16 }}
-                                      style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 8,
-                                        flexWrap: "wrap",
-                                      }}
-                                    >
-                                      <input
-                                        type="date"
-                                        aria-label={`${deadline.description} date`}
-                                        value={draft.date}
-                                        disabled={isUpdating}
-                                        onChange={(event) =>
-                                          handleDeadlineDraftChange(
-                                            deadline.id,
-                                            "date",
-                                            event.target.value
-                                          )
-                                        }
-                                        style={{
-                                          padding: "6px 10px",
-                                          borderRadius: 999,
-                                          border: "1px solid var(--border)",
-                                          background: "var(--bg-card-solid)",
-                                          color: "var(--text-primary)",
-                                          fontSize: 12,
-                                        }}
-                                      />
-                                      <input
-                                        type="time"
-                                        aria-label={`${deadline.description} time`}
-                                        value={draft.time}
-                                        disabled={isUpdating}
-                                        onChange={(event) =>
-                                          handleDeadlineDraftChange(
-                                            deadline.id,
-                                            "time",
-                                            event.target.value
-                                          )
-                                        }
-                                        style={{
-                                          padding: "6px 10px",
-                                          borderRadius: 999,
-                                          border: "1px solid var(--border)",
-                                          background: "var(--bg-card-solid)",
-                                          color: "var(--text-primary)",
-                                          fontSize: 12,
-                                        }}
-                                      />
-                                      <button
-                                        type="button"
-                                        className="deadline-action-btn"
-                                        aria-label={`Save ${deadline.description} date`}
-                                        title="Save date"
-                                        disabled={isUpdating}
-                                        onClick={() =>
-                                          handleDeadlineDateSave(deadline)
-                                        }
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2.2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          aria-hidden="true"
-                                        >
-                                          <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="deadline-action-btn"
-                                        aria-label={`Cancel editing ${deadline.description}`}
-                                        title="Cancel"
-                                        disabled={isUpdating}
-                                        onClick={() =>
-                                          cancelDeadlineEdit(deadline.id)
-                                        }
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          aria-hidden="true"
-                                        >
-                                          <line x1="18" y1="6" x2="6" y2="18" />
-                                          <line x1="6" y1="6" x2="18" y2="18" />
-                                        </svg>
-                                      </button>
-                                    </motion.div>
-                                  ) : (
-                                    <motion.div
-                                      key="badge"
-                                      initial={{ opacity: 0, y: -6 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, y: -6 }}
-                                      transition={{ duration: 0.16 }}
-                                      style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 6,
-                                      }}
-                                    >
-                                      <button
-                                        type="button"
-                                        className="deadline-badge"
-                                        aria-label={`Edit date for ${deadline.description}`}
-                                        title="Edit date and time"
-                                        disabled={isUpdating}
-                                        onClick={() => startDeadlineEdit(deadline)}
-                                        style={{
-                                          background: color.bg,
-                                          color: color.text,
-                                          border: "none",
-                                          display: "inline-flex",
-                                          alignItems: "center",
-                                          gap: 6,
-                                          cursor: isUpdating ? "not-allowed" : "pointer",
-                                        }}
-                                      >
-                                        <span>{label}</span>
-                                        <svg
-                                          width="12"
-                                          height="12"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          aria-hidden="true"
-                                        >
-                                          <path d="M12 20h9" />
-                                          <path d="m16.5 3.5 4 4L7 21l-4 1 1-4Z" />
-                                        </svg>
-                                      </button>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                                <button
+                                  type="button"
+                                  ref={(node) => {
+                                    if (node) {
+                                      deadlineBadgeRefs.current[deadline.id] = node;
+                                    } else {
+                                      delete deadlineBadgeRefs.current[deadline.id];
+                                    }
+                                  }}
+                                  className="deadline-badge"
+                                  aria-label={`Edit date for ${deadline.description}`}
+                                  title="Edit date and time"
+                                  disabled={isUpdating}
+                                  onClick={() => toggleDeadlinePicker(deadline.id)}
+                                  style={{
+                                    background: color.bg,
+                                    color: color.text,
+                                    border: "none",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    cursor: isUpdating ? "not-allowed" : "pointer",
+                                  }}
+                                >
+                                  <span>{label}</span>
+                                  <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M12 20h9" />
+                                    <path d="m16.5 3.5 4 4L7 21l-4 1 1-4Z" />
+                                  </svg>
+                                </button>
                               </div>
                             </div>
 
@@ -1298,6 +1147,21 @@ function Dashboard({ isActive, userId }) {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {activePickerDeadline && (
+          <DateTimePicker
+            currentDate={activePickerDeadline.due_date}
+            anchorRef={{
+              current: deadlineBadgeRefs.current[activePickerDeadline.id] || null,
+            }}
+            onCancel={() => closeDeadlinePicker(activePickerDeadline.id)}
+            onSave={(nextDueDate) =>
+              handleDeadlineDateSave(activePickerDeadline, nextDueDate)
+            }
+          />
+        )}
+      </AnimatePresence>
 
       <Toast
         message={toast?.message}

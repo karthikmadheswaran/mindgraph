@@ -1,0 +1,220 @@
+.date-time-picker {
+  position: fixed;
+  z-index: 900;
+  width: min(320px, calc(100vw - 24px));
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--bg-card-solid);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+}
+
+.date-time-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.date-time-picker-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text-primary);
+}
+
+.date-time-picker-nav,
+.date-time-picker-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 253, 249, 0.85);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.date-time-picker-nav:hover,
+.date-time-picker-icon-btn:hover:not(:disabled) {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: rgba(107, 93, 77, 0.24);
+}
+
+.date-time-picker-icon-btn.confirm {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.date-time-picker-icon-btn.confirm:hover:not(:disabled) {
+  background: #748766;
+  color: #fff;
+}
+
+.date-time-picker-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.date-time-picker-weekdays,
+.date-time-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.date-time-picker-weekdays {
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.date-time-picker-weekdays span {
+  padding: 6px 0;
+}
+
+.date-time-picker-grid {
+  gap: 6px;
+}
+
+.date-time-picker-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.date-time-picker-day:hover {
+  background: rgba(212, 165, 116, 0.12);
+  color: var(--text-primary);
+}
+
+.date-time-picker-day.today {
+  border-color: rgba(138, 154, 122, 0.45);
+}
+
+.date-time-picker-day.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 24px rgba(138, 154, 122, 0.2);
+}
+
+.date-time-picker-day.outside {
+  color: rgba(139, 123, 105, 0.52);
+}
+
+.date-time-picker-day.selected.outside {
+  color: #fff;
+}
+
+.date-time-picker-time {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(244, 239, 232, 0.75);
+  border: 1px solid var(--border-light);
+}
+
+.date-time-picker-time-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.date-time-picker-time-fields {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-time-picker-time-input {
+  width: 52px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 253, 249, 0.92);
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+
+.date-time-picker-time-input::placeholder {
+  color: rgba(139, 123, 105, 0.75);
+}
+
+.date-time-picker-time-input:focus {
+  border-color: rgba(138, 154, 122, 0.55);
+  box-shadow: 0 0 0 3px rgba(138, 154, 122, 0.12);
+}
+
+.date-time-picker-time-separator {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.date-time-picker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.date-time-picker-clear {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.date-time-picker-clear:hover {
+  color: var(--text-primary);
+}
+
+.date-time-picker-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .date-time-picker {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .date-time-picker-day {
+    min-height: 38px;
+  }
+
+  .date-time-picker-time-fields {
+    width: 100%;
+  }
+}
