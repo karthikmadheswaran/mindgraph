@@ -15,11 +15,13 @@ function InputView({ isActive, onEntrySubmitted }) {
     setLoading(true);
 
     try {
+      const userTimezone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
       const headers = await authHeaders();
       const response = await fetch(`${API}/entries/async`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ raw_text: text }),
+        body: JSON.stringify({ raw_text: text, user_timezone: userTimezone }),
       });
 
       if (response.status === 401) {

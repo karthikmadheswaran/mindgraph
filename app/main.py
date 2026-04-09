@@ -49,6 +49,7 @@ workflow=build_graph()
 class EntryRequest(BaseModel):
     raw_text: str
     input_type: str="text"
+    user_timezone: str = "UTC"
 
 class EntryResponse(BaseModel):
     auto_title: str
@@ -122,6 +123,7 @@ async def create_entry(entry: EntryRequest, user_id: str = Depends(get_current_u
     state={
         "raw_text": entry.raw_text,
         "user_id": user_id,
+        "user_timezone": entry.user_timezone,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",
@@ -414,6 +416,7 @@ async def create_entry_stream(entry: EntryRequest, user_id: str = Depends(get_cu
     state = {
         "raw_text": entry.raw_text,
         "user_id": user_id,
+        "user_timezone": entry.user_timezone,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",
@@ -479,6 +482,7 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
     state = {
         "raw_text": entry.raw_text,
         "user_id": user_id,
+        "user_timezone": entry.user_timezone,
         "input_type": entry.input_type,
         "cleaned_text": "",
         "auto_title": "",

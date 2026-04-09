@@ -65,6 +65,7 @@ class RelationEdge(TypedDict):
 
 class JournalState(TypedDict):
     user_id: str
+    user_timezone: str
     raw_text: str
     cleaned_text: Annotated[str, keep_latest]
     auto_title: Annotated[str, keep_latest]

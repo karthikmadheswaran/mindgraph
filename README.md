@@ -98,6 +98,16 @@ Specific rules added to reach 100%:
 - Trailing UI/feature words (dashboard, auth, onboarding, page) are stripped from project names
 - Standalone generic role words (council, team, proposal) are blocked from extraction
 
+### Date Normalization — Timezone-Aware Calendar Grounding
+The `normalize` node now receives the browser's IANA timezone with each journal entry, computes the user's local "today" in Python, and injects a Monday-anchored calendar reference into the Gemini prompt. The prompt explicitly tells Gemini not to calculate dates itself and to look every relative date up from the provided calendar block, which removes the original `next monday` off-by-one bug and stabilizes month-end, year-end, and timezone rollover cases.
+
+Latest live normalize evaluation (`normalize_evaluation.py`, 25 diverse Gemini-backed cases):
+- Functional pass rate: **64% → 96%**
+- Date case accuracy: **68% → 100%**
+- Date F1: **0.72 → 1.00**
+- No-date hallucination rate: **66.7% → 100%**
+- Average latency: **1039ms → 829ms**
+
 ### RAG Evaluation — 4 Runs, Data-Driven Decisions
 Built a 15-test-case evaluation framework measuring retrieval F1, keyword accuracy, and hallucination rate. Used it to:
 - Diagnose NULL embedding failures (F1: 0.0 → 0.333 after backfill)
@@ -131,8 +141,9 @@ Dashboard reads cached insights from the database (instant load). Fresh insights
 | `test_store_project_matching.py` | 24 | Spacing/case/hyphen/underscore variants, risky collisions, clearly-different names |
 | `test_extract_relations.py` | 16 | Relation parsing: multi-entity, symmetric relations, confidence scoring, edge cases |
 | `test_store_relations.py` | 4 | Insert, upsert dedup, unresolved entity skip, symmetric relation normalization |
+| `normalize_evaluation.py` | 25 | Live Gemini normalize evaluation: weekday lookups, offsets, month/year boundaries, slang cleanup, no-date hallucination resistance, timezone rollover |
 | `rag_evaluation.py` | 15 | Retrieval F1, keyword accuracy, hallucination rate |
-| **Total** | **106** | |
+| **Total** | **131** | |
 
 ---
 
