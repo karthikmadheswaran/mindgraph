@@ -114,6 +114,19 @@ Built a 15-test-case evaluation framework measuring retrieval F1, keyword accura
 - Evaluate query rewriting (+8.3% F1 but 50x latency — reverted)
 - Validate that basic vector search is optimal for current data size
 
+### Ask Memory Compaction - Eval-Driven Prompt Tuning
+Refactored Ask memory into reusable prompt builders and built a **50-case synthetic evaluation harness** for both long-term memory compaction and downstream Ask memory usage. The tuned prompt now stores sectioned long-term memory, applies clearer evidence precedence in `/ask`, and makes unsupported-question honesty measurable instead of anecdotal.
+
+Latest live memory evaluation (`memory_compaction_evaluation.py`, 36 compaction cases + 14 Ask cases):
+- Compaction format compliance: **36.1% -> 91.7%**
+- Compaction section placement accuracy: **44.4% -> 77.8%**
+- Compaction forbidden-fact leakage: **9.7% -> 11.1%**
+- Compaction deterministic pass rate: **25.0% -> 52.8%**
+- Ask memory keyword recall: **85.7% -> 100%**
+- Ask hallucination score: **0.893 -> 1.000**
+- Ask precedence correctness: **71.4% -> 100%**
+- Ask unsupported-question honesty: **85.7% -> 100%**
+
 ### Insight Engine — Hybrid Caching
 Dashboard reads cached insights from the database (instant load). Fresh insights regenerate in the background after each new journal entry. Pattern detection and forgotten project analysis powered by Gemini 2.5 Pro.
 
@@ -143,7 +156,8 @@ Dashboard reads cached insights from the database (instant load). Fresh insights
 | `test_store_relations.py` | 4 | Insert, upsert dedup, unresolved entity skip, symmetric relation normalization |
 | `normalize_evaluation.py` | 25 | Live Gemini normalize evaluation: weekday lookups, offsets, month/year boundaries, slang cleanup, no-date hallucination resistance, timezone rollover |
 | `rag_evaluation.py` | 15 | Retrieval F1, keyword accuracy, hallucination rate |
-| **Total** | **131** | |
+| `memory_compaction_evaluation.py` | 50 | Synthetic Ask memory evaluation: stable_fact_extraction, ignore_assistant_filler, existing_memory_dedup, contradiction_update, newer_replaces_stale, multi_topic_merge, preference_vs_transient, goals_vs_vague_wishes, tools_people_project_separation, negative_no_durable_fact, formatting_robustness, resolved_or_changed, memory_only_answer, recent_history_override, journal_evidence_override, unsupported_question_honesty |
+| **Total** | **181** | |
 
 ---
 
@@ -154,7 +168,9 @@ Dashboard reads cached insights from the database (instant load). Fresh insights
 | POST | `/entries/async` | Submit entry — instant response, background processing |
 | GET | `/entries` | Fetch stored entries for authenticated user |
 | GET | `/entries/{id}/status` | Poll pipeline stage for a processing entry |
-| POST | `/ask` | RAG — ask questions about your journal |
+| POST | `/ask` | RAG + conversation memory - ask questions about your journal |
+| GET | `/ask/history` | Fetch recent Ask conversation history for the authenticated user |
+| GET | `/ask/memory` | Inspect compacted long-term Ask memory for the authenticated user |
 | GET | `/search` | Semantic similarity search on entries |
 | GET | `/deadlines` | Fetch upcoming deadlines |
 | GET | `/entities` | Fetch extracted entities ranked by mention count |
@@ -208,7 +224,7 @@ npm start
 GEMINI_API_KEY=your_key
 GOOGLE_API_KEY=your_key
 SUPABASE_URL=your_url
-SUPABASE_KEY=your_service_role_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 LANGFUSE_PUBLIC_KEY=your_key
 LANGFUSE_SECRET_KEY=your_key
 LANGFUSE_HOST=https://cloud.langfuse.com

@@ -6,6 +6,11 @@ from datetime import datetime, timezone
 from app.graph import build_graph
 from app.nodes.store import supabase
 from app.embeddings import get_embedding
+from app.ask_memory import (
+    build_ask_prompt,
+    build_compaction_prompt,
+    format_conversation_messages,
+)
 from app.retrieval import advanced_search
 from langchain_google_genai import ChatGoogleGenerativeAI
 import os
@@ -301,42 +306,8 @@ async def compact_old_messages(user_id: str):
         if memory_result.data:
             existing_memory = memory_result.data[0].get("memory_text", "")
 
-        formatted_messages = []
-        for msg in messages_to_compact:
-            label = "User" if msg["role"] == "user" else "Assistant"
-            formatted_messages.append(f"{label}: {msg['content']}")
-        conversation_text = "\n".join(formatted_messages)
-
-        compaction_prompt_parts = [
-            "You are a memory extraction system for a personal journal app called MindGraph.",
-            "Your job is to extract and maintain a bullet-point list of important facts about the user.",
-            "",
-            "Rules:",
-            "- Extract ONLY factual information about the user: their projects, preferences, goals, habits, people they mention, tools they use, challenges they face, decisions they've made.",
-            "- Each bullet point should be a single, self-contained fact.",
-            "- Do NOT include conversational filler, greetings, or things the assistant said that aren't about the user.",
-            "- If the new conversation contradicts an existing fact, UPDATE the fact (don't keep both).",
-            "- If a fact is already captured in the existing memory, don't duplicate it.",
-            "- Keep the list concise. Merge related facts when possible.",
-            "- Output ONLY the updated bullet-point list, nothing else.",
-            "- Use this format exactly:",
-            "  • Fact one",
-            "  • Fact two",
-        ]
-
-        if existing_memory:
-            compaction_prompt_parts.append(
-                f"\nExisting user memory:\n{existing_memory}"
-            )
-
-        compaction_prompt_parts.append(
-            f"\nNew conversation messages to extract facts from:\n{conversation_text}"
-        )
-        compaction_prompt_parts.append(
-            "\nOutput the complete updated bullet-point list of user facts:"
-        )
-
-        compaction_prompt = "\n".join(compaction_prompt_parts)
+        conversation_text = format_conversation_messages(messages_to_compact)
+        compaction_prompt = build_compaction_prompt(existing_memory, conversation_text)
 
         langfuse_handler = LangfuseCallbackHandler()
         response = await model.ainvoke(
@@ -413,14 +384,7 @@ async def ask_question(
         .execute()
     )
     history_messages = list(reversed(history_result.data)) if history_result.data else []
-
-    conversation_history = ""
-    if history_messages:
-        formatted_history = []
-        for msg in history_messages:
-            label = "User" if msg["role"] == "user" else "Assistant"
-            formatted_history.append(f"{label}: {msg['content']}")
-        conversation_history = "\n".join(formatted_history)
+    conversation_history = format_conversation_messages(history_messages)
 
     memory_result = (
         supabase.table("user_memory")
@@ -450,35 +414,12 @@ async def ask_question(
                 f"Entry {i} (created at {date}, title: {title}):\n{entry['cleaned_text']}"
             )
         context_text = "\n\n---\n\n".join(formatted_entries)
-
-    prompt_parts = []
-    prompt_parts.append(
-        "You are an assistant for a personal journal app called MindGraph. "
-        "You help the user understand their journal entries, patterns, and reflections."
+    prompt = build_ask_prompt(
+        question=question,
+        user_memory=user_memory,
+        conversation_history=conversation_history,
+        context_text=context_text,
     )
-
-    if user_memory:
-        prompt_parts.append(
-            f"Here is what you know about this user from past conversations:\n{user_memory}"
-        )
-
-    if conversation_history:
-        prompt_parts.append(
-            f"Here is your recent conversation with the user:\n{conversation_history}"
-        )
-
-    if context_text:
-        prompt_parts.append(f"Here are relevant journal entries:\n{context_text}")
-
-    prompt_parts.append(f'The user\'s new question is: "{question}"')
-    prompt_parts.append(
-        "Based on your knowledge of the user, the conversation history, and journal "
-        "entries, provide a helpful answer. If the journal entries do not contain "
-        "relevant information, say so honestly. Use the conversation history to "
-        "understand follow-up questions and references to previous answers."
-    )
-
-    prompt = "\n\n".join(prompt_parts)
 
     response = await model.ainvoke(prompt, config={"callbacks": [langfuse_handler]})
     answer = extract_text_from_response(response)
@@ -952,7 +893,7 @@ async def create_entry_async(entry: EntryRequest, background_tasks: BackgroundTa
             await regenerate_insights_background(user_id)
             
         except Exception as e:
-            print(f"❌ Background processing error: {e}")
+            print(f"Background processing error: {e}")
             if entry_id:
                 supabase.table("entries").update({
                     "status": "error",
@@ -981,7 +922,7 @@ async def search_entries_endpoint(query: str, user_id: str = Depends(get_current
 
 @app.get("/insights")
 async def get_insights(user_id: str = Depends(get_current_user)):
-    """Read cached insights from database — no LLM call"""
+    """Read cached insights from database - no LLM call"""
     result = supabase.table("insights") \
         .select("id, insight_type, content, severity, created_at") \
         .eq("user_id", user_id) \
@@ -992,7 +933,7 @@ async def get_insights(user_id: str = Depends(get_current_user)):
 
 @app.get("/insights/weekly")
 async def insights_weekly(user_id: str = Depends(get_current_user)):
-    """Read cached weekly digest — no LLM call"""
+    """Read cached weekly digest - no LLM call"""
     result = supabase.table("insights") \
         .select("content, created_at") \
         .eq("user_id", user_id) \
@@ -1007,7 +948,7 @@ async def insights_weekly(user_id: str = Depends(get_current_user)):
 
 @app.get("/insights/patterns")
 async def insights_patterns(user_id: str = Depends(get_current_user)):
-    """Read cached patterns — no LLM call"""
+    """Read cached patterns - no LLM call"""
     result = supabase.table("insights") \
         .select("content, created_at") \
         .eq("user_id", user_id) \
@@ -1022,7 +963,7 @@ async def insights_patterns(user_id: str = Depends(get_current_user)):
 
 @app.get("/insights/forgotten")
 async def insights_forgotten(user_id: str = Depends(get_current_user)):
-    """Read cached forgotten projects — no LLM call"""
+    """Read cached forgotten projects - no LLM call"""
     result = supabase.table("insights") \
         .select("content, created_at") \
         .eq("user_id", user_id) \
@@ -1041,3 +982,4 @@ async def insights_forgotten(user_id: str = Depends(get_current_user)):
 
 
     
+

@@ -1,0 +1,3302 @@
+{
+  "config": {
+    "mode": "all",
+    "variant": "both",
+    "model": "gemini-2.5-flash-lite",
+    "judge_model": "gemini-2.5-flash-lite",
+    "skip_judge": false
+  },
+  "compaction": {
+    "baseline": {
+      "summary": {
+        "cases": 36,
+        "format_compliance_rate": 0.361,
+        "section_order_compliance_rate": 1.0,
+        "avg_expected_fact_recall": 0.921,
+        "avg_forbidden_leakage_rate": 0.097,
+        "avg_contradiction_resolution_rate": 0.944,
+        "avg_dedup_pass_rate": 1.0,
+        "avg_section_placement_accuracy": 0.444,
+        "empty_section_suppression_rate": 0.944,
+        "compactness_pass_rate": 1.0,
+        "deterministic_pass_rate": 0.25,
+        "avg_latency_ms": 1621,
+        "p95_latency_ms": 4080,
+        "judge_avg": {
+          "faithfulness": 0.778,
+          "merge_quality": 0.778,
+          "contradiction_handling": 0.833,
+          "conciseness": 0.917,
+          "usefulness": 0.778
+        },
+        "by_family": {
+          "contradiction_update": {
+            "count": 4,
+            "pass_rate": 0.75
+          },
+          "existing_memory_dedup": {
+            "count": 4,
+            "pass_rate": 1.0
+          },
+          "formatting_robustness": {
+            "count": 2,
+            "pass_rate": 0.0
+          },
+          "goals_vs_vague_wishes": {
+            "count": 2,
+            "pass_rate": 0.0
+          },
+          "ignore_assistant_filler": {
+            "count": 4,
+            "pass_rate": 0.0
+          },
+          "multi_topic_merge": {
+            "count": 3,
+            "pass_rate": 0.0
+          },
+          "negative_no_durable_fact": {
+            "count": 3,
+            "pass_rate": 0.0
+          },
+          "newer_replaces_stale": {
+            "count": 3,
+            "pass_rate": 0.667
+          },
+          "preference_vs_transient": {
+            "count": 2,
+            "pass_rate": 0.0
+          },
+          "resolved_or_changed": {
+            "count": 2,
+            "pass_rate": 0.0
+          },
+          "stable_fact_extraction": {
+            "count": 5,
+            "pass_rate": 0.0
+          },
+          "tools_people_project_separation": {
+            "count": 2,
+            "pass_rate": 0.0
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "count": 9,
+            "pass_rate": 0.111
+          },
+          "hard": {
+            "count": 7,
+            "pass_rate": 0.143
+          },
+          "medium": {
+            "count": 20,
+            "pass_rate": 0.35
+          }
+        }
+      },
+      "results": [
+        {
+          "name": "project_goal_and_bug",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 1160,
+          "memory_output": "- Launching MindGraph this quarter.\n- Dealing with an auth bug.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.667,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Launching MindGraph this quarter.",
+            "- Dealing with an auth bug."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation.",
+            "latency_ms": 837
+          }
+        },
+        {
+          "name": "people_and_collaboration",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 2629,
+          "memory_output": "- Rahul helps review the deck every Friday.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Rahul helps review the deck every Friday."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the provided conversation evidence.",
+            "latency_ms": 1465
+          }
+        },
+        {
+          "name": "tool_stack_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 3469,
+          "memory_output": "- Uses Figma for flows\n- Uses Notion for planning",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Uses Figma for flows",
+            "- Uses Notion for planning"
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated tools.",
+            "latency_ms": 2206
+          }
+        },
+        {
+          "name": "habit_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 4047,
+          "memory_output": "- Morning journaling helps the user think clearly.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Morning journaling helps the user think clearly."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated preference.",
+            "latency_ms": 4048
+          }
+        },
+        {
+          "name": "decision_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 1149,
+          "memory_output": "- Decided to keep MindGraph as a solo project for now.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Decided to keep MindGraph as a solo project for now."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's statement and aligns with all expected facts.",
+            "latency_ms": 957
+          }
+        },
+        {
+          "name": "ignore_assistant_brainstorm",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 732,
+          "memory_output": "- Has not decided on a project management tool yet.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Has not decided on a project management tool yet."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's current state without introducing any forbidden facts.",
+            "latency_ms": 2731
+          }
+        },
+        {
+          "name": "ignore_greeting_smalltalk",
+          "family": "ignore_assistant_filler",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 740,
+          "memory_output": "- User is a morning person.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- User is a morning person."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "poor",
+            "notes": "The candidate memory is not supported by the conversation evidence and introduces an unsupported assumption.",
+            "latency_ms": 3037
+          }
+        },
+        {
+          "name": "ignore_non_adopted_suggestion",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 416,
+          "memory_output": "- Has not changed their tech stack.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Has not changed their tech stack."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory accurately reflects the user's statement and avoids forbidden facts.",
+            "latency_ms": 731
+          }
+        },
+        {
+          "name": "keep_only_adopted_suggestion",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 6048,
+          "memory_output": "- Switched the frontend to Vite today.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Switched the frontend to Vite today."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's statement and aligns with the expected facts.",
+            "latency_ms": 4981
+          }
+        },
+        {
+          "name": "dedup_existing_project",
+          "family": "existing_memory_dedup",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 845,
+          "memory_output": "## Projects & Work\n- MindGraph is the user's main project.",
+          "headings": [
+            "Projects & Work"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the existing memory and conversation evidence.",
+            "latency_ms": 962
+          }
+        },
+        {
+          "name": "dedup_existing_tool_preference",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 2331,
+          "memory_output": "## Tools\n- The user uses Notion for planning.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the conversation evidence and expected facts.",
+            "latency_ms": 748
+          }
+        },
+        {
+          "name": "dedup_existing_person",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 638,
+          "memory_output": "## People\n- Rahul is a regular collaborator.",
+          "headings": [
+            "People"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the existing memory and conversation evidence.",
+            "latency_ms": 938
+          }
+        },
+        {
+          "name": "dedup_existing_habit",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 530,
+          "memory_output": "## Preferences & Habits\n- Morning journaling helps the user think clearly.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the conversation and existing memory.",
+            "latency_ms": 744
+          }
+        },
+        {
+          "name": "update_project_status_paused",
+          "family": "contradiction_update",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 852,
+          "memory_output": "## Projects & Work\n- MindGraph is actively shipping every week.\n- MindGraph was paused for a few weeks due to burnout.",
+          "headings": [
+            "Projects & Work"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.5,
+          "forbidden_hits": [
+            "actively shipping every week"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 0.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory contradicts the conversation evidence and fails to remove forbidden facts.",
+            "latency_ms": 2007
+          }
+        },
+        {
+          "name": "update_stack_decision",
+          "family": "contradiction_update",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 428,
+          "memory_output": "## Tools\n- The user is building the frontend in Vue.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the conversation and updates the existing memory correctly.",
+            "latency_ms": 756
+          }
+        },
+        {
+          "name": "update_preference_rhythm",
+          "family": "contradiction_update",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 5666,
+          "memory_output": "## Preferences & Habits\n- The user prefers short planning sprints.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The memory was updated accurately to reflect the user's current preference.",
+            "latency_ms": 1830
+          }
+        },
+        {
+          "name": "update_goal_direction",
+          "family": "contradiction_update",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 1969,
+          "memory_output": "## Goals & Plans\n- The user wants to grow freelance consulting.",
+          "headings": [
+            "Goals & Plans"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the user's updated goal and removes the outdated information.",
+            "latency_ms": 1882
+          }
+        },
+        {
+          "name": "resolve_old_bug_state",
+          "family": "resolved_or_changed",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 1689,
+          "memory_output": "## Challenges & Decisions\n- The auth bug is fixed.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.5,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory accurately reflects the conversation and adheres to all constraints.",
+            "latency_ms": 742
+          }
+        },
+        {
+          "name": "newer_person_collaboration_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 835,
+          "memory_output": "## People\n- Asha is the main design collaborator.",
+          "headings": [
+            "People"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The new memory accurately reflects the conversation and correctly updates the collaborator.",
+            "latency_ms": 1272
+          }
+        },
+        {
+          "name": "newer_tool_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 636,
+          "memory_output": "## Tools\n- The user tracks tasks in Linear.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the conversation and updates the existing memory correctly.",
+            "latency_ms": 1272
+          }
+        },
+        {
+          "name": "newer_work_mode_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 2698,
+          "memory_output": "## Challenges & Decisions\n- The user is working from home most days now.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "contradictory and unfaithful",
+            "notes": "The candidate memory directly contradicts the existing memory and the conversation evidence.",
+            "latency_ms": 1031
+          }
+        },
+        {
+          "name": "multi_topic_merge_work_people_tools",
+          "family": "multi_topic_merge",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 820,
+          "memory_output": "- MindGraph is the user's main product.\n- Rahul is helping with demos.\n- The user uses Notion and Figma every day.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- MindGraph is the user's main product.",
+            "- Rahul is helping with demos.",
+            "- The user uses Notion and Figma every day."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures all expected facts from the conversation evidence.",
+            "latency_ms": 4138
+          }
+        },
+        {
+          "name": "multi_topic_merge_goals_and_challenges",
+          "family": "multi_topic_merge",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 622,
+          "memory_output": "- Wants to launch the beta in June.\n- Biggest blocker is inconsistent sleep.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Wants to launch the beta in June.",
+            "- Biggest blocker is inconsistent sleep."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation evidence.",
+            "latency_ms": 1059
+          }
+        },
+        {
+          "name": "multi_topic_merge_preferences",
+          "family": "multi_topic_merge",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 848,
+          "memory_output": "- Prefers shipping small weekly improvements.\n- Dislikes giant rewrite plans.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.5,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Prefers shipping small weekly improvements.",
+            "- Dislikes giant rewrite plans."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's preferences from the conversation.",
+            "latency_ms": 1032
+          }
+        },
+        {
+          "name": "preference_vs_transient_request",
+          "family": "preference_vs_transient",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 4080,
+          "memory_output": "- Needs to email Rahul tomorrow.\n- Prefers short planning sprints.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "email Rahul tomorrow"
+          ],
+          "forbidden_leakage_rate": 0.5,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Needs to email Rahul tomorrow.",
+            "- Prefers short planning sprints."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory includes a forbidden fact about emailing Rahul tomorrow.",
+            "latency_ms": 955
+          }
+        },
+        {
+          "name": "preference_vs_oneoff_meal",
+          "family": "preference_vs_transient",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 2918,
+          "memory_output": "- Prefers working early before messages start coming in.\n- Had dosa for breakfast.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "dosa for breakfast"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Prefers working early before messages start coming in.",
+            "- Had dosa for breakfast."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory includes a forbidden fact and fails to adhere to the expected facts.",
+            "latency_ms": 638
+          }
+        },
+        {
+          "name": "goal_vs_vague_wish",
+          "family": "goals_vs_vague_wishes",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 1992,
+          "memory_output": "- Wants to launch the new onboarding flow this month.\n- Considers learning pottery someday.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "someday"
+          ],
+          "forbidden_leakage_rate": 0.5,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Wants to launch the new onboarding flow this month.",
+            "- Considers learning pottery someday."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 1,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory includes forbidden facts and fails to adhere to the expected facts.",
+            "latency_ms": 2541
+          }
+        },
+        {
+          "name": "goal_vs_vague_desire",
+          "family": "goals_vs_vague_wishes",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 2054,
+          "memory_output": "- Plans to run three times a week starting Monday.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Plans to run three times a week starting Monday."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's plan while adhering to all constraints.",
+            "latency_ms": 5361
+          }
+        },
+        {
+          "name": "separate_people_tools_projects",
+          "family": "tools_people_project_separation",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 630,
+          "memory_output": "- Rahul reviewed MindGraph mockups with the user in Figma.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Rahul reviewed MindGraph mockups with the user in Figma."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation evidence.",
+            "latency_ms": 2959
+          }
+        },
+        {
+          "name": "separate_person_and_tool_aliases",
+          "family": "tools_people_project_separation",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 744,
+          "memory_output": "- Uses Claude to compare Gemini outputs for MindGraph notes.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Uses Claude to compare Gemini outputs for MindGraph notes."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation evidence.",
+            "latency_ms": 5934
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_reflection",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 710,
+          "memory_output": "- User is feeling weird and unsure of what to do.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- User is feeling weird and unsure of what to do."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory directly contradicts the forbidden facts.",
+            "latency_ms": 1432
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_thanks",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 558,
+          "memory_output": "- The user found the previous interaction helpful.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "helpful"
+          ],
+          "forbidden_leakage_rate": 0.5,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- The user found the previous interaction helpful."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's sentiment without including forbidden words.",
+            "latency_ms": 2639
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_smalltalk",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 730,
+          "memory_output": "- None",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- None"
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory is '- None', which accurately reflects the lack of new information to store.",
+            "latency_ms": 836
+          }
+        },
+        {
+          "name": "formatting_single_section_only",
+          "family": "formatting_robustness",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 644,
+          "memory_output": "- Uses Linear for project tracking.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- Uses Linear for project tracking."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated tool usage.",
+            "latency_ms": 626
+          }
+        },
+        {
+          "name": "formatting_multiple_ordered_sections",
+          "family": "formatting_robustness",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 643,
+          "memory_output": "- MindGraph is the main product.\n- Rahul is helping with demos.\n- Figma is used for flows.",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "- MindGraph is the main product.",
+            "- Rahul is helping with demos.",
+            "- Figma is used for flows."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures all the essential facts from the conversation evidence.",
+            "latency_ms": 529
+          }
+        },
+        {
+          "name": "resolved_state_should_drop_old_problem",
+          "family": "resolved_or_changed",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 844,
+          "memory_output": "## Challenges & Decisions\n- Sleep debt was hurting the user's focus.\n- User's sleep is now back on track, leading to better focus.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 0.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory contradicts the conversation evidence and fails to remove forbidden facts.",
+            "latency_ms": 7933
+          }
+        }
+      ]
+    },
+    "tuned": {
+      "summary": {
+        "cases": 36,
+        "format_compliance_rate": 0.917,
+        "section_order_compliance_rate": 1.0,
+        "avg_expected_fact_recall": 0.907,
+        "avg_forbidden_leakage_rate": 0.111,
+        "avg_contradiction_resolution_rate": 0.917,
+        "avg_dedup_pass_rate": 0.972,
+        "avg_section_placement_accuracy": 0.778,
+        "empty_section_suppression_rate": 0.806,
+        "compactness_pass_rate": 0.944,
+        "deterministic_pass_rate": 0.528,
+        "avg_latency_ms": 1377,
+        "p95_latency_ms": 3582,
+        "judge_avg": {
+          "faithfulness": 0.806,
+          "merge_quality": 0.806,
+          "contradiction_handling": 0.861,
+          "conciseness": 0.917,
+          "usefulness": 0.806
+        },
+        "by_family": {
+          "contradiction_update": {
+            "count": 4,
+            "pass_rate": 0.75
+          },
+          "existing_memory_dedup": {
+            "count": 4,
+            "pass_rate": 0.75
+          },
+          "formatting_robustness": {
+            "count": 2,
+            "pass_rate": 1.0
+          },
+          "goals_vs_vague_wishes": {
+            "count": 2,
+            "pass_rate": 0.5
+          },
+          "ignore_assistant_filler": {
+            "count": 4,
+            "pass_rate": 0.25
+          },
+          "multi_topic_merge": {
+            "count": 3,
+            "pass_rate": 0.667
+          },
+          "negative_no_durable_fact": {
+            "count": 3,
+            "pass_rate": 1.0
+          },
+          "newer_replaces_stale": {
+            "count": 3,
+            "pass_rate": 0.667
+          },
+          "preference_vs_transient": {
+            "count": 2,
+            "pass_rate": 0.5
+          },
+          "resolved_or_changed": {
+            "count": 2,
+            "pass_rate": 0.0
+          },
+          "stable_fact_extraction": {
+            "count": 5,
+            "pass_rate": 0.2
+          },
+          "tools_people_project_separation": {
+            "count": 2,
+            "pass_rate": 0.0
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "count": 9,
+            "pass_rate": 0.667
+          },
+          "hard": {
+            "count": 7,
+            "pass_rate": 0.429
+          },
+          "medium": {
+            "count": 20,
+            "pass_rate": 0.5
+          }
+        }
+      },
+      "results": [
+        {
+          "name": "project_goal_and_bug",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 811,
+          "memory_output": "## Goals & Plans\n- Launch MindGraph this quarter.\n\n## Challenges & Decisions\n- The auth bug is a current stressor.",
+          "headings": [
+            "Goals & Plans",
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.667,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation.",
+            "latency_ms": 1457
+          }
+        },
+        {
+          "name": "people_and_collaboration",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 735,
+          "memory_output": "## People\n- Rahul is a recurring collaborator who helps review the deck every Friday.",
+          "headings": [
+            "People"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the provided conversation evidence and aligns with the expected facts.",
+            "latency_ms": 5681
+          }
+        },
+        {
+          "name": "tool_stack_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 3902,
+          "memory_output": "## Tools\n- Figma\n- Notion\n\n## Preferences & Habits\n- Uses Figma for flows.\n- Uses Notion for planning.",
+          "headings": [
+            "Tools",
+            "Preferences & Habits"
+          ],
+          "bullet_count": 4,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Preferences & Habits"
+          ],
+          "compactness_pass": false,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated tools and their usage.",
+            "latency_ms": 2624
+          }
+        },
+        {
+          "name": "habit_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 736,
+          "memory_output": "## Preferences & Habits\n- Morning journaling helps the user think clearly.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated preference.",
+            "latency_ms": 2011
+          }
+        },
+        {
+          "name": "decision_capture",
+          "family": "stable_fact_extraction",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1996,
+          "memory_output": "## Projects & Work\n- MindGraph is a solo project.",
+          "headings": [
+            "Projects & Work"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's statement and aligns with the expected facts.",
+            "latency_ms": 754
+          }
+        },
+        {
+          "name": "ignore_assistant_brainstorm",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 613,
+          "memory_output": "## Challenges & Decisions\n* Decided against using Todoist, Linear, or Trello for now.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "Todoist",
+            "Linear",
+            "Trello"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [
+            "* Decided against using Todoist, Linear, or Trello for now."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory accurately reflects the conversation and adheres to forbidden facts.",
+            "latency_ms": 2102
+          }
+        },
+        {
+          "name": "ignore_greeting_smalltalk",
+          "family": "ignore_assistant_filler",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 629,
+          "memory_output": "",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "No memory generated.",
+            "notes": "The candidate memory was empty, and no relevant information was extracted from the conversation.",
+            "latency_ms": 2004
+          }
+        },
+        {
+          "name": "ignore_non_adopted_suggestion",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 741,
+          "memory_output": "## Tools\n- Astro",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "Astro"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Tools"
+          ],
+          "compactness_pass": false,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory directly contradicts the forbidden facts and adds irrelevant information.",
+            "latency_ms": 753
+          }
+        },
+        {
+          "name": "keep_only_adopted_suggestion",
+          "family": "ignore_assistant_filler",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 832,
+          "memory_output": "## Tools\n- Vite\n\n## Challenges & Decisions\n- Switched frontend to Vite.",
+          "headings": [
+            "Tools",
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's statement and aligns with the expected facts.",
+            "latency_ms": 2206
+          }
+        },
+        {
+          "name": "dedup_existing_project",
+          "family": "existing_memory_dedup",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 3582,
+          "memory_output": "## Projects & Work\n- MindGraph is the user's main project.",
+          "headings": [
+            "Projects & Work"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the existing memory and conversation evidence.",
+            "latency_ms": 1678
+          }
+        },
+        {
+          "name": "dedup_existing_tool_preference",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 630,
+          "memory_output": "## Tools\n- The user uses Notion for planning.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the conversation evidence and expected facts.",
+            "latency_ms": 2375
+          }
+        },
+        {
+          "name": "dedup_existing_person",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1546,
+          "memory_output": "## People\n- Rahul is a regular collaborator.\n- Rahul reviewed onboarding ideas with the user.",
+          "headings": [
+            "People"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 0.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The new information is accurately and concisely added to the existing memory.",
+            "latency_ms": 674
+          }
+        },
+        {
+          "name": "dedup_existing_habit",
+          "family": "existing_memory_dedup",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 592,
+          "memory_output": "## Preferences & Habits\n- Morning journaling helps the user think clearly.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly reflects the conversation and existing memory.",
+            "latency_ms": 1470
+          }
+        },
+        {
+          "name": "update_project_status_paused",
+          "family": "contradiction_update",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 4452,
+          "memory_output": "## Projects & Work\n- MindGraph is actively shipping every week.\n## Challenges & Decisions\n- MindGraph development was paused for a few weeks due to burnout.",
+          "headings": [
+            "Projects & Work",
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.5,
+          "forbidden_hits": [
+            "actively shipping every week"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 0.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent merge, accurately reflects conversation and maintains existing facts.",
+            "notes": "The new information about pausing MindGraph was correctly added to the 'Challenges & Decisions' section without altering the existing 'Projects & Work' entry.",
+            "latency_ms": 2747
+          }
+        },
+        {
+          "name": "update_stack_decision",
+          "family": "contradiction_update",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1795,
+          "memory_output": "## Tools\n- The user is building the frontend in Vue.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the conversation and updates the existing memory correctly.",
+            "latency_ms": 636
+          }
+        },
+        {
+          "name": "update_preference_rhythm",
+          "family": "contradiction_update",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1700,
+          "memory_output": "## Preferences & Habits\n- The user prefers short planning sprints.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The memory was updated accurately to reflect the user's current preference.",
+            "latency_ms": 788
+          }
+        },
+        {
+          "name": "update_goal_direction",
+          "family": "contradiction_update",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 680,
+          "memory_output": "## Goals & Plans\n- The user wants to grow freelance consulting.",
+          "headings": [
+            "Goals & Plans"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the user's updated goal and removes the outdated information.",
+            "latency_ms": 746
+          }
+        },
+        {
+          "name": "resolve_old_bug_state",
+          "family": "resolved_or_changed",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1280,
+          "memory_output": "## Challenges & Decisions\n- The auth bug has been fixed.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 0.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The memory accurately reflects the conversation and adheres to all constraints.",
+            "latency_ms": 837
+          }
+        },
+        {
+          "name": "newer_person_collaboration_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 632,
+          "memory_output": "## People\n- Asha is the main design collaborator.",
+          "headings": [
+            "People"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The new memory accurately reflects the conversation and correctly updates the collaborator.",
+            "latency_ms": 3051
+          }
+        },
+        {
+          "name": "newer_tool_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 733,
+          "memory_output": "## Tools\n- The user tracks tasks in Linear.",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The candidate memory accurately reflects the conversation and updates the existing memory correctly.",
+            "latency_ms": 741
+          }
+        },
+        {
+          "name": "newer_work_mode_replaces_stale",
+          "family": "newer_replaces_stale",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1899,
+          "memory_output": "## Challenges & Decisions\n- The user is working from home most days now because it is calmer.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "Contradictory and unfaithful",
+            "notes": "The candidate memory directly contradicts the existing memory and the conversation evidence.",
+            "latency_ms": 2116
+          }
+        },
+        {
+          "name": "multi_topic_merge_work_people_tools",
+          "family": "multi_topic_merge",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1160,
+          "memory_output": "## Projects & Work\n- MindGraph is the user's main product.\n\n## People\n- Rahul is helping with demos.\n\n## Tools\n- Notion is used every day.\n- Figma is used every day.",
+          "headings": [
+            "Projects & Work",
+            "People",
+            "Tools"
+          ],
+          "bullet_count": 4,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures all expected facts from the conversation evidence.",
+            "latency_ms": 1791
+          }
+        },
+        {
+          "name": "multi_topic_merge_goals_and_challenges",
+          "family": "multi_topic_merge",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 638,
+          "memory_output": "## Goals & Plans\n- Launch the beta in June.\n\n## Challenges & Decisions\n- Inconsistent sleep is the biggest blocker.",
+          "headings": [
+            "Goals & Plans",
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the essential information from the conversation evidence.",
+            "latency_ms": 545
+          }
+        },
+        {
+          "name": "multi_topic_merge_preferences",
+          "family": "multi_topic_merge",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 634,
+          "memory_output": "## Preferences & Habits\n- Prefers shipping small weekly improvements.\n- Dislikes giant rewrite plans.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.5,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.5,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's preferences from the conversation evidence.",
+            "latency_ms": 2623
+          }
+        },
+        {
+          "name": "preference_vs_transient_request",
+          "family": "preference_vs_transient",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 809,
+          "memory_output": "## People\n* Rahul\n\n## Preferences & Habits\n* Prefers short planning sprints.",
+          "headings": [
+            "People",
+            "Preferences & Habits"
+          ],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "People"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [
+            "* Rahul",
+            "* Prefers short planning sprints."
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The memory accurately captures the user's preference and avoids forbidden facts.",
+            "latency_ms": 784
+          }
+        },
+        {
+          "name": "preference_vs_oneoff_meal",
+          "family": "preference_vs_transient",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 631,
+          "memory_output": "## Preferences & Habits\n- Prefers working early before messages start coming in.",
+          "headings": [
+            "Preferences & Habits"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's preference and avoids the forbidden fact.",
+            "latency_ms": 1265
+          }
+        },
+        {
+          "name": "goal_vs_vague_wish",
+          "family": "goals_vs_vague_wishes",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 2963,
+          "memory_output": "## Goals & Plans\n- Launch the new onboarding flow this month.\n- Learn pottery someday.",
+          "headings": [
+            "Goals & Plans"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [
+            "learn pottery",
+            "someday"
+          ],
+          "forbidden_leakage_rate": 1.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "failed",
+            "notes": "The candidate memory includes forbidden facts and fails to adhere to the expected facts.",
+            "latency_ms": 764
+          }
+        },
+        {
+          "name": "goal_vs_vague_desire",
+          "family": "goals_vs_vague_wishes",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 511,
+          "memory_output": "## Goals & Plans\n- Plan to run three times a week starting Monday.",
+          "headings": [
+            "Goals & Plans"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's plan while adhering to all constraints.",
+            "latency_ms": 949
+          }
+        },
+        {
+          "name": "separate_people_tools_projects",
+          "family": "tools_people_project_separation",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 627,
+          "memory_output": "## Projects & Work\n* Reviewed MindGraph mockups in Figma.\n\n## People\n* Rahul",
+          "headings": [
+            "Projects & Work",
+            "People"
+          ],
+          "bullet_count": 0,
+          "format_compliant": false,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [
+            "* Reviewed MindGraph mockups in Figma.",
+            "* Rahul"
+          ],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures all expected facts and is well-organized.",
+            "latency_ms": 527
+          }
+        },
+        {
+          "name": "separate_person_and_tool_aliases",
+          "family": "tools_people_project_separation",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1272,
+          "memory_output": "## Tools\n- Gemini\n- MindGraph",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 2,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.667,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.333,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "Incomplete and inaccurate",
+            "notes": "The candidate memory is missing 'Claude' and incorrectly lists 'MindGraph' under tools instead of projects.",
+            "latency_ms": 735
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_reflection",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 1471,
+          "memory_output": "",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 1,
+            "conciseness": 0,
+            "usefulness": 0,
+            "verdict": "poor",
+            "notes": "The candidate memory is empty, failing to capture any useful information from the conversation.",
+            "latency_ms": 2737
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_thanks",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 424,
+          "memory_output": "",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "excellent",
+            "notes": "The memory is excellent as it is empty and the conversation evidence is not relevant to the forbidden facts.",
+            "latency_ms": 1051
+          }
+        },
+        {
+          "name": "negative_no_durable_fact_smalltalk",
+          "family": "negative_no_durable_fact",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 2527,
+          "memory_output": "",
+          "headings": [],
+          "bullet_count": 0,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The memory is perfectly faithful and concise, with no contradictions or issues.",
+            "latency_ms": 537
+          }
+        },
+        {
+          "name": "formatting_single_section_only",
+          "family": "formatting_robustness",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 2202,
+          "memory_output": "## Tools\n- Linear for project tracking",
+          "headings": [
+            "Tools"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures the user's stated tool usage.",
+            "latency_ms": 1172
+          }
+        },
+        {
+          "name": "formatting_multiple_ordered_sections",
+          "family": "formatting_robustness",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 2139,
+          "memory_output": "## Projects & Work\n- MindGraph is the main product.\n\n## People\n- Rahul is helping with demos.\n\n## Tools\n- Figma is used for flows.",
+          "headings": [
+            "Projects & Work",
+            "People",
+            "Tools"
+          ],
+          "bullet_count": 3,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 1.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 1.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 1.0,
+          "empty_section_suppression_correct": true,
+          "extra_sections": [],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": true,
+          "judge": {
+            "faithfulness": 1,
+            "merge_quality": 1,
+            "contradiction_handling": 1,
+            "conciseness": 1,
+            "usefulness": 1,
+            "verdict": "Excellent",
+            "notes": "The candidate memory perfectly captures all the provided conversation evidence.",
+            "latency_ms": 1243
+          }
+        },
+        {
+          "name": "resolved_state_should_drop_old_problem",
+          "family": "resolved_or_changed",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1046,
+          "memory_output": "## Challenges & Decisions\n- Sleep debt was hurting the user's focus.",
+          "headings": [
+            "Challenges & Decisions"
+          ],
+          "bullet_count": 1,
+          "format_compliant": true,
+          "section_order_compliant": true,
+          "expected_fact_recall": 0.0,
+          "forbidden_hits": [],
+          "forbidden_leakage_rate": 0.0,
+          "contradiction_resolution_rate": 0.0,
+          "dedup_pass_rate": 1.0,
+          "section_placement_accuracy": 0.0,
+          "empty_section_suppression_correct": false,
+          "extra_sections": [
+            "Challenges & Decisions"
+          ],
+          "compactness_pass": true,
+          "extra_lines": [],
+          "deterministic_pass": false,
+          "judge": {
+            "faithfulness": 0,
+            "merge_quality": 0,
+            "contradiction_handling": 0,
+            "conciseness": 1,
+            "usefulness": 0,
+            "verdict": "Contradictory and unhelpful",
+            "notes": "The candidate memory directly contradicts the conversation evidence and fails to incorporate the new information.",
+            "latency_ms": 2109
+          }
+        }
+      ]
+    }
+  },
+  "ask": {
+    "baseline": {
+      "summary": {
+        "cases": 14,
+        "avg_memory_keyword_recall": 0.857,
+        "avg_hallucination_score": 0.893,
+        "precedence_correct_rate": 0.714,
+        "honesty_pass_rate": 0.857,
+        "deterministic_pass_rate": 0.714,
+        "avg_latency_ms": 2582,
+        "p95_latency_ms": 5054,
+        "by_family": {
+          "follow_up_answer_using_memory": {
+            "count": 3,
+            "pass_rate": 0.667
+          },
+          "journal_evidence_override": {
+            "count": 2,
+            "pass_rate": 1.0
+          },
+          "memory_only_answer": {
+            "count": 4,
+            "pass_rate": 1.0
+          },
+          "recent_history_override": {
+            "count": 3,
+            "pass_rate": 0.667
+          },
+          "unsupported_question_honesty": {
+            "count": 2,
+            "pass_rate": 0.0
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "count": 3,
+            "pass_rate": 1.0
+          },
+          "hard": {
+            "count": 5,
+            "pass_rate": 0.8
+          },
+          "medium": {
+            "count": 6,
+            "pass_rate": 0.5
+          }
+        }
+      },
+      "results": [
+        {
+          "name": "memory_only_project",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 3413,
+          "answer": "Based on our past conversations, your main project right now is **MindGraph**.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "memory_only_preference",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 5054,
+          "answer": "Based on our past conversations, you've expressed a preference for **short planning sprints over long planning sessions**.\n\nThis suggests that you likely find it more effective and less overwhelming to break down your planning into smaller, more manageable chunks of time. This approach can help you stay focused and make progress without feeling bogged down by extensive planning.\n\nDoes this align with what you're feeling about your planning style?",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "memory_only_collaborator",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "baseline",
+          "latency_ms": 2960,
+          "answer": "Based on our past conversations, **Rahul** regularly helps you with product demos.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "recent_history_override_project_status",
+          "family": "recent_history_override",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 1774,
+          "answer": "Yes, MindGraph is active again! You mentioned starting to work on it this week, and I confirmed that it was active.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "recent_history_override_preference",
+          "family": "recent_history_override",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 853,
+          "answer": "It's great that you're adapting your planning style to what works best for you!\n\nBased on our recent conversation, you've switched to **short planning sprints**. This is a significant change from your previous preference for long planning sessions.\n\nTherefore, I will assume you are now using **short planning sprints** for your planning activities.\n\nIf you'd like to explore how this new style might be impacting your journal entries or if you have any questions about how to best document your short planning sprints, feel free to ask!",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [
+            [
+              "long planning sessions"
+            ]
+          ],
+          "hallucination_score": 0.0,
+          "honesty_pass": true,
+          "precedence_correct": false,
+          "deterministic_pass": false,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "follow_up_uses_recent_history",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 1793,
+          "answer": "Based on our recent conversation, you moved task tracking from **Trello** to **Linear**.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [
+            [
+              "Trello"
+            ]
+          ],
+          "hallucination_score": 0.5,
+          "honesty_pass": true,
+          "precedence_correct": false,
+          "deterministic_pass": false,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "journal_override_memory",
+          "family": "journal_evidence_override",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 626,
+          "answer": "Based on your latest journal entry from 2026-04-10, titled \"Latest Entry,\" you mentioned working on **auth on Atlas**.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "journal_override_person_context",
+          "family": "journal_evidence_override",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 2105,
+          "answer": "Based on your journal entry from April 10th, 2026, titled \"Yesterday,\" you met **Priya** for coffee to discuss onboarding.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "combine_memory_and_journal",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 2538,
+          "answer": "That's a great question! Based on your journal entry from April 10th, titled \"Onboarding,\" and our previous conversation, your work today on improving the onboarding flow directly relates to your main project: **MindGraph**.\n\nYou've explicitly mentioned improving the onboarding flow *for MindGraph* in your journal. This indicates that this task is a key part of developing and enhancing the MindGraph application itself.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "unsupported_question_honesty",
+          "family": "unsupported_question_honesty",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 1745,
+          "answer": "I've reviewed your journal entries and our past conversations, and unfortunately, I haven't found any specific mentions of your favorite movie.\n\nWhile I can see you enjoy short planning sprints, and we've discussed that, there isn't any information about your movie preferences in your journal.\n\nIf you'd like to record this information for future reference, you could always add a new journal entry about it!",
+          "memory_keyword_recall": 0.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": false,
+          "precedence_correct": false,
+          "deterministic_pass": false,
+          "expected_source_behavior": "unsupported_honesty"
+        },
+        {
+          "name": "unsupported_when_memory_is_only_background",
+          "family": "unsupported_question_honesty",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 1631,
+          "answer": "Based on our past conversations, I recall that the **auth bug has been a significant source of stress for you.**\n\nWhile I don't have access to the specific dates of your journal entries to pinpoint the *exact* last time you mentioned feeling stressed, I can tell you that the auth bug is a recurring theme that has caused you stress.\n\nWould you like me to try and find entries related to the auth bug, or perhaps help you search for other keywords related to stress in your journal?",
+          "memory_keyword_recall": 0.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": false,
+          "precedence_correct": false,
+          "deterministic_pass": false,
+          "expected_source_behavior": "unsupported_honesty"
+        },
+        {
+          "name": "memory_goal_answer",
+          "family": "memory_only_answer",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 845,
+          "answer": "Based on our previous conversations, you're aiming to launch **MindGraph** this quarter!\n\nIt sounds like you're working hard to bring your journal app to life. Is there anything specific about the launch you'd like to explore further in your journal entries? Perhaps we can look for entries related to:\n\n*   **Marketing strategies?**\n*   **Development progress?**\n*   **User feedback?**\n*   **Your personal feelings about the launch?**\n\nLet me know what you're curious about!",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "recent_history_over_memory_tool",
+          "family": "recent_history_override",
+          "difficulty": "medium",
+          "variant": "baseline",
+          "latency_ms": 3048,
+          "answer": "You are now using **Linear** for task tracking. You mentioned this change in our recent conversation.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "memory_background_not_overclaim",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "hard",
+          "variant": "baseline",
+          "latency_ms": 7764,
+          "answer": "Based on your journal entry and our previous conversations, improving the onboarding flow for MindGraph is crucial because:\n\n*   **It directly supports your goal of launching MindGraph this quarter.** A smooth and intuitive onboarding experience is a key factor in user adoption and satisfaction. If users struggle to understand or use MindGraph from the start, it could hinder your launch success.\n*   **MindGraph is your main project.** This means the success of MindGraph is paramount to your current focus. Enhancing the onboarding is a direct investment in the core functionality and user experience of your primary project.\n\nEssentially, a better onboarding flow makes MindGraph more accessible and appealing to new users, which is vital for a successful launch and the overall progress of your main project.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        }
+      ]
+    },
+    "tuned": {
+      "summary": {
+        "cases": 14,
+        "avg_memory_keyword_recall": 1.0,
+        "avg_hallucination_score": 1.0,
+        "precedence_correct_rate": 1.0,
+        "honesty_pass_rate": 1.0,
+        "deterministic_pass_rate": 1.0,
+        "avg_latency_ms": 1582,
+        "p95_latency_ms": 2626,
+        "by_family": {
+          "follow_up_answer_using_memory": {
+            "count": 3,
+            "pass_rate": 1.0
+          },
+          "journal_evidence_override": {
+            "count": 2,
+            "pass_rate": 1.0
+          },
+          "memory_only_answer": {
+            "count": 4,
+            "pass_rate": 1.0
+          },
+          "recent_history_override": {
+            "count": 3,
+            "pass_rate": 1.0
+          },
+          "unsupported_question_honesty": {
+            "count": 2,
+            "pass_rate": 1.0
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "count": 3,
+            "pass_rate": 1.0
+          },
+          "hard": {
+            "count": 5,
+            "pass_rate": 1.0
+          },
+          "medium": {
+            "count": 6,
+            "pass_rate": 1.0
+          }
+        }
+      },
+      "results": [
+        {
+          "name": "memory_only_project",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 2626,
+          "answer": "Your main project right now is MindGraph.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "memory_only_preference",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 2424,
+          "answer": "You prefer short planning sprints over long planning sessions.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "memory_only_collaborator",
+          "family": "memory_only_answer",
+          "difficulty": "easy",
+          "variant": "tuned",
+          "latency_ms": 1700,
+          "answer": "Rahul usually helps with product demos.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "recent_history_override_project_status",
+          "family": "recent_history_override",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 617,
+          "answer": "Yes, MindGraph is active right now.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "recent_history_override_preference",
+          "family": "recent_history_override",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 722,
+          "answer": "Based on our recent conversation, you've switched to short planning sprints.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "follow_up_uses_recent_history",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 736,
+          "answer": "Linear.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "journal_override_memory",
+          "family": "journal_evidence_override",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 651,
+          "answer": "Based on the journal entry from 2026-04-10, you mentioned working on \"Atlas\".",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "journal_override_person_context",
+          "family": "journal_evidence_override",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 720,
+          "answer": "You met Priya for coffee yesterday.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "combine_memory_and_journal",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 2557,
+          "answer": "Your main project is MindGraph. You spent today improving the onboarding flow for MindGraph.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        },
+        {
+          "name": "unsupported_question_honesty",
+          "family": "unsupported_question_honesty",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 637,
+          "answer": "I cannot determine your favorite movie from the information I have. My current evidence does not contain this detail.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "unsupported_honesty"
+        },
+        {
+          "name": "unsupported_when_memory_is_only_background",
+          "family": "unsupported_question_honesty",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 4251,
+          "answer": "I can't find any journal entries that mention you feeling stressed. However, my long-term memory indicates that the auth bug has been stressing you.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "unsupported_honesty"
+        },
+        {
+          "name": "memory_goal_answer",
+          "family": "memory_only_answer",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1574,
+          "answer": "You are trying to launch MindGraph this quarter.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "memory_only"
+        },
+        {
+          "name": "recent_history_over_memory_tool",
+          "family": "recent_history_override",
+          "difficulty": "medium",
+          "variant": "tuned",
+          "latency_ms": 1421,
+          "answer": "You are currently using Linear for task tracking.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "recent_history_override"
+        },
+        {
+          "name": "memory_background_not_overclaim",
+          "family": "follow_up_answer_using_memory",
+          "difficulty": "hard",
+          "variant": "tuned",
+          "latency_ms": 1507,
+          "answer": "The onboarding flow for MindGraph matters because launching MindGraph this quarter is a key goal. Improving the onboarding is a step towards that launch.",
+          "memory_keyword_recall": 1.0,
+          "forbidden_hits": [],
+          "hallucination_score": 1.0,
+          "honesty_pass": true,
+          "precedence_correct": true,
+          "deterministic_pass": true,
+          "expected_source_behavior": "journal_override"
+        }
+      ]
+    }
+  }
+}
