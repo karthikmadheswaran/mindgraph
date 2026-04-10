@@ -8,8 +8,23 @@ let queuedForcePromise = null;
 
 const listeners = new Set();
 
+const normalizeProgress = (progress = {}) => ({
+  deadlines: progress.deadlines || [],
+  projects: progress.projects || [],
+});
+
+const normalizeSnapshot = (snapshot = {}) => ({
+  entries: snapshot.entries || [],
+  deadlines: snapshot.deadlines || [],
+  projects: snapshot.projects || [],
+  entities: snapshot.entities || [],
+  relations: snapshot.relations || [],
+  patterns: snapshot.patterns || {},
+  progress: normalizeProgress(snapshot.progress),
+});
+
 const stampSnapshot = (snapshot) => ({
-  ...snapshot,
+  ...normalizeSnapshot(snapshot),
   fetchedAt: Date.now(),
 });
 
@@ -46,6 +61,7 @@ const fetchDashboardSnapshot = async () => {
     entriesData,
     deadlinesData,
     projectsData,
+    progressData,
     entitiesData,
     relationsData,
     patternsData,
@@ -69,6 +85,13 @@ const fetchDashboardSnapshot = async () => {
         return response.json();
       }
     ),
+    fetch(`${API}/progress`, { headers }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error("Failed to fetch progress");
+      }
+
+      return response.json();
+    }),
     fetch(`${API}/entities`, { headers }).then((response) => response.json()),
     fetch(`${API}/entity-relations`, { headers })
       .then((response) => response.json())
@@ -82,6 +105,7 @@ const fetchDashboardSnapshot = async () => {
     entries: entriesData.entries || [],
     deadlines: deadlinesData.deadlines || [],
     projects: projectsData.projects || [],
+    progress: normalizeProgress(progressData),
     entities: entitiesData.entities || [],
     relations: relationsData.relations || [],
     patterns: patternsData.data || {},
@@ -161,12 +185,10 @@ export function updateDashboardSnapshot(updater, { userId } = {}) {
     return cachedSnapshot;
   }
 
-  cachedSnapshot = nextSnapshot.fetchedAt
-    ? nextSnapshot
-    : {
-        ...nextSnapshot,
-        fetchedAt: cachedSnapshot.fetchedAt || Date.now(),
-      };
+  cachedSnapshot = {
+    ...normalizeSnapshot(nextSnapshot),
+    fetchedAt: nextSnapshot.fetchedAt || cachedSnapshot.fetchedAt || Date.now(),
+  };
 
   notifyListeners();
   return cachedSnapshot;

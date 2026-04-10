@@ -67,6 +67,23 @@ const sortProjects = (items) =>
     (left, right) => (right?.mention_count || 0) - (left?.mention_count || 0)
   );
 
+const sortProgressDeadlines = (items) =>
+  [...items].sort(
+    (left, right) =>
+      new Date(right?.status_changed_at || 0).getTime() -
+      new Date(left?.status_changed_at || 0).getTime()
+  );
+
+const sortProgressProjects = (items) =>
+  [...items].sort(
+    (left, right) =>
+      new Date(right?.status_changed_at || 0).getTime() -
+      new Date(left?.status_changed_at || 0).getTime()
+  );
+
+const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
+  sorter([...items.filter((existingItem) => existingItem.id !== item.id), item]);
+
 function Dashboard({ isActive, userId }) {
   const cachedSnapshot = getCachedDashboardSnapshot({ userId });
 
@@ -438,6 +455,32 @@ function Dashboard({ isActive, userId }) {
     [userId]
   );
 
+  const setProgressState = useCallback(
+    (updater) => {
+      updateDashboardSnapshot(
+        (snapshot) => {
+          if (!snapshot) {
+            return snapshot;
+          }
+
+          const nextProgress =
+            typeof updater === "function" ? updater(snapshot.progress) : updater;
+
+          if (!nextProgress) {
+            return snapshot;
+          }
+
+          return {
+            ...snapshot,
+            progress: nextProgress,
+          };
+        },
+        { userId }
+      );
+    },
+    [userId]
+  );
+
   const restoreDeletedItem = useCallback(
     (deletion) => {
       if (!deletion?.item) {
@@ -573,6 +616,13 @@ function Dashboard({ isActive, userId }) {
     async (project, nextStatus) => {
       const isTerminalStatus = nextStatus === "completed";
       const normalizedProject = normalizeProject(project);
+      const optimisticProject = isTerminalStatus
+        ? normalizeProject({
+            ...normalizedProject,
+            status: nextStatus,
+            status_changed_at: new Date().toISOString(),
+          })
+        : null;
 
       setProjectActionState((current) => ({
         ...current,
@@ -583,6 +633,14 @@ function Dashboard({ isActive, userId }) {
         setProjectsState((current) =>
           current.filter((item) => item.id !== project.id)
         );
+        setProgressState((current) => ({
+          ...current,
+          projects: upsertById(
+            current.projects,
+            optimisticProject,
+            sortProgressProjects
+          ),
+        }));
       } else {
         setProjectsState((current) =>
           current.map((item) =>
@@ -596,7 +654,16 @@ function Dashboard({ isActive, userId }) {
           await updateProjectStatus(project.id, nextStatus)
         );
 
-        if (!isTerminalStatus) {
+        if (isTerminalStatus) {
+          setProgressState((current) => ({
+            ...current,
+            projects: upsertById(
+              current.projects,
+              updatedProject,
+              sortProgressProjects
+            ),
+          }));
+        } else {
           setProjectsState((current) =>
             current.map((item) =>
               item.id === project.id ? updatedProject : item
@@ -612,6 +679,10 @@ function Dashboard({ isActive, userId }) {
 
             return sortProjects([...current, normalizedProject]);
           });
+          setProgressState((current) => ({
+            ...current,
+            projects: current.projects.filter((item) => item.id !== project.id),
+          }));
         } else {
           setProjectsState((current) =>
             current.map((item) =>
@@ -632,13 +703,20 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [setProjectsState, updateProjectStatus]
+    [setProgressState, setProjectsState, updateProjectStatus]
   );
 
   const handleDeadlineStatusChange = useCallback(
     async (deadline, nextStatus) => {
       const isTerminalStatus = nextStatus === "done";
       const normalizedDeadline = normalizeDeadline(deadline);
+      const optimisticDeadline = isTerminalStatus
+        ? normalizeDeadline({
+            ...normalizedDeadline,
+            status: nextStatus,
+            status_changed_at: new Date().toISOString(),
+          })
+        : null;
 
       if (editingDeadlineId === deadline.id) {
         setEditingDeadlineId(null);
@@ -653,6 +731,14 @@ function Dashboard({ isActive, userId }) {
         setDeadlinesState((current) =>
           current.filter((item) => item.id !== deadline.id)
         );
+        setProgressState((current) => ({
+          ...current,
+          deadlines: upsertById(
+            current.deadlines,
+            optimisticDeadline,
+            sortProgressDeadlines
+          ),
+        }));
       } else {
         setDeadlinesState((current) =>
           current.map((item) =>
@@ -666,7 +752,16 @@ function Dashboard({ isActive, userId }) {
           await updateDeadlineStatus(deadline.id, nextStatus)
         );
 
-        if (!isTerminalStatus) {
+        if (isTerminalStatus) {
+          setProgressState((current) => ({
+            ...current,
+            deadlines: upsertById(
+              current.deadlines,
+              updatedDeadline,
+              sortProgressDeadlines
+            ),
+          }));
+        } else {
           setDeadlinesState((current) =>
             current.map((item) =>
               item.id === deadline.id ? updatedDeadline : item
@@ -682,6 +777,12 @@ function Dashboard({ isActive, userId }) {
 
             return sortDeadlines([...current, normalizedDeadline]);
           });
+          setProgressState((current) => ({
+            ...current,
+            deadlines: current.deadlines.filter(
+              (item) => item.id !== deadline.id
+            ),
+          }));
         } else {
           setDeadlinesState((current) =>
             current.map((item) =>
@@ -702,7 +803,7 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [editingDeadlineId, setDeadlinesState, updateDeadlineStatus]
+    [editingDeadlineId, setDeadlinesState, setProgressState, updateDeadlineStatus]
   );
 
   const closeDeadlinePicker = useCallback((deadlineId = null) => {

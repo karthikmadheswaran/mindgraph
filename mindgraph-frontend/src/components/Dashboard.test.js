@@ -4,6 +4,7 @@ import Dashboard from "./Dashboard";
 import { authHeaders } from "../utils/auth";
 import {
   clearDashboardSnapshotCache,
+  getCachedDashboardSnapshot,
   prefetchDashboardSnapshot,
 } from "../utils/dashboardSnapshot";
 
@@ -61,6 +62,7 @@ const hiddenProject = {
 function jsonResponse(payload, ok = true) {
   return Promise.resolve({
     ok,
+    status: ok ? 200 : 500,
     json: () => Promise.resolve(payload),
   });
 }
@@ -69,6 +71,7 @@ function createFetchHandler({
   entries = [],
   deadlines = [pendingDeadline, snoozedDeadline],
   projects = [activeProject, hiddenProject],
+  progress = { deadlines: [], projects: [] },
   onDeadlinePatch,
   onDeadlineDatePatch,
   onProjectPatch,
@@ -89,6 +92,10 @@ function createFetchHandler({
 
     if (url === "https://mindgraph-production.up.railway.app/projects?status=active,hidden") {
       return jsonResponse({ projects });
+    }
+
+    if (url.endsWith("/progress")) {
+      return jsonResponse({ progress, ...progress });
     }
 
     if (url.endsWith("/entities")) {
@@ -312,6 +319,10 @@ describe("Dashboard data and actions", () => {
     userEvent.click(screen.getByLabelText(/complete mindgraph/i));
 
     expect(screen.queryByText("Mindgraph")).not.toBeInTheDocument();
+    expect(
+      getCachedDashboardSnapshot({ userId: TEST_USER_ID })?.progress?.projects?.[0]
+        ?.name
+    ).toBe("Mindgraph");
 
     await waitFor(() => {
       expect(
@@ -327,6 +338,86 @@ describe("Dashboard data and actions", () => {
           return JSON.parse(options.body).status === "completed";
         })
       ).toBe(true);
+    });
+  });
+
+  test("marks a deadline as done in shared progress immediately and rolls back on failure", async () => {
+    let rejectPatchRequest;
+
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onDeadlinePatch: () =>
+          new Promise((_, reject) => {
+            rejectPatchRequest = reject;
+          }),
+      })
+    );
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+
+    userEvent.click(screen.getByLabelText(/mark finish report as done/i));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Finish report")).not.toBeInTheDocument();
+      expect(
+        getCachedDashboardSnapshot({ userId: TEST_USER_ID })?.progress?.deadlines?.[0]
+          ?.description
+      ).toBe("Finish report");
+    });
+
+    rejectPatchRequest(new Error("Failed to update deadline. Please try again."));
+
+    expect(
+      await screen.findByText("Failed to update deadline. Please try again.")
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Finish report")).toBeInTheDocument();
+      expect(
+        getCachedDashboardSnapshot({ userId: TEST_USER_ID })?.progress?.deadlines
+      ).toHaveLength(0);
+    });
+  });
+
+  test("marks a project as completed in shared progress immediately and rolls back on failure", async () => {
+    let rejectPatchRequest;
+
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        onProjectPatch: () =>
+          new Promise((_, reject) => {
+            rejectPatchRequest = reject;
+          }),
+      })
+    );
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Mindgraph")).toBeInTheDocument();
+
+    userEvent.click(screen.getByLabelText(/complete mindgraph/i));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Mindgraph")).not.toBeInTheDocument();
+      expect(
+        getCachedDashboardSnapshot({ userId: TEST_USER_ID })?.progress?.projects?.[0]
+          ?.name
+      ).toBe("Mindgraph");
+    });
+
+    rejectPatchRequest(new Error("Failed to update project. Please try again."));
+
+    expect(
+      await screen.findByText("Failed to update project. Please try again.")
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Mindgraph")).toBeInTheDocument();
+      expect(
+        getCachedDashboardSnapshot({ userId: TEST_USER_ID })?.progress?.projects
+      ).toHaveLength(0);
     });
   });
 

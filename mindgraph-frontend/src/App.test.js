@@ -31,8 +31,12 @@ jest.mock("./supabaseClient", () => ({
 jest.mock("./utils/dashboardSnapshot", () => ({
   __esModule: true,
   clearDashboardSnapshotCache: jest.fn(),
-  loadDashboardSnapshot: jest.fn(() => Promise.resolve({ entries: [] })),
-  prefetchDashboardSnapshot: jest.fn(() => Promise.resolve({ entries: [] })),
+  loadDashboardSnapshot: jest.fn(() =>
+    Promise.resolve({ entries: [], progress: { deadlines: [], projects: [] } })
+  ),
+  prefetchDashboardSnapshot: jest.fn(() =>
+    Promise.resolve({ entries: [], progress: { deadlines: [], projects: [] } })
+  ),
   updateDashboardSnapshot: jest.fn(),
 }));
 
@@ -112,7 +116,10 @@ beforeEach(() => {
 
   clearDashboardSnapshotCache.mockClear();
   prefetchDashboardSnapshot.mockClear();
-  prefetchDashboardSnapshot.mockResolvedValue({ entries: [] });
+  prefetchDashboardSnapshot.mockResolvedValue({
+    entries: [],
+    progress: { deadlines: [], projects: [] },
+  });
 });
 
 test("renders the landing page CTA when no session exists", async () => {
