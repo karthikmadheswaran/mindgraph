@@ -259,6 +259,112 @@ def extract_text_from_response(response):
         )
     return content.strip()
 
+async def compact_old_messages(user_id: str):
+    """
+    Background task: if user has >20 messages in ask_messages,
+    compact the oldest messages (keeping the 10 most recent) into user_memory.
+    Then delete the compacted messages.
+    """
+    try:
+        count_result = (
+            supabase.table("ask_messages")
+            .select("id", count="exact")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        total_count = count_result.count
+
+        if total_count is None or total_count <= 20:
+            return
+
+        all_result = (
+            supabase.table("ask_messages")
+            .select("id, role, content, created_at")
+            .eq("user_id", user_id)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        all_messages = all_result.data or []
+
+        messages_to_compact = all_messages[:-10]
+        if not messages_to_compact:
+            return
+
+        memory_result = (
+            supabase.table("user_memory")
+            .select("memory_text")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        existing_memory = ""
+        if memory_result.data:
+            existing_memory = memory_result.data[0].get("memory_text", "")
+
+        formatted_messages = []
+        for msg in messages_to_compact:
+            label = "User" if msg["role"] == "user" else "Assistant"
+            formatted_messages.append(f"{label}: {msg['content']}")
+        conversation_text = "\n".join(formatted_messages)
+
+        compaction_prompt_parts = [
+            "You are a memory extraction system for a personal journal app called MindGraph.",
+            "Your job is to extract and maintain a bullet-point list of important facts about the user.",
+            "",
+            "Rules:",
+            "- Extract ONLY factual information about the user: their projects, preferences, goals, habits, people they mention, tools they use, challenges they face, decisions they've made.",
+            "- Each bullet point should be a single, self-contained fact.",
+            "- Do NOT include conversational filler, greetings, or things the assistant said that aren't about the user.",
+            "- If the new conversation contradicts an existing fact, UPDATE the fact (don't keep both).",
+            "- If a fact is already captured in the existing memory, don't duplicate it.",
+            "- Keep the list concise. Merge related facts when possible.",
+            "- Output ONLY the updated bullet-point list, nothing else.",
+            "- Use this format exactly:",
+            "  • Fact one",
+            "  • Fact two",
+        ]
+
+        if existing_memory:
+            compaction_prompt_parts.append(
+                f"\nExisting user memory:\n{existing_memory}"
+            )
+
+        compaction_prompt_parts.append(
+            f"\nNew conversation messages to extract facts from:\n{conversation_text}"
+        )
+        compaction_prompt_parts.append(
+            "\nOutput the complete updated bullet-point list of user facts:"
+        )
+
+        compaction_prompt = "\n".join(compaction_prompt_parts)
+
+        langfuse_handler = LangfuseCallbackHandler()
+        response = await model.ainvoke(
+            compaction_prompt,
+            config={"callbacks": [langfuse_handler]},
+        )
+        new_memory = extract_text_from_response(response)
+
+        (
+            supabase.table("user_memory")
+            .upsert(
+                {
+                    "user_id": user_id,
+                    "memory_text": new_memory,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                on_conflict="user_id",
+            )
+            .execute()
+        )
+
+        ids_to_delete = [msg["id"] for msg in messages_to_compact]
+        if ids_to_delete:
+            supabase.table("ask_messages").delete().in_("id", ids_to_delete).execute()
+
+    except Exception as exc:
+        print(f"[compact_old_messages] Error for user {user_id}: {exc}")
+
 @app.get("/ask/history")
 async def get_ask_history(user_id: str = Depends(get_current_user)):
     result = (
@@ -272,8 +378,30 @@ async def get_ask_history(user_id: str = Depends(get_current_user)):
     messages = list(reversed(result.data)) if result.data else []
     return {"messages": messages}
 
+@app.get("/ask/memory")
+async def get_user_memory(user_id: str = Depends(get_current_user)):
+    result = (
+        supabase.table("user_memory")
+        .select("memory_text, updated_at")
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    if not result.data:
+        return {"memory": None, "updated_at": None}
+
+    row = result.data[0]
+    return {
+        "memory": row.get("memory_text", ""),
+        "updated_at": row.get("updated_at"),
+    }
+
 @app.post("/ask")
-async def ask_question(question: str, user_id: str = Depends(get_current_user)):
+async def ask_question(
+    question: str,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user),
+):
     langfuse_handler = LangfuseCallbackHandler()
 
     history_result = (
@@ -293,6 +421,17 @@ async def ask_question(question: str, user_id: str = Depends(get_current_user)):
             label = "User" if msg["role"] == "user" else "Assistant"
             formatted_history.append(f"{label}: {msg['content']}")
         conversation_history = "\n".join(formatted_history)
+
+    memory_result = (
+        supabase.table("user_memory")
+        .select("memory_text")
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    user_memory = ""
+    if memory_result.data:
+        user_memory = memory_result.data[0].get("memory_text", "")
 
     query_embedding = await get_embedding(question)
     result = supabase.rpc("match_entries", {
@@ -318,6 +457,11 @@ async def ask_question(question: str, user_id: str = Depends(get_current_user)):
         "You help the user understand their journal entries, patterns, and reflections."
     )
 
+    if user_memory:
+        prompt_parts.append(
+            f"Here is what you know about this user from past conversations:\n{user_memory}"
+        )
+
     if conversation_history:
         prompt_parts.append(
             f"Here is your recent conversation with the user:\n{conversation_history}"
@@ -328,10 +472,10 @@ async def ask_question(question: str, user_id: str = Depends(get_current_user)):
 
     prompt_parts.append(f'The user\'s new question is: "{question}"')
     prompt_parts.append(
-        "Based on the conversation history and journal entries, provide a helpful answer. "
-        "If the journal entries do not contain relevant information, say so honestly. "
-        "Use the conversation history to understand follow-up questions and references "
-        "to previous answers."
+        "Based on your knowledge of the user, the conversation history, and journal "
+        "entries, provide a helpful answer. If the journal entries do not contain "
+        "relevant information, say so honestly. Use the conversation history to "
+        "understand follow-up questions and references to previous answers."
     )
 
     prompt = "\n\n".join(prompt_parts)
@@ -351,6 +495,8 @@ async def ask_question(question: str, user_id: str = Depends(get_current_user)):
             "content": answer,
         },
     ]).execute()
+
+    background_tasks.add_task(compact_old_messages, user_id)
 
     return {"answer": answer}
 
