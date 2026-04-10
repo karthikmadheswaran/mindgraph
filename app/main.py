@@ -259,40 +259,99 @@ def extract_text_from_response(response):
         )
     return content.strip()
 
+@app.get("/ask/history")
+async def get_ask_history(user_id: str = Depends(get_current_user)):
+    result = (
+        supabase.table("ask_messages")
+        .select("role, content, created_at")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+    messages = list(reversed(result.data)) if result.data else []
+    return {"messages": messages}
+
 @app.post("/ask")
 async def ask_question(question: str, user_id: str = Depends(get_current_user)):
     langfuse_handler = LangfuseCallbackHandler()
-    
+
+    history_result = (
+        supabase.table("ask_messages")
+        .select("role, content")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .limit(10)
+        .execute()
+    )
+    history_messages = list(reversed(history_result.data)) if history_result.data else []
+
+    conversation_history = ""
+    if history_messages:
+        formatted_history = []
+        for msg in history_messages:
+            label = "User" if msg["role"] == "user" else "Assistant"
+            formatted_history.append(f"{label}: {msg['content']}")
+        conversation_history = "\n".join(formatted_history)
+
     query_embedding = await get_embedding(question)
     result = supabase.rpc("match_entries", {
         "query_embedding": query_embedding,
         "match_count": 5,
         "filter_user_id": user_id
     }).execute()
-    
-    if not result.data:
-        return {"answer": "No relevant entries found."}
-    
-    formatted_entries = []
-    for i, entry in enumerate(result.data, 1):
-        date = entry.get("created_at", "Unknown date")
-        title = entry.get("auto_title", "No title")
-        formatted_entries.append(f"Entry {i} (created at {date}, title: {title}):\n{entry['cleaned_text']}")
-    
-    context_text = "\n\n---\n\n".join(formatted_entries)
 
-    prompt = f"""You are an assistant for a personal journal app. A user has asked the following question:
-    "{question}"
+    context_text = ""
+    if result.data:
+        formatted_entries = []
+        for i, entry in enumerate(result.data, 1):
+            date = entry.get("created_at", "Unknown date")
+            title = entry.get("auto_title", "No title")
+            formatted_entries.append(
+                f"Entry {i} (created at {date}, title: {title}):\n{entry['cleaned_text']}"
+            )
+        context_text = "\n\n---\n\n".join(formatted_entries)
 
-    You have access to the following relevant journal entries:
-    {context_text}
-    
-    Based on these journal entries, provide a helpful answer to the user's question. 
-    If the journal entries do not contain relevant information, say "I don't know".
-    """
-    
+    prompt_parts = []
+    prompt_parts.append(
+        "You are an assistant for a personal journal app called MindGraph. "
+        "You help the user understand their journal entries, patterns, and reflections."
+    )
+
+    if conversation_history:
+        prompt_parts.append(
+            f"Here is your recent conversation with the user:\n{conversation_history}"
+        )
+
+    if context_text:
+        prompt_parts.append(f"Here are relevant journal entries:\n{context_text}")
+
+    prompt_parts.append(f'The user\'s new question is: "{question}"')
+    prompt_parts.append(
+        "Based on the conversation history and journal entries, provide a helpful answer. "
+        "If the journal entries do not contain relevant information, say so honestly. "
+        "Use the conversation history to understand follow-up questions and references "
+        "to previous answers."
+    )
+
+    prompt = "\n\n".join(prompt_parts)
+
     response = await model.ainvoke(prompt, config={"callbacks": [langfuse_handler]})
     answer = extract_text_from_response(response)
+
+    supabase.table("ask_messages").insert([
+        {
+            "user_id": user_id,
+            "role": "user",
+            "content": question,
+        },
+        {
+            "user_id": user_id,
+            "role": "assistant",
+            "content": answer,
+        },
+    ]).execute()
+
     return {"answer": answer}
 
 @app.get("/deadlines")

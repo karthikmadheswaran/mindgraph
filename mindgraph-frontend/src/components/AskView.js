@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { API, authHeaders } from "../utils/auth";
 import AnimatedView from "./AnimatedView";
@@ -8,6 +8,43 @@ export default function AskView({ isActive }) {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const threadRef = useRef(null);
+
+  useEffect(() => {
+    if (historyLoaded) return;
+
+    const loadHistory = async () => {
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API}/ask/history`, { headers });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            setMessages(
+              data.messages.map((message) => ({
+                role: message.role,
+                content: message.content,
+              }))
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load ask history:", err);
+      } finally {
+        setHistoryLoaded(true);
+      }
+    };
+
+    loadHistory();
+  }, [historyLoaded]);
+
+  useEffect(() => {
+    if (threadRef.current) {
+      threadRef.current.scrollTop = threadRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleAsk = async () => {
     if (!query.trim() || loading) return;
@@ -62,8 +99,8 @@ export default function AskView({ isActive }) {
           </p>
         </div>
 
-        <div className="ask-thread">
-          {messages.length === 0 && (
+        <div className="ask-thread" ref={threadRef}>
+          {messages.length === 0 && historyLoaded && (
             <div className="ask-empty">
               <p>Try asking something like:</p>
               <div className="ask-suggestions">
