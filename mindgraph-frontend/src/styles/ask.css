@@ -38,10 +38,111 @@
   place-items: center;
   width: 40px;
   height: 40px;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: 8px;
+  appearance: none;
   color: var(--text-secondary);
   background: var(--bg-card);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.ask-memory-icon:hover,
+.ask-memory-icon:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-card-solid);
+  transform: translateY(-1px);
+}
+
+.ask-memory-icon[aria-expanded="true"] {
+  color: var(--text-primary);
+  background: var(--accent-soft);
+}
+
+.ask-memory-panel {
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-card-solid);
+  box-shadow: var(--shadow-sm);
+}
+
+.ask-memory-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.ask-memory-panel-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.ask-memory-panel-header time {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.ask-memory-close {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 6px 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ask-memory-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.ask-memory-content,
+.ask-memory-state {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ask-memory-content {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ask-memory-content p,
+.ask-memory-content ul,
+.ask-memory-content ol {
+  margin: 0;
+}
+
+.ask-memory-content p + p,
+.ask-memory-content ul,
+.ask-memory-content ol {
+  margin-top: 8px;
+}
+
+.ask-memory-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ask-memory-state.error {
+  color: var(--accent-warm);
 }
 
 .conversation-feed {

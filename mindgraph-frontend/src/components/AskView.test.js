@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import AskView from "./AskView";
 import { API, authHeaders } from "../utils/auth";
 
@@ -103,5 +103,35 @@ describe("AskView", () => {
     expect(
       await screen.findByText(/write a thought or ask a question to get started/i)
     ).toBeInTheDocument();
+  });
+
+  test("opens the memory panel from the header icon", async () => {
+    global.fetch
+      .mockResolvedValueOnce(jsonResponse({ messages: [], has_more: false }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          memory: "User is refactoring MindGraph.",
+          updated_at: "2026-04-11T10:00:00Z",
+        })
+      );
+
+    render(<AskView isActive />);
+
+    await screen.findByText(/write a thought or ask a question to get started/i);
+    fireEvent.click(screen.getByRole("button", { name: /open memory/i }));
+
+    expect(await screen.findByText("Memory")).toBeInTheDocument();
+    expect(
+      await screen.findByText("User is refactoring MindGraph.")
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(`${API}/ask/memory`, {
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+      });
+    });
   });
 });

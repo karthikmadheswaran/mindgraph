@@ -228,6 +228,10 @@ export default function AskView({ isActive }) {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [pollingMessageIds, setPollingMessageIds] = useState(new Set());
+  const [isMemoryOpen, setIsMemoryOpen] = useState(false);
+  const [memoryData, setMemoryData] = useState(null);
+  const [isMemoryLoading, setIsMemoryLoading] = useState(false);
+  const [memoryError, setMemoryError] = useState("");
   const feedRef = useRef(null);
   const shouldScrollToBottomRef = useRef(true);
   const loadedInitialMessagesRef = useRef(false);
@@ -281,6 +285,30 @@ export default function AskView({ isActive }) {
       has_more: false,
     };
   }, []);
+
+  const loadMemory = useCallback(async () => {
+    setIsMemoryLoading(true);
+    setMemoryError("");
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API}/ask/memory`, { headers });
+      if (!res.ok) throw new Error(`Memory fetch failed: ${res.status}`);
+      const data = await res.json();
+      setMemoryData(data);
+    } catch {
+      setMemoryError("Could not load memory right now.");
+    } finally {
+      setIsMemoryLoading(false);
+    }
+  }, []);
+
+  const toggleMemory = useCallback(() => {
+    const nextIsOpen = !isMemoryOpen;
+    setIsMemoryOpen(nextIsOpen);
+    if (nextIsOpen && !memoryData && !isMemoryLoading) {
+      loadMemory();
+    }
+  }, [isMemoryLoading, isMemoryOpen, loadMemory, memoryData]);
 
   useEffect(() => {
     window.localStorage.setItem(MODE_STORAGE_KEY, mode);
@@ -558,7 +586,13 @@ export default function AskView({ isActive }) {
           <div>
             <h2 className="ask-view-title">MindGraph</h2>
           </div>
-          <div className="ask-memory-icon" aria-label="Memory enabled">
+          <button
+            type="button"
+            className="ask-memory-icon"
+            aria-label="Open memory"
+            aria-expanded={isMemoryOpen}
+            onClick={toggleMemory}
+          >
             <svg
               width="20"
               height="20"
@@ -575,8 +609,53 @@ export default function AskView({ isActive }) {
               <path d="M7 16h10" />
               <path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
             </svg>
-          </div>
+          </button>
         </header>
+
+        {isMemoryOpen && (
+          <aside className="ask-memory-panel" aria-label="MindGraph memory">
+            <div className="ask-memory-panel-header">
+              <div>
+                <h3>Memory</h3>
+                {memoryData?.updated_at && (
+                  <time>Updated {formatDate(memoryData.updated_at)}</time>
+                )}
+              </div>
+              <button
+                type="button"
+                className="ask-memory-close"
+                onClick={() => setIsMemoryOpen(false)}
+                aria-label="Close memory"
+              >
+                Close
+              </button>
+            </div>
+
+            {isMemoryLoading && (
+              <div className="ask-memory-state">
+                <span className="spinner small" />
+                Loading memory...
+              </div>
+            )}
+
+            {!isMemoryLoading && memoryError && (
+              <p className="ask-memory-state error">{memoryError}</p>
+            )}
+
+            {!isMemoryLoading && !memoryError && (
+              <div className="ask-memory-content">
+                {memoryData?.memory ? (
+                  <ReactMarkdown>{memoryData.memory}</ReactMarkdown>
+                ) : (
+                  <p>
+                    No saved memory yet. Keep chatting and MindGraph will build
+                    durable context over time.
+                  </p>
+                )}
+              </div>
+            )}
+          </aside>
+        )}
 
         <div className="conversation-feed" ref={feedRef} onScroll={handleFeedScroll}>
           {isLoadingMore && (
