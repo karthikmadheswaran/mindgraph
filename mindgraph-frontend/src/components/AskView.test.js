@@ -134,4 +134,75 @@ describe("AskView", () => {
       });
     });
   });
+
+  test("renders completed journal cards without summary, categories, or type labels", async () => {
+    global.fetch.mockResolvedValueOnce(
+      jsonResponse({
+        messages: [
+          {
+            id: "journal-1",
+            user_id: "user-1",
+            role: "journal_entry",
+            content: "Polished the unified feed until it felt calmer.",
+            created_at: "2026-04-11T09:00:00Z",
+            metadata: {
+              pipeline_stage: "completed",
+              auto_title: "Unified Feed Polish",
+              summary: "This summary should stay hidden.",
+              entities: [
+                { name: "MindGraph", type: "project" },
+                { name: "Claude", type: "tool" },
+              ],
+              categories: ["design"],
+            },
+            entry_id: "entry-1",
+          },
+        ],
+        has_more: false,
+      })
+    );
+
+    const { container } = render(<AskView isActive />);
+
+    expect(await screen.findByText("Unified Feed Polish")).toBeInTheDocument();
+    expect(
+      screen.getByText("Polished the unified feed until it felt calmer.")
+    ).toBeInTheDocument();
+    expect(container.querySelector(".entity-row")).toHaveTextContent("MindGraph");
+    expect(screen.getByText("Claude")).toBeInTheDocument();
+    expect(screen.queryByText("This summary should stay hidden.")).not.toBeInTheDocument();
+    expect(screen.queryByText(/categories/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("project")).not.toBeInTheDocument();
+    expect(screen.queryByText("tool")).not.toBeInTheDocument();
+  });
+
+  test("shows skeleton and mapped pipeline status while journal cards process", async () => {
+    global.fetch.mockResolvedValueOnce(
+      jsonResponse({
+        messages: [
+          {
+            id: "journal-2",
+            user_id: "user-1",
+            role: "journal_entry",
+            content: "Met with Priya about the graph work.",
+            created_at: "2026-04-11T09:00:00Z",
+            metadata: {
+              pipeline_stage: "entities",
+            },
+            entry_id: null,
+          },
+        ],
+        has_more: false,
+      })
+    );
+
+    const { container } = render(<AskView isActive />);
+
+    expect(
+      await screen.findByText("Finding people, projects, and tools...")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Met with Priya about the graph work.")).toBeInTheDocument();
+    expect(container.querySelector(".skeleton-bar")).toBeInTheDocument();
+    expect(screen.queryByText(/extracting insights/i)).not.toBeInTheDocument();
+  });
 });

@@ -7,6 +7,19 @@ import "../styles/ask.css";
 const PAGE_SIZE = 20;
 const MODE_STORAGE_KEY = "mindgraph_input_mode";
 const FINAL_STAGES = new Set(["completed", "error"]);
+const DEFAULT_PIPELINE_STATUS = "Processing...";
+const PIPELINE_STATUS_MAP = {
+  queued: "Getting ready...",
+  normalize: "Reading your entry...",
+  dedup: "Reading your entry...",
+  classify: "Understanding the context...",
+  entities: "Finding people, projects, and tools...",
+  deadline: "Checking for deadlines...",
+  title_summary: "Generating a title...",
+  extract_relations: "Connecting the dots...",
+  store: "Saving everything...",
+  completed: null,
+};
 
 function getInitialMode() {
   const storedMode = window.localStorage.getItem(MODE_STORAGE_KEY);
@@ -59,6 +72,13 @@ function mergeUniqueMessages(incoming, existing) {
     seen.add(message.id);
     return true;
   });
+}
+
+function getPipelineStatus(stage) {
+  if (Object.prototype.hasOwnProperty.call(PIPELINE_STATUS_MAP, stage)) {
+    return PIPELINE_STATUS_MAP[stage];
+  }
+  return DEFAULT_PIPELINE_STATUS;
 }
 
 function ModeToggle({ mode, onChange, disabled }) {
@@ -153,7 +173,6 @@ function EntityChip({ entity }) {
   return (
     <span className={`entity-chip ${type}`}>
       {entity.name}
-      <small>{type}</small>
     </span>
   );
 }
@@ -164,8 +183,24 @@ function JournalEntryCard({ message }) {
   const isCompleted = stage === "completed";
   const isError = stage === "error";
   const entities = metadata.entities || [];
-  const deadlines = metadata.deadlines || [];
-  const categories = metadata.categories || [];
+  const currentStatus = getPipelineStatus(stage);
+  const [statusText, setStatusText] = useState(
+    () => currentStatus || DEFAULT_PIPELINE_STATUS
+  );
+  const [statusVisible, setStatusVisible] = useState(true);
+
+  useEffect(() => {
+    const nextText = getPipelineStatus(stage);
+    if (!nextText || nextText === statusText) return undefined;
+
+    setStatusVisible(false);
+    const timeout = window.setTimeout(() => {
+      setStatusText(nextText);
+      setStatusVisible(true);
+    }, 150);
+
+    return () => window.clearTimeout(timeout);
+  }, [stage, statusText]);
 
   return (
     <article className="message-block journal-message">
@@ -175,74 +210,51 @@ function JournalEntryCard({ message }) {
           <time>{formatTime(message.created_at)}</time>
         </div>
 
-        <p className="journal-content">{message.content}</p>
-
-        {isCompleted && (metadata.auto_title || metadata.summary) && (
-          <div className="journal-summary">
-            {metadata.auto_title && <h4>{metadata.auto_title}</h4>}
-            {metadata.summary && <p>{metadata.summary}</p>}
+        {isCompleted && (
+          <div className="journal-card-content loaded">
+            {metadata.auto_title && (
+              <h4 className="journal-title">{metadata.auto_title}</h4>
+            )}
+            <p className="journal-body">{message.content}</p>
+            <div className="journal-divider" />
+            {entities.length > 0 && (
+              <div className="entity-row">
+                {entities.map((entity, index) => (
+                  <EntityChip
+                    key={`${entity.name}-${entity.type || entity.entity_type}-${index}`}
+                    entity={entity}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {!isCompleted && !isError && (
-          <div className="journal-insights">
-            <span className="processing-text">Extracting insights...</span>
+          <div className="journal-card-content loading">
+            <div className="skeleton-bar skeleton-title" />
+            <p className="journal-body">{message.content}</p>
+            <div className="journal-divider" />
+            <div
+              className={`pipeline-status ${statusVisible ? "visible" : ""}`}
+            >
+              {statusText}
+            </div>
+            <div className="skeleton-chips" aria-hidden="true">
+              <div className="skeleton-bar skeleton-chip short" />
+              <div className="skeleton-bar skeleton-chip long" />
+              <div className="skeleton-bar skeleton-chip medium" />
+            </div>
           </div>
         )}
 
         {isError && (
-          <div className="journal-insights journal-error">
-            Processing failed. This entry can still be found in your feed.
-          </div>
-        )}
-
-        {isCompleted && (
-          <div className="journal-insights">
-            {entities.length > 0 ? (
-              <div className="journal-result-row">
-                <span className="journal-result-label">Entities</span>
-                <div className="entity-chip-list">
-                  {entities.map((entity, index) => (
-                    <EntityChip
-                      key={`${entity.name}-${entity.type || entity.entity_type}-${index}`}
-                      entity={entity}
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <span className="journal-muted">No entities extracted yet.</span>
-            )}
-
-            {deadlines.length > 0 && (
-              <div className="journal-result-row">
-                <span className="journal-result-label">Deadlines</span>
-                <div className="deadline-list">
-                  {deadlines.map((deadline, index) => (
-                    <div
-                      key={`${deadline.description}-${deadline.due_date}-${index}`}
-                      className="deadline-pill"
-                    >
-                      <strong>{formatDate(deadline.due_date)}</strong>
-                      <span>{deadline.description}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {categories.length > 0 && (
-              <div className="journal-result-row">
-                <span className="journal-result-label">Categories</span>
-                <div className="category-list">
-                  {categories.map((category) => (
-                    <span key={category} className="category-chip">
-                      {category}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="journal-card-content loaded">
+            <p className="journal-body">{message.content}</p>
+            <div className="journal-divider" />
+            <div className="journal-error">
+              Processing failed. This entry can still be found in your feed.
+            </div>
           </div>
         )}
       </div>
