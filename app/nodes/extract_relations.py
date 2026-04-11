@@ -1,17 +1,8 @@
 import json
-import os
 from typing import get_args
 
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-
+from app.llm import extract_text, flash as model
 from app.state import EntityType, JournalState, RelationEdge, RelationType
-
-load_dotenv()
-
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
-
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 ENTITY_TYPES = set(get_args(EntityType))
 RELATION_TYPES = tuple(get_args(RelationType))
@@ -24,18 +15,6 @@ def normalize_text(value: str) -> str:
 
 def make_entity_key(name: str, entity_type: str) -> str:
     return f"{normalize_text(name)}|{normalize_text(entity_type)}"
-
-
-def extract_text_from_response(response) -> str:
-    content = response.content
-
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-
-    return content.strip()
 
 
 def build_relations_prompt(text: str, entities: list[dict]) -> str:
@@ -238,7 +217,7 @@ async def run_relation_extraction(text: str, entities: list[dict]) -> list[Relat
 
     prompt = build_relations_prompt(text, entities)
     response = await model.ainvoke(prompt)
-    content = extract_text_from_response(response)
+    content = extract_text(response)
     return parse_relations(content, entities)
 
 

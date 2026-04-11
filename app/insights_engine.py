@@ -1,18 +1,11 @@
-import os
 import json
+import logging
 from datetime import datetime, timezone, timedelta
-from typing import Optional
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from supabase import create_client, Client
-load_dotenv()
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
-model = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.3)
-supabase: Client = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
-)
+from app.db import supabase
+from app.llm import pro as model
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -293,4 +286,4 @@ async def regenerate_insights_background(user_id: str):
         generate_patterns(user_id)
         generate_forgotten_projects(user_id)
     except Exception as e:
-        print(f"❌ Insight regeneration error: {e}")
+        logger.error("Insight regeneration failed: %s", e, exc_info=True)

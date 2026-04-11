@@ -1,25 +1,12 @@
 # app/retrieval.py
-import os
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from app.embeddings import get_embedding
-from app.nodes.store import supabase
 import json
+import logging
 
-load_dotenv()
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
+from app.db import supabase
+from app.embeddings import get_embedding
+from app.llm import extract_text, flash_creative as rewrite_model
 
-rewrite_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.3)
-
-
-def extract_text_from_response(response):
-    content = response.content
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-    return content.strip()
+logger = logging.getLogger(__name__)
 
 
 async def rewrite_query(question: str) -> list[str]:
@@ -38,7 +25,7 @@ Return STRICT JSON only. No explanation.
 Format: ["query 1", "query 2", "query 3"]
 """
     response = await rewrite_model.ainvoke(prompt)
-    content = extract_text_from_response(response)
+    content = extract_text(response)
     
     # Clean markdown fences
     content = content.strip()
@@ -74,7 +61,7 @@ async def advanced_search(question: str, user_id: str, match_count: int = 5) -> 
     
     # Step 1: Rewrite the query into multiple search queries
     queries = await rewrite_query(question)
-    print(f"🔍 Query rewrite: {queries}")
+    logger.info("Query rewrite: %s", queries)
     
     # Step 2: Search with each query
     all_results = {}

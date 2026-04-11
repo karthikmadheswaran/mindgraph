@@ -1,17 +1,10 @@
 from app.state import JournalState, DeadlineNode
 from datetime import datetime
 import re
-import os
 import json
 from zoneinfo import ZoneInfo
 
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-load_dotenv()
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
-
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
+from app.llm import extract_text, flash as model
 
 USE_SEMANTIC_VALIDATOR = False
 
@@ -154,18 +147,6 @@ Format:
 """.strip()
 
 
-def extract_text_from_response(response):
-    content = response.content
-
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-
-    return content.strip()
-
-
 def is_valid_deadline_candidate(
     description: str,
     raw_text: str,
@@ -276,7 +257,7 @@ async def extract_deadlines(state: JournalState) -> dict:
 
     prompt = build_deadline_prompt(text, raw_text, state.get("user_timezone", "UTC"))
     response = await model.ainvoke(prompt)
-    content = extract_text_from_response(response)
+    content = extract_text(response)
 
     deadlines = parse_deadlines(
         content,

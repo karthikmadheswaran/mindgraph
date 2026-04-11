@@ -1,87 +1,45 @@
-import os
+import logging
 from datetime import datetime
-import re
-from dotenv import load_dotenv
-from postgrest.exceptions import APIError
-from supabase import create_client
 
+from postgrest.exceptions import APIError
+
+from app.db import supabase
 from app.embeddings import get_embedding
+from app.entity_resolver import (
+    base_normalize,
+    get_match_key,
+    make_entity_lookup_key,
+    normalize_text,
+    project_match_key,
+    resolve_entities,
+    should_accept_semantic_match,
+    store_entities,
+)
 from app.state import JournalState, RelationEdge
 
-load_dotenv()
+logger = logging.getLogger(__name__)
 
-supabase = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
-)
-
-import re
-
-
-def base_normalize(text: str) -> str:
-    """
-    Small shared normalizer for comparison purposes.
-
-    Safe cleanup only:
-    - convert to string
-    - trim outer whitespace
-    - lowercase
-    - collapse repeated internal whitespace
-
-    Do NOT remove punctuation or spaces here.
-    """
-    value = str(text or "").strip().lower()
-    value = " ".join(value.split())
-    return value
-
-def project_match_key(name: str) -> str:
-    """
-    Comparison-only key for project names.
-
-    More aggressive than base_normalize, but only for projects.
-    Keeps meaningful technical symbols like +, but treats dots as separators
-    so variants like:
-    - Node.js Migration
-    - Node JS Migration
-    can align.
-    """
-    value = base_normalize(name)
-    value = re.sub(r"[._-]+", " ", value)      # dot / underscore / hyphen -> space
-    value = re.sub(r"[^a-z0-9 + ]", "", value) # keep spaces and +
-    value = value.replace(" ", "")             # join words for comparison
-    return value
-
-def get_match_key(name: str, entity_type: str) -> str:
-    """
-    Return the comparison key based on entity type.
-
-    For now:
-    - projects use project_match_key()
-    - everything else uses base_normalize()
-    """
-    if entity_type == "project":
-        return project_match_key(name)
-    return base_normalize(name)
-
-def should_accept_semantic_match(incoming_name: str, matched_name: str, similarity: float) -> bool:
-    incoming = incoming_name.strip().lower()
-    matched = matched_name.strip().lower()
-
-    if similarity >= 0.95:
-        return True
-
-    if incoming in matched or matched in incoming:
-        return similarity >= 0.90
-
-    return False
-
-
-def normalize_text(value: str) -> str:
-    return " ".join(str(value or "").strip().lower().split())
-
-
-def make_entity_lookup_key(name: str, entity_type: str) -> str:
-    return f"{normalize_text(name)}|{normalize_text(entity_type)}"
+__all__ = [
+    "supabase",
+    "base_normalize",
+    "project_match_key",
+    "get_match_key",
+    "should_accept_semantic_match",
+    "normalize_text",
+    "make_entity_lookup_key",
+    "resolve_entities",
+    "store_entities",
+    "normalize_deadline_description",
+    "make_deadline_due_date_key",
+    "dedup_deadline_rows",
+    "is_duplicate_constraint_error",
+    "store_entry",
+    "store_entry_tags",
+    "store_entry_deadlines",
+    "store_entry_entities",
+    "store_relations",
+    "store_node",
+]
 
 
 def normalize_deadline_description(value: str) -> str:
@@ -155,202 +113,6 @@ async def store_entry_tags(entry_id: int, tags: list[str]) -> dict:
     tag_data = [{"entry_id": entry_id, "confidence": 1.0, "category": tag} for tag in tags]
     result = supabase.table("entry_tags").insert(tag_data).execute()
     return {"success": True} if result.data else {"error": "Failed to store tags"}
-
-
-async def resolve_entities(entities: list[dict], user_id: str, summary: str) -> dict:
-    if not entities:
-        return {"ids": [], "lookup": {}}
-
-    entity_ids: list[str] = []
-    entity_lookup: dict[str, str] = {}
-
-    for entity in entities:
-        entity_name = entity["name"].strip()
-        entity_type = entity["type"]
-        normalized_name = entity_name.lower()
-        input_lookup_key = make_entity_lookup_key(entity_name, entity_type)
-
-        existing_same_type_resp = (
-            supabase.table("entities")
-            .select("id, name, entity_type, mention_count")
-            .eq("user_id", user_id)
-            .eq("entity_type", entity_type)
-            .execute()
-        )
-
-        existing_same_type = existing_same_type_resp.data or []
-        incoming_base_name = base_normalize(entity_name)
-
-        print(f"[debug] incoming entity_name={entity_name!r}")
-        print(f"[debug] incoming_base_name={incoming_base_name!r}")
-        print(f"[debug] existing_same_type_count={len(existing_same_type)}")
-
-        for row in existing_same_type:
-            existing_name = row.get("name", "")
-            existing_base_name = base_normalize(existing_name)
-            print(
-                f"[debug] compare existing_name={existing_name!r} "
-                f"existing_base_name={existing_base_name!r} "
-                f"equal={existing_base_name == incoming_base_name}"
-            )
-
-        exact_match_row = next(
-            (
-                row
-                for row in existing_same_type
-                if base_normalize(row.get("name", "")) == incoming_base_name
-            ),
-            None,
-        )
-
-        if exact_match_row:
-            matched = exact_match_row
-
-            print(
-                f"EXACT BASE-NORMALIZED MATCH: incoming='{entity_name}' "
-                f"normalized='{normalized_name}' matched='{matched['name']}'"
-            )
-
-            supabase.table("entities").update({
-                "mention_count": matched["mention_count"] + 1,
-                "last_seen_at": datetime.now().isoformat(),
-                "context_summary": summary,
-            }).eq("id", matched["id"]).execute()
-
-            entity_ids.append(matched["id"])
-            entity_lookup[input_lookup_key] = matched["id"]
-            entity_lookup[make_entity_lookup_key(matched["name"], matched["entity_type"])] = matched["id"]
-            continue
-
-        normalized_candidates = []
-
-        if entity_type == "project":
-            incoming_key = get_match_key(entity_name, entity_type)
-
-            existing_projects_resp = (
-                supabase.table("entities")
-                .select("id, name, entity_type, mention_count")
-                .eq("user_id", user_id)
-                .eq("entity_type", "project")
-                .execute()
-            )
-
-            existing_projects = existing_projects_resp.data or []
-
-            normalized_candidates = [
-                proj
-                for proj in existing_projects
-                if get_match_key(proj.get("name", ""), "project") == incoming_key
-            ]
-
-            if normalized_candidates:
-                print(
-                    f"[store] normalized project candidates for '{entity_name}': "
-                    f"{[p.get('name') for p in normalized_candidates]}"
-                )
-            
-            if entity_type == "project" and len(normalized_candidates) == 1:
-                    matched = normalized_candidates[0]
-
-                    print(
-                    f"NORMALIZED PROJECT MATCH ACCEPTED: '{entity_name}' -> '{matched['name']}'"
-                    )
-
-                    current_mention_count = matched.get("mention_count", 0) or 0
-
-                    supabase.table("entities").update({
-                        "mention_count": current_mention_count + 1,
-                        "last_seen_at": datetime.now().isoformat(),
-                        "context_summary": summary,
-                    }).eq("id", matched["id"]).execute()
-
-                    entity_ids.append(matched["id"])
-                    entity_lookup[input_lookup_key] = matched["id"]
-                    entity_lookup[make_entity_lookup_key(matched["name"], matched["entity_type"])] = matched["id"]
-                    continue
-            
-        description = f"{entity_name} ({entity_type}) - {summary}"
-        embedding = await get_embedding(description)
-
-        match_result = supabase.rpc("match_entities", {
-            "query_embedding": embedding,
-            "match_count": 3,
-            "filter_user_id": user_id,
-            "similarity_threshold": 0.8,
-            "filter_entity_type": entity_type
-        }).execute()
-
-        if match_result.data and len(match_result.data) > 0:
-            print(f"Candidates for '{entity_name}':")
-            for match in match_result.data:
-                print(
-                    f"  - '{match['name']}' "
-                    f"(type: {match['entity_type']}, sim: {match['similarity']:.3f})"
-                )
-
-            matched = match_result.data[0]
-            similarity = matched["similarity"]
-
-            if should_accept_semantic_match(entity_name, matched["name"], similarity):
-                print(
-                    f"SEMANTIC MATCH ACCEPTED: '{entity_name}' -> '{matched['name']}' "
-                    f"(type: {matched['entity_type']}, sim: {similarity:.3f})"
-                )
-
-                supabase.table("entities").update({
-                    "mention_count": matched["mention_count"] + 1,
-                    "last_seen_at": datetime.now().isoformat(),
-                    "context_summary": summary
-                }).eq("id", matched["id"]).execute()
-
-                entity_ids.append(matched["id"])
-                entity_lookup[input_lookup_key] = matched["id"]
-                entity_lookup[make_entity_lookup_key(matched["name"], matched["entity_type"])] = matched["id"]
-            else:
-                print(
-                    f"SEMANTIC MATCH REJECTED: '{entity_name}' -> '{matched['name']}' "
-                    f"(type: {matched['entity_type']}, sim: {similarity:.3f})"
-                )
-                print(f"NEW ENTITY: {entity_name} ({entity_type})")
-
-                new_entity = supabase.table("entities").insert({
-                    "user_id": user_id,
-                    "name": entity_name,
-                    "entity_type": entity_type,
-                    "first_seen_at": datetime.now().isoformat(),
-                    "last_seen_at": datetime.now().isoformat(),
-                    "mention_count": 1,
-                    "embedding": embedding,
-                    "context_summary": summary
-                }).execute()
-
-                if new_entity.data:
-                    entity_ids.append(new_entity.data[0]["id"])
-                    entity_lookup[input_lookup_key] = new_entity.data[0]["id"]
-        else:
-            print(f"NEW ENTITY: {entity_name} ({entity_type})")
-
-            new_entity = supabase.table("entities").insert({
-                "user_id": user_id,
-                "name": entity_name,
-                "entity_type": entity_type,
-                "first_seen_at": datetime.now().isoformat(),
-                "last_seen_at": datetime.now().isoformat(),
-                "mention_count": 1,
-                "embedding": embedding,
-                "context_summary": summary
-            }).execute()
-
-            if new_entity.data:
-                entity_ids.append(new_entity.data[0]["id"])
-                entity_lookup[input_lookup_key] = new_entity.data[0]["id"]
-
-    return {"ids": entity_ids, "lookup": entity_lookup}
-
-
-async def store_entities(entities: list[dict], user_id: str, summary: str) -> list[str]:
-    result = await resolve_entities(entities, user_id, summary)
-    return result["ids"]
 
 
 async def store_entry_deadlines(entry_id: int, deadlines: list[dict], user_id: str) -> dict:
@@ -446,7 +208,12 @@ async def store_relations(
             ).execute()
             stored += 1
         except Exception as exc:
-            print(f"RELATION STORE WARNING: failed to store {relation}: {exc}")
+            logger.warning(
+                "Relation store failed for relation=%s: %s",
+                relation,
+                exc,
+                exc_info=True,
+            )
             skipped += 1
 
     return {"success": True, "stored": stored, "skipped": skipped}
@@ -454,12 +221,12 @@ async def store_relations(
 
 async def store_node(state: JournalState) -> dict:
     if state.get("dedup_check_result") == "duplicate":
-        print(f"DUPLICATE of entry {state.get('duplicate_of')} - skipping store")
+        logger.info("Duplicate of entry %s; skipping store", state.get("duplicate_of"))
         return {}
 
     try:
         entry_result = await store_entry(state)
-        print("ENTRY:", entry_result)
+        logger.info("Entry stored: %s", entry_result)
 
         if "error" in entry_result:
             return {}
@@ -467,19 +234,19 @@ async def store_node(state: JournalState) -> dict:
         entry_id = entry_result["id"]
 
         tags_result = await store_entry_tags(entry_id, state.get("classifier", []))
-        print("TAGS:", tags_result)
+        logger.info("Tags stored: %s", tags_result)
 
         entity_result = await resolve_entities(
             state.get("core_entities", []),
             state.get("user_id", ""),
-            state.get("summary", "")
+            state.get("summary", ""),
         )
         entity_ids = entity_result["ids"]
-        print("ENTITIES:", entity_ids)
+        logger.info("Entities resolved: %s", entity_ids)
 
         unique_entity_ids = list(set(entity_ids))
         entity_link_result = await store_entry_entities(entry_id, unique_entity_ids)
-        print("LINKS:", entity_link_result)
+        logger.info("Entity links stored: %s", entity_link_result)
 
         relations_result = await store_relations(
             state.get("relations", []),
@@ -487,16 +254,16 @@ async def store_node(state: JournalState) -> dict:
             entry_id,
             entity_result["lookup"],
         )
-        print("RELATIONS:", relations_result)
+        logger.info("Relations stored: %s", relations_result)
 
         deadlines_result = await store_entry_deadlines(
             entry_id,
             state.get("deadline", []),
-            state.get("user_id", "")
+            state.get("user_id", ""),
         )
-        print("DEADLINES:", deadlines_result)
+        logger.info("Deadlines stored: %s", deadlines_result)
 
     except Exception as exc:
-        print(f"STORE ERROR: {exc}")
+        logger.error("Store node failed: %s", exc, exc_info=True)
 
     return {}

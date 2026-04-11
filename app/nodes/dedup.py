@@ -1,7 +1,11 @@
 # app/nodes/dedup.py
+import logging
+
+from app.db import supabase
 from app.state import JournalState
 from app.embeddings import get_embedding
-from app.nodes.store import supabase
+
+logger = logging.getLogger(__name__)
 
 async def dedup(state: JournalState) -> dict:
     text = state.get("cleaned_text", state["raw_text"])
@@ -19,14 +23,14 @@ async def dedup(state: JournalState) -> dict:
     if result.data and len(result.data) > 0:
         match = result.data[0]
         similarity = match["similarity"]
-        print(f"🔍 DEDUP: Closest match '{match['auto_title']}' (sim: {similarity:.3f})")
+        logger.info("Dedup: closest match '%s' (sim=%.3f)", match["auto_title"], similarity)
         
         if similarity > 0.85:
-            print(f"⚠️ DUPLICATE DETECTED — skipping pipeline")
+            logger.info("Duplicate detected; skipping pipeline")
             return {
                 "dedup_check_result": "duplicate",
                 "duplicate_of": match["id"]
             }
     
-    print("✅ DEDUP: No duplicate found — continuing pipeline")
+    logger.info("No duplicate found; continuing pipeline")
     return {"dedup_check_result": "not_duplicate"}

@@ -1,15 +1,7 @@
-from app.state import JournalState,CoreEntityNode,ClassifierType
-from datetime import datetime
-import os
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import get_args, List
+from app.llm import extract_text, flash as model
+from app.state import ClassifierType, JournalState
+from typing import get_args
 import json
-load_dotenv()
-
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
-
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 CLASSIFIER_TYPES = get_args(ClassifierType)
 
@@ -41,17 +33,6 @@ Rules:
 - Do not include extra fields.
 
 """
-
-def extract_text_from_response(response):
-    content = response.content
-
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-
-    return content.strip()
 
 def parse_classifiers(raw: str) -> list[str]:
     try:
@@ -90,7 +71,7 @@ async def classify(state: JournalState) -> dict:
 
     response = await model.ainvoke(prompt)
 
-    content = extract_text_from_response(response)
+    content = extract_text(response)
 
     classifiers = parse_classifiers(content)
 

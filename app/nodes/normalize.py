@@ -1,24 +1,8 @@
 # app/nodes/normalize.py
+from app.llm import extract_text, flash as model
 from app.state import JournalState
 from datetime import datetime, timedelta, timezone
-import os
 from zoneinfo import ZoneInfo
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-load_dotenv()
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
-
-
-def extract_text_from_response(response):
-    content = response.content
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-    return content.strip()
 
 
 def resolve_user_timezone(user_timezone: str):
@@ -142,6 +126,6 @@ async def normalize(state: JournalState) -> dict:
     prompt = build_normalize_prompt(text, current_dt)
 
     response = await model.ainvoke(prompt)
-    cleaned = extract_text_from_response(response)
+    cleaned = extract_text(response)
 
     return {"cleaned_text": cleaned}

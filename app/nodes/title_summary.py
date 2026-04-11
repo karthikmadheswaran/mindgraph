@@ -1,15 +1,7 @@
+from app.llm import extract_text, flash as model
 from app.state import JournalState
-from datetime import datetime
-import re, os
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import get_args, List
+import re
 import json
-load_dotenv()
-
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
-
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.1)
 
 
 
@@ -73,17 +65,6 @@ Journal Entry:
 {text}
 """
 
-def extract_text_from_response(response):
-    content = response.content
-
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-
-    return content.strip()
-
 def parse_JSON(raw: str) -> tuple[str, str]:
     # Remove markdown fences if present
     raw = raw.strip()
@@ -126,7 +107,7 @@ async def title_summary(state: JournalState) -> dict:
 
     response = await model.ainvoke(prompt)
 
-    content = extract_text_from_response(response)
+    content = extract_text(response)
 
     auto_title,summary = parse_JSON(content)
 
