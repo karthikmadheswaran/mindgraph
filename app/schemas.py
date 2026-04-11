@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class EntryRequest(BaseModel):
@@ -27,3 +27,23 @@ class DeadlineDateUpdateRequest(BaseModel):
 
 class ProjectStatusUpdateRequest(BaseModel):
     status: Literal["active", "hidden", "completed"]
+
+
+class SendMessageRequest(BaseModel):
+    content: str
+    mode: Literal["ask", "journal"]
+
+
+class MessageResponse(BaseModel):
+    id: str
+    user_id: str
+    role: str
+    content: str
+    created_at: str
+    metadata: dict = Field(default_factory=dict)
+    entry_id: Optional[str] = None
+
+
+class MessagesResponse(BaseModel):
+    messages: list[MessageResponse]
+    has_more: bool = False

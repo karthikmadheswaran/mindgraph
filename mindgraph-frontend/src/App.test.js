@@ -63,6 +63,7 @@ jest.mock("./components/Sidebar", () => ({
       <button onClick={onBrandClick}>Brand</button>
       <button onClick={() => onViewChange("write")}>Go Write</button>
       <button onClick={() => onViewChange("dashboard")}>Go Dashboard</button>
+      <button onClick={() => onViewChange("graph")}>Go Graph</button>
       <button onClick={() => onViewChange("progress")}>Go Progress</button>
       <button onClick={() => onViewChange("ask")}>Go Ask</button>
     </div>
@@ -92,6 +93,11 @@ jest.mock("./components/MyProgress", () => ({
 jest.mock("./components/AskView", () => ({
   __esModule: true,
   default: () => <div data-testid="ask-view">Ask view</div>,
+}));
+
+jest.mock("./components/KnowledgeGraphView", () => ({
+  __esModule: true,
+  default: () => <div data-testid="graph-view">Graph view</div>,
 }));
 
 import App from "./App";
@@ -128,15 +134,15 @@ test("renders the landing page CTA when no session exists", async () => {
   expect(await screen.findByText(/start journaling/i)).toBeInTheDocument();
 });
 
-test("authenticated bootstrap with no hash lands on write and starts prefetch", async () => {
+test("authenticated bootstrap with no hash lands on ask and starts prefetch", async () => {
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
   });
 
   render(<App />);
 
-  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#write");
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#ask");
 
   await waitFor(() => {
     expect(prefetchDashboardSnapshot).toHaveBeenCalledWith({
@@ -157,7 +163,7 @@ test("authenticated bootstrap honors a dashboard hash", async () => {
   expect(window.location.hash).toBe("#dashboard");
 });
 
-test("brand click navigates back to write", async () => {
+test("brand click navigates back to ask", async () => {
   window.history.replaceState({}, "", "/#dashboard");
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
@@ -169,8 +175,8 @@ test("brand click navigates back to write", async () => {
 
   userEvent.click(screen.getByRole("button", { name: /brand/i }));
 
-  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#write");
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#ask");
 });
 
 test("later auth callbacks do not reset the current hash-backed view", async () => {
@@ -180,7 +186,7 @@ test("later auth callbacks do not reset the current hash-backed view", async () 
 
   render(<App />);
 
-  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
 
   userEvent.click(screen.getByRole("button", { name: /go dashboard/i }));
 
@@ -202,7 +208,7 @@ test("hash changes update the active authenticated view", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
 
   await act(async () => {
     window.location.hash = "#ask";
@@ -238,10 +244,25 @@ test("sidebar navigation can move into the progress view", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("write-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
 
   userEvent.click(screen.getByRole("button", { name: /go progress/i }));
 
   expect(await screen.findByTestId("progress-view")).toBeInTheDocument();
   expect(window.location.hash).toBe("#/progress");
+});
+
+test("sidebar navigation can move into the graph view", async () => {
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+
+  userEvent.click(screen.getByRole("button", { name: /go graph/i }));
+
+  expect(await screen.findByTestId("graph-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#graph");
 });

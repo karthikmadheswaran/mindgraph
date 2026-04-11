@@ -44,6 +44,156 @@ def build_entry_state(
     return state
 
 
+def _serialize_deadline(deadline: dict) -> dict:
+    return {
+        "description": deadline.get("description", ""),
+        "due_date": str(deadline.get("due_date", deadline.get("due_at", ""))),
+    }
+
+
+def _serialize_entity(entity: dict) -> dict:
+    return {
+        "name": entity.get("name", ""),
+        "type": entity.get("entity_type", entity.get("type", "")),
+    }
+
+
+def _conversation_metadata_from_pipeline(final_result: dict, pipeline_stage: str) -> dict:
+    metadata = {"pipeline_stage": pipeline_stage}
+
+    if "auto_title" in final_result:
+        metadata["auto_title"] = final_result.get("auto_title", "")
+    if "summary" in final_result:
+        metadata["summary"] = final_result.get("summary", "")
+    if "core_entities" in final_result:
+        metadata["entities"] = [
+            _serialize_entity(entity)
+            for entity in final_result.get("core_entities", [])
+            if isinstance(entity, dict)
+        ]
+    if "deadline" in final_result:
+        metadata["deadlines"] = [
+            _serialize_deadline(deadline)
+            for deadline in final_result.get("deadline", [])
+            if isinstance(deadline, dict)
+        ]
+    if "classifier" in final_result:
+        metadata["categories"] = final_result.get("classifier", [])
+
+    return metadata
+
+
+def _update_conversation_message(
+    message_id: str,
+    entry_id: str | None,
+    metadata: dict,
+) -> None:
+    update_data = {"metadata": metadata}
+    if entry_id:
+        update_data["entry_id"] = entry_id
+
+    (
+        supabase.table("ask_messages")
+        .update(update_data)
+        .eq("id", message_id)
+        .execute()
+    )
+
+
+def _fetch_entry_entities(entry_id: str, user_id: str) -> list[dict]:
+    link_result = (
+        supabase.table("entry_entities")
+        .select("entity_id")
+        .eq("entry_id", entry_id)
+        .execute()
+    )
+    entity_ids = [
+        row["entity_id"]
+        for row in (link_result.data or [])
+        if row.get("entity_id")
+    ]
+    if not entity_ids:
+        return []
+
+    entity_result = (
+        supabase.table("entities")
+        .select("id, name, entity_type")
+        .eq("user_id", user_id)
+        .in_("id", entity_ids)
+        .execute()
+    )
+    return [_serialize_entity(entity) for entity in (entity_result.data or [])]
+
+
+def _fetch_entry_deadlines(entry_id: str, user_id: str) -> list[dict]:
+    result = (
+        supabase.table("deadlines")
+        .select("description, due_date")
+        .eq("user_id", user_id)
+        .eq("source_entry_id", entry_id)
+        .order("due_date", desc=False)
+        .execute()
+    )
+    return [_serialize_deadline(deadline) for deadline in (result.data or [])]
+
+
+def _fetch_entry_categories(entry_id: str) -> list[str]:
+    result = (
+        supabase.table("entry_tags")
+        .select("category")
+        .eq("entry_id", entry_id)
+        .execute()
+    )
+    return [
+        row["category"]
+        for row in (result.data or [])
+        if row.get("category")
+    ]
+
+
+def _build_completed_conversation_metadata(
+    entry_id: str,
+    user_id: str,
+    final_result: dict,
+) -> dict:
+    entry_result = (
+        supabase.table("entries")
+        .select("auto_title, summary")
+        .eq("id", entry_id)
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    entry_row = entry_result.data[0] if entry_result.data else {}
+
+    categories = _fetch_entry_categories(entry_id) or final_result.get("classifier", [])
+
+    return {
+        "pipeline_stage": "completed",
+        "auto_title": entry_row.get("auto_title", final_result.get("auto_title", "")),
+        "summary": entry_row.get("summary", final_result.get("summary", "")),
+        "entities": _fetch_entry_entities(entry_id, user_id),
+        "deadlines": _fetch_entry_deadlines(entry_id, user_id),
+        "categories": categories,
+    }
+
+
+def _insert_processing_entry(entry: EntryRequest, user_id: str):
+    skeleton = supabase.table("entries").insert(
+        {
+            "raw_text": entry.raw_text,
+            "user_id": user_id,
+            "cleaned_text": "",
+            "auto_title": "",
+            "summary": "",
+            "status": "processing",
+            "pipeline_stage": "normalize",
+        }
+    ).execute()
+
+    return skeleton.data[0]["id"] if skeleton.data else None
+
+
 async def create_entry(entry: EntryRequest, user_id: str) -> EntryResponse:
     state = build_entry_state(entry, user_id)
     result = await workflow.ainvoke(state, config=langfuse_config())
@@ -136,49 +286,115 @@ async def create_entry_async(
     background_tasks: BackgroundTasks,
     user_id: str,
 ) -> dict:
-    skeleton = supabase.table("entries").insert(
-        {
-            "raw_text": entry.raw_text,
-            "user_id": user_id,
-            "cleaned_text": "",
-            "auto_title": "",
-            "summary": "",
-            "status": "processing",
-            "pipeline_stage": "normalize",
-        }
-    ).execute()
+    return await enqueue_entry_processing(entry, background_tasks, user_id)
 
-    entry_id = skeleton.data[0]["id"] if skeleton.data else None
+
+async def enqueue_entry_processing(
+    entry: EntryRequest,
+    background_tasks: BackgroundTasks,
+    user_id: str,
+    conversation_message_id: str | None = None,
+) -> dict:
+    entry_id = _insert_processing_entry(entry, user_id)
     state = build_entry_state(entry, user_id, str(entry_id) if entry_id else None)
-
-    async def process_entry():
-        try:
-            async for event in workflow.astream(state, config=langfuse_config()):
-                node_name = list(event.keys())[0]
-                if entry_id:
-                    supabase.table("entries").update(
-                        {"pipeline_stage": node_name}
-                    ).eq("id", entry_id).execute()
-
-            await regenerate_insights_background(user_id)
-
-        except Exception as e:
-            logger.error("Background processing error: %s", e, exc_info=True)
-            if entry_id:
-                supabase.table("entries").update(
-                    {
-                        "status": "error",
-                        "pipeline_stage": None,
-                    }
-                ).eq("id", entry_id).execute()
-
-    background_tasks.add_task(process_entry)
+    background_tasks.add_task(
+        process_entry_background,
+        state,
+        user_id,
+        entry_id,
+        conversation_message_id,
+    )
 
     return {
         "status": "processing",
         "entry_id": entry_id,
         "message": "Your entry is being processed. Check the dashboard in a few seconds.",
     }
+
+
+async def process_entry_background(
+    state: dict,
+    user_id: str,
+    entry_id: str | None,
+    conversation_message_id: str | None = None,
+) -> None:
+    final_result = {}
+    message_metadata = {"pipeline_stage": "normalize"}
+
+    try:
+        if conversation_message_id:
+            _update_conversation_message(
+                conversation_message_id,
+                str(entry_id) if entry_id else None,
+                message_metadata,
+            )
+
+        async for event in workflow.astream(state, config=langfuse_config()):
+            node_name = list(event.keys())[0]
+            node_output = event[node_name]
+            if node_output and isinstance(node_output, dict):
+                final_result.update(node_output)
+
+            if entry_id:
+                supabase.table("entries").update(
+                    {"pipeline_stage": node_name}
+                ).eq("id", entry_id).execute()
+
+            if conversation_message_id:
+                message_metadata.update(
+                    _conversation_metadata_from_pipeline(final_result, node_name)
+                )
+                _update_conversation_message(
+                    conversation_message_id,
+                    str(entry_id) if entry_id else None,
+                    message_metadata,
+                )
+
+        await regenerate_insights_background(user_id)
+
+        if conversation_message_id and entry_id:
+            try:
+                message_metadata = _build_completed_conversation_metadata(
+                    str(entry_id),
+                    user_id,
+                    final_result,
+                )
+            except Exception as metadata_exc:
+                logger.warning(
+                    "Conversation metadata fetch failed for entry %s: %s",
+                    entry_id,
+                    metadata_exc,
+                    exc_info=True,
+                )
+                message_metadata.update(
+                    _conversation_metadata_from_pipeline(final_result, "completed")
+                )
+                message_metadata["pipeline_stage"] = "completed"
+
+            _update_conversation_message(
+                conversation_message_id,
+                str(entry_id),
+                message_metadata,
+            )
+
+    except Exception as e:
+        logger.error("Background processing error: %s", e, exc_info=True)
+        if entry_id:
+            supabase.table("entries").update(
+                {
+                    "status": "error",
+                    "pipeline_stage": None,
+                }
+            ).eq("id", entry_id).execute()
+
+        if conversation_message_id:
+            message_metadata["pipeline_stage"] = "error"
+            message_metadata["error"] = str(e)
+            _update_conversation_message(
+                conversation_message_id,
+                str(entry_id) if entry_id else None,
+                message_metadata,
+            )
 
 
 async def get_entry_status(entry_id: str, user_id: str):

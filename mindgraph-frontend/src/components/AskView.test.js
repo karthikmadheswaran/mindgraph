@@ -32,6 +32,7 @@ function jsonResponse(payload, ok = true) {
 describe("AskView", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    window.localStorage.clear();
     authHeaders.mockResolvedValue({
       Authorization: "Bearer test-token",
       "Content-Type": "application/json",
@@ -46,25 +47,42 @@ describe("AskView", () => {
     global.fetch.mockResolvedValueOnce(
       jsonResponse({
         messages: [
-          { role: "user", content: "What am I working on?", created_at: "2026-04-10T09:00:00Z" },
-          { role: "assistant", content: "You mentioned MindGraph and a report.", created_at: "2026-04-10T09:00:05Z" },
+          {
+            id: "message-2",
+            user_id: "user-1",
+            role: "assistant",
+            content: "You mentioned MindGraph and a report.",
+            created_at: "2026-04-10T09:00:05Z",
+            metadata: {},
+            entry_id: null,
+          },
+          {
+            id: "message-1",
+            user_id: "user-1",
+            role: "user",
+            content: "What am I working on?",
+            created_at: "2026-04-10T09:00:00Z",
+            metadata: {},
+            entry_id: null,
+          },
         ],
+        has_more: false,
       })
     );
 
     render(<AskView isActive />);
 
-    expect(screen.queryByText(/try asking something like:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
 
     expect(await screen.findByText("What am I working on?")).toBeInTheDocument();
     expect(
       await screen.findByText("You mentioned MindGraph and a report.")
     ).toBeInTheDocument();
-    expect(screen.queryByText(/try asking something like:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(authHeaders).toHaveBeenCalled();
-      expect(global.fetch).toHaveBeenCalledWith(`${API}/ask/history`, {
+      expect(global.fetch).toHaveBeenCalledWith(`${API}/conversations/messages?limit=20`, {
         headers: {
           Authorization: "Bearer test-token",
           "Content-Type": "application/json",
@@ -73,16 +91,17 @@ describe("AskView", () => {
     });
   });
 
-  test("shows suggestions after history finishes loading with no messages", async () => {
-    global.fetch.mockResolvedValueOnce(jsonResponse({ messages: [] }));
+  test("shows welcome state after history finishes loading with no messages", async () => {
+    global.fetch.mockResolvedValueOnce(
+      jsonResponse({ messages: [], has_more: false })
+    );
 
     render(<AskView isActive />);
 
-    expect(screen.queryByText(/try asking something like:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
 
-    expect(await screen.findByText(/try asking something like:/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /what have i been working on lately\?/i })
+      await screen.findByText(/write a thought or ask a question to get started/i)
     ).toBeInTheDocument();
   });
 });

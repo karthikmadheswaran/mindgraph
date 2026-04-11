@@ -14,13 +14,14 @@ import InputView from "./components/InputView";
 import Dashboard from "./components/Dashboard";
 import MyProgress from "./components/MyProgress";
 import AskView from "./components/AskView";
+import KnowledgeGraphView from "./components/KnowledgeGraphView";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
-const APP_VIEWS = new Set(["write", "dashboard", "progress", "ask"]);
-const DEFAULT_APP_VIEW = "write";
+const APP_VIEWS = new Set(["ask", "write", "dashboard", "graph", "progress"]);
+const DEFAULT_APP_VIEW = "ask";
 
 const normalizeHashView = (hashValue) => {
   const hash = String(hashValue || "")
@@ -167,7 +168,7 @@ export default function App() {
   };
 
   const handleAppBrandClick = () => {
-    navigateToAppView("write");
+    navigateToAppView("ask");
   };
 
   const handleEntrySubmitted = useCallback(() => {
@@ -380,6 +381,9 @@ export default function App() {
                 isActive={currentView === "progress"}
                 userId={session.user?.id}
               />
+            </div>
+            <div style={{ display: currentView === "graph" ? "block" : "none" }}>
+              <KnowledgeGraphView isActive={currentView === "graph"} />
             </div>
             <div style={{ display: currentView === "ask" ? "block" : "none" }}>
               <AskView isActive={currentView === "ask"} />

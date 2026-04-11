@@ -12,6 +12,7 @@ from app.llm import extract_text, flash as model
 from app.services.observability import langfuse_config
 
 logger = logging.getLogger(__name__)
+ASK_ROLES = ["user", "assistant"]
 
 
 async def compact_old_messages(user_id: str):
@@ -25,6 +26,7 @@ async def compact_old_messages(user_id: str):
             supabase.table("ask_messages")
             .select("id", count="exact")
             .eq("user_id", user_id)
+            .in_("role", ASK_ROLES)
             .execute()
         )
         total_count = count_result.count
@@ -36,6 +38,7 @@ async def compact_old_messages(user_id: str):
             supabase.table("ask_messages")
             .select("id, role, content, created_at")
             .eq("user_id", user_id)
+            .in_("role", ASK_ROLES)
             .order("created_at", desc=False)
             .execute()
         )
@@ -96,6 +99,7 @@ async def get_history(user_id: str) -> dict:
         supabase.table("ask_messages")
         .select("role, content, created_at")
         .eq("user_id", user_id)
+        .in_("role", ASK_ROLES)
         .order("created_at", desc=True)
         .limit(50)
         .execute()
@@ -122,16 +126,28 @@ async def get_memory(user_id: str) -> dict:
     }
 
 
-async def ask(question: str, user_id: str) -> str:
+async def generate_answer(
+    question: str,
+    user_id: str,
+    exclude_message_id: str | None = None,
+) -> str:
     history_result = (
         supabase.table("ask_messages")
-        .select("role, content")
+        .select("id, role, content")
         .eq("user_id", user_id)
+        .in_("role", ASK_ROLES)
         .order("created_at", desc=True)
-        .limit(10)
+        .limit(11 if exclude_message_id else 10)
         .execute()
     )
-    history_messages = list(reversed(history_result.data)) if history_result.data else []
+    history_rows = history_result.data or []
+    if exclude_message_id:
+        history_rows = [
+            row
+            for row in history_rows
+            if str(row.get("id")) != str(exclude_message_id)
+        ][:10]
+    history_messages = list(reversed(history_rows))
     conversation_history = format_conversation_messages(history_messages)
 
     memory_result = (
@@ -174,8 +190,11 @@ async def ask(question: str, user_id: str) -> str:
     )
 
     response = await model.ainvoke(prompt, config=langfuse_config())
-    answer = extract_text(response)
+    return extract_text(response)
 
+
+async def ask(question: str, user_id: str) -> str:
+    answer = await generate_answer(question, user_id)
     supabase.table("ask_messages").insert(
         [
             {

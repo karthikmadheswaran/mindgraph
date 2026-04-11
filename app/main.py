@@ -14,10 +14,13 @@ from app.schemas import (
     DeadlineStatusUpdateRequest,
     EntryRequest,
     EntryResponse,
+    MessagesResponse,
     ProjectStatusUpdateRequest,
+    SendMessageRequest,
 )
 from app.services import (
     ask_service,
+    conversation,
     deadline_service,
     entity_service,
     entry_service,
@@ -89,6 +92,39 @@ async def ask_question(
     answer = await ask_service.ask(question, user_id)
     background_tasks.add_task(ask_service.compact_old_messages, user_id)
     return {"answer": answer}
+
+
+@app.get("/conversations/messages", response_model=MessagesResponse)
+async def get_conversation_messages(
+    limit: int = Query(default=20, ge=1, le=50),
+    before: Optional[str] = Query(default=None),
+    user_id: str = Depends(get_current_user),
+):
+    messages = await conversation.get_messages(user_id, limit=limit, before=before)
+    return {"messages": messages, "has_more": len(messages) == limit}
+
+
+@app.post("/conversations/messages", response_model=MessagesResponse)
+async def send_conversation_message(
+    request: SendMessageRequest,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user),
+):
+    if request.mode == "ask":
+        return await conversation.send_ask_message(user_id, request.content)
+    return await conversation.send_journal_message(
+        user_id,
+        request.content,
+        background_tasks,
+    )
+
+
+@app.get("/conversations/messages/{message_id}/status")
+async def get_conversation_message_status(
+    message_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    return await conversation.get_message_status(message_id, user_id)
 
 
 @app.get("/deadlines")

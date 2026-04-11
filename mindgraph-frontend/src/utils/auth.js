@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient";
 
-export const API = "https://mindgraph-production.up.railway.app";
+export const API =
+  process.env.REACT_APP_API_URL || "https://mindgraph-production.up.railway.app";
 
 export async function authHeaders() {
   const {
