@@ -70,7 +70,7 @@ function ModeToggle({ mode, onChange, disabled }) {
         onClick={() => onChange("ask")}
         disabled={disabled}
       >
-        Ask <span aria-hidden="true">💬</span>
+        Ask
       </button>
       <button
         type="button"
@@ -78,41 +78,71 @@ function ModeToggle({ mode, onChange, disabled }) {
         onClick={() => onChange("journal")}
         disabled={disabled}
       >
-        Journal <span aria-hidden="true">📝</span>
+        Journal
       </button>
+    </div>
+  );
+}
+
+function SenderLine({ sender, createdAt, tone = "user", align = "left" }) {
+  return (
+    <div className={`message-sender ${align}`}>
+      <span className={`sender-dot ${tone}`} aria-hidden="true" />
+      <span className="sender-name">{sender}</span>
+      <time>{formatTime(createdAt)}</time>
     </div>
   );
 }
 
 function UserMessage({ message }) {
   return (
-    <article className="chat-row user">
-      <div className="chat-bubble user">
-        <p>{message.content}</p>
-        <time>{formatTime(message.created_at)}</time>
-      </div>
+    <article className="message-block user-message">
+      <SenderLine
+        sender="You"
+        createdAt={message.created_at}
+        tone="user"
+        align="right"
+      />
+      <p className="message-text">{message.content}</p>
     </article>
   );
 }
 
 function AssistantMessage({ message }) {
   return (
-    <article className="chat-row assistant">
-      <div className="chat-bubble assistant">
+    <article className="message-block assistant-message">
+      <SenderLine
+        sender="MindGraph"
+        createdAt={message.created_at}
+        tone="assistant"
+      />
+      <div className="assistant-surface">
         <ReactMarkdown>{message.content}</ReactMarkdown>
-        <time>{formatTime(message.created_at)}</time>
       </div>
     </article>
   );
 }
 
-function TypingIndicator() {
+function TypingDots() {
   return (
-    <article className="chat-row assistant">
-      <div className="chat-bubble assistant typing" aria-label="MindGraph is thinking">
-        <span />
-        <span />
-        <span />
+    <span className="typing-dots" aria-label="MindGraph is thinking">
+      <span className="typing-dot" />
+      <span className="typing-dot" />
+      <span className="typing-dot" />
+    </span>
+  );
+}
+
+function TypingIndicator({ message }) {
+  return (
+    <article className="message-block assistant-message">
+      <SenderLine
+        sender="MindGraph"
+        createdAt={message.created_at}
+        tone="assistant"
+      />
+      <div className="assistant-surface typing-surface">
+        <TypingDots />
       </div>
     </article>
   );
@@ -138,84 +168,104 @@ function JournalEntryCard({ message }) {
   const categories = metadata.categories || [];
 
   return (
-    <article className={`journal-card ${isCompleted ? "completed" : ""}`}>
-      <div className="journal-card-header">
-        <span className="journal-badge">Journal Entry</span>
-        <time>{formatTime(message.created_at)}</time>
+    <article className="message-block journal-message">
+      <div className={`journal-card ${isCompleted ? "completed" : ""}`}>
+        <div className="journal-card-header">
+          <span className="journal-badge">Journal entry</span>
+          <time>{formatTime(message.created_at)}</time>
+        </div>
+
+        <p className="journal-content">{message.content}</p>
+
+        {isCompleted && (metadata.auto_title || metadata.summary) && (
+          <div className="journal-summary">
+            {metadata.auto_title && <h4>{metadata.auto_title}</h4>}
+            {metadata.summary && <p>{metadata.summary}</p>}
+          </div>
+        )}
+
+        {!isCompleted && !isError && (
+          <div className="journal-insights">
+            <span className="processing-text">Extracting insights...</span>
+          </div>
+        )}
+
+        {isError && (
+          <div className="journal-insights journal-error">
+            Processing failed. This entry can still be found in your feed.
+          </div>
+        )}
+
+        {isCompleted && (
+          <div className="journal-insights">
+            {entities.length > 0 ? (
+              <div className="journal-result-row">
+                <span className="journal-result-label">Entities</span>
+                <div className="entity-chip-list">
+                  {entities.map((entity, index) => (
+                    <EntityChip
+                      key={`${entity.name}-${entity.type || entity.entity_type}-${index}`}
+                      entity={entity}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span className="journal-muted">No entities extracted yet.</span>
+            )}
+
+            {deadlines.length > 0 && (
+              <div className="journal-result-row">
+                <span className="journal-result-label">Deadlines</span>
+                <div className="deadline-list">
+                  {deadlines.map((deadline, index) => (
+                    <div
+                      key={`${deadline.description}-${deadline.due_date}-${index}`}
+                      className="deadline-pill"
+                    >
+                      <strong>{formatDate(deadline.due_date)}</strong>
+                      <span>{deadline.description}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {categories.length > 0 && (
+              <div className="journal-result-row">
+                <span className="journal-result-label">Categories</span>
+                <div className="category-list">
+                  {categories.map((category) => (
+                    <span key={category} className="category-chip">
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      <p className="journal-content">{message.content}</p>
-
-      {!isCompleted && !isError && (
-        <div className="journal-processing">
-          <span className="journal-processing-dot" />
-          <span>
-            {stage === "queued" ? "Queued" : `Processing: ${stage}`}
-          </span>
-        </div>
-      )}
-
-      {isError && (
-        <div className="journal-error">
-          Processing failed. This entry can still be found in your feed.
-        </div>
-      )}
-
-      {isCompleted && (
-        <div className="journal-results">
-          {metadata.auto_title && (
-            <div className="journal-result-block">
-              <h4>{metadata.auto_title}</h4>
-              {metadata.summary && <p>{metadata.summary}</p>}
-            </div>
-          )}
-
-          {entities.length > 0 && (
-            <div className="journal-result-block">
-              <span className="journal-result-label">Entities</span>
-              <div className="entity-chip-list">
-                {entities.map((entity, index) => (
-                  <EntityChip
-                    key={`${entity.name}-${entity.type || entity.entity_type}-${index}`}
-                    entity={entity}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {deadlines.length > 0 && (
-            <div className="journal-result-block">
-              <span className="journal-result-label">Deadlines</span>
-              <div className="deadline-list">
-                {deadlines.map((deadline, index) => (
-                  <div
-                    key={`${deadline.description}-${deadline.due_date}-${index}`}
-                    className="deadline-pill"
-                  >
-                    <strong>{formatDate(deadline.due_date)}</strong>
-                    <span>{deadline.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {categories.length > 0 && (
-            <div className="journal-result-block">
-              <span className="journal-result-label">Categories</span>
-              <div className="category-list">
-                {categories.map((category) => (
-                  <span key={category} className="category-chip">
-                    {category}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </article>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </svg>
   );
 }
 
@@ -583,9 +633,7 @@ export default function AskView({ isActive }) {
     <AnimatedView viewKey="ask" isActive={isActive}>
       <div className="ask-view">
         <header className="ask-view-header">
-          <div>
-            <h2 className="ask-view-title">MindGraph</h2>
-          </div>
+          <h2 className="ask-view-title">MindGraph</h2>
           <button
             type="button"
             className="ask-memory-icon"
@@ -659,9 +707,8 @@ export default function AskView({ isActive }) {
 
         <div className="conversation-feed" ref={feedRef} onScroll={handleFeedScroll}>
           {isLoadingMore && (
-            <div className="older-loader">
-              <span className="spinner small" />
-              Loading older messages...
+            <div className="older-loader" aria-label="Loading older messages">
+              <TypingDots />
             </div>
           )}
 
@@ -674,14 +721,14 @@ export default function AskView({ isActive }) {
 
           {!initialLoading && messages.length === 0 && (
             <div className="ask-empty welcome">
-              <h3>Welcome to MindGraph.</h3>
-              <p>Write a thought or ask a question to get started.</p>
+              <h3>MindGraph</h3>
+              <p>Write a thought or ask a question to get started</p>
             </div>
           )}
 
           {messages.map((message) => {
             if (message.isTyping) {
-              return <TypingIndicator key={message.id} />;
+              return <TypingIndicator key={message.id} message={message} />;
             }
             if (message.role === "assistant") {
               return <AssistantMessage key={message.id} message={message} />;
@@ -702,17 +749,11 @@ export default function AskView({ isActive }) {
         >
           <ModeToggle mode={mode} onChange={setMode} disabled={isLoading} />
           <div className="ask-input-shell">
-            <textarea
+            <input
+              type="text"
               value={inputText}
               onChange={(event) => setInputText(event.target.value)}
               placeholder={placeholder}
-              rows={1}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  handleSubmit();
-                }
-              }}
               disabled={isLoading}
             />
             <button
@@ -720,7 +761,7 @@ export default function AskView({ isActive }) {
               aria-label="Send message"
               disabled={isLoading || !inputText.trim()}
             >
-              →
+              <SendIcon />
             </button>
           </div>
         </form>

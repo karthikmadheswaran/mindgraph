@@ -61,21 +61,9 @@ jest.mock("./components/Sidebar", () => ({
   default: ({ onBrandClick, onViewChange }) => (
     <div data-testid="sidebar">
       <button onClick={onBrandClick}>Brand</button>
-      <button onClick={() => onViewChange("write")}>Go Write</button>
       <button onClick={() => onViewChange("dashboard")}>Go Dashboard</button>
       <button onClick={() => onViewChange("graph")}>Go Graph</button>
-      <button onClick={() => onViewChange("progress")}>Go Progress</button>
       <button onClick={() => onViewChange("ask")}>Go Ask</button>
-    </div>
-  ),
-}));
-
-jest.mock("./components/InputView", () => ({
-  __esModule: true,
-  default: ({ onEntrySubmitted }) => (
-    <div data-testid="write-view">
-      <button onClick={onEntrySubmitted}>Submit entry</button>
-      Write view
     </div>
   ),
 }));
@@ -237,7 +225,8 @@ test("slash-prefixed progress hash resolves to the progress view", async () => {
   expect(window.location.hash).toBe("#/progress");
 });
 
-test("sidebar navigation can move into the progress view", async () => {
+test("legacy write hash resolves back to ask", async () => {
+  window.history.replaceState({}, "", "/#write");
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
   });
@@ -245,11 +234,7 @@ test("sidebar navigation can move into the progress view", async () => {
   render(<App />);
 
   expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
-
-  userEvent.click(screen.getByRole("button", { name: /go progress/i }));
-
-  expect(await screen.findByTestId("progress-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#/progress");
+  expect(window.location.hash).toBe("#ask");
 });
 
 test("sidebar navigation can move into the graph view", async () => {

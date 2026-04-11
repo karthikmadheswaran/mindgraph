@@ -10,7 +10,6 @@ import {
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
 import Sidebar from "./components/Sidebar";
-import InputView from "./components/InputView";
 import Dashboard from "./components/Dashboard";
 import MyProgress from "./components/MyProgress";
 import AskView from "./components/AskView";
@@ -20,7 +19,7 @@ import "./styles/global.css";
 import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
-const APP_VIEWS = new Set(["ask", "write", "dashboard", "graph", "progress"]);
+const APP_VIEWS = new Set(["ask", "dashboard", "graph", "progress"]);
 const DEFAULT_APP_VIEW = "ask";
 
 const normalizeHashView = (hashValue) => {
@@ -171,27 +170,17 @@ export default function App() {
     navigateToAppView("ask");
   };
 
-  const handleEntrySubmitted = useCallback(() => {
-    const userId = session?.user?.id;
-
-    if (!userId) {
-      return;
-    }
-
-    loadDashboardSnapshot({ force: true, userId })
-      .then((snapshot) => {
-        if (!hasVisitedDashboard) {
-          syncBackgroundEntriesPolling(snapshot?.entries || [], userId);
-        }
-      })
-      .catch(() => {
-        // silently fail
-      });
-  }, [hasVisitedDashboard, session?.user?.id, syncBackgroundEntriesPolling]);
-
   useEffect(() => {
     const handleHashChange = () => {
       const normalizedView = getHashView();
+
+      if (
+        window.location.hash &&
+        !isHashForView(window.location.hash, normalizedView)
+      ) {
+        setHashView(normalizedView, { replace: true });
+      }
+
       setCurrentView(normalizedView);
 
       if (normalizedView === "dashboard") {
@@ -359,12 +348,6 @@ export default function App() {
           />
 
           <main className="main-content">
-            <div style={{ display: currentView === "write" ? "block" : "none" }}>
-              <InputView
-                isActive={currentView === "write"}
-                onEntrySubmitted={handleEntrySubmitted}
-              />
-            </div>
             {hasVisitedDashboard && (
               <div
                 style={{ display: currentView === "dashboard" ? "block" : "none" }}
