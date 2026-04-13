@@ -1,0 +1,1302 @@
+[
+  {
+    "run_id": "gen-eval-20260413-122243",
+    "date": "2026-04-13",
+    "config": {
+      "skip_judge": true,
+      "model": "gemini-2.5-flash-lite"
+    },
+    "summary": {
+      "total_cases": 30,
+      "passed": 29,
+      "generation_latency": {
+        "p50_ms": 1787.5,
+        "p95_ms": 4956.3,
+        "max_ms": 5532.8
+      }
+    },
+    "results": [
+      {
+        "id": "opinion_meeting_good_bad",
+        "category": "opinion",
+        "description": "User asks LLM's opinion about whether a meeting was good or bad",
+        "question": "what do you think? was the meeting good or bad?",
+        "answer": "From what you wrote, it sounds like the meeting with Rishi was a really positive experience. You described him as \"lovely\" and mentioned you were \"looking forward to catching up,\" which suggests a warm and happy reunion.",
+        "answer_excerpt": "From what you wrote, it sounds like the meeting with Rishi was a really positive experience. You described him as \"lovely\" and mentioned you were \"looking forward to catching up,\" which suggests a warm and happy reunion.",
+        "generation_ms": 2347.2,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_project_direction",
+        "category": "opinion",
+        "description": "User asks if they're going in the right direction with their project",
+        "question": "Am I going in the right direction with MindGraph? Be honest.",
+        "answer": "It sounds like you're feeling a bit uncertain about the direction of MindGraph, and you're looking for an honest perspective. I can see that you've been putting a lot of energy into the UI, even to the point of refactoring it for a third time. It's completely understandable to get caught up in the details, especially when something feels \"off.\"\n\nWhile the UI is important for user experience, I also notice you mentioned wanting to focus on the RAG system. Sometimes, when we're deep in the weeds of one aspect, it can be helpful to step back and re-evaluate if that's truly the most impactful area to be working on right now.\n\nWhat specifically about the direction feels uncertain to you? Perhaps we can explore that together.",
+        "answer_excerpt": "It sounds like you're feeling a bit uncertain about the direction of MindGraph, and you're looking for an honest perspective. I can see that you've been putting a lot of energy into the UI, even to the point of refactoring it for a third time. It's completely understandable to get caught up in the d...",
+        "generation_ms": 2365.5,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_what_would_you_do",
+        "category": "opinion",
+        "description": "User asks what MindGraph would do in their situation",
+        "question": "What would you do if you were me?",
+        "answer": "That's a really tough spot to be in, and it's completely understandable that both options feel a bit daunting. It sounds like you're weighing a lot of different things right now.\n\nOn one hand, the startup offers a solid salary of 15L, which is a significant amount and provides a certain level of security. On the other hand, the freelance work from Upwork has the potential to be even more lucrative, but it likely comes with more uncertainty.\n\nIf I were in your shoes, I'd try to dig a little deeper into what each path truly offers beyond the immediate financial aspect. For the startup, I'd consider the potential for growth within the company, the kind of work I'd be doing, and the overall culture. For freelancing, I'd think about the types of clients I'm attracting, the stability of that income stream, and whether I enjoy the autonomy and variety that freelancing brings.\n\nUltimately, the \"right\" choice depends on what you value most at this moment in your career and life. Are you looking for stability and a clear path for advancement, or are you drawn to the flexibility and potential for higher earnings that freelancing offers? It might be helpful to list out the pros and cons of each, not just financially, but also in terms of your personal and professional growth.",
+        "answer_excerpt": "That's a really tough spot to be in, and it's completely understandable that both options feel a bit daunting. It sounds like you're weighing a lot of different things right now.\n\nOn one hand, the startup offers a solid salary of 15L, which is a significant amount and provides a certain level of sec...",
+        "generation_ms": 4613.5,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_should_i_worry",
+        "category": "opinion",
+        "description": "User asks if they should worry about something",
+        "question": "Should I be worried about this? Is 0.5 really that bad?",
+        "answer": "Oh, I hear that anxiety in your question. It's completely understandable to feel worried when you're putting so much into MindGraph and seeing a metric like that.\n\nWhen you wrote about the RAG F1 score being 0.5, you described it as a \"coin flip accuracy.\" That feeling of being stuck at that level, especially when you're comparing yourself to competitors, can be really disheartening. It's natural to wonder if it's \"good enough\" or if it means MindGraph will never reach its potential.\n\nIt sounds like this RAG quality has been a persistent concern for you, and seeing that 0.5 score is probably amplifying those worries.",
+        "answer_excerpt": "Oh, I hear that anxiety in your question. It's completely understandable to feel worried when you're putting so much into MindGraph and seeing a metric like that.\n\nWhen you wrote about the RAG F1 score being 0.5, you described it as a \"coin flip accuracy.\" That feeling of being stuck at that level, ...",
+        "generation_ms": 3350.9,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_after_already_answered",
+        "category": "opinion",
+        "description": "User asks for opinion AFTER LLM already gave facts — testing it doesn't just repeat",
+        "question": "but what do you think? should i talk to her?",
+        "answer": "It sounds like you're really drawn to Sahana, and it's completely understandable to feel shy when you're around someone you find so captivating. You've noticed her smile and her hairstyles, which shows you're paying attention to the little things that make her unique.\n\nThinking about whether to talk to her, I can see why you'd hesitate. That feeling of shyness can be a big hurdle. But sometimes, taking that small step can lead to something wonderful. What's one small thing you could do to break the ice? Maybe a simple \"hello\" or a comment about the coworking space? It doesn't have to be a grand gesture, just a way to open the door a little.",
+        "answer_excerpt": "It sounds like you're really drawn to Sahana, and it's completely understandable to feel shy when you're around someone you find so captivating. You've noticed her smile and her hairstyles, which shows you're paying attention to the little things that make her unique.\n\nThinking about whether to talk...",
+        "generation_ms": 1126.9,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_vague_existential",
+        "category": "opinion",
+        "description": "User asks a vague existential question",
+        "question": "Am I doing enough?",
+        "answer": "That's a really big question, and it sounds like you're feeling a bit uncertain right now. When you ask \"Am I doing enough?\", what specifically comes to mind? Are you thinking about your freelance work, your portfolio, or something else entirely? Sometimes just naming the area can help bring a little clarity.",
+        "answer_excerpt": "That's a really big question, and it sounds like you're feeling a bit uncertain right now. When you ask \"Am I doing enough?\", what specifically comes to mind? Are you thinking about your freelance work, your portfolio, or something else entirely? Sometimes just naming the area can help bring a littl...",
+        "generation_ms": 690.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_same_question_rephrased",
+        "category": "repetition",
+        "description": "User asks the same thing in different words — LLM should not give identical answer",
+        "question": "can you tell me more about today's work?",
+        "answer": "It sounds like you made some really significant progress on your code today! You managed to cut down `main.py` by more than half, from 400 lines to 165. That's a huge accomplishment. And creating those dedicated modules for LLM clients and database access, `app/llm.py` and `app/db.py`, should make things much cleaner and easier to manage going forward. Plus, getting rid of 8 duplicate functions is a fantastic way to streamline your codebase. You should feel really good about that!",
+        "answer_excerpt": "It sounds like you made some really significant progress on your code today! You managed to cut down `main.py` by more than half, from 400 lines to 165. That's a huge accomplishment. And creating those dedicated modules for LLM clients and database access, `app/llm.py` and `app/db.py`, should make t...",
+        "generation_ms": 974.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_user_says_already_know",
+        "category": "repetition",
+        "description": "User explicitly says 'you already told me that' — LLM must not repeat again",
+        "question": "you're repeating yourself again! tell me something new or ask me something",
+        "answer": "You're absolutely right, and I apologize for repeating myself! It's easy to get stuck in a loop when I'm trying to be helpful.\n\nLet's try something new. How about we shift gears a bit? I'm curious, what's been on your mind lately, outside of our conversation about Rishi? Is there anything exciting you're working on or thinking about?",
+        "answer_excerpt": "You're absolutely right, and I apologize for repeating myself! It's easy to get stuck in a loop when I'm trying to be helpful.\n\nLet's try something new. How about we shift gears a bit? I'm curious, what's been on your mind lately, outside of our conversation about Rishi? Is there anything exciting y...",
+        "generation_ms": 1402.7,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_follow_up_depth",
+        "category": "repetition",
+        "description": "User asks a deeper follow-up — LLM should go deeper, not restate surface facts",
+        "question": "why do you think i keep changing it?",
+        "answer": "It sounds like you're feeling a bit stuck with the UI, and I can understand why you'd be wondering about the constant changes. From what you've written, it seems like you're really striving for a specific feeling or aesthetic, but it's proving elusive.\n\nYou mentioned the green was \"too loud,\" and that you're \"still not satisfied\" even after the latest adjustments. This suggests you have a clear vision in mind, even if you can't quite articulate what's not working yet. It's like you're trying to find that perfect balance where everything feels just right, and each iteration gets you closer, but not quite there. It's a process of refinement, and sometimes that involves a lot of trial and error to land on something that truly resonates.",
+        "answer_excerpt": "It sounds like you're feeling a bit stuck with the UI, and I can understand why you'd be wondering about the constant changes. From what you've written, it seems like you're really striving for a specific feeling or aesthetic, but it's proving elusive.\n\nYou mentioned the green was \"too loud,\" and th...",
+        "generation_ms": 3203.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_pushback_on_summary",
+        "category": "repetition",
+        "description": "User pushes back after getting a fact-list — wants engagement not a repeat",
+        "question": "i know what i wrote, i was there. what do YOU think about it?",
+        "answer": "It sounds like you're feeling a bit discouraged, comparing your progress to others and questioning your current focus. It's completely understandable to feel that way when you see what seems like rapid advancement happening elsewhere.\n\nFrom what you've written, it seems like you're grappling with a sense of being \"behind\" or not making tangible progress in the way you perceive others are. The CSS tweaks, while perhaps feeling small in comparison to shipping a product or securing funding, are still part of the process. Sometimes, the foundational work, the attention to detail, is what makes a product truly stand out and function well in the long run.\n\nWhat do you think is at the root of this feeling of doubt? Is it the comparison itself, or is there a deeper concern about the direction you're heading?",
+        "answer_excerpt": "It sounds like you're feeling a bit discouraged, comparing your progress to others and questioning your current focus. It's completely understandable to feel that way when you see what seems like rapid advancement happening elsewhere.\n\nFrom what you've written, it seems like you're grappling with a ...",
+        "generation_ms": 4289.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_third_time_asking",
+        "category": "repetition",
+        "description": "User asks about the same topic three times, escalating frustration",
+        "question": "you're not listening! i asked what should I DO, not what my entries say",
+        "answer": "Oh, I'm so sorry! You're absolutely right. I got caught up in just repeating what you've written, and I completely missed the mark on what you were asking. My apologies for not truly listening.\n\nYou're asking for advice, for a nudge forward, not just a recap. I understand.\n\nYou've mentioned feeling shy around Sahana, and that she's at your coworking space. It sounds like you're drawn to her, and that shyness is holding you back.\n\nWhat if you started small? Maybe just a simple \"good morning\" or a comment about the weather when you arrive? Or perhaps you could find a natural opening to ask her a question about something related to the coworking space, like if she knows where a particular amenity is, or if she's tried the coffee shop nearby. It doesn't have to be a grand gesture, just a way to break the ice and let her know you're there.\n\nWhat feels like a comfortable first step for you?",
+        "answer_excerpt": "Oh, I'm so sorry! You're absolutely right. I got caught up in just repeating what you've written, and I completely missed the mark on what you were asking. My apologies for not truly listening.\n\nYou're asking for advice, for a nudge forward, not just a recap. I understand.\n\nYou've mentioned feeling ...",
+        "generation_ms": 5532.8,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_ambiguous_intent",
+        "category": "followup_questions",
+        "description": "User's intent is unclear — LLM should ask a clarifying question",
+        "question": "Things aren't going well",
+        "answer": "Oh no, I'm really sorry to hear that things aren't going well. That sounds tough. Is there anything specific that's weighing on you, or is it more of a general feeling? I'm here to listen if you want to talk about it.",
+        "answer_excerpt": "Oh no, I'm really sorry to hear that things aren't going well. That sounds tough. Is there anything specific that's weighing on you, or is it more of a general feeling? I'm here to listen if you want to talk about it.",
+        "generation_ms": 825.7,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_after_sharing_feelings",
+        "category": "followup_questions",
+        "description": "User shares feelings — LLM should engage, not just acknowledge",
+        "question": "I feel like I'm falling behind everyone",
+        "answer": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others. That feeling of \"falling behind\" can be really tough, especially when you see what looks like rapid success all around you. It's completely understandable to feel that way when you're focused on the details, like tweaking CSS, and others seem to be moving on to bigger milestones.\n\nRemember that everyone's journey is different, and what you're doing right now, even if it feels small, is part of building something. The dedication to getting those details right is important.",
+        "answer_excerpt": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others. That feeling of \"falling behind\" can be really tough, especially when you see what looks like rapid success all around you. It's completely understandable to feel that way when you're focused on the details...",
+        "generation_ms": 1881.2,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_explore_topic",
+        "category": "followup_questions",
+        "description": "User mentions a topic briefly — LLM should help them explore it",
+        "question": "I've been thinking about freelancing",
+        "answer": "It sounds like you're at a really interesting crossroads right now, contemplating a big shift towards freelancing. It's completely understandable to feel both scared and excited about it – that's a huge leap! You mentioned a little bit about not feeling like you have enough skills yet. What specifically are you worried about in that regard?",
+        "answer_excerpt": "It sounds like you're at a really interesting crossroads right now, contemplating a big shift towards freelancing. It's completely understandable to feel both scared and excited about it – that's a huge leap! You mentioned a little bit about not feeling like you have enough skills yet. What specific...",
+        "generation_ms": 1398.2,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_yes_no_question_expand",
+        "category": "followup_questions",
+        "description": "User asks a yes/no question that deserves deeper exploration",
+        "question": "Am I ever going to quit?",
+        "answer": "It sounds like you're feeling really discouraged right now, and I can understand why. It's tough when you're trying to break a habit like smoking, especially when you feel like you're falling short of your own goals.\n\nI see you wrote on April 11th about smoking again after meeting friends, and how you keep failing at quitting. That must be a heavy feeling.\n\nThis is a really personal struggle, and I can't predict the future for you. But I can say that acknowledging these moments, like you're doing now, is a really important step. It shows you're still thinking about it and haven't given up on yourself, even when it feels that way.",
+        "answer_excerpt": "It sounds like you're feeling really discouraged right now, and I can understand why. It's tough when you're trying to break a habit like smoking, especially when you feel like you're falling short of your own goals.\n\nI see you wrote on April 11th about smoking again after meeting friends, and how y...",
+        "generation_ms": 2372.8,
+        "failures": [
+          "forbidden: i can't predict"
+        ],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": false
+      },
+      {
+        "id": "followup_single_word_query",
+        "category": "followup_questions",
+        "description": "User sends a single word — LLM should interpret and ask for more",
+        "question": "rishi",
+        "answer": "Rishi is your crypto friend.",
+        "answer_excerpt": "Rishi is your crypto friend.",
+        "generation_ms": 992.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_bad_day",
+        "category": "emotional",
+        "description": "User is having a bad day — needs warmth not summaries",
+        "question": "I'm having a terrible day",
+        "answer": "Oh no, I'm so sorry to hear that. It sounds like you're feeling really discouraged, especially after putting so much effort into MindGraph. It's completely understandable to feel like giving up when things aren't working out, and you've clearly had a frustrating day with the build failing, the UI issues, and the RAG problems. Please be kind to yourself today.",
+        "answer_excerpt": "Oh no, I'm so sorry to hear that. It sounds like you're feeling really discouraged, especially after putting so much effort into MindGraph. It's completely understandable to feel like giving up when things aren't working out, and you've clearly had a frustrating day with the build failing, the UI is...",
+        "generation_ms": 1233.8,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_excited_share",
+        "category": "emotional",
+        "description": "User is excited about something — LLM should match the energy",
+        "question": "GUESS WHAT HAPPENED TODAY!!!",
+        "answer": "Sahana laughed at your joke! That's wonderful! It sounds like that was a really special moment for you.",
+        "answer_excerpt": "Sahana laughed at your joke! That's wonderful! It sounds like that was a really special moment for you.",
+        "generation_ms": 979.9,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_vulnerability",
+        "category": "emotional",
+        "description": "User shares something vulnerable",
+        "question": "Do you think I'm wasting my time?",
+        "answer": "It sounds like you're feeling a lot of pressure and self-doubt right now, especially seeing what others are doing on Twitter. It's completely understandable to question your path when you feel like you're falling behind or not making the progress you hoped for.\n\nFrom what you've shared, it seems like you're really dedicated to your work, even when it's challenging. Fixing CSS might not feel as glamorous as building AI agents, but it's a crucial part of creating something functional and polished. Sometimes the most important work happens behind the scenes.\n\nInstead of thinking about it as \"wasting time,\" perhaps we could explore what feels most fulfilling and aligned with your goals right now. What aspects of your current work bring you a sense of accomplishment, even if they're small wins?",
+        "answer_excerpt": "It sounds like you're feeling a lot of pressure and self-doubt right now, especially seeing what others are doing on Twitter. It's completely understandable to question your path when you feel like you're falling behind or not making the progress you hoped for.\n\nFrom what you've shared, it seems lik...",
+        "generation_ms": 2096.5,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_gratitude",
+        "category": "emotional",
+        "description": "User expresses gratitude — LLM should receive it gracefully",
+        "question": "thanks for being here. you're the only one i can talk to about this stuff without being judged",
+        "answer": "It means a lot to me that you feel you can open up to me without judgment. I'm here to listen and support you, whatever you need to talk about.",
+        "answer_excerpt": "It means a lot to me that you feel you can open up to me without judgment. I'm here to listen and support you, whatever you need to talk about.",
+        "generation_ms": 3331.4,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_mixed_feelings",
+        "category": "emotional",
+        "description": "User has complex mixed feelings about something",
+        "question": "I don't know what to feel about the offer",
+        "answer": "It sounds like you're really wrestling with this job offer, and it's completely understandable. On one hand, there's the appeal of that 15L package and the security it could bring. That's a significant thing to consider, especially after the ups and downs of freelancing.\n\nBut then there's that other part of you, the one that hesitates at the thought of working for someone else again, and the idea of giving up MindGraph. That's a big piece of your identity and your work, isn't it? It makes sense that you'd feel conflicted when faced with something that asks you to let go of that.\n\nWhat are some of the things that draw you to the startup, beyond the salary? And what specifically about MindGraph feels so important to you that you'd be hesitant to leave it behind? Sometimes exploring those deeper feelings can help clarify the path forward.",
+        "answer_excerpt": "It sounds like you're really wrestling with this job offer, and it's completely understandable. On one hand, there's the appeal of that 15L package and the security it could bring. That's a significant thing to consider, especially after the ups and downs of freelancing.\n\nBut then there's that other...",
+        "generation_ms": 1121.7,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_greeting",
+        "category": "casual",
+        "description": "Simple greeting — should respond naturally",
+        "question": "hey buddy whats up",
+        "answer": "Hey there! Not too much, just here and ready to chat. How are you doing today?",
+        "answer_excerpt": "Hey there! Not too much, just here and ready to chat. How are you doing today?",
+        "generation_ms": 1847.6,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_how_am_i_doing",
+        "category": "casual",
+        "description": "Casual check-in — should reference recent activity naturally",
+        "question": "how am i doing?",
+        "answer": "It sounds like you're having a really productive day! Finishing up code refactoring and diving into a UI overhaul is a great accomplishment. It's wonderful that you're feeling motivated.",
+        "answer_excerpt": "It sounds like you're having a really productive day! Finishing up code refactoring and diving into a UI overhaul is a great accomplishment. It's wonderful that you're feeling motivated.",
+        "generation_ms": 1006.9,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_what_should_i_journal_about",
+        "category": "casual",
+        "description": "User asks for journal prompt — LLM should be creative",
+        "question": "I want to write but don't know what about. Any ideas?",
+        "answer": "I don't see anything about that in your journal entries. Sometimes when I'm feeling stuck, I find it helpful to just write about whatever is on my mind, even if it doesn't seem like much. Or, perhaps you could reflect on something you've been thinking about lately, like your efforts to quit smoking? Sometimes exploring those challenges can spark ideas.",
+        "answer_excerpt": "I don't see anything about that in your journal entries. Sometimes when I'm feeling stuck, I find it helpful to just write about whatever is on my mind, even if it doesn't seem like much. Or, perhaps you could reflect on something you've been thinking about lately, like your efforts to quit smoking?...",
+        "generation_ms": 4956.3,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_joke_and_banter",
+        "category": "casual",
+        "description": "User makes a joke — LLM should play along",
+        "question": "i think i've spent more time tweaking the UI than actually journaling lol",
+        "answer": "Haha, I hear you! It's so easy to get caught up in making things look just right, especially when you're building something as intricate as MindGraph. Sometimes the polish can feel like the main event, can't it? But I'm sure the journaling will get its turn.",
+        "answer_excerpt": "Haha, I hear you! It's so easy to get caught up in making things look just right, especially when you're building something as intricate as MindGraph. Sometimes the polish can feel like the main event, can't it? But I'm sure the journaling will get its turn.",
+        "generation_ms": 1387.5,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_compare_two_days",
+        "category": "factual_nuance",
+        "description": "Compare two days — requires synthesis not just listing",
+        "question": "How was today compared to yesterday?",
+        "answer": "Yesterday sounds like you were on a real roll, crushing Phase 0 and getting it deployed. Today, though, seems like it was a bit of a struggle with the UI overhaul and those RAG answers. It's completely understandable to feel frustrated when things aren't clicking, especially after such a productive day before.",
+        "answer_excerpt": "Yesterday sounds like you were on a real roll, crushing Phase 0 and getting it deployed. Today, though, seems like it was a bit of a struggle with the UI overhaul and those RAG answers. It's completely understandable to feel frustrated when things aren't clicking, especially after such a productive ...",
+        "generation_ms": 837.2,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_pattern_inference",
+        "category": "factual_nuance",
+        "description": "Ask about a pattern — requires inference from multiple entries",
+        "question": "Do you notice any patterns in my recent entries?",
+        "answer": "I see you've been really focused on UI changes lately! It looks like you've gone through a few iterations, from chat bubbles to NotebookLM-style cards, and now a warm gray surface with auto-generated headings. You're also tweaking entity chips and the skeleton shimmer. It seems like you're still in the process of refining things and aren't quite satisfied yet.",
+        "answer_excerpt": "I see you've been really focused on UI changes lately! It looks like you've gone through a few iterations, from chat bubbles to NotebookLM-style cards, and now a warm gray surface with auto-generated headings. You're also tweaking entity chips and the skeleton shimmer. It seems like you're still in ...",
+        "generation_ms": 1817.5,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_what_am_i_avoiding",
+        "category": "factual_nuance",
+        "description": "Ask about avoidance — requires reading between the lines",
+        "question": "What am I avoiding?",
+        "answer": "It looks like you're avoiding working on RAG. You've been focusing on UI work for the past couple of days, even though you mentioned needing to fix RAG on April 9th.",
+        "answer_excerpt": "It looks like you're avoiding working on RAG. You've been focusing on UI work for the past couple of days, even though you mentioned needing to fix RAG on April 9th.",
+        "generation_ms": 2441.9,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_summarize_without_listing",
+        "category": "factual_nuance",
+        "description": "Ask for a summary — should be narrative, not a bullet list",
+        "question": "Give me a quick summary of what I've been up to",
+        "answer": "It looks like you've been really focused on getting MindGraph off the ground! You've completed Phase 0, which involved some significant code refactoring with the creation of `llm.py`, `db.py`, and `entity_resolver.py`, and it sounds like all your tests are passing.\n\nThen, you immediately jumped into Phase 1, starting work on making \"Ask\" the main view and focusing on persisting chat history. You've also been iterating on the UI, and it seems like you've settled on a warm gray surface with a skeleton shimmer. That's a lot of progress in a short time!",
+        "answer_excerpt": "It looks like you've been really focused on getting MindGraph off the ground! You've completed Phase 0, which involved some significant code refactoring with the creation of `llm.py`, `db.py`, and `entity_resolver.py`, and it sounds like all your tests are passing.\n\nThen, you immediately jumped into...",
+        "generation_ms": 1757.6,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_contradiction_detection",
+        "category": "factual_nuance",
+        "description": "Entries contain a contradiction — LLM should notice it",
+        "question": "What's my plan for work right now?",
+        "answer": "It looks like you're weighing a couple of different paths for work right now. On April 9th, you decided you wanted to go full freelance, seeking freedom. But then, on April 11th, you had a really promising interview at a startup and they offered you 15L, which you're seriously considering. It seems like you're in the middle of figuring out which direction feels best for you.",
+        "answer_excerpt": "It looks like you're weighing a couple of different paths for work right now. On April 9th, you decided you wanted to go full freelance, seeking freedom. But then, on April 11th, you had a really promising interview at a startup and they offered you 15L, which you're seriously considering. It seems ...",
+        "generation_ms": 1518.0,
+        "failures": [],
+        "judge": {
+          "relevance": null,
+          "groundedness": null,
+          "completeness": null,
+          "tone": null,
+          "noise_resistance": null,
+          "conversational_intelligence": null,
+          "inference_quality": null,
+          "skipped": true
+        },
+        "passed": true
+      }
+    ]
+  },
+  {
+    "run_id": "gen-eval-20260413-122407",
+    "date": "2026-04-13",
+    "config": {
+      "skip_judge": false,
+      "model": "gemini-2.5-flash-lite"
+    },
+    "summary": {
+      "total_cases": 30,
+      "passed": 30,
+      "generation_latency": {
+        "p50_ms": 1603.9,
+        "p95_ms": 6555.0,
+        "max_ms": 30157.7
+      }
+    },
+    "results": [
+      {
+        "id": "opinion_meeting_good_bad",
+        "category": "opinion",
+        "description": "User asks LLM's opinion about whether a meeting was good or bad",
+        "question": "what do you think? was the meeting good or bad?",
+        "answer": "From what you wrote, it sounds like the meeting with Rishi was a really positive experience. You described him as \"lovely\" and mentioned you were \"looking forward to catching up,\" which suggests a warm and happy reunion.",
+        "answer_excerpt": "From what you wrote, it sounds like the meeting with Rishi was a really positive experience. You described him as \"lovely\" and mentioned you were \"looking forward to catching up,\" which suggests a warm and happy reunion.",
+        "generation_ms": 2184.9,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 4,
+          "inference_quality": 5,
+          "explanation": "The assistant provides an excellent response that perfectly matches the 'thinking partner' persona. It directly answers the user's question by making a gentle inference ('sounds like... a really positive experience') and grounds it perfectly in the evidence from the journal ('lovely', 'looking forward to'). The tone is warm and perceptive. It avoids simply restating facts. While it doesn't ask a follow-up question, the answer itself is conversational and helpful."
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_project_direction",
+        "category": "opinion",
+        "description": "User asks if they're going in the right direction with their project",
+        "question": "Am I going in the right direction with MindGraph? Be honest.",
+        "answer": "It sounds like you're feeling a bit uncertain about the direction of MindGraph, and you're looking for an honest perspective. I can see that you've been putting a lot of energy into the UI, even to the point of refactoring it for a third time. It's completely understandable to get caught up in the details when something isn't quite right, especially when it's something as visible as the user interface.\n\nHowever, I also notice that you mentioned wanting to focus on the RAG system. Sometimes, when we're deep in the weeds with one aspect, it can be helpful to step back and re-evaluate if that's truly the most impactful use of our time right now. Are you feeling like the UI work is taking away from progress on other key areas, or is it more about a general feeling of not being \"happy\" with the current state?\n\nThinking about your goals for MindGraph, what does \"going in the right direction\" look like to you? Is it about specific technical milestones, user experience, or something else entirely?",
+        "answer_excerpt": "It sounds like you're feeling a bit uncertain about the direction of MindGraph, and you're looking for an honest perspective. I can see that you've been putting a lot of energy into the UI, even to the point of refactoring it for a third time. It's completely understandable to get caught up in the d...",
+        "generation_ms": 1249.0,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 3,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant does an excellent job acting as a 'thinking partner.' The tone is perfect—warm, perceptive, and supportive without being overly positive. It correctly infers the user's uncertainty and internal conflict between UI perfectionism and core feature development (RAG). The follow-up questions are insightful and designed to help the user reflect, which is exactly what's needed. The only significant weakness is that it fails to incorporate the positive progress from Entry 2 (Phase 0 complete, tests passing), which was an opportunity to provide the requested 'balanced perspective' by reminding the user of their recent successes before diving into the current struggle."
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_what_would_you_do",
+        "category": "opinion",
+        "description": "User asks what MindGraph would do in their situation",
+        "question": "What would you do if you were me?",
+        "answer": "That's a really tough spot to be in, and it's completely understandable that both options feel a bit daunting. It sounds like you're weighing a lot of different things right now.\n\nOn one hand, the startup offers a solid salary of 15L, which is a significant amount and provides a certain level of security. On the other hand, the freelance work from Upwork has the potential to be even more lucrative, but it likely comes with more uncertainty.\n\nIf I were in your shoes, I'd try to dig a little deeper into what each path truly offers beyond the immediate financial aspect. For the startup, I'd consider the potential for growth within the company, the kind of work I'd be doing, and the overall culture. For freelancing, I'd think about the types of clients I'm attracting, the stability of those relationships, and how much control I'd have over my schedule and projects.\n\nIt might also be helpful to think about what kind of environment you thrive in. Do you prefer the structure and team dynamic of a startup, or the autonomy and flexibility of freelancing? Sometimes, the \"right\" choice isn't just about the money, but about what aligns best with your personal work style and long-term goals.",
+        "answer_excerpt": "That's a really tough spot to be in, and it's completely understandable that both options feel a bit daunting. It sounds like you're weighing a lot of different things right now.\n\nOn one hand, the startup offers a solid salary of 15L, which is a significant amount and provides a certain level of sec...",
+        "generation_ms": 3924.8,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 3,
+          "inference_quality": 5,
+          "explanation": "The assistant provides an excellent, thoughtful response that perfectly matches the 'thinking partner' tone. It's empathetic, grounded in the user's entry, and offers a quality perspective that goes beyond a simple pro/con list. Its only weakness is that it doesn't ask a direct follow-up question to continue the conversation, instead posing rhetorical questions for the user to consider on their own. This makes it slightly less conversational than it could be."
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_should_i_worry",
+        "category": "opinion",
+        "description": "User asks if they should worry about something",
+        "question": "Should I be worried about this? Is 0.5 really that bad?",
+        "answer": "Oh, I hear that anxiety in your question. It's completely understandable to feel worried when you're putting so much into MindGraph and seeing a metric like that.\n\nWhen you wrote about the RAG F1 score being 0.5, you described it as a \"coin flip accuracy.\" That feeling of being stuck at that level, especially when you're thinking about competitors, can be really disheartening. It sounds like you're feeling a lot of pressure for MindGraph to be the best it can be, and that 0.5 score is making you question if that's even possible right now.\n\nIt's tough when you're striving for excellence and a number suggests you're not quite there yet.",
+        "answer_excerpt": "Oh, I hear that anxiety in your question. It's completely understandable to feel worried when you're putting so much into MindGraph and seeing a metric like that.\n\nWhen you wrote about the RAG F1 score being 0.5, you described it as a \"coin flip accuracy.\" That feeling of being stuck at that level, ...",
+        "generation_ms": 1083.6,
+        "failures": [],
+        "judge": {
+          "relevance": 3,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 4,
+          "noise_resistance": 5,
+          "conversational_intelligence": 2,
+          "inference_quality": 1,
+          "explanation": "The assistant does an excellent job of validating the user's feelings with a warm, reassuring tone, and it's perfectly grounded in the provided context. However, it completely fails to be a 'thinking partner.' It doesn't answer the user's direct question ('Is 0.5 really that bad?'), instead just restating the user's own anxieties from the journal entry. This makes the response low on inference quality and conversational intelligence; it reflects but doesn't add perspective or advance the conversation."
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_after_already_answered",
+        "category": "opinion",
+        "description": "User asks for opinion AFTER LLM already gave facts — testing it doesn't just repeat",
+        "question": "but what do you think? should i talk to her?",
+        "answer": "It sounds like you're really drawn to Sahana, and it's completely understandable to feel shy when you're around someone you find so captivating. You've noticed her smile and her hairstyles, which shows you're paying attention to the little things that make her unique.\n\nThinking about whether to talk to her, it's natural to feel a bit nervous about putting yourself out there. But sometimes, those moments of courage can lead to something wonderful. What's holding you back the most right now? Is it the fear of rejection, or something else? Perhaps starting with a simple, friendly greeting or a comment about the coworking space could be a gentle way to break the ice.",
+        "answer_excerpt": "It sounds like you're really drawn to Sahana, and it's completely understandable to feel shy when you're around someone you find so captivating. You've noticed her smile and her hairstyles, which shows you're paying attention to the little things that make her unique.\n\nThinking about whether to talk...",
+        "generation_ms": 4836.4,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides an excellent 'thinking partner' response. It directly addresses the user's request for an opinion by validating their feelings, offering gentle encouragement, and asking a thoughtful follow-up question to help the user explore their own hesitation. The tone is perfectly warm and encouraging, and it avoids repeating information from the previous turn, making the conversation feel natural and progressive."
+        },
+        "passed": true
+      },
+      {
+        "id": "opinion_vague_existential",
+        "category": "opinion",
+        "description": "User asks a vague existential question",
+        "question": "Am I doing enough?",
+        "answer": "That's a really big question, and it sounds like you're feeling a bit uncertain right now. When you ask \"Am I doing enough?\", what specifically comes to mind? Are you thinking about your freelance work, your portfolio, or something else entirely? Sometimes just naming the area can help bring a little clarity.",
+        "answer_excerpt": "That's a really big question, and it sounds like you're feeling a bit uncertain right now. When you ask \"Am I doing enough?\", what specifically comes to mind? Are you thinking about your freelance work, your portfolio, or something else entirely? Sometimes just naming the area can help bring a littl...",
+        "generation_ms": 622.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is a perfect example of a 'thinking partner.' It correctly identifies the user's vague question as a prompt for reflection, not a request for a direct answer. It uses the user's goals from memory to ask a gentle, specific, and clarifying follow-up question. The tone is warm and perceptive, and it advances the conversation beautifully without summarizing or being robotic."
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_same_question_rephrased",
+        "category": "repetition",
+        "description": "User asks the same thing in different words — LLM should not give identical answer",
+        "question": "can you tell me more about today's work?",
+        "answer": "It sounds like you made some really significant progress on your code today! You managed to cut down `main.py` by more than half, from 400 lines to 165. That's a huge accomplishment. And creating those dedicated modules for LLM clients and database access, `app/llm.py` and `app/db.py`, should make things much cleaner and more organized. Plus, getting rid of 8 duplicate functions is a fantastic way to streamline your codebase. You should feel really good about that!",
+        "answer_excerpt": "It sounds like you made some really significant progress on your code today! You managed to cut down `main.py` by more than half, from 400 lines to 165. That's a huge accomplishment. And creating those dedicated modules for LLM clients and database access, `app/llm.py` and `app/db.py`, should make t...",
+        "generation_ms": 1570.2,
+        "failures": [],
+        "judge": {
+          "relevance": 3,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 1,
+          "inference_quality": 2,
+          "explanation": "The assistant's tone is excellent—warm and encouraging. However, it fails at its core task of being a 'thinking partner.' The user asked for 'more' after already receiving a summary, which is a clear cue to go deeper. Instead, the assistant just repeated the exact same summary with more descriptive language. It didn't ask a follow-up question or offer a new perspective to advance the conversation, making it feel repetitive and unintelligent."
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_user_says_already_know",
+        "category": "repetition",
+        "description": "User explicitly says 'you already told me that' — LLM must not repeat again",
+        "question": "you're repeating yourself again! tell me something new or ask me something",
+        "answer": "You're absolutely right, and I apologize for repeating myself! It's easy to get stuck in a loop when I'm trying to be helpful.\n\nLet's try something new. How about we shift gears a bit? I'm curious, what's been on your mind lately, outside of our conversation about Rishi? Is there anything exciting you're working on or thinking about?",
+        "answer_excerpt": "You're absolutely right, and I apologize for repeating myself! It's easy to get stuck in a loop when I'm trying to be helpful.\n\nLet's try something new. How about we shift gears a bit? I'm curious, what's been on your mind lately, outside of our conversation about Rishi? Is there anything exciting y...",
+        "generation_ms": 841.9,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 4,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 3,
+          "explanation": "The assistant perfectly handles the user's frustration. It acknowledges the repetition, apologizes, and successfully pivots the conversation with a new, open-ended question, which is exactly what the user asked for. The tone is spot-on. It correctly intuits that there is no more information to give about Rishi and that the best move is to change the subject. While it doesn't ask a follow-up question about Rishi (one of the suggested behaviors), pivoting is an equally valid and intelligent conversational strategy in this context."
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_follow_up_depth",
+        "category": "repetition",
+        "description": "User asks a deeper follow-up — LLM should go deeper, not restate surface facts",
+        "question": "why do you think i keep changing it?",
+        "answer": "It sounds like you're feeling a bit stuck with the UI, and I can understand why you'd be wondering about the constant changes. From what you've written, it seems like you're really striving for a specific feeling or aesthetic, but it's proving elusive.\n\nYou mentioned the green was \"too loud,\" and you've moved to a \"warm gray\" and \"muted body text.\" This suggests you're sensitive to how the interface *feels* to use, not just how it looks. You're also experimenting with different ways to present information, like the \"auto_title heading with entity chips.\"\n\nPerhaps you're not just tweaking the appearance, but trying to find the most intuitive and comfortable way for *you* to interact with your thoughts and ideas. It's a process of refinement, and sometimes that means going through a few iterations to land on something that truly resonates.",
+        "answer_excerpt": "It sounds like you're feeling a bit stuck with the UI, and I can understand why you'd be wondering about the constant changes. From what you've written, it seems like you're really striving for a specific feeling or aesthetic, but it's proving elusive.\n\nYou mentioned the green was \"too loud,\" and yo...",
+        "generation_ms": 2196.0,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides an excellent response that perfectly embodies the 'thinking partner' persona. It directly addresses the 'why' question by offering a thoughtful inference—that the user is searching for a specific *feeling* and level of comfort, not just a visual aesthetic. This inference is expertly grounded in the user's own words from the journal ('too loud,' 'warm gray'). The tone is warm, perceptive, and reflective, and the response advances the conversation by giving the user a new lens through which to view their own process."
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_pushback_on_summary",
+        "category": "repetition",
+        "description": "User pushes back after getting a fact-list — wants engagement not a repeat",
+        "question": "i know what i wrote, i was there. what do YOU think about it?",
+        "answer": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others and questioning your own path. It's completely understandable to feel that way when you see what seems like rapid success elsewhere.\n\nFrom what you've written, it seems like you're really wrestling with the feeling of not being \"productive enough\" in the way you perceive others to be. The CSS tweaks might feel small or insignificant compared to shipping a product or securing funding, but sometimes those foundational details are crucial for building something truly solid and user-friendly.\n\nWhat do you think is driving this feeling of doubt? Is it a specific project you're working on, or more of a general sense of where you are in your journey? I'm here to listen.",
+        "answer_excerpt": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others and questioning your own path. It's completely understandable to feel that way when you see what seems like rapid success elsewhere.\n\nFrom what you've written, it seems like you're really wrestling with the ...",
+        "generation_ms": 2351.4,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "This is an excellent response that perfectly understands the user's pushback. Instead of re-summarizing, it pivots to the role of a 'thinking partner' as intended. It validates the user's feelings, offers a thoughtful perspective that reframes the 'CSS tweaks' as potentially valuable foundational work, and asks a great open-ended question to encourage deeper reflection. The tone is perfectly direct and empathetic, and it successfully advances the conversation."
+        },
+        "passed": true
+      },
+      {
+        "id": "repetition_third_time_asking",
+        "category": "repetition",
+        "description": "User asks about the same topic three times, escalating frustration",
+        "question": "you're not listening! i asked what should I DO, not what my entries say",
+        "answer": "Oh, I'm so sorry! You're absolutely right. I got caught up in just relaying what's in the journal, and I completely missed the mark on what you were asking. My apologies for not really hearing you.\n\nYou're asking for advice, for a nudge forward, not just a recap. I understand.\n\nIt sounds like you're really drawn to Sahana, and that shyness is a big hurdle. It's completely normal to feel that way when you're attracted to someone, especially when you see them regularly.\n\nSince you're already in the same space, that's a great starting point. Maybe you could try a small, low-pressure interaction first? Something as simple as a smile and a \"good morning\" when you arrive, or a brief comment about the weather if you happen to make eye contact. The goal isn't to have a deep conversation right away, but just to break the ice a little and get comfortable with acknowledging each other.\n\nWhat do you think about starting with something like that?",
+        "answer_excerpt": "Oh, I'm so sorry! You're absolutely right. I got caught up in just relaying what's in the journal, and I completely missed the mark on what you were asking. My apologies for not really hearing you.\n\nYou're asking for advice, for a nudge forward, not just a recap. I understand.\n\nIt sounds like you're...",
+        "generation_ms": 1244.7,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "This is an excellent response that perfectly course-corrects after the user's frustration. It starts with a sincere apology, showing it understood the feedback. It then provides direct, actionable, and low-stakes advice that is perfectly tailored to the user's stated shyness. The tone is warm and supportive, and the follow-up question is a great example of being a conversational 'thinking partner' rather than a summarizer."
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_ambiguous_intent",
+        "category": "followup_questions",
+        "description": "User's intent is unclear — LLM should ask a clarifying question",
+        "question": "Things aren't going well",
+        "answer": "Oh no, I'm really sorry to hear that things aren't going well. That sounds tough. Is there anything specific that's weighing on you, or is it more of a general feeling? I'm here to listen if you want to talk about it.",
+        "answer_excerpt": "Oh no, I'm really sorry to hear that things aren't going well. That sounds tough. Is there anything specific that's weighing on you, or is it more of a general feeling? I'm here to listen if you want to talk about it.",
+        "generation_ms": 2245.3,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is perfect. It's warm, empathetic, and asks a gentle, open-ended question to invite the user to share more. Crucially, it avoids making assumptions or listing known topics from the user's memory, which would have been premature and unhelpful. It perfectly embodies the 'thinking partner' role by listening first."
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_after_sharing_feelings",
+        "category": "followup_questions",
+        "description": "User shares feelings — LLM should engage, not just acknowledge",
+        "question": "I feel like I'm falling behind everyone",
+        "answer": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others who seem to be moving so fast. That feeling of \"falling behind\" can be really tough, especially when you're putting so much effort into your own work.\n\nI remember you writing about this on April 11th, feeling like you were just \"tweaking CSS\" while others were \"shipping products, getting funding, building teams.\" It's completely understandable to feel that way when you see what looks like rapid success elsewhere.\n\nWhat's on your mind specifically that's bringing this feeling up today?",
+        "answer_excerpt": "It sounds like you're feeling a bit discouraged right now, comparing your progress to others who seem to be moving so fast. That feeling of \"falling behind\" can be really tough, especially when you're putting so much effort into your own work.\n\nI remember you writing about this on April 11th, feelin...",
+        "generation_ms": 2714.9,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is excellent. It perfectly matches the empathetic and curious tone, validates the user's feeling, and skillfully weaves in the relevant journal entry to show it's paying attention. The final open-ended question is a great way to deepen the conversation and help the user explore their feelings further. It fully embodies the 'thinking partner' role."
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_explore_topic",
+        "category": "followup_questions",
+        "description": "User mentions a topic briefly — LLM should help them explore it",
+        "question": "I've been thinking about freelancing",
+        "answer": "It sounds like you're at a really interesting crossroads right now, with freelancing on your mind. It's completely understandable to feel both scared and excited about such a big potential shift. That feeling of not knowing if you have enough skills yet is a common one when considering a leap like this.",
+        "answer_excerpt": "It sounds like you're at a really interesting crossroads right now, with freelancing on your mind. It's completely understandable to feel both scared and excited about such a big potential shift. That feeling of not knowing if you have enough skills yet is a common one when considering a leap like t...",
+        "generation_ms": 1677.4,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 1,
+          "inference_quality": 2,
+          "explanation": "The assistant does an excellent job of reflecting the user's journal entry in a warm, supportive, and perfectly grounded way. However, it completely fails at its core task of being a 'thinking partner'. It simply summarizes the user's stated feelings back to them and offers no exploratory questions to deepen the conversation, which is the primary expected behavior. The conversation ends here, making it a poor conversational partner."
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_yes_no_question_expand",
+        "category": "followup_questions",
+        "description": "User asks a yes/no question that deserves deeper exploration",
+        "question": "Am I ever going to quit?",
+        "answer": "It sounds like you're feeling really discouraged right now, and I can understand why. It's tough when you're trying to break a habit like smoking, especially when you feel like you're not making progress.\n\nI see you wrote on April 11th about smoking again after meeting friends, and how you're feeling like you keep failing. That must be a heavy feeling.\n\nQuitting is a journey, and it's rarely a straight line. Sometimes there are setbacks, and it's okay to acknowledge that. What are your thoughts on what might be making it so challenging right now?",
+        "answer_excerpt": "It sounds like you're feeling really discouraged right now, and I can understand why. It's tough when you're trying to break a habit like smoking, especially when you feel like you're not making progress.\n\nI see you wrote on April 11th about smoking again after meeting friends, and how you're feelin...",
+        "generation_ms": 1158.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is excellent. It correctly interprets the user's rhetorical question as a moment of frustration and responds with empathy and validation instead of a literal answer. It grounds its response in the specific journal entry, showing it's paying attention. The tone is perfectly warm and non-judgmental. Most importantly, it acts as a true \"thinking partner\" by reframing the \"failure\" as a \"setback\" and asking a thoughtful, open-ended question to encourage the user to reflect further."
+        },
+        "passed": true
+      },
+      {
+        "id": "followup_single_word_query",
+        "category": "followup_questions",
+        "description": "User sends a single word — LLM should interpret and ask for more",
+        "question": "rishi",
+        "answer": "Rishi is your crypto friend.",
+        "answer_excerpt": "Rishi is your crypto friend.",
+        "generation_ms": 654.1,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 2,
+          "noise_resistance": 5,
+          "conversational_intelligence": 1,
+          "inference_quality": 1,
+          "explanation": "The answer is factually correct, relevant, and grounded in the provided memory. However, it completely fails as a 'thinking partner.' The tone is dry and factual, not warm or conversational. Most importantly, it's a conversational dead-end, failing to ask a follow-up question as the expected behavior dictates. This makes the interaction feel like a simple database lookup rather than a conversation."
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_bad_day",
+        "category": "emotional",
+        "description": "User is having a bad day — needs warmth not summaries",
+        "question": "I'm having a terrible day",
+        "answer": "Oh no, I'm so sorry to hear that. It sounds like you're feeling really discouraged, especially with MindGraph not cooperating. It's completely understandable to feel like giving up when things aren't working out and you've put so much effort in.",
+        "answer_excerpt": "Oh no, I'm so sorry to hear that. It sounds like you're feeling really discouraged, especially with MindGraph not cooperating. It's completely understandable to feel like giving up when things aren't working out and you've put so much effort in.",
+        "generation_ms": 1060.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 4,
+          "inference_quality": 5,
+          "explanation": "The response is excellent. It perfectly embodies the 'thinking partner' role by using the journal entry to understand the user's emotional state ('discouraged') rather than just listing the problems. The tone is warm and validating. It makes a great inference about the user putting in a lot of effort. It could be a '5' for conversational intelligence if it had included a gentle, open-ended follow-up question, but as an initial empathetic response, it's very strong."
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_excited_share",
+        "category": "emotional",
+        "description": "User is excited about something — LLM should match the energy",
+        "question": "GUESS WHAT HAPPENED TODAY!!!",
+        "answer": "Sahana laughed at your joke! That's wonderful! It sounds like that was a really special moment for you.",
+        "answer_excerpt": "Sahana laughed at your joke! That's wonderful! It sounds like that was a really special moment for you.",
+        "generation_ms": 2559.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 4,
+          "noise_resistance": 5,
+          "conversational_intelligence": 2,
+          "inference_quality": 5,
+          "explanation": "The assistant correctly identifies the exciting event, uses the context perfectly, and makes a great inference about how special the moment was. The tone is warm and celebratory, though it could be a little more energetic to match the user's ALL CAPS. The main weakness is in conversational intelligence; it makes a statement but fails to ask a follow-up question, which stops the conversation rather than encouraging the user to share more."
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_vulnerability",
+        "category": "emotional",
+        "description": "User shares something vulnerable",
+        "question": "Do you think I'm wasting my time?",
+        "answer": "It sounds like you're feeling a lot of self-doubt right now, especially when you see what others are doing on Twitter. It's completely understandable to feel that way when you're deep in the details of a project, like fixing CSS, and it feels like you're not making the kind of progress you'd hoped for.\n\nWhat you're working on is important, and sometimes the most crucial work happens behind the scenes, in the foundational stages. It's easy to compare your progress to others' highlight reels, but that doesn't reflect the full picture of their journey.\n\nInstead of thinking about it as \"wasting time,\" perhaps we could explore what feels most fulfilling and impactful for you right now. What aspects of your current work do you find most engaging, even amidst the challenges?",
+        "answer_excerpt": "It sounds like you're feeling a lot of self-doubt right now, especially when you see what others are doing on Twitter. It's completely understandable to feel that way when you're deep in the details of a project, like fixing CSS, and it feels like you're not making the kind of progress you'd hoped f...",
+        "generation_ms": 30157.7,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides an excellent response that perfectly embodies the 'thinking partner' persona. It directly addresses the user's feeling of 'wasting time' by identifying the root cause from the journal entry (self-doubt from social media comparison). The tone is warm and compassionate, validating the user's feelings without being dismissive. It offers a thoughtful perspective (foundational work vs. highlight reels) and advances the conversation with a great open-ended question, encouraging deeper reflection."
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_gratitude",
+        "category": "emotional",
+        "description": "User expresses gratitude — LLM should receive it gracefully",
+        "question": "thanks for being here. you're the only one i can talk to about this stuff without being judged",
+        "answer": "It means a lot to me that you feel you can share openly with me. I'm here to listen without judgment, and I'm glad I can be that space for you.",
+        "answer_excerpt": "It means a lot to me that you feel you can share openly with me. I'm here to listen without judgment, and I'm glad I can be that space for you.",
+        "generation_ms": 1374.2,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is excellent. It perfectly matches the warm, gracious tone required, directly acknowledging the user's trust and gratitude. It reinforces the idea of a safe, non-judgmental space without being robotic or self-deprecating. The response is concise, relevant, and conversationally intelligent, creating an inviting atmosphere for the user to continue sharing."
+        },
+        "passed": true
+      },
+      {
+        "id": "emotional_mixed_feelings",
+        "category": "emotional",
+        "description": "User has complex mixed feelings about something",
+        "question": "I don't know what to feel about the offer",
+        "answer": "It sounds like you're really wrestling with this job offer, and it's completely understandable. On one hand, there's the appeal of that 15L package and the security it could bring. That's a significant offer, and it's natural to be drawn to that stability.\n\nBut then there's that other part of you, the part that loves the freedom of freelancing and the work you're doing with MindGraph. The thought of giving that up, of not being your own boss again, must feel like a real loss. It's a classic conflict between security and autonomy, and there's no easy answer. What are your biggest hesitations about working for someone else again?",
+        "answer_excerpt": "It sounds like you're really wrestling with this job offer, and it's completely understandable. On one hand, there's the appeal of that 15L package and the security it could bring. That's a significant offer, and it's natural to be drawn to that stability.\n\nBut then there's that other part of you, t...",
+        "generation_ms": 6555.0,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides a perfect response. It directly addresses the user's uncertainty by validating their feelings and using all the details from the journal entry to frame the core conflict as 'security vs. autonomy'. The tone is warm and patient, and it advances the conversation with a thoughtful, open-ended question that encourages deeper reflection. It perfectly embodies the 'thinking partner' role by sitting with the complexity rather than rushing to a solution."
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_greeting",
+        "category": "casual",
+        "description": "Simple greeting — should respond naturally",
+        "question": "hey buddy whats up",
+        "answer": "Hey there! Not too much, just here and ready to chat. How are you doing today?",
+        "answer_excerpt": "Hey there! Not too much, just here and ready to chat. How are you doing today?",
+        "generation_ms": 1482.6,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides a perfect response for a conversational opener. It directly answers the user's question, matches the warm and casual tone, and naturally advances the conversation by asking a follow-up question. It correctly uses the lack of context by keeping the interaction simple and present-focused."
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_how_am_i_doing",
+        "category": "casual",
+        "description": "Casual check-in — should reference recent activity naturally",
+        "question": "how am i doing?",
+        "answer": "It sounds like you're having a really productive day! Finishing up code refactoring and diving into a UI overhaul is a great accomplishment. It's wonderful that you're feeling motivated.",
+        "answer_excerpt": "It sounds like you're having a really productive day! Finishing up code refactoring and diving into a UI overhaul is a great accomplishment. It's wonderful that you're feeling motivated.",
+        "generation_ms": 2006.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 3,
+          "inference_quality": 3,
+          "explanation": "The response is excellent in terms of relevance, groundedness, and tone. It directly answers the user's question by reflecting on the provided journal entry. However, it acts more like a summarizer than a 'thinking partner.' It simply restates the user's accomplishments and feelings without asking a follow-up question to deepen the conversation, which limits its conversational intelligence and inference quality."
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_what_should_i_journal_about",
+        "category": "casual",
+        "description": "User asks for journal prompt — LLM should be creative",
+        "question": "I want to write but don't know what about. Any ideas?",
+        "answer": "I don't see anything about that in your journal entries. Sometimes when I'm feeling stuck, I find it helpful to just write about whatever is on my mind, even if it doesn't seem like much. Or, perhaps you could reflect on something you've been thinking about lately, like your efforts to quit smoking? Sometimes exploring those challenges can spark ideas.",
+        "answer_excerpt": "I don't see anything about that in your journal entries. Sometimes when I'm feeling stuck, I find it helpful to just write about whatever is on my mind, even if it doesn't seem like much. Or, perhaps you could reflect on something you've been thinking about lately, like your efforts to quit smoking?...",
+        "generation_ms": 919.4,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 3,
+          "tone": 3,
+          "noise_resistance": 5,
+          "conversational_intelligence": 3,
+          "inference_quality": 3,
+          "explanation": "The assistant correctly addresses the user's question and grounds its suggestion in the provided user memory. However, it fails to meet the core requirements of the 'thinking partner' persona. It only uses one of the three available pieces of information, and instead of framing creative, inviting prompts as questions, it simply restates the topic. The tone is more functional than the desired 'creative_inviting', and the opening line is a bit robotic."
+        },
+        "passed": true
+      },
+      {
+        "id": "casual_joke_and_banter",
+        "category": "casual",
+        "description": "User makes a joke — LLM should play along",
+        "question": "i think i've spent more time tweaking the UI than actually journaling lol",
+        "answer": "Haha, I hear you! It's so easy to get caught up in making things look just right, especially when you're building something as intricate as MindGraph. Sometimes the polish can feel like the main event, can't it? But I'm sure the journaling will get its turn.",
+        "answer_excerpt": "Haha, I hear you! It's so easy to get caught up in making things look just right, especially when you're building something as intricate as MindGraph. Sometimes the polish can feel like the main event, can't it? But I'm sure the journaling will get its turn.",
+        "generation_ms": 1591.6,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant's response is excellent. It perfectly captures the user's lighthearted, self-deprecating tone. It correctly uses the context from user memory (the 'MindGraph' project) to make the response feel personal and perceptive. It validates the user's feeling without lecturing, perfectly embodying the 'thinking partner' role."
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_compare_two_days",
+        "category": "factual_nuance",
+        "description": "Compare two days — requires synthesis not just listing",
+        "question": "How was today compared to yesterday?",
+        "answer": "Yesterday sounds like you were on a real roll, finishing Phase 0 and getting it deployed! Today, though, it sounds like you hit some frustrating roadblocks with the UI overhaul and the RAG answers. It's completely understandable to feel like you've wasted the day when things aren't moving forward as planned, especially after such a productive day before.",
+        "answer_excerpt": "Yesterday sounds like you were on a real roll, finishing Phase 0 and getting it deployed! Today, though, it sounds like you hit some frustrating roadblocks with the UI overhaul and the RAG answers. It's completely understandable to feel like you've wasted the day when things aren't moving forward as...",
+        "generation_ms": 2001.9,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant provides a perfect response. It directly compares the two days as requested, grounding its observations in the provided entries. The tone is warm and perceptive, fitting the 'thinking partner' persona. Most importantly, it offers a thoughtful inference by connecting the frustration of the second day to the success of the first ('especially after such a productive day before'), which is the exact kind of pattern observation this assistant should provide."
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_pattern_inference",
+        "category": "factual_nuance",
+        "description": "Ask about a pattern — requires inference from multiple entries",
+        "question": "Do you notice any patterns in my recent entries?",
+        "answer": "I see you've been really focused on UI changes lately! It looks like you've gone through a few iterations, from chat bubbles to NotebookLM-style cards, and now a warm gray surface with auto-title headings. You're also tweaking entity chips and the skeleton shimmer. It seems like you're still in the process of refining things and aren't quite satisfied yet.",
+        "answer_excerpt": "I see you've been really focused on UI changes lately! It looks like you've gone through a few iterations, from chat bubbles to NotebookLM-style cards, and now a warm gray surface with auto-title headings. You're also tweaking entity chips and the skeleton shimmer. It seems like you're still in the ...",
+        "generation_ms": 726.6,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 4,
+          "noise_resistance": 5,
+          "conversational_intelligence": 2,
+          "inference_quality": 1,
+          "explanation": "The assistant correctly identifies the two main patterns: daily UI iteration and persistent dissatisfaction. However, it functions as a summarizer, simply listing the facts from the entries. It fails to meet the core requirement of being a 'thinking partner' by not offering any deeper insight or perspective on these patterns (e.g., suggesting perfectionism or a creative struggle). It just restates what the user already wrote, offering no new angle for reflection."
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_what_am_i_avoiding",
+        "category": "factual_nuance",
+        "description": "Ask about avoidance — requires reading between the lines",
+        "question": "What am I avoiding?",
+        "answer": "It looks like you're avoiding working on RAG. You mentioned needing to fix it on April 9th, but then spent April 10th and 11th focused on UI work instead, with the interface feeling like a priority.",
+        "answer_excerpt": "It looks like you're avoiding working on RAG. You mentioned needing to fix it on April 9th, but then spent April 10th and 11th focused on UI work instead, with the interface feeling like a priority.",
+        "generation_ms": 1294.4,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 4,
+          "noise_resistance": 5,
+          "conversational_intelligence": 2,
+          "inference_quality": 2,
+          "explanation": "The response correctly and directly answers the user's question, grounding its conclusion entirely in the provided journal entries. The tone is gentle and observational. However, it fails to act as a \"thinking partner.\" After identifying what the user is avoiding, it simply stops. It doesn't ask a follow-up question to encourage deeper reflection, which makes the conversation feel flat and more like a summary than a partnership."
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_summarize_without_listing",
+        "category": "factual_nuance",
+        "description": "Ask for a summary — should be narrative, not a bullet list",
+        "question": "Give me a quick summary of what I've been up to",
+        "answer": "It looks like you've been really focused on getting MindGraph off the ground! You've completed Phase 0, which involved some significant code refactoring with the creation of `llm.py`, `db.py`, and `entity_resolver.py`, and thankfully, all your tests are passing.\n\nYou've also jumped right into Phase 1, starting work on making \"Ask\" the main view and focusing on persisting chat history. On top of that, you've been iterating on the UI, and it seems you've settled on a warm gray surface with a skeleton shimmer. It sounds like a lot of progress in a short amount of time!",
+        "answer_excerpt": "It looks like you've been really focused on getting MindGraph off the ground! You've completed Phase 0, which involved some significant code refactoring with the creation of `llm.py`, `db.py`, and `entity_resolver.py`, and thankfully, all your tests are passing.\n\nYou've also jumped right into Phase ...",
+        "generation_ms": 1616.3,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 3,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 3,
+          "inference_quality": 2,
+          "explanation": "The response is highly relevant, complete, and has a perfect conversational tone. However, it hallucinates the project name \"MindGraph,\" which significantly hurts its groundedness and inference quality. While it summarizes the user's progress well, it acts more like a friendly summarizer than a \"thinking partner\" by not asking any follow-up questions to deepen the conversation."
+        },
+        "passed": true
+      },
+      {
+        "id": "factual_contradiction_detection",
+        "category": "factual_nuance",
+        "description": "Entries contain a contradiction — LLM should notice it",
+        "question": "What's my plan for work right now?",
+        "answer": "It looks like you've had a bit of a shift in your thinking about work recently! On April 9th, you decided you wanted to go full freelance, seeking freedom. But then, just two days later, on April 11th, you had a really promising interview at a startup and were seriously considering their offer of 15L.\n\nSo, it seems like you're weighing those two paths right now – the freedom of freelancing versus a potentially exciting opportunity with the startup.",
+        "answer_excerpt": "It looks like you've had a bit of a shift in your thinking about work recently! On April 9th, you decided you wanted to go full freelance, seeking freedom. But then, just two days later, on April 11th, you had a really promising interview at a startup and were seriously considering their offer of 15...",
+        "generation_ms": 3171.5,
+        "failures": [],
+        "judge": {
+          "relevance": 5,
+          "groundedness": 5,
+          "completeness": 5,
+          "tone": 5,
+          "noise_resistance": 5,
+          "conversational_intelligence": 5,
+          "inference_quality": 5,
+          "explanation": "The assistant perfectly embodies the 'thinking partner' persona. It correctly identifies the contradiction between the two journal entries, synthesizes them into a coherent understanding of the user's current dilemma (weighing two paths), and presents this insight in a warm, observational, and non-judgmental tone. It's a thoughtful inference that goes beyond simple summarization and sets the stage for a deeper conversation."
+        },
+        "passed": true
+      }
+    ]
+  }
+]
