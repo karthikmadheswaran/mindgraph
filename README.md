@@ -32,9 +32,11 @@ FastAPI Backend (14 endpoints, JWT auth, async background processing)
          ↓
 LangGraph Pipeline (8 nodes, parallel fan-out + fan-in)
          ↓
-Supabase (Postgres + pgvector + Auth)
+Supabase (Postgres + pgvector + tsvector/GIN + Auth)
          ↓
 Gemini API (gemini-2.5-flash-lite pipeline · gemini-2.5-pro insights)
+         ↓ (Ask retrieval only)
+Cohere Rerank v3.5 (cross-encoder re-ranking of hybrid BM25 + vector candidates)
 ```
 
 ### Pipeline Graph
@@ -58,9 +60,10 @@ Four extraction nodes (classify, entities, deadline, title_summary) run **in par
 | Frontend | React, react-force-graph |
 | Backend | FastAPI, Uvicorn |
 | AI Pipeline | LangGraph, LangChain |
-| LLM | Gemini 2.5 Flash-Lite (pipeline), Gemini 2.5 Pro (insights) |
+| LLM | Gemini 2.5 Flash-Lite (pipeline), Gemini 2.5 Pro (insights + eval judge) |
 | Embeddings | Gemini embedding-001 (1536 dimensions) |
-| Database | Supabase (Postgres + pgvector) |
+| Retrieval | Hybrid: pgvector cosine similarity + Postgres BM25 (tsvector/GIN) + Cohere Rerank v3.5 |
+| Database | Supabase (Postgres + pgvector + tsvector) |
 | Auth | Supabase Auth (email/password, JWT/ES256/JWKS) |
 | Observability | Langfuse (per-node tracing, cost tracking) |
 | Deployment | Railway (backend + frontend), Docker |
@@ -108,13 +111,25 @@ Latest live normalize evaluation (`normalize_evaluation.py`, 25 diverse Gemini-b
 - No-date hallucination rate: **66.7% → 100%**
 - Average latency: **1039ms → 829ms**
 
-### RAG Evaluation — 4 Runs, Data-Driven Decisions
-Built a 15-test-case evaluation framework measuring retrieval F1, keyword accuracy, and hallucination rate. Used it to:
-- Diagnose NULL embedding failures (F1: 0.0 → 0.333 after backfill)
-- Evaluate query rewriting (+8.3% F1 but 50x latency — reverted)
-- Validate that basic vector search is optimal for current data size
+### RAG — Hybrid Retrieval with BM25 + Cohere Rerank
+The Ask feature's retrieval pipeline evolved through two phases of eval-driven engineering, growing from pure vector search to a hybrid dense+sparse architecture.
 
-### Ask Memory Compaction - Eval-Driven Prompt Tuning
+**Phase 1 — Threshold tuning (4 eval runs, F1: 0.369 → 0.669):**
+- Diagnose NULL embedding failures (F1: 0.0 → 0.333 after backfill)
+- Tight precision/recall tradeoff: MAX_CONTEXT_ENTRIES 5→3, MIN_SIMILARITY 0.3→0.56 — biggest single gain (+7 passes)
+- Evaluate query rewriting (+8.3% F1 but 50x latency — reverted)
+- Topic-switch detection: strips conversation context when user says "forget about / never mind / actually"
+- Memory-as-primary-source rule: when no journal entries are found, treat long-term memory as the primary source instead of saying "I don't see anything"
+
+**Phase 2 — Hybrid architecture (F1: 0.669 → 0.782, +17%):**
+- **BM25 full-text search** via Postgres tsvector + GIN index + custom `search_entries_fulltext` RPC — catches entries where topics are mentioned in passing (weak semantic overlap)
+- **Cohere Rerank v3.5** cross-encoder: re-scores merged candidates from both dense (pgvector cosine) and sparse (BM25) retrieval. Rate-limited wrapper with graceful fallback on Cohere API failure.
+- **Temporal recency boost**: +0.12 score for temporal queries ("this week", "recently"), +0.08 baseline — addresses the pgvector blind spot where recency is not encoded in cosine similarity
+- **Score gap filter**: drops entries scoring <1/3 of the top rerank score, eliminating low-signal noise that barely passes absolute threshold
+- **Dynamic MAX_ENTRIES**: expands from 3 to 6 for broad/journey/history queries; lower identity threshold (0.56→0.50) for "where do I work?" class queries
+- **Extended follow-up context**: short follow-up questions use last 2 conversation turns (up from 1) for better pronoun/reference resolution in both embedding and reranker queries
+
+### Ask Memory Compaction — Eval-Driven Prompt Tuning
 Refactored Ask memory into reusable prompt builders and built a **50-case synthetic evaluation harness** for both long-term memory compaction and downstream Ask memory usage. The tuned prompt now stores sectioned long-term memory, applies clearer evidence precedence in `/ask`, and makes unsupported-question honesty measurable instead of anecdotal.
 
 Latest live memory evaluation (`memory_compaction_evaluation.py`, 36 compaction cases + 14 Ask cases):
@@ -127,6 +142,31 @@ Latest live memory evaluation (`memory_compaction_evaluation.py`, 36 compaction 
 - Ask precedence correctness: **71.4% -> 100%**
 - Ask unsupported-question honesty: **85.7% -> 100%**
 
+### Ask Generation Quality — Eval-Driven Prompt Engineering
+Built a **30-test-case generation quality evaluation harness** (`eval_generation.py`) isolating generation from retrieval: pre-defined journal entries fed directly to the prompt, LLM responses scored on 7 dimensions by an LLM-as-judge across 6 behavioral categories (Opinion, Repetition, Follow-up Qs, Emotional, Casual, Factual Nuance).
+
+Root cause identified: strong groundedness guardrails ("never fabricate", "ground in evidence") had a side effect — the LLM interpreted requests for opinions as requests for evidence it didn't have, retreating to restating facts instead of engaging. Fix: targeted prompt additions giving explicit permission to infer, while keeping groundedness rules intact.
+
+**4 iterations, 6 prompt rules added, 0 reverted.** All constraints held (Groundedness never dropped below 4.8).
+
+Generation quality improvements (Baseline → Final, Gemini Pro judge):
+
+| Dimension | Baseline | Final | Delta |
+|---|---|---|---|
+| Inference Quality | 4.00 | **4.53** | +0.53 |
+| Conv. Intelligence | 3.87 | **4.47** | +0.60 |
+| Tone | 4.70 | **4.80** | +0.10 |
+| Groundedness | 4.93 | **5.00** | +0.07 |
+| Noise Resistance | 5.00 | **5.00** | 0.00 |
+| Relevance | 4.87 | **4.93** | +0.06 |
+| Failure mode pass rate | 30/30 | **29/30** | — |
+
+Specific behavioral changes:
+- **Opinion refusal fixed**: `opinion_should_i_worry` went from Inf=1 (refused to say whether F1=0.5 is bad) to Inf=5 — now gives calibrated assessments using world knowledge + user context
+- **Repetition loop broken**: `repetition_same_question_rephrased` went from Conv=1 (repeated identical facts 4 times) to Conv=4-5 — now pivots to a new angle or asks a follow-up question
+- **Factual synthesis**: Factual Nuance category Inf improved 3.0 → 4.6 — now synthesizes patterns across entries ("the through-line here is…") instead of listing entries one by one
+- **Memory-powered creative responses**: `casual_what_should_i_journal_about` recovered from failure (said "I don't see anything in your entries" despite having Projects/People memory) to scoring Inf=5
+
 ### Insight Engine — Hybrid Caching
 Dashboard reads cached insights from the database (instant load). Fresh insights regenerate in the background after each new journal entry. Pattern detection and forgotten project analysis powered by Gemini 2.5 Pro.
 
@@ -134,14 +174,27 @@ Dashboard reads cached insights from the database (instant load). Fresh insights
 
 ## RAG Evaluation Results
 
-| Metric | Run 1 | Run 2 (backfill) | Run 3 (query rewrite) | Run 4 (final) |
-|---|---|---|---|---|
-| Retrieval F1 | 0.483 | 0.504 | 0.523 | 0.504 |
-| Keyword Score | 0.922 | 0.911 | 0.933 | 0.933 |
-| Hallucination | 1.000 | 1.000 | 1.000 | **1.000** |
-| Retrieval Latency | 622ms | 799ms | 42,000ms | 1,011ms |
+### Retrieval Pipeline (27-case harness)
 
-**Zero hallucinations across all 4 evaluation runs.**
+| Metric | Baseline | Phase 1 (threshold tuning) | Phase 2 (hybrid BM25+rerank) |
+|---|---|---|---|
+| Retrieval F1 | 0.369 | 0.669 | **0.782** |
+| MRR | 0.759 | 0.907 | **0.957** |
+| Pass rate | 11/27 (41%) | 20/27 (74%) | **21/27 (78%)** |
+| Leakage resistance | 25/27 | 26/27 | **26/27** |
+| Pronoun resolution | 7/7 | 7/7 | **6/7** |
+
+**Zero hallucinations across all retrieval runs.** F1 improved **+112% from baseline** to final hybrid architecture.
+
+### Generation Quality (30-case harness, Gemini Pro judge)
+
+| Dimension | Baseline | Final |
+|---|---|---|
+| Inference Quality | 4.00 | **4.53** |
+| Conv. Intelligence | 3.87 | **4.47** |
+| Tone | 4.70 | **4.80** |
+| Groundedness | 4.93 | **5.00** |
+| Noise Resistance | 5.00 | **5.00** |
 
 ---
 
@@ -155,9 +208,10 @@ Dashboard reads cached insights from the database (instant load). Fresh insights
 | `test_extract_relations.py` | 16 | Relation parsing: multi-entity, symmetric relations, confidence scoring, edge cases |
 | `test_store_relations.py` | 4 | Insert, upsert dedup, unresolved entity skip, symmetric relation normalization |
 | `normalize_evaluation.py` | 25 | Live Gemini normalize evaluation: weekday lookups, offsets, month/year boundaries, slang cleanup, no-date hallucination resistance, timezone rollover |
-| `rag_evaluation.py` | 15 | Retrieval F1, keyword accuracy, hallucination rate |
+| `rag_evaluation.py` | 27 | Retrieval F1, MRR, pass rate, pronoun resolution, leakage resistance — 6 categories: Direct Factual, Personal/Emotional, Conversation Follow, Temporal, Edge Cases, Memory vs Entries |
 | `memory_compaction_evaluation.py` | 50 | Synthetic Ask memory evaluation: stable_fact_extraction, ignore_assistant_filler, existing_memory_dedup, contradiction_update, newer_replaces_stale, multi_topic_merge, preference_vs_transient, goals_vs_vague_wishes, tools_people_project_separation, negative_no_durable_fact, formatting_robustness, resolved_or_changed, memory_only_answer, recent_history_override, journal_evidence_override, unsupported_question_honesty |
-| **Total** | **181** | |
+| `eval_generation.py` | 30 | LLM-as-judge generation quality evaluation: 7 dimensions (Relevance, Groundedness, Completeness, Tone, Noise Resistance, Conv. Intelligence, Inference Quality) × 6 behavioral categories (Opinion, Repetition, Follow-up Qs, Emotional, Casual, Factual Nuance) + 7 failure mode detectors |
+| **Total** | **211** | |
 
 ---
 
@@ -252,8 +306,12 @@ docker-compose up
 │   ├── graph.py             # LangGraph pipeline wiring
 │   ├── state.py             # Pipeline state definition
 │   ├── embeddings.py        # Gemini embedding generation
-│   ├── retrieval.py         # Advanced retrieval module
+│   ├── ask_memory.py        # Ask prompt builders (build_ask_prompt, build_compaction_prompt)
 │   ├── insights_engine.py   # Pattern detection + weekly digest + forgotten projects
+│   ├── services/
+│   │   ├── ask_service.py   # Hybrid retrieval: BM25 + pgvector + Cohere rerank pipeline
+│   │   ├── reranker.py      # Cohere Rerank v3.5 wrapper with rate limiting + fallback
+│   │   └── timing.py        # LatencyTrace per-stage timing utility
 │   └── nodes/
 │       ├── normalize.py         # Text cleanup + date resolution
 │       ├── dedup.py             # Semantic duplicate detection
@@ -297,7 +355,10 @@ docker-compose up
 ├── test_extract_entities.py     # 41-case entity extraction harness
 ├── test_store_entities.py       # 6-case store integration tests
 ├── test_store_project_matching.py  # 24-case project normalization harness
-├── rag_evaluation.py            # 15-test-case RAG evaluation framework
+├── rag_evaluation.py            # 27-test-case RAG retrieval evaluation framework
+├── eval_generation.py           # 30-test-case generation quality evaluation (LLM-as-judge)
+├── rag_engineering_report.md    # Full RAG retrieval engineering log (5 iterations)
+├── generation_engineering_report.md  # Generation quality engineering log (4 iterations)
 ├── reset_and_reextract.py       # Full entity reset + re-extraction for all users (FK-safe)
 ├── backfill_relations.py        # One-time relation backfill for entries with 2+ entities
 ├── backfill_embeddings.py       # Backfill entity embeddings for existing rows

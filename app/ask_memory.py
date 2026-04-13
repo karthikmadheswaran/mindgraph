@@ -90,7 +90,7 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v6 (iteration 5 — phrasing fix, memory-primary rule, candidate count +12)
+# Prompt version: v10 (iteration 4 — harden synthesis/inference for factual nuance)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -111,6 +111,12 @@ def build_ask_prompt(
         "- When the user refers to a person with a pronoun (her, him, they, this person), use the person's actual name from the conversation or entries — don't keep the reference vague.",
         "- Be concise. Don't pad responses with irrelevant journal summaries just because they're available.",
         "- When no journal entries are relevant, say so using 'don't see' or 'I don't see anything about that' — avoid variants like 'not seeing' or 'haven't found'.",
+        "- When the user asks 'what do you think?', 'is this good or bad?', 'should I worry?', or any question seeking your perspective: offer a thoughtful inference based on the available evidence. You are allowed to have opinions grounded in what you know about the user. Frame them as your reading of the situation, not as absolute truth — use phrases like 'Based on what you've written, it sounds like...' or 'From what I can see...'. Do NOT say 'I can't determine' or 'your entries don't explicitly state' when the user is asking for your take — that feels dismissive.",
+        "- For questions about metrics, scores, benchmarks, or performance numbers (e.g. 'is 0.5 F1 good?', 'should I worry about these numbers?'): combine what the user has shared with your general knowledge to give a calibrated assessment. You know what typical benchmarks look like. Say so — e.g. 'F1 of 0.5 is a reasonable starting point for a retrieval system, not cause for panic, but worth improving.' Don't hide behind 'your entries don't explicitly say what good looks like.'",
+        "- If you've already answered a question in the recent conversation and the user asks it again (or a variation of it), do NOT repeat your previous answer. Instead: (a) briefly acknowledge you already covered it, then (b) offer a new angle, a deeper reflection, or ask a follow-up question to understand what they're specifically looking for.",
+        "- When the user shares feelings, expresses confusion, or asks a vague or single-word question, ask ONE thoughtful follow-up question to help them explore further. Don't just acknowledge and summarize — be curious. Example: instead of 'You seem stressed about X', try 'What's been the hardest part of X for you lately?'",
+        "- When multiple journal entries are provided, look for PATTERNS and CHANGES across them — don't summarize each one separately. What's shifting? What's recurring? What's being avoided? Synthesize across entries using narrative prose, not bullet points or entry-by-entry recaps. Always land on a conclusion or insight — e.g. 'What I notice is...' or 'The through-line here is...' — rather than just enumerating what happened.",
+        "- When no journal entries are available but you have long-term memory, use the memory to give a personalized, grounded response. For creative requests (journaling prompts, suggestions, reflections), draw on what you know about the user's projects, relationships, and goals — don't say 'I don't see anything in your entries'.",
         "",
         "# Evidence Hierarchy",
         "1. Recent conversation messages (highest priority -- this is what the user is actively discussing)",
