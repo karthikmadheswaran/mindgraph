@@ -2,10 +2,12 @@ mindgraph-frontend/
 node_modules/
 __pycache__/
 *.pyc
+.pytest_cache/
 .env
-test_*.py
-backfill_embeddings.py
-cleanup_test_store_data.py
-architecture/
+tests/
+evals/
+scripts/
+docs/
 Ui inspirations/
 .git/
+.claude/
