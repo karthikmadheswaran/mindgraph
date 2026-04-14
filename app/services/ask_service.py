@@ -203,27 +203,48 @@ def fetch_entries_by_date_range(
     user_id: str,
     start_date: datetime,
     end_date: datetime,
-    max_entries: int = 15,
+    max_summary_tokens: int = 3000,
 ) -> list[dict]:
     """
     Fetch completed journal entries within a date range directly from the DB.
     Bypasses embedding, vector search, and reranking entirely.
+
+    Uses summary fields (~50 tokens each) instead of raw text so far more
+    entries fit within the token budget. Entries are ordered most-recent-first;
+    accumulation stops when the next entry would exceed max_summary_tokens.
     """
     result = (
         supabase.table("entries")
-        .select("id, raw_text, cleaned_text, auto_title, created_at")
+        .select("id, auto_title, summary, created_at")
         .eq("user_id", user_id)
         .eq("status", "completed")
         .gte("created_at", start_date.isoformat())
         .lte("created_at", end_date.isoformat())
         .order("created_at", desc=True)
-        .limit(max_entries)
         .execute()
     )
-    entries = result.data or []
-    for entry in entries:
+    all_entries = result.data or []
+
+    included: list[dict] = []
+    token_count = 0
+    for entry in all_entries:
+        text = entry.get("summary") or ""
+        entry_tokens = len(text.split()) * 1.3
+        if token_count + entry_tokens > max_summary_tokens:
+            break
         entry["relevance"] = "temporal_match"
-    return entries
+        included.append(entry)
+        token_count += entry_tokens
+
+    if len(all_entries) > len(included):
+        logger.warning(
+            "Temporal fetch truncated: %d/%d entries included (token cap %d)",
+            len(included),
+            len(all_entries),
+            max_summary_tokens,
+        )
+
+    return included
 
 
 def apply_temporal_boost(entries: list[dict], question: str) -> list[dict]:
@@ -378,15 +399,19 @@ def format_retrieved_entries(entries: list[dict]) -> str:
 
         if entry.get("relevance") == "temporal_match":
             relevance = "included (date match)"
+            raw_fallback = entry.get("cleaned_text") or entry.get("raw_text") or ""
+            text = entry.get("summary") or " ".join(raw_fallback.split()[:100])
         elif "_rerank_score" in entry:
             relevance = get_relevance_label_reranked(entry["_rerank_score"])
+            text = entry.get("cleaned_text") or entry.get("raw_text") or ""
         elif entry.get("_keyword_match"):
             relevance = "supplementary (keyword match)"
+            text = entry.get("cleaned_text") or entry.get("raw_text") or ""
         else:
             relevance = entry.get("relevance") or get_relevance_label(
                 entry.get("similarity", 0) or 0
             )
-        text = entry.get("cleaned_text") or entry.get("raw_text") or ""
+            text = entry.get("cleaned_text") or entry.get("raw_text") or ""
         formatted_entries.append(
             f"Entry {i} (date: {date}, title: {title}, relevance: {relevance}):\n{text}"
         )
