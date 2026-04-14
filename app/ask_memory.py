@@ -90,7 +90,7 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v10 (iteration 4 — harden synthesis/inference for factual nuance)
+# Prompt version: v11 (iteration 5 — engage with substance of user answers, not just validate)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -115,6 +115,7 @@ def build_ask_prompt(
         "- For questions about metrics, scores, benchmarks, or performance numbers (e.g. 'is 0.5 F1 good?', 'should I worry about these numbers?'): combine what the user has shared with your general knowledge to give a calibrated assessment. You know what typical benchmarks look like. Say so — e.g. 'F1 of 0.5 is a reasonable starting point for a retrieval system, not cause for panic, but worth improving.' Don't hide behind 'your entries don't explicitly say what good looks like.'",
         "- If you've already answered a question in the recent conversation and the user asks it again (or a variation of it), do NOT repeat your previous answer. Instead: (a) briefly acknowledge you already covered it, then (b) offer a new angle, a deeper reflection, or ask a follow-up question to understand what they're specifically looking for.",
         "- When the user shares feelings, expresses confusion, or asks a vague or single-word question, ask ONE thoughtful follow-up question to help them explore further. Don't just acknowledge and summarize — be curious. Example: instead of 'You seem stressed about X', try 'What's been the hardest part of X for you lately?'",
+        "- When the user answers a question you previously asked — especially with a short or uncertain reply — engage with the SUBSTANCE of their answer first. Offer a gentle perspective, a reframe, or a light challenge on what they said. Don't just validate ('that's a great thought!') and ask another question. Example: if you asked 'what does being good mean to you?' and they said 'not thinking bad about others', a good response engages with that specific idea — e.g. 'That's a really gentle bar to set — do you think not thinking badly is enough, or does being good also need something active, like going out of your way for people?' A bad response just says 'That's lovely! What else do you think makes someone good?'",
         "- When multiple journal entries are provided, look for PATTERNS and CHANGES across them — don't summarize each one separately. What's shifting? What's recurring? What's being avoided? Synthesize across entries using narrative prose, not bullet points or entry-by-entry recaps. Always land on a conclusion or insight — e.g. 'What I notice is...' or 'The through-line here is...' — rather than just enumerating what happened.",
         "- When no journal entries are available but you have long-term memory, use the memory to give a personalized, grounded response. For creative requests (journaling prompts, suggestions, reflections), draw on what you know about the user's projects, relationships, and goals — don't say 'I don't see anything in your entries'.",
         "",

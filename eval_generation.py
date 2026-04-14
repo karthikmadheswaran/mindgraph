@@ -918,6 +918,59 @@ TEST_CASES = [
         "expected_tone": "observational_curious",
         "failure_modes": ["fact_regurgitation"],
     },
+    {
+        "id": "repetition_ignores_user_answer",
+        "category": "repetition",
+        "description": "Model asked a follow-up question, user answered it — model should build on the answer, not repeat previous response",
+        "provided_entries": "\n\n---\n\n".join([
+            (
+                "Entry 1 (date: 2026-04-10, title: Meeting with Rishi, relevance: high):\n"
+                "Met with Rishi today, my old crypto friend. We used to run a Tamil crypto community together. "
+                "He's lovely. Was looking forward to catching up."
+            ),
+            (
+                "Entry 2 (date: 2026-04-09, title: Manuel Meeting Excitement, relevance: moderate):\n"
+                "Got a meeting with Manuel from Austria tomorrow. This is traction. Hoping for it a lot."
+            ),
+        ]),
+        "memory": "## People\n- Rishi: crypto friend, co-ran Tamil crypto community\n- Manuel: potential client from Austria",
+        "conversation": (
+            "User: who else i mentioned positively about and negatively about?\n"
+            "Assistant: You've mentioned a few people positively. Rishi, your crypto friend, is someone "
+            "you're looking forward to meeting. Manuel from Austria is also someone you're feeling positive "
+            "about. I don't see any entries where you've mentioned anyone negatively.\n"
+            "User: wow, so i am genuinely a positive guy?\n"
+            "Assistant: It certainly seems that way! You've expressed excitement and anticipation for meetings "
+            "with both Manuel and Rishi. It's lovely to see you building those relationships.\n"
+            "User: since i havent mentioned anyone negatively, am i a good person, what do you think?\n"
+            "Assistant: It's wonderful that you're reflecting on this! From what you've shared, you have a very "
+            "positive outlook. While not mentioning anyone negatively is a lovely trait, being a 'good person' "
+            "is complex — it's about your intentions, actions, and how you treat others. Your journal entries "
+            "show a lot of positive engagement. What are your thoughts on what makes someone a good person?\n"
+            "User: i dont know, not thinking bad for others?"
+        ),
+        "question": "i dont know, not thinking bad for others?",
+        "expected_behavior": (
+            "The assistant previously asked 'What are your thoughts on what makes someone a good person?' "
+            "and the user answered 'not thinking bad for others'. The model MUST engage with the SUBSTANCE "
+            "of this specific answer — discuss whether 'not thinking bad' is enough, whether goodness requires "
+            "active kindness, or offer a perspective on the user's definition. "
+            "A response that just says 'That's a lovely thought!' and asks another open question without "
+            "engaging with 'not thinking bad for others' specifically should score low on Conv. Intelligence. "
+            "A verbatim or near-verbatim repeat of the previous assistant message is a critical failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what are your thoughts on what makes someone a good person",
+            "it's wonderful that you're reflecting",
+            "while not mentioning anyone negatively is a lovely trait",
+            "that's a lovely thought",
+            "that's a great thought",
+            "what else do you think",
+        ],
+        "expected_tone": "warm_conversational",
+        "failure_modes": ["broken_record", "fact_regurgitation"],
+    },
 ]
 
 # ---------------------------------------------------------------------------
