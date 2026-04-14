@@ -971,6 +971,53 @@ TEST_CASES = [
         "expected_tone": "warm_conversational",
         "failure_modes": ["broken_record", "fact_regurgitation"],
     },
+    {
+        "id": "repetition_minimal_reply_idk",
+        "category": "repetition",
+        "description": "Model asked a deep question, user replied 'idk' — model should offer something concrete to react to, not repeat itself",
+        "provided_entries": "\n\n---\n\n".join([
+            (
+                "Entry 1 (date: 2026-04-10, title: Meeting with Rishi, relevance: high):\n"
+                "Met with Rishi today, my old crypto friend. We used to run a Tamil crypto community together. "
+                "He's lovely. Was looking forward to catching up."
+            ),
+            (
+                "Entry 2 (date: 2026-04-09, title: Manuel Meeting Excitement, relevance: moderate):\n"
+                "Got a meeting with Manuel from Austria tomorrow. This is traction. Hoping for it a lot."
+            ),
+        ]),
+        "memory": "## People\n- Rishi: crypto friend, co-ran Tamil crypto community\n- Manuel: potential client from Austria",
+        "conversation": (
+            "User: since i havent mentioned anyone negatively, am i a good person, what do you think?\n"
+            "Assistant: It's wonderful that you're reflecting on this! From what you've shared, you have a very "
+            "positive outlook. While not mentioning anyone negatively is a lovely trait, being a 'good person' "
+            "is complex — it's about your intentions, actions, and how you treat others. Your journal entries "
+            "show a lot of positive engagement. What are your thoughts on what makes someone a good person?\n"
+            "User: idk"
+        ),
+        "question": "idk",
+        "expected_behavior": (
+            "The user replied 'idk' to the model's question about what makes someone a good person. "
+            "The model MUST NOT repeat its previous response about reflecting, positive outlook, or complexity of goodness. "
+            "The model MUST NOT re-ask 'what are your thoughts on what makes someone a good person' or any rephrasing of it. "
+            "Instead, the model should make the abstract question concrete by grounding it in something from the user's "
+            "entries or memory — e.g. pointing out that describing Rishi as 'lovely' or being excited about Manuel "
+            "shows active warmth, not just absence of negativity. Give the user something specific to react to. "
+            "A response that repeats the previous framing or asks another open-ended abstract question should score "
+            "low on Conv. Intelligence."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what are your thoughts on what makes someone a good person",
+            "what does being good mean to you",
+            "it's wonderful that you're reflecting",
+            "while not mentioning anyone negatively is a lovely trait",
+            "being a 'good person' is complex",
+            "it's about your intentions, actions",
+        ],
+        "expected_tone": "warm_grounded",
+        "failure_modes": ["broken_record", "fact_regurgitation"],
+    },
 ]
 
 # ---------------------------------------------------------------------------
