@@ -232,6 +232,11 @@ async def get_entry_status(entry_id: str, user_id: str = Depends(get_current_use
     return await entry_service.get_entry_status(entry_id, user_id)
 
 
+@app.delete("/entries/{entry_id}")
+async def delete_entry(entry_id: str, user_id: str = Depends(get_current_user)):
+    return await entry_service.soft_delete_entry(entry_id, user_id)
+
+
 @app.get("/search")
 async def search_entries_endpoint(query: str, user_id: str = Depends(get_current_user)):
     return await entry_service.advanced_search_entries(query, user_id)

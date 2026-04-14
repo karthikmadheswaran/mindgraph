@@ -8,6 +8,7 @@ async def get_entities(user_id: str) -> dict:
         supabase.table("entities")
         .select("id, name, entity_type, mention_count")
         .eq("user_id", user_id)
+        .gt("mention_count", 0)
         .order("mention_count", desc=True)
         .limit(60)
         .execute()

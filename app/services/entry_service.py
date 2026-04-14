@@ -212,12 +212,86 @@ async def list_entries(user_id: str) -> dict:
         supabase.table("entries")
         .select("id, raw_text, cleaned_text, auto_title, summary, created_at, status, pipeline_stage")
         .eq("user_id", user_id)
+        .is_("deleted_at", "null")
         .order("created_at", desc=True)
         .limit(20)
         .execute()
     )
 
     return {"entries": result.data}
+
+
+async def soft_delete_entry(entry_id: str, user_id: str) -> dict:
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+
+    entry_result = (
+        supabase.table("entries")
+        .select("id, user_id, deleted_at")
+        .eq("id", entry_id)
+        .limit(1)
+        .execute()
+    )
+    rows = entry_result.data or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    entry_row = rows[0]
+    if entry_row.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if entry_row.get("deleted_at") is not None:
+        raise HTTPException(status_code=410, detail="Entry already deleted")
+
+    link_rows = (
+        supabase.table("entry_entities")
+        .select("entity_id")
+        .eq("entry_id", entry_id)
+        .execute()
+        .data
+        or []
+    )
+
+    entity_decrements: dict[str, int] = {}
+    for link in link_rows:
+        eid = link.get("entity_id")
+        if eid:
+            entity_decrements[eid] = entity_decrements.get(eid, 0) + 1
+
+    if entity_decrements:
+        existing = (
+            supabase.table("entities")
+            .select("id, mention_count")
+            .in_("id", list(entity_decrements.keys()))
+            .execute()
+            .data
+            or []
+        )
+        for ent in existing:
+            eid = ent["id"]
+            new_count = max(0, (ent.get("mention_count") or 0) - entity_decrements[eid])
+            (
+                supabase.table("entities")
+                .update({"mention_count": new_count})
+                .eq("id", eid)
+                .execute()
+            )
+
+    supabase.table("entry_entities").delete().eq("entry_id", entry_id).execute()
+    supabase.table("entity_relations").delete().eq("source_entry_id", entry_id).execute()
+    supabase.table("deadlines").delete().eq("source_entry_id", entry_id).execute()
+    supabase.table("entry_tags").delete().eq("entry_id", entry_id).execute()
+
+    (
+        supabase.table("entries")
+        .update({"deleted_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", entry_id)
+        .execute()
+    )
+
+    await regenerate_insights_background(user_id)
+
+    logger.info("Soft-deleted entry %s for user %s", entry_id, user_id)
+    return {"status": "deleted", "entry_id": entry_id}
 
 
 async def search_entries(query: str, user_id: str) -> dict:

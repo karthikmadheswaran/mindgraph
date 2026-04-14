@@ -138,7 +138,14 @@ function Dashboard({ isActive, userId }) {
         )
     );
 
-    setEntries(snapshot.entries || []);
+    const nextEntries = (snapshot.entries || []).filter(
+      (entry) =>
+        !(
+          activePendingDeletion?.kind === "entry" &&
+          activePendingDeletion.item.id === entry.id
+        )
+    );
+    setEntries(nextEntries);
     setAllDeadlines(nextDeadlines);
     setAllProjects(nextProjects);
     setEntities(snapshot.entities || []);
@@ -373,6 +380,24 @@ function Dashboard({ isActive, userId }) {
     return response.json();
   }, []);
 
+  const deleteEntry = useCallback(async (entryId) => {
+    const headers = await authHeaders();
+    const response = await fetch(`${API}/entries/${entryId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (response.status === 401) {
+      throw new Error("Session expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to delete entry. Please try again.");
+    }
+
+    return response.json();
+  }, []);
+
   const deleteDeadline = useCallback(async (deadlineId) => {
     const headers = await authHeaders();
     const response = await fetch(`${API}/deadlines/${deadlineId}`, {
@@ -427,6 +452,29 @@ function Dashboard({ isActive, userId }) {
         );
 
         return nextProjects;
+      });
+    },
+    [userId]
+  );
+
+  const setEntriesState = useCallback(
+    (updater) => {
+      setEntries((current) => {
+        const nextEntries =
+          typeof updater === "function" ? updater(current) : updater;
+
+        updateDashboardSnapshot(
+          (snapshot) =>
+            snapshot
+              ? {
+                  ...snapshot,
+                  entries: nextEntries,
+                }
+              : snapshot,
+          { userId }
+        );
+
+        return nextEntries;
       });
     },
     [userId]
@@ -487,6 +535,19 @@ function Dashboard({ isActive, userId }) {
         return;
       }
 
+      if (deletion.kind === "entry") {
+        setEntriesState((current) => {
+          if (current.some((item) => item.id === deletion.item.id)) {
+            return current;
+          }
+
+          return [...current, deletion.item].sort(
+            (a, b) => new Date(b.created_at) - new Date(a.created_at)
+          );
+        });
+        return;
+      }
+
       if (deletion.kind === "deadline") {
         setDeadlinesState((current) => {
           if (current.some((item) => item.id === deletion.item.id)) {
@@ -506,7 +567,7 @@ function Dashboard({ isActive, userId }) {
         return sortProjects([...current, deletion.item]);
       });
     },
-    [setDeadlinesState, setProjectsState]
+    [setDeadlinesState, setEntriesState, setProjectsState]
   );
 
   const clearPendingDeleteTimer = useCallback(() => {
@@ -528,7 +589,9 @@ function Dashboard({ isActive, userId }) {
       setToast(null);
 
       try {
-        if (deletion.kind === "deadline") {
+        if (deletion.kind === "entry") {
+          await deleteEntry(deletion.item.id);
+        } else if (deletion.kind === "deadline") {
           await deleteDeadline(deletion.item.id);
         } else {
           await deleteProject(deletion.item.id);
@@ -543,7 +606,13 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [clearPendingDeleteTimer, deleteDeadline, deleteProject, restoreDeletedItem]
+    [
+      clearPendingDeleteTimer,
+      deleteDeadline,
+      deleteEntry,
+      deleteProject,
+      restoreDeletedItem,
+    ]
   );
 
   const undoPendingDeletion = useCallback(() => {
@@ -569,14 +638,27 @@ function Dashboard({ isActive, userId }) {
         setEditingDeadlineId(null);
       }
 
-      const deletion = {
-        kind,
-        item: kind === "deadline" ? normalizeDeadline(item) : normalizeProject(item),
-      };
+      let normalizedItem;
+      if (kind === "entry") {
+        normalizedItem = item;
+      } else if (kind === "deadline") {
+        normalizedItem = normalizeDeadline(item);
+      } else {
+        normalizedItem = normalizeProject(item);
+      }
+
+      const deletion = { kind, item: normalizedItem };
 
       pendingDeletionRef.current = deletion;
 
-      if (kind === "deadline") {
+      if (kind === "entry") {
+        if (expandedEntryId === item.id) {
+          setExpandedEntryId(null);
+        }
+        setEntriesState((current) =>
+          current.filter((entry) => entry.id !== item.id)
+        );
+      } else if (kind === "deadline") {
         setDeadlinesState((current) =>
           current.filter((deadline) => deadline.id !== item.id)
         );
@@ -586,15 +668,27 @@ function Dashboard({ isActive, userId }) {
         );
       }
 
+      let message;
+      let actionAriaLabel;
+      if (kind === "entry") {
+        message = "Entry deleted.";
+        actionAriaLabel = `Undo entry delete for ${
+          item.auto_title || "journal entry"
+        }`;
+      } else if (kind === "deadline") {
+        message = "Deadline deleted.";
+        actionAriaLabel = `Undo deadline delete for ${item.description}`;
+      } else {
+        message = "Project deleted.";
+        actionAriaLabel = `Undo project delete for ${item.name}`;
+      }
+
       setPendingDeletion(deletion);
       setToast({
-        message: kind === "deadline" ? "Deadline deleted." : "Project deleted.",
+        message,
         type: "success",
         actionLabel: "Undo",
-        actionAriaLabel:
-          kind === "deadline"
-            ? `Undo deadline delete for ${item.description}`
-            : `Undo project delete for ${item.name}`,
+        actionAriaLabel,
         onAction: undoPendingDeletion,
         duration: 5000,
       });
@@ -605,8 +699,10 @@ function Dashboard({ isActive, userId }) {
     },
     [
       editingDeadlineId,
+      expandedEntryId,
       finalizePendingDeletion,
       setDeadlinesState,
+      setEntriesState,
       setProjectsState,
       undoPendingDeletion,
     ]
@@ -1439,6 +1535,37 @@ function Dashboard({ isActive, userId }) {
                           <span className="entry-date">
                             {new Date(entry.created_at).toLocaleString()}
                           </span>
+                          {entry.status !== "processing" && (
+                            <button
+                              type="button"
+                              className="entry-delete-btn"
+                              aria-label={`Delete entry ${
+                                entry.auto_title || "untitled"
+                              }`}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                scheduleDelete("entry", entry);
+                              }}
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6" />
+                                <path d="M14 11v6" />
+                              </svg>
+                            </button>
+                          )}
                           <svg
                             className={`entry-chevron ${
                               expandedEntryId === entry.id ? "expanded" : ""
