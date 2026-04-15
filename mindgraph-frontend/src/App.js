@@ -46,6 +46,12 @@ const getHashView = () => {
   return normalizeHashView(window.location.hash);
 };
 
+const shouldStartOnAuth = () => {
+  return (
+    new URLSearchParams(window.location.search).get("view") === "auth"
+  );
+};
+
 const setHashView = (nextView, { replace = false } = {}) => {
   const normalizedView = APP_VIEWS.has(nextView) ? nextView : DEFAULT_APP_VIEW;
   const nextHash = formatHashView(normalizedView);
@@ -77,7 +83,9 @@ const hasProcessingEntries = (entries = []) =>
 export default function App() {
   const initialAppView = getHashView();
   const [session, setSession] = useState(null);
-  const [view, setView] = useState("landing");
+  const [view, setView] = useState(
+    shouldStartOnAuth() ? "auth" : "landing"
+  );
   const [currentView, setCurrentView] = useState(initialAppView);
   const [hasVisitedDashboard, setHasVisitedDashboard] = useState(
     initialAppView === "dashboard"

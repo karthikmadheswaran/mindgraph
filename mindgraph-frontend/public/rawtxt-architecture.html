@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rawtxt — Architecture & Technical Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0b09;
+    --surface: #161412;
+    --surface-2: #1e1b17;
+    --border: rgba(245,240,232,0.06);
+    --text: #f5f0e8;
+    --text-muted: rgba(245,240,232,0.45);
+    --text-dim: rgba(245,240,232,0.25);
+    --amber: #c4841d;
+    --amber-light: #e8a93e;
+    --amber-glow: rgba(196,132,29,0.12);
+    --amber-glow-strong: rgba(196,132,29,0.25);
+    --sage: #6b9e75;
+    --sage-glow: rgba(107,158,117,0.12);
+    --red: #c54b3a;
+    --blue: #5a8fbf;
+    --blue-glow: rgba(90,143,191,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Instrument Serif', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════ NAV ═══════════ */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(12,11,9,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono); font-size: 18px; font-weight: 500;
+    color: var(--text); text-decoration: none; letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--amber); }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta-light {
+    background: var(--amber) !important; color: var(--bg) !important;
+    padding: 10px 24px !important; border-radius: 100px;
+    font-size: 12px !important; font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+  }
+  .nav-cta-light:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(196,132,29,0.3); }
+
+  /* ═══════════ HERO ═══════════ */
+  .arch-hero {
+    min-height: 80vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 140px 40px 80px;
+    text-align: center;
+    position: relative;
+  }
+  .arch-hero::before {
+    content: '';
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(196,132,29,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px; border-radius: 100px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    font-family: var(--mono); letter-spacing: 0.5px;
+    margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
+  }
+  .hero-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+  .arch-hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(44px, 7vw, 80px);
+    letter-spacing: -2px; line-height: 1.05;
+    max-width: 900px;
+    opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
+  }
+  .arch-hero h1 em { font-style: italic; color: var(--amber); }
+  .arch-hero .hero-sub {
+    font-size: 18px; color: var(--text-muted);
+    max-width: 580px; line-height: 1.7;
+    margin-top: 24px;
+    opacity: 0; animation: fadeUp 0.7s 0.6s forwards;
+  }
+  .hero-links {
+    display: flex; gap: 24px; margin-top: 40px;
+    opacity: 0; animation: fadeUp 0.7s 0.8s forwards;
+  }
+  .hero-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; border-radius: 100px;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: all 0.25s;
+  }
+  .hero-link.primary { background: var(--text); color: var(--bg); }
+  .hero-link.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,240,232,0.15); }
+  .hero-link.ghost { color: var(--text-muted); border: 1px solid var(--border); }
+  .hero-link.ghost:hover { color: var(--text); border-color: rgba(245,240,232,0.2); }
+
+  /* ═══════════ SECTION UTILS ═══════════ */
+  .section { padding: 100px 40px; max-width: 1200px; margin: 0 auto; scroll-margin-top: 80px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--amber); text-transform: uppercase; margin-bottom: 16px;
+    font-family: var(--mono);
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(32px, 4.5vw, 52px);
+    letter-spacing: -1px; line-height: 1.1;
+    max-width: 700px; margin-bottom: 20px;
+  }
+  .section-desc {
+    font-size: 16px; color: var(--text-muted);
+    max-width: 600px; line-height: 1.7;
+    margin-bottom: 56px;
+  }
+
+  /* ═══════════ STACK OVERVIEW ═══════════ */
+  .stack-divider {
+    border: none; border-top: 1px solid var(--border);
+    max-width: 1200px; margin: 0 auto;
+  }
+  .stack-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .stack-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    transition: border-color 0.3s;
+  }
+  .stack-item:hover { border-color: var(--amber-glow-strong); }
+  .stack-item-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .stack-item-name {
+    font-family: var(--serif); font-size: 20px; margin-bottom: 6px;
+  }
+  .stack-item-detail {
+    font-size: 13px; color: var(--text-muted); line-height: 1.5;
+  }
+  .stack-item-tech {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 100px;
+    background: var(--amber-glow); color: var(--amber);
+    font-size: 11px; font-weight: 600; margin-top: 12px;
+    font-family: var(--mono);
+  }
+
+  /* ═══════════ ARCHITECTURE DIAGRAM ═══════════ */
+  .arch-diagram-section {
+    padding: 80px 40px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 80px;
+  }
+  .arch-diagram-inner {
+    max-width: 1200px; margin: 0 auto;
+  }
+  .arch-diagram {
+    margin-top: 48px;
+    position: relative;
+  }
+  .arch-layer {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 0;
+    position: relative;
+  }
+  .arch-layer + .arch-layer { margin-top: 12px; }
+  .arch-layer-label {
+    width: 120px; flex-shrink: 0; text-align: right;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  .arch-layer-content {
+    flex: 1; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .arch-node {
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border);
+    position: relative;
+    transition: all 0.3s;
+  }
+  .arch-node:hover { transform: translateY(-2px); }
+  .arch-node.frontend { background: var(--blue-glow); color: var(--blue); border-color: rgba(90,143,191,0.2); }
+  .arch-node.backend { background: var(--amber-glow); color: var(--amber); border-color: rgba(196,132,29,0.2); }
+  .arch-node.pipeline { background: var(--sage-glow); color: var(--sage); border-color: rgba(107,158,117,0.2); }
+  .arch-node.data { background: rgba(197,75,58,0.1); color: var(--red); border-color: rgba(197,75,58,0.2); }
+  .arch-node.ai { background: rgba(168,132,200,0.1); color: #a884c8; border-color: rgba(168,132,200,0.2); }
+
+  .arch-connector {
+    display: flex; justify-content: center; padding: 8px 0;
+    margin-left: 136px;
+  }
+  .arch-arrow {
+    width: 2px; height: 24px;
+    background: linear-gradient(to bottom, var(--border), var(--amber-glow-strong));
+    position: relative;
+  }
+  .arch-arrow::after {
+    content: '▼';
+    position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; color: var(--amber);
+  }
+
+  /* ═══════════ PIPELINE DETAIL ═══════════ */
+  .pipeline-section { overflow: visible; scroll-margin-top: 100px; }
+  .pipeline-flow {
+    display: flex; gap: 0; align-items: stretch;
+    margin-top: 48px; overflow-x: auto;
+    padding-bottom: 20px;
+  }
+  .pipeline-step {
+    flex-shrink: 0;
+    width: 160px;
+    position: relative;
+  }
+  .pipeline-step-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px 16px;
+    text-align: center;
+    height: 100%;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .pipeline-step-box:hover { border-color: var(--amber); transform: translateY(-4px); }
+  .pipeline-step-num {
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+    letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .pipeline-step-name {
+    font-family: var(--serif); font-size: 16px; margin-bottom: 8px;
+  }
+  .pipeline-step-desc {
+    font-size: 11px; color: var(--text-muted); line-height: 1.5;
+  }
+  .pipeline-step-badge {
+    display: inline-block; margin-top: 10px;
+    padding: 3px 10px; border-radius: 100px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    font-family: var(--mono);
+  }
+  .pipeline-step-badge.parallel { background: var(--sage-glow); color: var(--sage); }
+  .pipeline-step-badge.sequential { background: var(--amber-glow); color: var(--amber); }
+  .pipeline-arrow-wrap {
+    display: flex; align-items: center; flex-shrink: 0;
+    padding: 0 4px;
+  }
+  .pipeline-h-arrow {
+    width: 24px; height: 2px; background: var(--border); position: relative;
+  }
+  .pipeline-h-arrow::after {
+    content: '▶'; position: absolute; right: -8px; top: -6px;
+    font-size: 8px; color: var(--amber);
+  }
+  .pipeline-parallel-group {
+    display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
+  }
+  .pipeline-parallel-wrap {
+    position: relative; padding: 12px;
+    border: 1px dashed rgba(107,158,117,0.3);
+    border-radius: var(--radius);
+  }
+  .pipeline-parallel-label {
+    position: absolute; top: -8px; left: 16px;
+    padding: 0 8px; background: var(--bg);
+    font-size: 9px; font-weight: 700; color: var(--sage);
+    letter-spacing: 1px; text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .pipeline-parallel-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+
+  /* ═══════════ EVAL RESULTS ═══════════ */
+  .eval-section { }
+  .eval-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    margin-top: 48px;
+  }
+  .eval-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+  }
+  .eval-card-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--text-dim); text-transform: uppercase;
+    font-family: var(--mono); margin-bottom: 20px;
+  }
+  .eval-metric-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .eval-metric-row:last-child { border-bottom: none; }
+  .eval-metric-name { font-size: 13px; color: var(--text-muted); }
+  .eval-metric-val {
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
+  }
+  .eval-metric-val.good { color: var(--sage); }
+  .eval-metric-val.great { color: var(--amber-light); }
+  .eval-metric-val.perfect { color: #e8a93e; }
+
+  /* Progress bar */
+  .eval-bar-row { margin-top: 16px; }
+  .eval-bar-label {
+    display: flex; justify-content: space-between; font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .eval-bar-label span:first-child { color: var(--text-muted); }
+  .eval-bar-label span:last-child { font-family: var(--mono); font-weight: 700; }
+  .eval-bar-track {
+    height: 6px; border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .eval-bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width 1.5s ease-out;
+  }
+  .eval-bar-fill.amber { background: var(--amber); }
+  .eval-bar-fill.sage { background: var(--sage); }
+
+  /* ═══════════ RAG COMPARISON ═══════════ */
+  .rag-table-wrap {
+    margin-top: 48px; overflow-x: auto;
+  }
+  .rag-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px;
+  }
+  .rag-table th {
+    text-align: left; padding: 14px 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-dim); text-transform: uppercase;
+    font-family: var(--mono);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .rag-table td {
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .rag-table tr:last-child td { border-bottom: none; }
+  .rag-table .highlight {
+    color: var(--amber-light); font-weight: 700; font-family: var(--mono);
+  }
+  .rag-table .delta {
+    color: var(--sage); font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  /* ═══════════ TEST COVERAGE ═══════════ */
+  .test-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-top: 48px;
+  }
+  .test-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px;
+  }
+  .test-card-name {
+    font-family: var(--mono); font-size: 12px; color: var(--amber);
+    margin-bottom: 4px;
+  }
+  .test-card-count {
+    font-family: var(--serif); font-size: 32px; margin-bottom: 4px;
+  }
+  .test-card-desc {
+    font-size: 12px; color: var(--text-muted); line-height: 1.5;
+  }
+
+  /* ═══════════ ENGINEERING DECISIONS ═══════════ */
+  .decisions-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-top: 48px;
+  }
+  .decision-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    transition: border-color 0.3s;
+  }
+  .decision-card:hover { border-color: rgba(245,240,232,0.12); }
+  .decision-card-tag {
+    display: inline-block;
+    padding: 4px 12px; border-radius: 100px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    font-family: var(--mono); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .decision-card-tag.perf { background: var(--amber-glow); color: var(--amber); }
+  .decision-card-tag.arch { background: var(--blue-glow); color: var(--blue); }
+  .decision-card-tag.ml { background: var(--sage-glow); color: var(--sage); }
+  .decision-card-tag.infra { background: rgba(197,75,58,0.1); color: var(--red); }
+  .decision-card h3 {
+    font-family: var(--serif); font-size: 20px;
+    margin-bottom: 10px; letter-spacing: -0.3px;
+  }
+  .decision-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+  .decision-card .stat {
+    display: flex; align-items: baseline; gap: 8px; margin-top: 16px;
+  }
+  .decision-card .stat-val {
+    font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--amber-light);
+  }
+  .decision-card .stat-label { font-size: 12px; color: var(--text-dim); }
+
+  /* ═══════════ API SECTION ═══════════ */
+  .api-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-top: 48px;
+  }
+  .api-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-family: var(--mono); font-size: 13px;
+    transition: border-color 0.2s;
+  }
+  .api-row:hover { border-color: rgba(245,240,232,0.12); }
+  .api-method {
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .api-method.get { background: var(--sage-glow); color: var(--sage); }
+  .api-method.post { background: var(--amber-glow); color: var(--amber); }
+  .api-method.delete { background: rgba(197,75,58,0.1); color: var(--red); }
+  .api-path { color: var(--text-muted); }
+  .api-desc { margin-left: auto; font-size: 11px; color: var(--text-dim); font-family: var(--sans); }
+
+  /* ═══════════ CTA ═══════════ */
+  .dev-cta {
+    padding: 120px 40px;
+    text-align: center;
+    position: relative;
+    border-top: 1px solid var(--border);
+  }
+  .dev-cta::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(circle, rgba(196,132,29,0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .dev-cta h2 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 60px);
+    letter-spacing: -1.5px; max-width: 700px;
+    margin: 0 auto 20px; position: relative;
+  }
+  .dev-cta p {
+    font-size: 16px; color: var(--text-muted); max-width: 500px;
+    margin: 0 auto 40px; line-height: 1.7; position: relative;
+  }
+  .dev-cta-links {
+    display: flex; justify-content: center; gap: 16px;
+    position: relative;
+  }
+
+  /* ═══════════ FOOTER ═══════════ */
+  footer {
+    padding: 40px; text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  footer p { font-size: 13px; color: var(--text-dim); }
+  footer a { color: var(--amber); text-decoration: none; }
+
+  /* ═══════════ ANIMATIONS ═══════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 900px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .stack-grid { grid-template-columns: 1fr 1fr; }
+    .eval-grid { grid-template-columns: 1fr; }
+    .test-grid { grid-template-columns: 1fr; }
+    .decisions-grid { grid-template-columns: 1fr; }
+    .api-grid { grid-template-columns: 1fr; }
+    .section { padding: 60px 20px; }
+    .arch-diagram-section { padding: 60px 20px; }
+    .pipeline-flow { flex-direction: column; align-items: stretch; }
+    .pipeline-step { width: 100%; }
+    .pipeline-arrow-wrap { transform: rotate(90deg); padding: 8px 0; justify-content: center; }
+    .pipeline-parallel-inner { grid-template-columns: 1fr; }
+    .arch-layer { flex-direction: column; align-items: flex-start; }
+    .arch-layer-label { width: auto; text-align: left; }
+    .hero-links { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="rawtxt-landing.html" class="nav-logo">raw<span>txt</span>.in</a>
+  <div class="nav-links">
+    <a href="#stack">Stack</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#evals">Evals</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#api">API</a>
+    <a href="https://www.linkedin.com/in/karthikmadheswaran/">LinkedIn</a>
+    <a href="https://github.com/karthikmadheswaran/mindgraph" class="nav-cta-light">View on GitHub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="arch-hero">
+  <div class="hero-chip"><span class="dot"></span>TECHNICAL DEEP DIVE</div>
+  <h1>Production-Grade <em>AI Engineering</em></h1>
+  <p class="hero-sub">
+    MindGraph isn't a toy demo. It's a full-stack AI system with an 8-node LangGraph pipeline, hybrid RAG with reranking, eval-driven development, and 225 tests — built solo by one engineer.
+  </p>
+  <div class="hero-links">
+    <a href="https://github.com/karthikmadheswaran/mindgraph" class="hero-link primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      Source Code
+    </a>
+    <a href="https://mindgraph-production.up.railway.app/docs" class="hero-link ghost">API Docs (JWT-secured) →</a>
+    <a href="https://www.linkedin.com/in/karthikmadheswaran/" class="hero-link ghost">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LinkedIn
+    </a>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<hr class="stack-divider">
+<section class="section reveal" id="stack">
+  <div class="section-label">Tech Stack</div>
+  <h2 class="section-title">Built for real workloads</h2>
+  <div class="section-desc">Every layer chosen for a specific engineering reason — not because it was trending.</div>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="stack-item-label">Orchestration</div>
+      <div class="stack-item-name">LangGraph</div>
+      <div class="stack-item-detail">8-node pipeline with parallel fan-out/fan-in. Typed state object shared across all nodes.</div>
+      <div class="stack-item-tech">+ LangChain</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">LLM</div>
+      <div class="stack-item-name">Gemini</div>
+      <div class="stack-item-detail">2.5 Flash-Lite for pipeline speed. 2.5 Pro for insights + eval judge. Dual-model strategy.</div>
+      <div class="stack-item-tech">Pipeline + Insights</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Retrieval</div>
+      <div class="stack-item-name">Hybrid RAG</div>
+      <div class="stack-item-detail">pgvector cosine + BM25 (tsvector/GIN) + Cohere Rerank v3.5. Temporal query routing bypasses embeddings entirely.</div>
+      <div class="stack-item-tech">F1: 0.782</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Database</div>
+      <div class="stack-item-name">Supabase</div>
+      <div class="stack-item-detail">Postgres + pgvector + tsvector + GIN indexes. Auth with JWT ES256/JWKS verification.</div>
+      <div class="stack-item-tech">Postgres + pgvector</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Backend</div>
+      <div class="stack-item-name">FastAPI</div>
+      <div class="stack-item-detail">15 endpoints. Async background processing. JWT middleware. Background tasks for pipeline.</div>
+      <div class="stack-item-tech">+ Uvicorn</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Frontend</div>
+      <div class="stack-item-name">React</div>
+      <div class="stack-item-detail">Component architecture with sidebar navigation. Force-directed knowledge graph. Framer Motion transitions.</div>
+      <div class="stack-item-tech">+ react-force-graph</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Observability</div>
+      <div class="stack-item-name">Langfuse</div>
+      <div class="stack-item-detail">Per-node latency, cost, token usage. Full trace replay. Production monitoring.</div>
+      <div class="stack-item-tech">Cloud hosted</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-item-label">Deployment</div>
+      <div class="stack-item-name">Railway</div>
+      <div class="stack-item-detail">Auto-deploy from GitHub main. Docker containerized. Frontend + backend services.</div>
+      <div class="stack-item-tech">Docker</div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<section class="arch-diagram-section reveal" id="architecture">
+  <div class="arch-diagram-inner">
+    <div class="section-label">System Architecture</div>
+    <h2 class="section-title">Full-stack flow</h2>
+    <div class="section-desc">From raw text input to structured knowledge graph — every layer, every connection.</div>
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer-label">Frontend</div>
+        <div class="arch-layer-content">
+          <div class="arch-node frontend">Write View</div>
+          <div class="arch-node frontend">Dashboard</div>
+          <div class="arch-node frontend">Knowledge Graph</div>
+          <div class="arch-node frontend">Ask Journal</div>
+          <div class="arch-node frontend">Insights</div>
+          <div class="arch-node frontend">My Progress</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-arrow"></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Backend</div>
+        <div class="arch-layer-content">
+          <div class="arch-node backend">FastAPI · 15 endpoints</div>
+          <div class="arch-node backend">JWT Auth Middleware</div>
+          <div class="arch-node backend">Async Background Tasks</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-arrow"></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Pipeline</div>
+        <div class="arch-layer-content">
+          <div class="arch-node pipeline">LangGraph · 8 Nodes</div>
+          <div class="arch-node pipeline">Parallel Fan-out / Fan-in</div>
+          <div class="arch-node pipeline">Typed State Object</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-arrow"></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Data</div>
+        <div class="arch-layer-content">
+          <div class="arch-node data">Supabase Postgres</div>
+          <div class="arch-node data">pgvector · 1536-dim</div>
+          <div class="arch-node data">tsvector/GIN (BM25)</div>
+          <div class="arch-node data">Supabase Auth</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-arrow"></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">AI Services</div>
+        <div class="arch-layer-content">
+          <div class="arch-node ai">Gemini 2.5 Flash-Lite</div>
+          <div class="arch-node ai">Gemini 2.5 Pro</div>
+          <div class="arch-node ai">Gemini embedding-001</div>
+          <div class="arch-node ai">Cohere Rerank v3.5</div>
+          <div class="arch-node ai">Langfuse Tracing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE DETAIL -->
+<section class="section pipeline-section reveal" id="pipeline">
+  <div class="section-label">Pipeline Detail</div>
+  <h2 class="section-title">8-node LangGraph pipeline</h2>
+  <div class="section-desc">Parallel fan-out for extraction, sequential fan-in for relation mapping and storage. Duplicates short-circuit at node 2.</div>
+  <div class="pipeline-flow">
+    <!-- Node 1: Normalize -->
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-num">NODE 01</div>
+        <div class="pipeline-step-name">Normalize</div>
+        <div class="pipeline-step-desc">Text cleanup, timezone-aware date resolution, calendar grounding</div>
+        <div class="pipeline-step-badge sequential">Sequential</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow-wrap"><div class="pipeline-h-arrow"></div></div>
+    <!-- Node 2: Dedup -->
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-num">NODE 02</div>
+        <div class="pipeline-step-name">Dedup</div>
+        <div class="pipeline-step-desc">Semantic duplicate detection via embedding similarity. Short-circuits on match.</div>
+        <div class="pipeline-step-badge sequential">Sequential</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow-wrap"><div class="pipeline-h-arrow"></div></div>
+    <!-- Parallel group -->
+    <div class="pipeline-parallel-wrap">
+      <div class="pipeline-parallel-label">Parallel Fan-out</div>
+      <div class="pipeline-parallel-inner">
+        <div class="pipeline-step">
+          <div class="pipeline-step-box">
+            <div class="pipeline-step-num">NODE 03</div>
+            <div class="pipeline-step-name">Classify</div>
+            <div class="pipeline-step-desc">Multi-label categorization</div>
+            <div class="pipeline-step-badge parallel">Parallel</div>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-step-box">
+            <div class="pipeline-step-num">NODE 04</div>
+            <div class="pipeline-step-name">Entities</div>
+            <div class="pipeline-step-desc">41-test eval-driven prompt</div>
+            <div class="pipeline-step-badge parallel">Parallel</div>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-step-box">
+            <div class="pipeline-step-num">NODE 05</div>
+            <div class="pipeline-step-name">Deadline</div>
+            <div class="pipeline-step-desc">Date + commitment detection</div>
+            <div class="pipeline-step-badge parallel">Parallel</div>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div class="pipeline-step-box">
+            <div class="pipeline-step-num">NODE 06</div>
+            <div class="pipeline-step-name">Title & Summary</div>
+            <div class="pipeline-step-desc">Auto-generated from content</div>
+            <div class="pipeline-step-badge parallel">Parallel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pipeline-arrow-wrap"><div class="pipeline-h-arrow"></div></div>
+    <!-- Node 7: Relations -->
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-num">NODE 07</div>
+        <div class="pipeline-step-name">Relations</div>
+        <div class="pipeline-step-desc">Semantic relation extraction with confidence scoring</div>
+        <div class="pipeline-step-badge sequential">Fan-in</div>
+      </div>
+    </div>
+    <div class="pipeline-arrow-wrap"><div class="pipeline-h-arrow"></div></div>
+    <!-- Node 8: Store -->
+    <div class="pipeline-step">
+      <div class="pipeline-step-box">
+        <div class="pipeline-step-num">NODE 08</div>
+        <div class="pipeline-step-name">Store</div>
+        <div class="pipeline-step-desc">3-stage entity linking. Supabase upsert with dedup.</div>
+        <div class="pipeline-step-badge sequential">Sequential</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVAL RESULTS -->
+<section class="section eval-section reveal" id="evals">
+  <div class="section-label">Evaluation Results</div>
+  <h2 class="section-title">Not vibes — numbers.</h2>
+  <div class="section-desc">Every component is eval-driven. Prompts were iterated against test harnesses, not gut feeling.</div>
+  <div class="eval-grid">
+    <!-- RAG Retrieval -->
+    <div class="eval-card">
+      <div class="eval-card-label">RAG Retrieval · 27-case harness</div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Retrieval F1</span>
+        <span class="eval-metric-val great">0.782</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">MRR</span>
+        <span class="eval-metric-val great">0.957</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Pass Rate</span>
+        <span class="eval-metric-val good">78%</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Hallucinations</span>
+        <span class="eval-metric-val perfect">0</span>
+      </div>
+      <div class="eval-bar-row">
+        <div class="eval-bar-label"><span>F1 improvement</span><span>+112%</span></div>
+        <div class="eval-bar-track"><div class="eval-bar-fill amber" style="width: 0;" data-width="78%"></div></div>
+      </div>
+    </div>
+    <!-- Generation Quality -->
+    <div class="eval-card">
+      <div class="eval-card-label">Ask Generation · 32-case harness</div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Inference Quality</span>
+        <span class="eval-metric-val great">4.53 / 5</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Conv. Intelligence</span>
+        <span class="eval-metric-val great">4.47 / 5</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Groundedness</span>
+        <span class="eval-metric-val perfect">5.00 / 5</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Noise Resistance</span>
+        <span class="eval-metric-val perfect">5.00 / 5</span>
+      </div>
+      <div class="eval-bar-row">
+        <div class="eval-bar-label"><span>12 prompt iterations</span><span>v12 shipped</span></div>
+        <div class="eval-bar-track"><div class="eval-bar-fill sage" style="width: 0;" data-width="90%"></div></div>
+      </div>
+    </div>
+    <!-- Normalize -->
+    <div class="eval-card">
+      <div class="eval-card-label">Date Normalization · 25-case harness</div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Functional Pass</span>
+        <span class="eval-metric-val good">96%</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Date Accuracy</span>
+        <span class="eval-metric-val perfect">100%</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Date F1</span>
+        <span class="eval-metric-val perfect">1.00</span>
+      </div>
+      <div class="eval-metric-row">
+        <span class="eval-metric-name">Avg Latency</span>
+        <span class="eval-metric-val good">829ms</span>
+      </div>
+      <div class="eval-bar-row">
+        <div class="eval-bar-label"><span>Pass rate improvement</span><span>64% → 96%</span></div>
+        <div class="eval-bar-track"><div class="eval-bar-fill amber" style="width: 0;" data-width="96%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAG Comparison Table -->
+  <div class="rag-table-wrap" style="margin-top: 48px;">
+    <table class="rag-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Baseline</th>
+          <th>Phase 1 (Tuning)</th>
+          <th>Phase 2 (Hybrid + Rerank)</th>
+          <th>Delta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Retrieval F1</td>
+          <td>0.369</td>
+          <td>0.669</td>
+          <td class="highlight">0.782</td>
+          <td class="delta">+112%</td>
+        </tr>
+        <tr>
+          <td>MRR</td>
+          <td>0.759</td>
+          <td>0.907</td>
+          <td class="highlight">0.957</td>
+          <td class="delta">+26%</td>
+        </tr>
+        <tr>
+          <td>Pass Rate</td>
+          <td>41% (11/27)</td>
+          <td>74% (20/27)</td>
+          <td class="highlight">78% (21/27)</td>
+          <td class="delta">+37pp</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TEST COVERAGE -->
+<section class="section reveal">
+  <div class="section-label">Test Coverage</div>
+  <h2 class="section-title">225 tests. 9 harnesses.</h2>
+  <div class="test-grid">
+    <div class="test-card">
+      <div class="test-card-name">extract_entities</div>
+      <div class="test-card-count">41</div>
+      <div class="test-card-desc">10 failure families incl. date leaks, dedup, disambiguation, false project promotion</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">memory_compaction</div>
+      <div class="test-card-count">50</div>
+      <div class="test-card-desc">36 compaction + 14 Ask cases: stable facts, dedup, contradiction, precedence</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">eval_generation</div>
+      <div class="test-card-count">32</div>
+      <div class="test-card-desc">LLM-as-judge: 7 dimensions × 6 behavioral categories + 7 failure detectors</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">rag_evaluation</div>
+      <div class="test-card-count">27</div>
+      <div class="test-card-desc">Retrieval F1, MRR, pass rate, pronoun resolution, leakage resistance</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">normalize_eval</div>
+      <div class="test-card-count">25</div>
+      <div class="test-card-desc">Weekday lookups, offsets, month/year boundaries, slang, timezone rollover</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">store_project_matching</div>
+      <div class="test-card-count">24</div>
+      <div class="test-card-desc">Spacing, case, hyphen, underscore variants + risky collision detection</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">extract_relations</div>
+      <div class="test-card-count">16</div>
+      <div class="test-card-desc">Multi-entity, symmetric relations, confidence scoring, edge cases</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">store_entities</div>
+      <div class="test-card-count">6</div>
+      <div class="test-card-desc">Case-insensitive dedup, batch dedup, type separation, mention count</div>
+    </div>
+    <div class="test-card">
+      <div class="test-card-name">store_relations</div>
+      <div class="test-card-count">4</div>
+      <div class="test-card-desc">Insert, upsert dedup, unresolved skip, symmetric normalization</div>
+    </div>
+  </div>
+</section>
+
+<!-- ENGINEERING DECISIONS -->
+<section class="section reveal" id="decisions">
+  <div class="section-label">Key Decisions</div>
+  <h2 class="section-title">Engineering tradeoffs, explained</h2>
+  <div class="decisions-grid">
+    <div class="decision-card">
+      <div class="decision-card-tag perf">Performance</div>
+      <h3>10x Faster, 30x Cheaper</h3>
+      <p>Migrated all pipeline nodes from gemini-3-flash-preview to gemini-2.5-flash-lite. End-to-end latency dropped from 67s to under 7s. Cost per entry dropped from $0.009 to $0.0003.</p>
+      <div class="stat"><span class="stat-val">6.66s</span><span class="stat-label">pipeline latency (from 67s)</span></div>
+    </div>
+    <div class="decision-card">
+      <div class="decision-card-tag arch">Architecture</div>
+      <h3>Acknowledge-Fast, Process-Slow</h3>
+      <p>Railway's proxy breaks SSE connections. Switched to instant-acknowledge with background pipeline processing. Frontend polls status with silent sync — no disruptive reloads.</p>
+    </div>
+    <div class="decision-card">
+      <div class="decision-card-tag ml">ML/Prompt Eng</div>
+      <h3>Eval-Driven Entity Extraction</h3>
+      <p>41-test harness across 10 failure families. Iterated from 75.6% → 100% pass rate (F1: 0.90 → 1.0). Targeted invalid-output examples beat abstract rules for steering LLM behavior.</p>
+      <div class="stat"><span class="stat-val">100%</span><span class="stat-label">pass rate (from 75.6%)</span></div>
+    </div>
+    <div class="decision-card">
+      <div class="decision-card-tag ml">ML/Retrieval</div>
+      <h3>3-Stage Entity Linking</h3>
+      <p>Base-normalized exact → project-normalized → semantic embedding with acceptance gating. Handles "MindGraph" vs "mindgraph" vs "Mind Graph" without false merges on "Mind" vs "MindGraph".</p>
+    </div>
+    <div class="decision-card">
+      <div class="decision-card-tag arch">Architecture</div>
+      <h3>Temporal Query Routing</h3>
+      <p>Time-based questions ("this week", "last 7 days") bypass the entire embedding/vector/rerank pipeline. Direct date-range DB query using entry summaries — faster and more complete.</p>
+    </div>
+    <div class="decision-card">
+      <div class="decision-card-tag infra">Infrastructure</div>
+      <h3>Ask Memory Compaction</h3>
+      <p>Conversation memory with long-term compaction. Format compliance improved from 36.1% to 91.7%. Hallucination score maintained at 1.000 (perfect) across 50-case eval.</p>
+      <div class="stat"><span class="stat-val">91.7%</span><span class="stat-label">format compliance (from 36.1%)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section class="section reveal" id="api">
+  <div class="section-label">API Surface</div>
+  <h2 class="section-title">15 endpoints. JWT-secured.</h2>
+  <div class="section-desc">All endpoints except /health require Supabase Auth JWT. Full Swagger docs at the API base URL.</div>
+  <div class="api-grid">
+    <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/entries/async</span><span class="api-desc">Submit entry</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/entries</span><span class="api-desc">Fetch entries</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/entries/{id}/status</span><span class="api-desc">Pipeline status</span></div>
+    <div class="api-row"><span class="api-method post">POST</span><span class="api-path">/ask</span><span class="api-desc">Hybrid RAG Q&A</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/ask/history</span><span class="api-desc">Conversation history</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/ask/memory</span><span class="api-desc">Compacted memory</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/search</span><span class="api-desc">Semantic search</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/deadlines</span><span class="api-desc">Upcoming deadlines</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/entities</span><span class="api-desc">Extracted entities</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/entity-relations</span><span class="api-desc">Semantic relations</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/insights</span><span class="api-desc">All cached insights</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/insights/patterns</span><span class="api-desc">Pattern analysis</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/insights/weekly</span><span class="api-desc">Weekly digest</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/insights/forgotten</span><span class="api-desc">Forgotten projects</span></div>
+    <div class="api-row"><span class="api-method get">GET</span><span class="api-path">/health</span><span class="api-desc">Health check</span></div>
+    <div class="api-row"><span class="api-method delete">DEL</span><span class="api-path">/entries/{id}</span><span class="api-desc">Soft delete + cascade</span></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="dev-cta reveal">
+  <h2>Want this kind of engineering<br>on <em>your</em> project?</h2>
+  <p>I build production-grade AI systems — LangGraph pipelines, hybrid RAG, eval-driven prompt engineering, and full-stack deployment.</p>
+  <div class="dev-cta-links">
+    <a href="https://www.linkedin.com/in/karthikmadheswaran/" class="hero-link primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Let's Connect
+    </a>
+    <a href="https://github.com/karthikmadheswaran/mindgraph" class="hero-link ghost">Source Code →</a>
+    <a href="https://mindgraph-production.up.railway.app/docs" class="hero-link ghost">API Docs (JWT-secured) →</a>
+    <a href="rawtxt-landing.html" class="hero-link ghost">← User Landing Page</a>
+  </div>
+</section>
+
+<footer>
+  <p>Built by <a href="https://www.linkedin.com/in/karthikmadheswaran/">Karthik Madheswaran</a> · Open source on <a href="https://github.com/karthikmadheswaran/mindgraph">GitHub</a></p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // Animate bars inside
+        e.target.querySelectorAll('.eval-bar-fill').forEach(bar => {
+          setTimeout(() => { bar.style.width = bar.dataset.width; }, 300);
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
