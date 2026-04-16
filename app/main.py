@@ -42,12 +42,32 @@ Langfuse(
 
 app = FastAPI(title="Mindgraph Journal API")
 
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "https://mindgraph-frontend-production.up.railway.app",
+    "https://rawtxt.in",
+    "https://www.rawtxt.in",
+]
+
+
+def get_cors_origins() -> list[str]:
+    configured_origins = os.getenv("CORS_ORIGINS") or os.getenv("FRONTEND_ORIGINS")
+
+    if not configured_origins:
+        return DEFAULT_CORS_ORIGINS
+
+    origins = [
+        origin.strip().rstrip("/")
+        for origin in configured_origins.split(",")
+        if origin.strip()
+    ]
+
+    return origins or DEFAULT_CORS_ORIGINS
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://mindgraph-frontend-production.up.railway.app",
-    ],
+    allow_origins=get_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
