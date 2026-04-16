@@ -461,10 +461,47 @@
     opacity: 1; transform: translateY(0);
   }
 
+  /* ═══════════════════ MOBILE NAV TOGGLE ═══════════════════ */
+  .nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* ═══════════════════ RESPONSIVE ═══════════════════ */
   @media (max-width: 900px) {
-    nav { padding: 16px 20px; }
-    .nav-links { display: none; }
+    nav { padding: 16px 20px; position: relative; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      flex-direction: column;
+      background: var(--paper);
+      padding: 12px 20px 16px;
+      border-bottom: 1px solid var(--divider);
+      box-shadow: 0 8px 32px rgba(26,23,20,0.08);
+      gap: 0;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links a {
+      padding: 12px 0;
+      font-size: 15px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .nav-links a:last-child { border-bottom: none; }
+    .nav-cta {
+      margin-top: 8px !important;
+      text-align: center !important;
+      display: block !important;
+    }
     .hero { padding: 120px 20px 60px; }
     .demo-body { grid-template-columns: 1fr; }
     .bento { grid-template-columns: 1fr; }
@@ -484,13 +521,16 @@
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">raw<span>txt</span>.in</a>
+  <button class="nav-toggle" aria-label="Menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+  </button>
   <div class="nav-links">
     <a href="#features">Features</a>
     <a href="#insights">Insights</a>
     <a href="#how">How It Works</a>
-    <a href="rawtxt-architecture.html">For Developers</a>
-    <a href="https://www.linkedin.com/in/karthikmadheswaran/">LinkedIn</a>
-    <a href="/?view=auth" class="nav-cta">Try It Free</a>
+    <a href="rawtxt-architecture.html" target="_top">For Developers</a>
+    <a href="https://www.linkedin.com/in/karthikmadheswaran/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    <a href="/?view=auth" target="_top" class="nav-cta">Try It Free</a>
   </div>
 </nav>
 
@@ -502,7 +542,7 @@
     Write freely. MindGraph's AI extracts people, projects, deadlines, and behavioral patterns from your journal — building a living knowledge graph of your life.
   </p>
   <div class="hero-cta-group">
-    <a href="/?view=auth" class="btn-primary">
+    <a href="/?view=auth" target="_top" class="btn-primary">
       Start Journaling
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
     </a>
@@ -669,7 +709,7 @@
 <section class="final-cta reveal">
   <h2>Your thoughts deserve<br>a <em>better</em> home.</h2>
   <p>Stop scattering notes across apps. Let your journal actually understand what you're going through.</p>
-  <a href="/?view=auth" class="btn-primary">
+  <a href="/?view=auth" target="_top" class="btn-primary">
     Start Journaling — It's Free
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
   </a>
@@ -678,13 +718,13 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-links">
-    <a href="/?view=auth">App</a>
-    <a href="rawtxt-architecture.html">Architecture</a>
-    <a href="https://github.com/karthikmadheswaran/mindgraph">GitHub</a>
-    <a href="https://www.linkedin.com/in/karthikmadheswaran/">LinkedIn</a>
-    <a href="https://mindgraph-production.up.railway.app/docs">API Docs</a>
+    <a href="/?view=auth" target="_top">App</a>
+    <a href="rawtxt-architecture.html" target="_top">Architecture</a>
+    <a href="https://github.com/karthikmadheswaran/mindgraph" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="https://www.linkedin.com/in/karthikmadheswaran/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    <a href="https://mindgraph-production.up.railway.app/docs" target="_blank" rel="noopener noreferrer">API Docs</a>
   </div>
-  <p>Built by <a href="https://www.linkedin.com/in/karthikmadheswaran/">Karthik Madheswaran</a> · Powered by LangGraph + Gemini + Supabase</p>
+  <p>Built by <a href="https://www.linkedin.com/in/karthikmadheswaran/" target="_blank" rel="noopener noreferrer">Karthik Madheswaran</a> · Powered by LangGraph + Gemini + Supabase</p>
 </footer>
 
 <script>
@@ -694,10 +734,20 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Smooth nav scroll
+  // Mobile nav toggle
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle) {
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+  }
+
+  // Smooth nav scroll (+ close mobile menu on anchor click)
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
+      if (navLinks) navLinks.classList.remove('open');
       const target = document.querySelector(a.getAttribute('href'));
       if (target) target.scrollIntoView({ behavior: 'smooth' });
     });

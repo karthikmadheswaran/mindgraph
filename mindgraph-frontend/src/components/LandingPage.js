@@ -1,15 +1,32 @@
 import { useEffect } from "react";
 
-// The legacy React landing has been replaced by the static rawtxt HTML
-// landing served from `public/rawtxt-landing.html`. This component is kept
-// only as a client-side redirect so the existing App.js state machine
-// (view === "landing") still has something to mount. Props passed by App.js
-// (onGetStarted, onBrandClick) are intentionally unused here.
+// Renders the rawtxt landing page inside a full-viewport iframe so the
+// URL stays clean (https://rawtxt.in/ instead of .../rawtxt-landing.html).
+// Links inside the iframe use target="_top" to navigate the parent window.
+// Props passed by App.js (onGetStarted, onBrandClick) are intentionally
+// unused — the static HTML handles its own CTAs.
 function LandingPage() {
   useEffect(() => {
-    window.location.replace("/rawtxt-landing.html");
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
-  return null;
+
+  return (
+    <iframe
+      src="/rawtxt-landing.html"
+      title="rawtxt.in"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        border: "none",
+      }}
+    />
+  );
 }
 
 export default LandingPage;
