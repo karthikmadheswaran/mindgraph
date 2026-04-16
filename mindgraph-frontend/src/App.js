@@ -93,6 +93,7 @@ export default function App() {
 
   const hasBootstrappedAuthViewRef = useRef(false);
   const activeUserIdRef = useRef(null);
+  const authIntentRef = useRef(shouldStartOnAuth());
   const backgroundEntriesPollRef = useRef(null);
 
   const stopBackgroundEntriesPolling = useCallback(() => {
@@ -214,7 +215,21 @@ export default function App() {
       clearDashboardSnapshotCache();
       clearHashView();
       setSession(null);
-      setView("landing");
+
+      // If the user arrived via ?view=auth (e.g. "Try the App" CTA), show
+      // the auth screen instead of bouncing back to the landing page.
+      // This handles the expired-session flow: Supabase finds a stale
+      // token in storage → handleSignedIn fires → then the token is
+      // invalidated → onAuthStateChange fires with null → we land here.
+      // Without this guard the user sees the landing page again instead
+      // of the sign-in form they intended to reach.
+      if (authIntentRef.current) {
+        authIntentRef.current = false;   // consume once
+        setView("auth");
+      } else {
+        setView("landing");
+      }
+
       setCurrentView(DEFAULT_APP_VIEW);
       setHasVisitedDashboard(false);
     };
@@ -228,6 +243,7 @@ export default function App() {
       }
 
       activeUserIdRef.current = nextUserId;
+      authIntentRef.current = false;   // intent fulfilled — signed in
       setSession(nextSession);
       setView("app");
 
