@@ -15,7 +15,7 @@ function LandingPage() {
 
   return (
     <iframe
-      src="/rawtxt-landing.html"
+      src="/landing/"
       title="rawtxt.in"
       style={{
         position: "fixed",
