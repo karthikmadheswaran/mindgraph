@@ -140,6 +140,51 @@
   }
   .btn-secondary:hover { border-color: var(--ink); background: rgba(26,23,20,0.03); }
 
+  /* ═══════════════════ PROBLEM ═══════════════════ */
+  .problem {
+    padding: 40px 40px 80px;
+    display: flex; justify-content: center;
+  }
+  .problem p {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(24px, 3.4vw, 34px);
+    line-height: 1.35;
+    letter-spacing: -0.4px;
+    color: var(--ink);
+    max-width: 820px;
+    text-align: center;
+  }
+  .problem em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  /* ═══════════════════ DESIGN PRINCIPLES ═══════════════════ */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px 72px;
+    margin-top: 64px;
+    max-width: 900px;
+  }
+  .principle {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .principle-rule {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    letter-spacing: -0.4px;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .principle-detail {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
   /* ═══════════════════ DEMO SECTION ═══════════════════ */
   .demo-section {
     padding: 40px 40px 120px;
@@ -509,6 +554,9 @@
     .insight-grid { grid-template-columns: 1fr; }
     .steps { grid-template-columns: 1fr; gap: 48px; }
     .steps::before { display: none; }
+    .principles-grid { grid-template-columns: 1fr; gap: 40px; margin-top: 48px; }
+    .problem { padding: 20px 20px 40px; }
+    .problem p { font-size: clamp(22px, 5vw, 28px); }
     .metrics-inner { flex-direction: column; }
     .features, .insight-showcase, .how-it-works { padding: 60px 20px; }
     .demo-section { padding: 20px; }
@@ -550,6 +598,11 @@
   </div>
 </section>
 
+<!-- PROBLEM -->
+<section class="problem reveal">
+  <p>Your notes app has 847 untitled notes. Your todo list still has items from 2023. The best idea you had last Tuesday is already gone. You're not disorganised. You just need a better system than your own <em>brain</em>.</p>
+</section>
+
 <!-- DEMO -->
 <section class="demo-section">
   <div class="demo-container">
@@ -561,32 +614,32 @@
     </div>
     <div class="demo-body">
       <div class="demo-input">
-        <div class="demo-input-label">Your raw journal entry</div>
-        <div class="demo-textarea" style="white-space:pre-line;">Met with Priya about the API redesign today. She thinks we should migrate to GraphQL by end of month. Feeling overwhelmed — the deadline for the investor deck is Friday and I haven't started the financial projections. Need to call Mom this weekend, haven't talked to her in weeks. Also starting to think the side project with Ravi might be dead — neither of us has touched it since January.</div>
+        <div class="demo-input-label">You write this</div>
+        <div class="demo-textarea" style="white-space:pre-line;">Met Priya about the API redesign. She thinks we should move to GraphQL by end of month. Feeling overwhelmed — the investor deck is due Friday and I haven't started the financial projections. Need to call Mum this weekend, haven't talked in weeks. The side project with Ravi might be dead — neither of us has touched it since January.</div>
       </div>
       <div class="demo-output">
-        <div class="demo-output-label">What MindGraph extracts in &lt;7 seconds</div>
+        <div class="demo-output-label">MindGraph extracts in under 7 seconds</div>
         <div class="demo-tags">
           <span class="demo-tag">👤 Priya</span>
           <span class="demo-tag">👤 Ravi</span>
-          <span class="demo-tag">👤 Mom</span>
+          <span class="demo-tag">👤 Mum</span>
           <span class="demo-tag amber">📋 API Redesign</span>
           <span class="demo-tag amber">📋 Investor Deck</span>
-          <span class="demo-tag amber">📋 Side Project</span>
+          <span class="demo-tag amber">📋 Side Project with Ravi</span>
           <span class="demo-tag clay">🔧 GraphQL</span>
         </div>
         <div class="demo-deadline-item">
           <div class="demo-deadline-dot"></div>
           <span>Investor deck — financial projections</span>
-          <span class="demo-deadline-date">FRI 18 APR</span>
+          <span class="demo-deadline-date">FRI</span>
         </div>
         <div class="demo-deadline-item" style="opacity: 0.7;">
           <div class="demo-deadline-dot" style="background: var(--amber);"></div>
           <span>GraphQL migration</span>
-          <span class="demo-deadline-date">30 APR</span>
+          <span class="demo-deadline-date">END OF MONTH</span>
         </div>
         <div class="demo-insight">
-          <strong>Pattern detected:</strong> "Side Project with Ravi" hasn't been mentioned in 12 weeks. This matches a recurring pattern — 3 of your last 5 collaborative projects went dormant after initial enthusiasm.
+          <strong>Shiny Object Detector:</strong> Side Project with Ravi hasn't been mentioned in 11 weeks. 3 of your last 5 collaborative projects went quiet after the first month.
         </div>
       </div>
     </div>
@@ -595,43 +648,56 @@
 
 <!-- FEATURES BENTO -->
 <section class="features reveal" id="features">
-  <div class="section-label">Capabilities</div>
-  <h2 class="section-title">Everything your journal should know about you</h2>
+  <div class="section-label">What it does</div>
+  <h2 class="section-title">Eight ways your journal starts paying attention.</h2>
   <div class="bento">
 
     <div class="bento-card wide">
-      <div class="bento-icon amber-bg">🧠</div>
-      <h3>8-Node AI Pipeline</h3>
-      <p>Every entry passes through an intelligent pipeline — normalize, deduplicate, classify, extract entities, detect deadlines, summarize, map relations, and store — all in parallel, in under 7 seconds.</p>
-      <div class="pipeline-vis">
-        <div class="pipeline-node"><div class="bar" style="animation-delay: 0s;"></div><span>normalize</span><span class="check">✓</span></div>
-        <div class="pipeline-node"><div class="bar" style="animation-delay: 0.3s;"></div><span>classify + entities + deadlines</span><span class="check">✓</span></div>
-        <div class="pipeline-node"><div class="bar" style="animation-delay: 0.6s;"></div><span>extract_relations → store</span><span class="check">✓</span></div>
-      </div>
+      <div class="bento-icon amber-bg">🧹</div>
+      <h3>One Box. That's It.</h3>
+      <p>You write. No titles, no tags, no "choose a project." MindGraph figures out what everything means. The less you have to think about the tool, the more you can think about your life.</p>
     </div>
 
     <div class="bento-card">
-      <div class="bento-icon sage-bg">💬</div>
-      <h3>Ask Your Journal</h3>
-      <p>Ask questions in natural language. Hybrid RAG retrieval with conversation memory finds exactly what you wrote — even months ago. Zero hallucinations.</p>
+      <div class="bento-icon sage-bg">🔍</div>
+      <h3>Shiny Object Detector</h3>
+      <p>Started a side project in February? Mentioned it 8 times and then went quiet? After 14 days of silence, MindGraph flags it. You decide if it's dead or just sleeping.</p>
     </div>
 
     <div class="bento-card">
-      <div class="bento-icon clay-bg">🕸</div>
-      <h3>Knowledge Graph</h3>
-      <p>See your world as an interactive force-directed graph. People, projects, tools, and the semantic relationships between them — all auto-extracted.</p>
+      <div class="bento-icon clay-bg">🧠</div>
+      <h3>No Amnesia Mode</h3>
+      <p>Ask about something you wrote six months ago. Hybrid search — vector similarity plus keyword plus a reranker — finds the right entry even when you can't remember the words you used.</p>
     </div>
 
     <div class="bento-card">
       <div class="bento-icon amber-bg">📅</div>
-      <h3>Smart Deadlines</h3>
-      <p>Mention "Friday" or "end of Q2" — MindGraph extracts real dates with timezone-aware, calendar-grounded resolution. No more missed commitments.</p>
+      <h3>Commitment Catcher</h3>
+      <p>Say "I need to finish this by Friday" in the middle of a rant. MindGraph pulls the deadline out — timezone-aware, calendar-grounded — and surfaces it on your dashboard before it slips.</p>
     </div>
 
-    <div class="bento-card wide">
+    <div class="bento-card">
+      <div class="bento-icon sage-bg">🗺️</div>
+      <h3>Your World, Mapped</h3>
+      <p>Every person, project, and tool you mention gets linked into an interactive force-directed graph. See how everything connects. Click a node to see the entries behind it.</p>
+    </div>
+
+    <div class="bento-card">
+      <div class="bento-icon clay-bg">🪞</div>
+      <h3>Patterns You Can't See Yourself</h3>
+      <p>You consistently start projects on Mondays but your deep work happens Wednesday–Thursday. You mention headaches every time a specific project comes up. MindGraph finds these across weeks of entries, not just today's mood.</p>
+    </div>
+
+    <div class="bento-card">
+      <div class="bento-icon amber-bg">💬</div>
+      <h3>Ask Your Past Self</h3>
+      <p>"What was I thinking about Velora in March?" Conversational Q&amp;A over your entire journal, with long-term memory compaction so it stays fast and accurate after thousands of entries.</p>
+    </div>
+
+    <div class="bento-card">
       <div class="bento-icon sage-bg">📊</div>
-      <h3>Behavioral Insights & Pattern Detection</h3>
-      <p>MindGraph doesn't just store — it thinks. Weekly digests, forgotten project alerts, emotional pattern analysis, and shiny-object-syndrome detection. Powered by Gemini 2.5 Pro for deep reasoning over your entire journal history.</p>
+      <h3>Your Dashboard, Auto-Built</h3>
+      <p>Deadlines, active projects, and a timeline of what you actually finished this week — all assembled from the things you wrote, ranked by how often you mentioned them. No setup. No dragging cards between columns.</p>
     </div>
 
   </div>
@@ -640,7 +706,7 @@
 <!-- INSIGHT SHOWCASE -->
 <section class="insight-showcase reveal" id="insights">
   <div class="section-label">Sample Insights</div>
-  <h2 class="section-title">The patterns you don't see — until now</h2>
+  <h2 class="section-title">The patterns you can't see yourself.</h2>
   <div class="insight-grid">
     <div class="insight-card">
       <div class="insight-card-type pattern">Pattern Analysis</div>
@@ -648,7 +714,7 @@
       <div class="insight-card-meta">Based on 47 entries · 6 week span</div>
     </div>
     <div class="insight-card">
-      <div class="insight-card-type forgotten">Forgotten Project</div>
+      <div class="insight-card-type forgotten">Shiny Object Alert</div>
       <div class="insight-card-body">"Photography portfolio redesign" was mentioned 8 times in February. You haven't referenced it since March 3rd — 43 days ago.</div>
       <div class="insight-card-meta">Last mention: 3 Mar 2026</div>
     </div>
@@ -660,25 +726,26 @@
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
+<!-- DESIGN PRINCIPLES -->
 <section class="how-it-works reveal" id="how">
   <div class="section-label">How It Works</div>
-  <h2 class="section-title">Three steps. Zero friction.</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-number">1</div>
-      <h3>Write anything</h3>
-      <p>One textbox. No categories, no tags, no structure. Just type whatever's on your mind.</p>
+  <h2 class="section-title">Four rules the whole product is built on.</h2>
+  <div class="principles-grid">
+    <div class="principle">
+      <div class="principle-rule">Messy in, structured out.</div>
+      <div class="principle-detail">You dump thoughts. We handle the rest.</div>
     </div>
-    <div class="step">
-      <div class="step-number">2</div>
-      <h3>AI processes in &lt;7s</h3>
-      <p>An 8-node pipeline extracts entities, deadlines, topics, relations — and builds your personal knowledge graph.</p>
+    <div class="principle">
+      <div class="principle-rule">Acknowledge fast, process slow.</div>
+      <div class="principle-detail">You get confirmation in under 2 seconds. The AI thinks in the background.</div>
     </div>
-    <div class="step">
-      <div class="step-number">3</div>
-      <h3>Discover patterns</h3>
-      <p>Ask questions, explore your graph, get weekly digests, and catch forgotten commitments before they disappear.</p>
+    <div class="principle">
+      <div class="principle-rule">Never therapeutic.</div>
+      <div class="principle-detail">We report what we see. "You mentioned headaches 3 times this month" — not advice, just facts.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-rule">Friction is the enemy.</div>
+      <div class="principle-detail">No dropdowns. No tag selectors. No "choose a project." If the AI can handle it, it does.</div>
     </div>
   </div>
 </section>
@@ -707,10 +774,10 @@
 
 <!-- CTA -->
 <section class="final-cta reveal">
-  <h2>Your thoughts deserve<br>a <em>better</em> home.</h2>
-  <p>Stop scattering notes across apps. Let your journal actually understand what you're going through.</p>
+  <h2>Your thoughts deserve better<br>than an <em>untitled</em> note.</h2>
+  <p>One box. No setup. Try it free.</p>
   <a href="/?view=auth" target="_top" class="btn-primary">
-    Start Journaling — It's Free
+    Start Writing
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
   </a>
 </section>
