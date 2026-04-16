@@ -244,9 +244,12 @@ export default function App() {
 
       if (session) {
         handleSignedIn(session);
-      } else {
-        handleSignedOut();
       }
+      // If no session on initial mount, do NOT call handleSignedOut() —
+      // it would override the initial view state (which may be "auth"
+      // from ?view=auth) back to "landing". The useState initializer
+      // already has the correct value. Actual sign-out events are
+      // handled by onAuthStateChange below.
     });
 
     const {
@@ -258,7 +261,10 @@ export default function App() {
 
       if (nextSession) {
         handleSignedIn(nextSession);
-      } else {
+      } else if (event !== "INITIAL_SESSION") {
+        // Only reset to landing on actual sign-out, not the initial
+        // mount event — the useState initializer already has the
+        // correct value ("auth" from ?view=auth, or "landing").
         handleSignedOut();
       }
     });
