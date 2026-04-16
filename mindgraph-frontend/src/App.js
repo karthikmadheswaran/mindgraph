@@ -254,17 +254,19 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) {
         return;
       }
 
       if (nextSession) {
         handleSignedIn(nextSession);
-      } else if (event !== "INITIAL_SESSION") {
-        // Only reset to landing on actual sign-out, not the initial
-        // mount event — the useState initializer already has the
-        // correct value ("auth" from ?view=auth, or "landing").
+      } else if (activeUserIdRef.current) {
+        // Only reset to landing when transitioning from signed-in →
+        // signed-out (activeUserIdRef was set by handleSignedIn).
+        // On initial mount with no session, activeUserIdRef is null,
+        // so we skip this — preserving the useState initializer value
+        // ("auth" from ?view=auth, or "landing").
         handleSignedOut();
       }
     });
