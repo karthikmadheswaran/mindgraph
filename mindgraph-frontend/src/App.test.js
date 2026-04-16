@@ -51,19 +51,23 @@ jest.mock("./components/LandingPage", () => ({
 
 jest.mock("./components/AuthView", () => ({
   __esModule: true,
-  default: ({ onAuth }) => (
-    <button onClick={() => onAuth(mockAuthenticatedSession)}>Complete auth</button>
+  default: ({ onAuth, onBack }) => (
+    <div>
+      <button onClick={() => onAuth(mockAuthenticatedSession)}>Complete auth</button>
+      <button onClick={onBack}>Back from auth</button>
+    </div>
   ),
 }));
 
 jest.mock("./components/Sidebar", () => ({
   __esModule: true,
-  default: ({ onBrandClick, onViewChange }) => (
+  default: ({ onBrandClick, onLogout, onViewChange }) => (
     <div data-testid="sidebar">
       <button onClick={onBrandClick}>Brand</button>
       <button onClick={() => onViewChange("dashboard")}>Go Dashboard</button>
       <button onClick={() => onViewChange("graph")}>Go Graph</button>
       <button onClick={() => onViewChange("ask")}>Go Ask</button>
+      <button onClick={onLogout}>Log out</button>
     </div>
   ),
 }));
@@ -120,6 +124,100 @@ test("renders the landing page CTA when no session exists", async () => {
   render(<App />);
 
   expect(await screen.findByText(/start journaling/i)).toBeInTheDocument();
+});
+
+test("auth intent query renders the auth screen when no session exists", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+
+  render(<App />);
+
+  expect(
+    await screen.findByRole("button", { name: /complete auth/i })
+  ).toBeInTheDocument();
+});
+
+test("auth intent survives a stale passive session invalidation", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+
+  await act(async () => {
+    authStateChangeCallback?.("SIGNED_OUT", null);
+  });
+
+  expect(
+    await screen.findByRole("button", { name: /complete auth/i })
+  ).toBeInTheDocument();
+  expect(window.location.search).toBe("?view=auth");
+  expect(window.location.hash).toBe("");
+});
+
+test("auth intent with a valid existing session enters the app", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+});
+
+test("manual logout clears auth intent and returns to landing", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+
+  userEvent.click(screen.getByRole("button", { name: /log out/i }));
+
+  await waitFor(() => {
+    expect(supabase.auth.signOut).toHaveBeenCalled();
+  });
+
+  await act(async () => {
+    authStateChangeCallback?.("SIGNED_OUT", null);
+  });
+
+  expect(await screen.findByText(/start journaling/i)).toBeInTheDocument();
+  expect(window.location.search).toBe("");
+  expect(window.location.hash).toBe("");
+});
+
+test("backing out of auth clears the auth intent query", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+
+  render(<App />);
+
+  expect(
+    await screen.findByRole("button", { name: /complete auth/i })
+  ).toBeInTheDocument();
+
+  userEvent.click(screen.getByRole("button", { name: /back from auth/i }));
+
+  expect(await screen.findByText(/start journaling/i)).toBeInTheDocument();
+  expect(window.location.search).toBe("");
+});
+
+test("completing auth clears the auth intent query", async () => {
+  window.history.replaceState({}, "", "/?view=auth");
+
+  render(<App />);
+
+  userEvent.click(await screen.findByRole("button", { name: /complete auth/i }));
+
+  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(window.location.search).toBe("");
+  expect(window.location.hash).toBe("#ask");
 });
 
 test("authenticated bootstrap with no hash lands on ask and starts prefetch", async () => {

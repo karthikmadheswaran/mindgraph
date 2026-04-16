@@ -77,6 +77,27 @@ const clearHashView = () => {
   );
 };
 
+const clearAuthViewSearch = () => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("view") !== "auth") {
+    return;
+  }
+
+  params.delete("view");
+
+  const nextSearch = params.toString();
+  const nextUrl = `${window.location.pathname}${
+    nextSearch ? `?${nextSearch}` : ""
+  }${window.location.hash}`;
+
+  window.history.replaceState(
+    null,
+    "",
+    nextUrl
+  );
+};
+
 const hasProcessingEntries = (entries = []) =>
   entries.some((entry) => entry.status === "processing");
 
@@ -172,6 +193,8 @@ export default function App() {
   }, [hasVisitedDashboard, startBackgroundEntriesPolling, stopBackgroundEntriesPolling]);
 
   const handlePublicBrandClick = () => {
+    authIntentRef.current = false;
+    clearAuthViewSearch();
     setView("landing");
   };
 
@@ -243,7 +266,6 @@ export default function App() {
       }
 
       activeUserIdRef.current = nextUserId;
-      authIntentRef.current = false;   // intent fulfilled — signed in
       setSession(nextSession);
       setView("app");
 
@@ -341,6 +363,8 @@ export default function App() {
   ]);
 
   const handleLogout = async () => {
+    authIntentRef.current = false;
+    clearAuthViewSearch();
     await supabase.auth.signOut();
   };
 
@@ -356,6 +380,8 @@ export default function App() {
       {view === "auth" && (
         <AuthView
           onAuth={(nextSession) => {
+            authIntentRef.current = false;
+            clearAuthViewSearch();
             clearDashboardSnapshotCache();
             activeUserIdRef.current = nextSession.user?.id || null;
             hasBootstrappedAuthViewRef.current = true;
@@ -364,7 +390,11 @@ export default function App() {
             setCurrentView(setHashView(DEFAULT_APP_VIEW, { replace: true }));
             setView("app");
           }}
-          onBack={() => setView("landing")}
+          onBack={() => {
+            authIntentRef.current = false;
+            clearAuthViewSearch();
+            setView("landing");
+          }}
           onBrandClick={handlePublicBrandClick}
         />
       )}
