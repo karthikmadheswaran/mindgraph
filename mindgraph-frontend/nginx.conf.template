@@ -1,5 +1,5 @@
 server {
-  listen 3000;
+${NGINX_LISTEN_DIRECTIVES}
   server_name _;
 
   root /usr/share/nginx/html;

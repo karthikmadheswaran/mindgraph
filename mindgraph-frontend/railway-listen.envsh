@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+PORT="${PORT:-3000}"
+NGINX_LISTEN_DIRECTIVES="  listen 80;
+  listen 3000;"
+
+if [ "$PORT" != "80" ] && [ "$PORT" != "3000" ]; then
+  NGINX_LISTEN_DIRECTIVES="$NGINX_LISTEN_DIRECTIVES
+  listen $PORT;"
+fi
+
+export NGINX_LISTEN_DIRECTIVES
