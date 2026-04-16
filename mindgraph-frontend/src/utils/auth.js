@@ -1,7 +1,9 @@
 import { supabase } from "../supabaseClient";
+import { getRuntimeConfig } from "../runtimeConfig";
 
 export const API =
-  process.env.REACT_APP_API_URL || "https://mindgraph-production.up.railway.app";
+  getRuntimeConfig("REACT_APP_API_URL") ||
+  "https://mindgraph-production.up.railway.app";
 
 export async function authHeaders() {
   const {

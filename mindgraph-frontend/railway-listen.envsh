@@ -11,3 +11,15 @@ if [ "$PORT" != "80" ] && [ "$PORT" != "3000" ]; then
 fi
 
 export NGINX_LISTEN_DIRECTIVES
+
+json_escape() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+cat > /usr/share/nginx/html/env.js <<EOF
+window.__RUNTIME_CONFIG__ = {
+  REACT_APP_SUPABASE_URL: "$(json_escape "${REACT_APP_SUPABASE_URL:-}")",
+  REACT_APP_SUPABASE_ANON_KEY: "$(json_escape "${REACT_APP_SUPABASE_ANON_KEY:-}")",
+  REACT_APP_API_URL: "$(json_escape "${REACT_APP_API_URL:-}")"
+};
+EOF
