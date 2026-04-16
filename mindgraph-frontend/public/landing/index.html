@@ -728,6 +728,14 @@
 </footer>
 
 <script>
+  // If this page is loaded at the top level (not inside the React app's
+  // iframe), redirect to "/" so the React app handles routing with a
+  // clean URL. This is a safety net for cached redirects or direct visits
+  // to /landing/.
+  if (window.self === window.top) {
+    window.location.replace('/');
+  }
+
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
