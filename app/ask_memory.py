@@ -90,7 +90,7 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v13 (iteration 7 — move conversation rules to bottom, amplify short replies)
+# Prompt version: v13.1 (iteration 7 — confirmation rule, yes/no handling fix)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -172,8 +172,8 @@ def build_ask_prompt(
     question_display = question.strip()
     MINIMAL_SIGNALS = {
         "idk", "i dont know", "i don't know", "maybe",
-        "maybe maybe not", "not sure", "yes", "no",
-        "okay", "ok", "hmm", "idk maybe"
+        "maybe maybe not", "not sure", "okay", "ok",
+        "hmm", "idk maybe"
     }
     is_minimal = question_display.lower().strip("?.,!") in MINIMAL_SIGNALS
     is_short = len(question_display.split()) <= 4
@@ -201,7 +201,8 @@ def build_ask_prompt(
             "# Conversation Rules (apply these NOW, right before you respond)",
             "- REPETITION CHECK: Before generating your response, look at the last 2 assistant messages in Recent Conversation. If your response would say the same thing, STOP and do something different.",
             "- ALREADY ANSWERED RULE: If you've already answered a question in the recent conversation and the user asks it again (or a variation), do NOT repeat your previous answer. Briefly acknowledge you covered it, then offer a new angle or ask a follow-up question.",
-            "- MINIMAL REPLY RULE: If the user's message is 'idk', 'maybe', 'yes', 'no', 'not sure', or any short uncertain reply to a question you asked — do NOT repeat or rephrase your previous response. Instead, make the question more concrete: offer a specific observation from their entries or memory that they can react to with a simple yes or no.",
+            "- CONFIRMATION RULE: If the user says 'yes' or 'no' in direct response to a specific question or binary choice you just offered — treat it as a REAL ANSWER. Acknowledge what they confirmed or declined, then move the conversation forward. Do NOT ask the same question again. Example: if you asked 'does X or Y feel more pressing?' and they say 'yes' — pick up on that and advance. Do not loop.",
+            "- MINIMAL REPLY RULE: If the user's message is 'idk', 'maybe', 'not sure', 'i dont know', 'maybe maybe not', or any short uncertain/non-committal reply — do NOT repeat or rephrase your previous response. Make the question more concrete: offer a specific observation from their entries or memory they can react to. NOTE: 'yes' and 'no' are NOT minimal replies when they directly answer a question you just asked — see CONFIRMATION RULE above.",
             "- SUBSTANCE RULE: When the user answers a question you asked — especially with a short reply — engage with the SUBSTANCE of their answer first. Offer a gentle perspective or reframe. Don't just validate and ask another question.",
             "- FOLLOW-UP RULE: When the user shares feelings or asks a vague question, ask ONE thoughtful follow-up question. Not two. Not zero.",
         ]

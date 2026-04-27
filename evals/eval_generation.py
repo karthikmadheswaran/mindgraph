@@ -436,6 +436,91 @@ TEST_CASES = [
         "failure_modes": ["broken_record", "repetition", "fact_regurgitation"],
     },
 
+    {
+        "id": "repetition_yes_as_confirmation",
+        "category": "repetition",
+        "description": "User says 'yes' in direct response to a binary question — model must treat it as confirmation, not a minimal reply",
+        "provided_entries": (
+            "Entry 1 (date: 2026-04-27, title: Refocus after break, relevance: high):\n"
+            "Coming back to the ask retrieval bug after 13 days. Got distracted by hackathons "
+            "and Valorant. Need to be more strategic. Returning to MindGraph work."
+        ),
+        "memory": "## Projects & Work\n- MindGraph: AI journal app, ask retrieval bug open",
+        "conversation": (
+            "User: what have i been feeling lately?\n"
+            "Assistant: It sounds like you've been in a period of distraction and are now "
+            "trying to refocus. You mentioned getting pulled into hackathons and Valorant, "
+            "and now you're coming back to the MindGraph retrieval work. "
+            "Does the retrieval bug feel like the right thing to tackle first, "
+            "or is there something else pulling at your attention?\n"
+            "User: yes"
+        ),
+        "question": "yes",
+        "expected_behavior": (
+            "The model asked a binary question: 'does the retrieval bug feel like the "
+            "right thing to tackle first, or is there something else?' "
+            "The user said 'yes' — confirming the retrieval bug is the right priority. "
+            "The model MUST acknowledge the confirmation and move forward "
+            "(e.g., 'Good, sounds like retrieval is where the focus belongs. "
+            "What's the first step?'). "
+            "The model must NOT ask the same question again. "
+            "The model must NOT treat 'yes' as uncertainty."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "does one of those feel more pressing",
+            "is there something else",
+            "it's okay to feel uncertain",
+            "it's completely understandable",
+            "does the retrieval bug feel",
+        ],
+        "expected_tone": "warm_forward_moving",
+        "failure_modes": ["broken_record", "repetition"],
+    },
+    {
+        "id": "repetition_complaint_breaks_loop",
+        "category": "repetition",
+        "description": "User explicitly complains about repetition — model must genuinely change direction, not apologize and repeat",
+        "provided_entries": (
+            "Entry 1 (date: 2026-04-27, title: Refocus after break, relevance: high):\n"
+            "Coming back to the ask retrieval bug. Been distracted by hackathons and Valorant. "
+            "Need to be more strategic about time."
+        ),
+        "memory": "## Projects & Work\n- MindGraph: AI journal app",
+        "conversation": (
+            "User: what have i been feeling lately?\n"
+            "Assistant: It sounds like you've been feeling a pull between distraction and focus. "
+            "You've noted getting sidetracked by hackathons and gaming, and now you're trying "
+            "to be more intentional. Does the retrieval work feel like the right priority?\n"
+            "User: maybe\n"
+            "Assistant: It's okay to feel uncertain. Sometimes when we're faced with many "
+            "possibilities it's hard to know what feels right. Does the retrieval work or "
+            "something else feel more like the right starting point?\n"
+            "User: you're repeating yourself"
+        ),
+        "question": "you're repeating yourself",
+        "expected_behavior": (
+            "The user has explicitly called out repetition. The model MUST: "
+            "(1) genuinely acknowledge it repeated itself, "
+            "(2) NOT ask the same question about retrieval work again in any form, "
+            "(3) do something meaningfully different — either offer a concrete observation "
+            "from the entry (e.g., 'You mentioned 13 days away — that's a long break. "
+            "What pulled you back today?'), or ask a completely different question, "
+            "or acknowledge it has limited information and invite the user to share more. "
+            "An apology followed by the same content is a critical failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "does the retrieval work feel",
+            "does one of those feel more pressing",
+            "it's okay to feel uncertain",
+            "it's completely understandable to feel",
+            "retrieval work or something else",
+        ],
+        "expected_tone": "self_aware_genuinely_different",
+        "failure_modes": ["broken_record", "repetition"],
+    },
+
     # -----------------------------------------------------------------------
     # Category 3: Follow-Up Questions & Curiosity (5 cases)
     # -----------------------------------------------------------------------
