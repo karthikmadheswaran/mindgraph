@@ -370,6 +370,37 @@ def apply_score_gap_filter(entries: list[dict]) -> list[dict]:
     ]
 
 
+
+# --- Repetition loop detection ---
+
+
+def _word_overlap_ratio(text_a: str, text_b: str) -> float:
+    """Word-level Jaccard similarity between two strings."""
+    words_a = set(text_a.lower().split())
+    words_b = set(text_b.lower().split())
+    if not words_a or not words_b:
+        return 0.0
+    return len(words_a & words_b) / len(words_a | words_b)
+
+
+def detect_repetition_loop(history_messages: list[dict]) -> bool:
+    """
+    Returns True if the last two assistant messages are nearly identical.
+    Threshold: >60% word overlap (Jaccard similarity).
+    Used to detect context window pattern dominance before LLM call.
+    """
+    assistant_msgs = [
+        m.get("content", "")
+        for m in history_messages
+        if m.get("role") == "assistant"
+    ]
+    if len(assistant_msgs) < 2:
+        return False
+    overlap = _word_overlap_ratio(assistant_msgs[-1], assistant_msgs[-2])
+    logger.info("Repetition loop check: overlap=%.2f (threshold=0.60)", overlap)
+    return overlap > 0.60
+
+
 # --- Relevance labelling ---
 
 
@@ -684,6 +715,20 @@ async def generate_answer(
         user_memory = ""
         if memory_result.data:
             user_memory = memory_result.data[0].get("memory_text", "")
+
+    # Context pruning — if a repetition loop is detected in history,
+    # strip history entirely. The LLM generates from memory + retrieved
+    # entries only, with no bad pattern to follow.
+    # This is a code-level intervention: examples in context beat
+    # instructions, so we remove the examples rather than fight them.
+    if detect_repetition_loop(history_messages):
+        logger.warning(
+            "Repetition loop detected for user %s — pruning conversation "
+            "history from prompt. Generating from memory only.",
+            user_id,
+        )
+        history_messages = []
+        conversation_history = ""
 
     temporal_range = classify_temporal_query(question)
     logger.info(

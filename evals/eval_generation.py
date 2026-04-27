@@ -521,6 +521,91 @@ TEST_CASES = [
         "failure_modes": ["broken_record", "repetition"],
     },
 
+    {
+        "id": "repetition_context_pruning_loop_of_3",
+        "category": "repetition",
+        "description": "Three nearly identical assistant responses in history — context pruning should fire and produce a fresh response",
+        "provided_entries": (
+            "Entry 1 (date: 2026-04-27, title: Refocus after break, relevance: high):\n"
+            "Coming back to the ask retrieval bug after 13 days. Got distracted by "
+            "hackathons and Valorant. Need to be more strategic. Returning to MindGraph work."
+        ),
+        "memory": "## Projects & Work\n- MindGraph: AI journal app, ask retrieval bug open\n## Challenges & Decisions\n- Distracted by hackathons and gaming, trying to refocus",
+        "conversation": (
+            "User: why am I stressed lately?\n"
+            "Assistant: It sounds like you're feeling a lot of pressure. You've been "
+            "distracted by hackathons and Valorant, and now you're trying to refocus on "
+            "MindGraph. Does the retrieval work feel like the right place to start?\n"
+            "User: idk\n"
+            "Assistant: It sounds like you're feeling a lot of pressure. You've been "
+            "distracted by hackathons and Valorant, and now you're trying to refocus on "
+            "MindGraph. Does the retrieval work feel like the right place to start?\n"
+            "User: maybe\n"
+            "Assistant: It sounds like you're feeling a lot of pressure. You've been "
+            "distracted by hackathons and Valorant, and now you're trying to refocus on "
+            "MindGraph. Does the retrieval work feel like the right place to start?\n"
+            "User: yes"
+        ),
+        "question": "yes",
+        "expected_behavior": (
+            "The conversation history contains three nearly identical assistant responses. "
+            "Context pruning should detect this loop (>60% word overlap between last two "
+            "assistant messages) and strip history before calling the LLM. "
+            "The model should produce a FRESH response — different from the looping pattern. "
+            "It should acknowledge 'yes' as a confirmation and move the conversation forward. "
+            "Any response that substantially repeats 'distracted by hackathons and Valorant' "
+            "or 'does the retrieval work feel like the right place to start' is a failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "does the retrieval work feel like the right place to start",
+            "distracted by hackathons and valorant, and now you're trying to refocus",
+            "it sounds like you're feeling a lot of pressure. you've been",
+        ],
+        "expected_tone": "warm_forward_moving",
+        "failure_modes": ["broken_record", "repetition"],
+    },
+    {
+        "id": "repetition_context_pruning_uses_memory",
+        "category": "repetition",
+        "description": "After context pruning fires, response should still be personalized using long-term memory",
+        "provided_entries": (
+            "Entry 1 (date: 2026-04-27, title: Refocus after break, relevance: high):\n"
+            "Coming back to MindGraph after a break. Feeling uncertain about direction."
+        ),
+        "memory": "## Projects & Work\n- MindGraph: AI journal app, actively building\n- Freelancing on Upwork\n## Goals & Plans\n- Get freelance clients, build portfolio",
+        "conversation": (
+            "User: what should I focus on?\n"
+            "Assistant: Based on your situation, I think focusing on MindGraph makes sense. "
+            "It's your main project and it demonstrates real AI engineering skills.\n"
+            "User: idk\n"
+            "Assistant: Based on your situation, I think focusing on MindGraph makes sense. "
+            "It's your main project and it demonstrates real AI engineering skills.\n"
+            "User: maybe\n"
+            "Assistant: Based on your situation, I think focusing on MindGraph makes sense. "
+            "It's your main project and it demonstrates real AI engineering skills.\n"
+            "User: idk"
+        ),
+        "question": "idk",
+        "expected_behavior": (
+            "Context pruning fires (three identical assistant responses). History is stripped. "
+            "But the model still has long-term memory available: MindGraph, Upwork, portfolio goals. "
+            "The response MUST be personalized using that memory — not generic. "
+            "It should NOT say 'I don't have any information about you' or 'I don't see anything'. "
+            "It should draw on what it knows (MindGraph, freelancing, Upwork) to give a grounded, "
+            "concrete response even without conversation history."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "i don't have any information",
+            "i don't see anything",
+            "based on your situation, i think focusing on mindgraph makes sense",
+            "it's your main project and it demonstrates real ai engineering skills",
+        ],
+        "expected_tone": "warm_grounded",
+        "failure_modes": ["broken_record", "repetition", "fact_regurgitation"],
+    },
+
     # -----------------------------------------------------------------------
     # Category 3: Follow-Up Questions & Curiosity (5 cases)
     # -----------------------------------------------------------------------
