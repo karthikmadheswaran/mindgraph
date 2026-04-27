@@ -218,6 +218,7 @@ def fetch_entries_by_date_range(
         .select("id, auto_title, summary, created_at")
         .eq("user_id", user_id)
         .eq("status", "completed")
+        .is_("deleted_at", "null")
         .gte("created_at", start_date.isoformat())
         .lte("created_at", end_date.isoformat())
         .order("created_at", desc=True)
