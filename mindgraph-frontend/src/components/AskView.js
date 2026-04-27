@@ -294,6 +294,7 @@ export default function AskView({ isActive }) {
   const [memoryData, setMemoryData] = useState(null);
   const [isMemoryLoading, setIsMemoryLoading] = useState(false);
   const [memoryError, setMemoryError] = useState("");
+  const [isNewSessionLoading, setIsNewSessionLoading] = useState(false);
   const feedRef = useRef(null);
   const shouldScrollToBottomRef = useRef(true);
   const loadedInitialMessagesRef = useRef(false);
@@ -371,6 +372,30 @@ export default function AskView({ isActive }) {
       loadMemory();
     }
   }, [isMemoryLoading, isMemoryOpen, loadMemory, memoryData]);
+
+  const handleNewSession = useCallback(async () => {
+    const confirmed = window.confirm(
+      "Start a new session? Your conversation history will be compacted into memory and cleared."
+    );
+    if (!confirmed) return;
+
+    setIsNewSessionLoading(true);
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API}/ask/new-session`, {
+        method: "POST",
+        headers,
+      });
+      if (!res.ok) throw new Error(`New session failed: ${res.status}`);
+      setMessages([]);
+      setHasMore(false);
+      setMemoryData(null);
+    } catch {
+      window.alert("Could not start a new session. Please try again.");
+    } finally {
+      setIsNewSessionLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(MODE_STORAGE_KEY, mode);
@@ -646,30 +671,58 @@ export default function AskView({ isActive }) {
       <div className="ask-view">
         <header className="ask-view-header">
           <h2 className="ask-view-title">MindGraph</h2>
-          <button
-            type="button"
-            className="ask-memory-icon"
-            aria-label="Open memory"
-            aria-expanded={isMemoryOpen}
-            onClick={toggleMemory}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          <div className="ask-header-actions">
+            <button
+              type="button"
+              className="ask-memory-icon"
+              aria-label="New session"
+              disabled={isNewSessionLoading}
+              onClick={handleNewSession}
             >
-              <path d="M12 3v18" />
-              <path d="M5 8h14" />
-              <path d="M7 16h10" />
-              <path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
-            </svg>
-          </button>
+              {isNewSessionLoading ? (
+                <span className="spinner small" aria-hidden="true" />
+              ) : (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74" />
+                  <path d="M3 3v4h4" />
+                </svg>
+              )}
+            </button>
+            <button
+              type="button"
+              className="ask-memory-icon"
+              aria-label="Open memory"
+              aria-expanded={isMemoryOpen}
+              onClick={toggleMemory}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v18" />
+                <path d="M5 8h14" />
+                <path d="M7 16h10" />
+                <path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         {isMemoryOpen && (

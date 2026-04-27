@@ -723,6 +723,60 @@ async def generate_answer(
     return extract_text(response)
 
 
+async def new_session(user_id: str) -> dict:
+    """
+    Start a fresh Ask session for the user.
+    Compacts all current conversation history into long-term memory, then
+    deletes all ask_messages rows so the next question runs with memory only.
+    """
+    all_result = (
+        supabase.table("ask_messages")
+        .select("id, role, content, created_at")
+        .eq("user_id", user_id)
+        .in_("role", ASK_ROLES)
+        .order("created_at", desc=False)
+        .execute()
+    )
+    all_messages = all_result.data or []
+
+    if all_messages:
+        memory_result = (
+            supabase.table("user_memory")
+            .select("memory_text")
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        existing_memory = ""
+        if memory_result.data:
+            existing_memory = memory_result.data[0].get("memory_text", "")
+
+        conversation_text = format_conversation_messages(all_messages)
+        compaction_prompt = build_compaction_prompt(existing_memory, conversation_text)
+        response = await model.ainvoke(
+            compaction_prompt,
+            config=langfuse_config(),
+        )
+        new_memory = extract_text(response)
+
+        (
+            supabase.table("user_memory")
+            .upsert(
+                {
+                    "user_id": user_id,
+                    "memory_text": new_memory,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                },
+                on_conflict="user_id",
+            )
+            .execute()
+        )
+
+    supabase.table("ask_messages").delete().eq("user_id", user_id).execute()
+
+    return {"status": "ok", "message": "Session cleared"}
+
+
 async def ask(question: str, user_id: str) -> str:
     answer = await generate_answer(question, user_id)
     supabase.table("ask_messages").insert(

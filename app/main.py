@@ -103,6 +103,11 @@ async def get_user_memory(user_id: str = Depends(get_current_user)):
     return await ask_service.get_memory(user_id)
 
 
+@app.post("/ask/new-session")
+async def new_ask_session(user_id: str = Depends(get_current_user)):
+    return await ask_service.new_session(user_id)
+
+
 @app.post("/ask")
 async def ask_question(
     question: str,

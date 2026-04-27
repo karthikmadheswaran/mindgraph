@@ -28,6 +28,12 @@
   letter-spacing: 0;
 }
 
+.ask-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ask-memory-icon {
   display: grid;
   place-items: center;
