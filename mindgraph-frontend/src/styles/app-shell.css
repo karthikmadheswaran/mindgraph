@@ -10,6 +10,12 @@
   max-width: 1100px;
 }
 
+/* Write view fills edge-to-edge — no container padding */
+.main-content--write {
+  padding: 0;
+  max-width: none;
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;

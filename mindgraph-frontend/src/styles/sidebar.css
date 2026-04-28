@@ -6,11 +6,14 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   padding: 24px 16px;
-  background: var(--bg-card-solid);
+  background: #ece4d5;
   border-right: 1px solid var(--border);
   z-index: 100;
+}
+
+.sidebar-top {
+  flex: 1;
 }
 
 .sidebar-brand {
@@ -29,6 +32,17 @@
   cursor: pointer;
 }
 
+.brand-mind {
+  color: var(--text-primary);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.brand-graph {
+  color: #c87941;
+  font-style: italic;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -40,12 +54,12 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 16px;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-body);
+  color: #1a1612;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   font-size: 14px;
   font-weight: 500;
   text-align: left;
@@ -74,6 +88,40 @@
 
 .sidebar-nav-label {
   white-space: nowrap;
+}
+
+.growth-widget {
+  padding: 16px 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.growth-count {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: #1a1612;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.growth-label {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  color: #9a8d77;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.growth-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.growth-bar {
+  width: 6px;
+  border-radius: 2px 2px 1px 1px;
 }
 
 .sidebar-bottom {

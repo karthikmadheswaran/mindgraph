@@ -1,6 +1,26 @@
+import { useState, useEffect } from "react";
+import { API, authHeaders } from "../utils/auth";
 import "../styles/sidebar.css";
 
+const BAR_HEIGHTS = [4, 6, 5, 8, 7, 10, 9, 12, 10, 14];
+
 const icons = {
+  write: (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 20h4l10-10-4-4L4 16v4z" />
+      <path d="M14 6l4 4" />
+    </svg>
+  ),
   dashboard: (
     <svg
       width="20"
@@ -85,7 +105,19 @@ export default function Sidebar({
   onLogout,
   onBrandClick,
 }) {
+  const [entryCount, setEntryCount] = useState(null);
+
+  useEffect(() => {
+    authHeaders().then((headers) =>
+      fetch(`${API}/entries`, { headers })
+        .then((r) => r.ok ? r.json() : Promise.reject())
+        .then((data) => setEntryCount((data.entries || []).length))
+        .catch(() => setEntryCount(null))
+    );
+  }, []);
+
   const navItems = [
+    { id: "write", label: "Write", icon: icons.write },
     { id: "ask", label: "Ask", icon: icons.ask },
     { id: "dashboard", label: "Dashboard", icon: icons.dashboard },
     { id: "graph", label: "Knowledge Graph", icon: icons.graph },
@@ -100,7 +132,7 @@ export default function Sidebar({
             className="sidebar-brand"
             onClick={onBrandClick}
           >
-            MindGraph
+            <span className="brand-mind">mind</span><span className="brand-graph">graph</span>
           </button>
           <nav className="sidebar-nav" aria-label="Primary">
             {navItems.map((item) => (
@@ -117,6 +149,25 @@ export default function Sidebar({
               </button>
             ))}
           </nav>
+        </div>
+
+        <div className="growth-widget">
+          <div className="growth-count">{entryCount === null ? "—" : entryCount}</div>
+          <div className="growth-label">times you showed up</div>
+          <div className="growth-bars">
+            {BAR_HEIGHTS.map((h, i) => {
+              const isLast = i === BAR_HEIGHTS.length - 1;
+              const color = isLast ? "#1a1612" : "#b84a2d";
+              const opacity = isLast ? 0.85 : 0.2 + (h / 14) * 0.6;
+              return (
+                <span
+                  key={i}
+                  className="growth-bar"
+                  style={{ height: h, background: color, opacity }}
+                />
+              );
+            })}
+          </div>
         </div>
 
         <div className="sidebar-bottom">
