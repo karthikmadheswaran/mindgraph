@@ -6,6 +6,25 @@ import "../styles/ask.css";
 
 const PAGE_SIZE = 20;
 const MODE_STORAGE_KEY = "mindgraph_input_mode";
+
+const FOLLOW_UP_PILLS = [
+  "What have I been avoiding?",
+  "Summarize last week",
+  "What projects have gone quiet?",
+  "What am I most focused on?",
+];
+
+function timeAgo(isoStr) {
+  if (!isoStr) return "";
+  const diffMs = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "JUST NOW";
+  if (mins < 60) return `${mins} MIN AGO`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} HR AGO`;
+  const days = Math.floor(hrs / 24);
+  return `${days} DAY${days === 1 ? "" : "S"} AGO`;
+}
 const FINAL_STAGES = new Set(["completed", "error"]);
 const DEFAULT_PIPELINE_STATUS = "Processing...";
 const PIPELINE_STATUS_MAP = {
@@ -83,10 +102,10 @@ function getPipelineStatus(stage) {
 
 function ModeToggle({ mode, onChange, disabled }) {
   return (
-    <div className="ask-mode-toggle" role="group" aria-label="Input mode">
+    <div className="ask-mode" role="group" aria-label="Input mode">
       <button
         type="button"
-        className={mode === "ask" ? "active" : ""}
+        className={mode === "ask" ? "on" : ""}
         onClick={() => onChange("ask")}
         disabled={disabled}
       >
@@ -94,7 +113,7 @@ function ModeToggle({ mode, onChange, disabled }) {
       </button>
       <button
         type="button"
-        className={mode === "journal" ? "active" : ""}
+        className={mode === "journal" ? "on" : ""}
         onClick={() => onChange("journal")}
         disabled={disabled}
       >
@@ -104,41 +123,19 @@ function ModeToggle({ mode, onChange, disabled }) {
   );
 }
 
-function SenderLine({ sender, createdAt, tone = "user", align = "left" }) {
-  return (
-    <div className={`message-sender ${align}`}>
-      <span className={`sender-dot ${tone}`} aria-hidden="true" />
-      <span className="sender-name">{sender}</span>
-      <time>{formatTime(createdAt)}</time>
-    </div>
-  );
-}
-
 function UserMessage({ message }) {
   return (
-    <article className="message-block user-message">
-      <SenderLine
-        sender="You"
-        createdAt={message.created_at}
-        tone="user"
-        align="right"
-      />
-      <p className="message-text">{message.content}</p>
+    <article className="ask-user">
+      <div className="q-kicker">YOU ASKED · {formatTime(message.created_at)}</div>
+      <div className="q-text">{message.content}</div>
     </article>
   );
 }
 
 function AssistantMessage({ message }) {
   return (
-    <article className="message-block assistant-message">
-      <SenderLine
-        sender="MindGraph"
-        createdAt={message.created_at}
-        tone="assistant"
-      />
-      <div className="assistant-surface">
-        <ReactMarkdown>{message.content}</ReactMarkdown>
-      </div>
+    <article className="ask-assistant">
+      <ReactMarkdown>{message.content}</ReactMarkdown>
     </article>
   );
 }
@@ -155,15 +152,8 @@ function TypingDots() {
 
 function TypingIndicator({ message }) {
   return (
-    <article className="message-block assistant-message">
-      <SenderLine
-        sender="MindGraph"
-        createdAt={message.created_at}
-        tone="assistant"
-      />
-      <div className="assistant-surface typing-surface">
-        <TypingDots />
-      </div>
+    <article className="ask-assistant typing-surface">
+      <TypingDots />
     </article>
   );
 }
@@ -281,9 +271,227 @@ function SendIcon() {
   );
 }
 
+// Minimal SVG icons matched to the warm parchment theme
+const SectionIcons = {
+  project: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    </svg>
+  ),
+  work: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+    </svg>
+  ),
+  focus: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="4" />
+    </svg>
+  ),
+  goal: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="4" />
+    </svg>
+  ),
+  people: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  person: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  emotion: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" />
+      <line x1="15" y1="9" x2="15.01" y2="9" />
+    </svg>
+  ),
+  health: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  ),
+  habit: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74" />
+      <path d="M3 3v4h4" />
+    </svg>
+  ),
+  context: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
+  summary: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  ),
+  recent: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  deadline: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+  task: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 11 12 14 22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  ),
+  decision: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="10" x2="12" y2="22" />
+      <path d="M5 12H2" />
+      <path d="M22 12h-3" />
+    </svg>
+  ),
+  tool: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  ),
+  default: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  ),
+};
+
+function getSectionIcon(heading) {
+  const lower = (heading || "").toLowerCase();
+  const keys = Object.keys(SectionIcons).filter((k) => k !== "default");
+  for (const key of keys) {
+    if (lower.includes(key)) return SectionIcons[key];
+  }
+  return SectionIcons.default;
+}
+
+// Parse raw markdown into structured sections
+function parseMemorySections(raw) {
+  const lines = raw.split("\n");
+  const sections = [];
+  let currentSection = null;
+
+  for (const line of lines) {
+    const h2 = line.match(/^##\s+(.+)/);
+    const h3 = line.match(/^###\s+(.+)/);
+    const bullet = line.match(/^[-*]\s+(.+)/);
+    const bold = line.match(/^\*\*(.+?)\*\*:?\s*(.*)/);
+    const trimmed = line.trim();
+
+    if (h2 || h3) {
+      const heading = (h2 || h3)[1].trim();
+      currentSection = { heading, icon: getSectionIcon(heading), items: [], prose: [] };
+      sections.push(currentSection);
+    } else if (bullet && currentSection) {
+      currentSection.items.push(bullet[1].trim());
+    } else if (bold && currentSection && bold[2]) {
+      currentSection.items.push(`**${bold[1]}**: ${bold[2]}`);
+    } else if (trimmed && currentSection) {
+      currentSection.prose.push(trimmed);
+    } else if (trimmed && !currentSection) {
+      sections.push({ heading: null, icon: null, items: [], prose: [trimmed] });
+    }
+  }
+
+  return sections.filter((s) => s.items.length > 0 || s.prose.length > 0);
+}
+
+function renderInline(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>");
+}
+
+function MemoryPanel({ raw }) {
+  const sections = parseMemorySections(raw);
+
+  if (sections.length === 0) {
+    return (
+      <div className="memory-prose">
+        <ReactMarkdown>{raw}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  return (
+    <div className="memory-sections">
+      {sections.map((section, i) => (
+        <div
+          key={`${section.heading || "prose"}-${i}`}
+          className="memory-section"
+          style={{ animationDelay: `${i * 40}ms` }}
+        >
+          {section.heading && (
+            <div className="memory-section-heading">
+              <span className="memory-section-icon">{section.icon}</span>
+              <span>{section.heading}</span>
+            </div>
+          )}
+          {section.prose.length > 0 && (
+            <p
+              className="memory-section-prose"
+              // eslint-disable-next-line react/no-danger
+              dangerouslySetInnerHTML={{
+                __html: section.prose.map(renderInline).join(" "),
+              }}
+            />
+          )}
+          {section.items.length > 0 && (
+            <ul className="memory-section-list">
+              {section.items.map((item, j) => (
+                <li
+                  key={j}
+                  // eslint-disable-next-line react/no-danger
+                  dangerouslySetInnerHTML={{ __html: renderInline(item) }}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AskView({ isActive }) {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
+  const [entryCount, setEntryCount] = useState(null);
   const [mode, setMode] = useState(getInitialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -302,7 +510,7 @@ export default function AskView({ isActive }) {
   const placeholder = useMemo(
     () =>
       mode === "ask"
-        ? "Ask anything about your journal..."
+        ? "Ask anything about your life..."
         : "Write a thought...",
     [mode]
   );
@@ -365,13 +573,17 @@ export default function AskView({ isActive }) {
     }
   }, []);
 
+  // Prefetch memory in background on mount so it's instant when opened
+  const memoryFetchedRef = useRef(false);
+  useEffect(() => {
+    if (memoryFetchedRef.current) return;
+    memoryFetchedRef.current = true;
+    loadMemory();
+  }, [loadMemory]);
+
   const toggleMemory = useCallback(() => {
-    const nextIsOpen = !isMemoryOpen;
-    setIsMemoryOpen(nextIsOpen);
-    if (nextIsOpen && !memoryData && !isMemoryLoading) {
-      loadMemory();
-    }
-  }, [isMemoryLoading, isMemoryOpen, loadMemory, memoryData]);
+    setIsMemoryOpen((prev) => !prev);
+  }, []);
 
   const handleNewSession = useCallback(async () => {
     const confirmed = window.confirm(
@@ -400,6 +612,15 @@ export default function AskView({ isActive }) {
   useEffect(() => {
     window.localStorage.setItem(MODE_STORAGE_KEY, mode);
   }, [mode]);
+
+  useEffect(() => {
+    authHeaders().then((headers) =>
+      fetch(`${API}/entries`, { headers })
+        .then((r) => r.ok ? r.json() : Promise.reject())
+        .then((data) => setEntryCount((data.entries || []).length))
+        .catch(() => setEntryCount(null))
+    );
+  }, []);
 
   useEffect(() => {
     if (loadedInitialMessagesRef.current) return;
@@ -670,8 +891,15 @@ export default function AskView({ isActive }) {
     <AnimatedView viewKey="ask" isActive={isActive}>
       <div className="ask-view">
         <header className="ask-view-header">
-          <h2 className="ask-view-title">MindGraph</h2>
+          <h2 className="ask-view-title">
+            Ask your <em>mind.</em>
+          </h2>
           <div className="ask-header-actions">
+            <span className="ask-entry-stat">
+              MEMORY ·{" "}
+              <strong>{entryCount === null ? "—" : entryCount}</strong>{" "}
+              ENTRIES
+            </span>
             <button
               type="button"
               className="ask-memory-icon"
@@ -729,7 +957,10 @@ export default function AskView({ isActive }) {
           <aside className="ask-memory-panel" aria-label="MindGraph memory">
             <div className="ask-memory-panel-header">
               <div>
-                <h3>Memory</h3>
+                <h3>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="memory-title-icon"><path d="M12 3v18" /><path d="M5 8h14" /><path d="M7 16h10" /><path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" /></svg>
+                  Memory
+                </h3>
                 {memoryData?.updated_at && (
                   <time>Updated {formatDate(memoryData.updated_at)}</time>
                 )}
@@ -740,14 +971,16 @@ export default function AskView({ isActive }) {
                 onClick={() => setIsMemoryOpen(false)}
                 aria-label="Close memory"
               >
-                Close
+                ✕
               </button>
             </div>
 
             {isMemoryLoading && (
               <div className="ask-memory-state">
-                <span className="spinner small" />
-                Loading memory...
+                <span className="memory-shimmer-line" style={{ width: "55%" }} />
+                <span className="memory-shimmer-line" style={{ width: "80%" }} />
+                <span className="memory-shimmer-line" style={{ width: "65%" }} />
+                <span className="memory-shimmer-line" style={{ width: "40%" }} />
               </div>
             )}
 
@@ -758,62 +991,80 @@ export default function AskView({ isActive }) {
             {!isMemoryLoading && !memoryError && (
               <div className="ask-memory-content">
                 {memoryData?.memory ? (
-                  <ReactMarkdown>{memoryData.memory}</ReactMarkdown>
+                  <MemoryPanel raw={memoryData.memory} />
                 ) : (
-                  <p>
-                    No saved memory yet. Keep chatting and MindGraph will build
-                    durable context over time.
-                  </p>
+                  <div className="memory-empty">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v18" /><path d="M5 8h14" /><path d="M7 16h10" /><path d="M6 5h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" /></svg>
+                    <p>No saved memory yet. Keep chatting and MindGraph will build durable context over time.</p>
+                  </div>
                 )}
               </div>
             )}
           </aside>
         )}
 
-        <div className="conversation-feed" ref={feedRef} onScroll={handleFeedScroll}>
-          {isLoadingMore && (
-            <div className="older-loader" aria-label="Loading older messages">
-              <TypingDots />
-            </div>
-          )}
+        <div className="ask-wrap">
+          <div className="ask-thread" ref={feedRef} onScroll={handleFeedScroll}>
+            {isLoadingMore && (
+              <div className="older-loader" aria-label="Loading older messages">
+                <TypingDots />
+              </div>
+            )}
 
-          {initialLoading && (
-            <div className="ask-empty">
-              <span className="spinner" />
-              <p>Loading your conversation...</p>
-            </div>
-          )}
+            {initialLoading && (
+              <div className="ask-empty">
+                <span className="spinner" />
+                <p>Loading your conversation...</p>
+              </div>
+            )}
 
-          {!initialLoading && messages.length === 0 && (
-            <div className="ask-empty welcome">
-              <h3>MindGraph</h3>
-              <p>Write a thought or ask a question to get started</p>
-            </div>
-          )}
+            {!initialLoading && messages.length === 0 && (
+              <div className="ask-empty welcome">
+                <h3>MindGraph</h3>
+                <p>Write a thought or ask a question to get started</p>
+              </div>
+            )}
 
-          {messages.map((message) => {
-            if (message.isTyping) {
-              return <TypingIndicator key={message.id} message={message} />;
-            }
-            if (message.role === "assistant") {
-              return <AssistantMessage key={message.id} message={message} />;
-            }
-            if (message.role === "journal_entry") {
-              return <JournalEntryCard key={message.id} message={message} />;
-            }
-            return <UserMessage key={message.id} message={message} />;
-          })}
+            {messages.map((message) => {
+              if (message.isTyping) {
+                return <TypingIndicator key={message.id} message={message} />;
+              }
+              if (message.role === "assistant") {
+                return <AssistantMessage key={message.id} message={message} />;
+              }
+              if (message.role === "journal_entry") {
+                return <JournalEntryCard key={message.id} message={message} />;
+              }
+              return <UserMessage key={message.id} message={message} />;
+            })}
+          </div>
         </div>
 
-        <form
-          className="ask-composer"
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleSubmit();
-          }}
-        >
-          <ModeToggle mode={mode} onChange={setMode} disabled={isLoading} />
-          <div className="ask-input-shell">
+        <div className="ask-composer">
+          {/* Follow-up pills — shown only when there are messages and not loading */}
+          {!isLoading && messages.length > 0 && (
+            <div className="ask-suggestions">
+              {FOLLOW_UP_PILLS.map((pill) => (
+                <button
+                  key={pill}
+                  type="button"
+                  className="ask-sugg"
+                  onClick={() => setInputText(pill)}
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form
+            className="ask-input"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <ModeToggle mode={mode} onChange={setMode} disabled={isLoading} />
             <input
               type="text"
               value={inputText}
@@ -823,13 +1074,14 @@ export default function AskView({ isActive }) {
             />
             <button
               type="submit"
+              className="ask-send"
               aria-label="Send message"
               disabled={isLoading || !inputText.trim()}
             >
               <SendIcon />
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </AnimatedView>
   );

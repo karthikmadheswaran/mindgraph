@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import {
   getCachedDashboardSnapshot,
@@ -13,17 +13,6 @@ import DateTimePicker from "./DateTimePicker";
 import Toast from "./Toast";
 import "../styles/my-progress.css";
 
-const GROUP_LABELS = [
-  ["thisWeek", "This Week"],
-  ["lastWeek", "Last Week"],
-  ["earlier", "Earlier"],
-];
-
-const sectionMotionProps = (delay = 0) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { type: "spring", stiffness: 380, damping: 30, delay },
-});
 
 const normalizeDeadline = (deadline) => ({
   ...deadline,
@@ -102,23 +91,6 @@ const getTimeGroupKey = (value) => {
   return "earlier";
 };
 
-const groupByTime = (items, dateField) => {
-  const grouped = {
-    thisWeek: [],
-    lastWeek: [],
-    earlier: [],
-  };
-
-  items.forEach((item) => {
-    grouped[getTimeGroupKey(item?.[dateField])].push(item);
-  });
-
-  return GROUP_LABELS.map(([key, label]) => ({
-    key,
-    label,
-    items: grouped[key],
-  })).filter((group) => group.items.length > 0);
-};
 
 const formatNarrativeDay = (value) => {
   const date = new Date(value || "");
@@ -188,27 +160,106 @@ const formatMentionNarrative = (project) => {
   return "";
 };
 
-function SectionEmpty({ tone = "sage", message }) {
+const DAY_ABBR = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+const timelineLabel = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = (today - itemDay) / 86400000;
+  if (diff < 1) return "TODAY";
+  if (diff < 2) return "YESTERDAY";
+  return DAY_ABBR[d.getDay()];
+};
+
+const dueLabelTimeline = (dateStr) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  const mon = d.toLocaleString("en", { month: "short" }).toUpperCase();
+  return `DUE ${mon} ${d.getDate()}`;
+};
+
+function TimelineRow({ ti, deadlineActionState, projectActionState, rescheduleButtonRefs, onDeadlineStatus, onProjectStatus, onReschedule }) {
+  const { kind, item } = ti;
+  const isMissed = kind === "missed";
+  const isProject = kind === "project";
+  const isUpdating = isProject
+    ? Boolean(projectActionState[item.id])
+    : Boolean(deadlineActionState[item.id]);
+
+  const title = isProject ? item.name : item.description;
+  const desc = isProject
+    ? formatMentionNarrative(item)
+    : isMissed
+    ? formatDueNarrative(item.due_date, "Was due")
+    : formatDoneNarrative(item.status_changed_at);
+
+  const dateLabel = isMissed && item.due_date
+    ? dueLabelTimeline(item.due_date)
+    : timelineLabel(item.status_changed_at);
+
   return (
-    <div className={`progress-section-empty ${tone}`}>
-      <div className="progress-empty-icon" aria-hidden="true">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 4.75h9.5L19 8.2V19.25A1.75 1.75 0 0 1 17.25 21H6.75A1.75 1.75 0 0 1 5 19.25V6.5A1.75 1.75 0 0 1 6.75 4.75Z" />
-          <path d="M15 4.75V8.5h3.75" />
-          <path d="M8.5 12.25h7" />
-          <path d="M8.5 15.75h5.5" />
-        </svg>
+    <div className={`progress-tl-row${isMissed ? " missed" : ""}`}>
+      <div className="progress-tl-line-col">
+        <div className={`progress-tl-circle${isMissed ? " missed" : isProject ? " project" : " done"}`} />
+        <div className="progress-tl-connector" />
       </div>
-      <p>{message}</p>
+      <div className="progress-tl-content">
+        <div className="progress-tl-top">
+          <span className={`progress-tl-title${isMissed ? " missed-text" : ""}`}>{title}</span>
+          <span className="progress-tl-date">{dateLabel}</span>
+        </div>
+        {desc ? <p className="progress-tl-desc">{desc}</p> : null}
+        <div className="progress-tl-actions">
+          {!isProject && isMissed && (
+            <>
+              <button
+                type="button"
+                className="progress-tl-btn"
+                disabled={isUpdating}
+                onClick={() => onDeadlineStatus(item, "done")}
+              >
+                Actually did it
+              </button>
+              <button
+                type="button"
+                className="progress-tl-btn subtle"
+                ref={(node) => {
+                  if (node) { rescheduleButtonRefs.current[item.id] = node; }
+                  else { delete rescheduleButtonRefs.current[item.id]; }
+                }}
+                disabled={isUpdating}
+                onClick={() => onReschedule(item.id)}
+              >
+                Reschedule
+              </button>
+            </>
+          )}
+          {!isProject && !isMissed && (
+            <button
+              type="button"
+              className="progress-tl-btn"
+              disabled={isUpdating}
+              onClick={() => onDeadlineStatus(item, "pending")}
+            >
+              Restore
+            </button>
+          )}
+          {isProject && (
+            <button
+              type="button"
+              className="progress-tl-btn"
+              disabled={isUpdating}
+              onClick={() => onProjectStatus(item, "active")}
+            >
+              Reopen
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -227,6 +278,7 @@ function MyProgress({ isActive, userId }) {
   const [projectActionState, setProjectActionState] = useState({});
   const [rescheduleDeadlineId, setRescheduleDeadlineId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [totalEntries, setTotalEntries] = useState(null);
 
   const hasLoadedRef = useRef(hasCachedProgress);
   const previousUserIdRef = useRef(userId);
@@ -268,6 +320,16 @@ function MyProgress({ isActive, userId }) {
       applySnapshot(snapshot);
     });
   }, [applySnapshot, userId]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    authHeaders().then((headers) =>
+      fetch(`${API}/entries`, { headers })
+        .then((r) => r.ok ? r.json() : Promise.reject())
+        .then((data) => setTotalEntries((data.entries || []).length))
+        .catch(() => setTotalEntries(null))
+    );
+  }, [isActive]);
 
   useEffect(() => {
     if (!userId || !isActive || hasLoadedRef.current) {
@@ -685,9 +747,23 @@ function MyProgress({ isActive, userId }) {
     (project) => project.status === "completed"
   );
 
-  const doneGroups = groupByTime(doneDeadlines, "status_changed_at");
-  const missedGroups = groupByTime(missedDeadlines, "status_changed_at");
-  const projectGroups = groupByTime(completedProjects, "status_changed_at");
+
+  const winsCount = doneDeadlines.length + completedProjects.length;
+  const missedCount = missedDeadlines.length;
+
+  // Flatten all items into a single timeline sorted by status_changed_at desc
+  const timelineItems = [
+    ...doneDeadlines.map((d) => ({ kind: "done", item: d, date: d.status_changed_at })),
+    ...missedDeadlines.map((d) => ({ kind: "missed", item: d, date: d.status_changed_at })),
+    ...completedProjects.map((p) => ({ kind: "project", item: p, date: p.status_changed_at })),
+  ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  const thisWeekItems = timelineItems.filter(
+    (ti) => getTimeGroupKey(ti.date) === "thisWeek"
+  );
+  const olderItems = timelineItems.filter(
+    (ti) => getTimeGroupKey(ti.date) !== "thisWeek"
+  );
 
   return (
     <AnimatedView viewKey="progress" isActive={isActive}>
@@ -698,233 +774,80 @@ function MyProgress({ isActive, userId }) {
         </div>
       ) : (
         <div className="progress-page">
-          <header className="progress-header">
-            <div>
-              <p className="progress-kicker">My Progress</p>
-              <h2 className="progress-title">
-                A warm look at what you moved forward.
-              </h2>
+          {/* ——— New header ——— */}
+          <header className="progress-header-new">
+            <div className="progress-header-left">
+              <h1 className="progress-heading-new">
+                A month of<br />
+                <em>doing.</em>
+              </h1>
+              <p className="progress-subtitle-new">
+                What you finished, what slipped, what&apos;s still moving.
+                Pulled from your entries.
+              </p>
             </div>
-            <p className="progress-subtitle">
-              What&apos;s ahead lives on the dashboard. This is the quieter page
-              for what you finished, what slipped, and what still counts.
-            </p>
+            <div className="progress-stats-row">
+              <div className="progress-stat">
+                <span className="progress-stat-n">{winsCount}</span>
+                <span className="progress-stat-l">WINS</span>
+              </div>
+              <span className="progress-stat-sep">·</span>
+              <div className="progress-stat">
+                <span className="progress-stat-n">{missedCount}</span>
+                <span className="progress-stat-l">MISSED</span>
+              </div>
+              <span className="progress-stat-sep">·</span>
+              <div className="progress-stat">
+                <span className="progress-stat-n">{totalEntries === null ? "—" : totalEntries}</span>
+                <span className="progress-stat-l">ENTRIES</span>
+              </div>
+            </div>
           </header>
+          <hr className="progress-rule" />
 
-          <div className="progress-sections">
-            <motion.section
-              className="progress-section"
-              {...sectionMotionProps(0)}
-            >
-              <div className="progress-section-header">
-                <div className="progress-section-heading">
-                  <h3>Things I Got Done</h3>
-                  <p>Proof that follow-through happened.</p>
+          {/* ——— Timeline ——— */}
+          {timelineItems.length === 0 ? (
+            <div className="progress-empty-state">
+              <p>No completed items yet. Mark a deadline done or finish a project and it'll appear here.</p>
+            </div>
+          ) : (
+            <div className="progress-timeline">
+              {thisWeekItems.length > 0 && (
+                <div className="progress-tl-group">
+                  <div className="progress-tl-week-label">THIS WEEK</div>
+                  {thisWeekItems.map((ti) => (
+                    <TimelineRow
+                      key={ti.item.id}
+                      ti={ti}
+                      deadlineActionState={deadlineActionState}
+                      projectActionState={projectActionState}
+                      rescheduleButtonRefs={rescheduleButtonRefs}
+                      onDeadlineStatus={handleDeadlineStatusChange}
+                      onProjectStatus={handleProjectStatusChange}
+                      onReschedule={setRescheduleDeadlineId}
+                    />
+                  ))}
                 </div>
-              </div>
-
-              {doneGroups.length === 0 ? (
-                <SectionEmpty
-                  tone="sage"
-                  message="Nothing here yet — your first completed deadline will show up here."
-                />
-              ) : (
-                doneGroups.map((group) => (
-                  <div key={group.key} className="progress-group">
-                    <div className="progress-group-divider">
-                      <span>{group.label}</span>
-                    </div>
-                    <div className="progress-item-list">
-                      {group.items.map((deadline) => {
-                        const isUpdating = Boolean(deadlineActionState[deadline.id]);
-                        const dueLabel = formatDueNarrative(deadline.due_date);
-
-                        return (
-                          <article
-                            key={deadline.id}
-                            className="progress-item progress-item-done"
-                          >
-                            <div className="progress-item-main">
-                              <h4 className="progress-item-title">
-                                {deadline.description}
-                              </h4>
-                              <p className="progress-item-summary">
-                                {formatDoneNarrative(deadline.status_changed_at)}
-                              </p>
-                              {dueLabel ? (
-                                <p className="progress-item-secondary">{dueLabel}</p>
-                              ) : null}
-                            </div>
-
-                            <div className="progress-item-actions">
-                              <button
-                                type="button"
-                                className="progress-action-btn"
-                                disabled={isUpdating}
-                                onClick={() =>
-                                  handleDeadlineStatusChange(deadline, "pending")
-                                }
-                              >
-                                Restore
-                              </button>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
               )}
-            </motion.section>
-
-            <motion.section
-              className="progress-section missed"
-              {...sectionMotionProps(0.04)}
-            >
-              <div className="progress-section-header">
-                <div className="progress-section-heading">
-                  <h3>Ones That Slipped</h3>
-                  <p>Honest, useful, and still easy to move forward.</p>
+              {olderItems.length > 0 && (
+                <div className="progress-tl-group">
+                  <div className="progress-tl-week-label">EARLIER</div>
+                  {olderItems.map((ti) => (
+                    <TimelineRow
+                      key={ti.item.id}
+                      ti={ti}
+                      deadlineActionState={deadlineActionState}
+                      projectActionState={projectActionState}
+                      rescheduleButtonRefs={rescheduleButtonRefs}
+                      onDeadlineStatus={handleDeadlineStatusChange}
+                      onProjectStatus={handleProjectStatusChange}
+                      onReschedule={setRescheduleDeadlineId}
+                    />
+                  ))}
                 </div>
-              </div>
-
-              {missedGroups.length === 0 ? (
-                <SectionEmpty
-                  tone="warm"
-                  message="Nothing has slipped lately — and if something does, it will show up here without judgment."
-                />
-              ) : (
-                missedGroups.map((group) => (
-                  <div key={group.key} className="progress-group">
-                    <div className="progress-group-divider">
-                      <span>{group.label}</span>
-                    </div>
-                    <div className="progress-item-list">
-                      {group.items.map((deadline) => {
-                        const isUpdating = Boolean(deadlineActionState[deadline.id]);
-                        const dueLabel = formatDueNarrative(
-                          deadline.due_date,
-                          "Was due"
-                        );
-
-                        return (
-                          <article
-                            key={deadline.id}
-                            className="progress-item progress-item-missed"
-                          >
-                            <div className="progress-item-main">
-                              <h4 className="progress-item-title">
-                                {deadline.description}
-                              </h4>
-                              <p className="progress-item-summary">
-                                {formatMissedNarrative(deadline.status_changed_at)}
-                              </p>
-                              {dueLabel ? (
-                                <p className="progress-item-secondary">{dueLabel}</p>
-                              ) : null}
-                            </div>
-
-                            <div className="progress-item-actions">
-                              <button
-                                type="button"
-                                className="progress-action-btn"
-                                disabled={isUpdating}
-                                onClick={() =>
-                                  handleDeadlineStatusChange(deadline, "done")
-                                }
-                              >
-                                Actually did it
-                              </button>
-                              <button
-                                type="button"
-                                className="progress-action-btn subtle"
-                                ref={(node) => {
-                                  if (node) {
-                                    rescheduleButtonRefs.current[deadline.id] = node;
-                                  } else {
-                                    delete rescheduleButtonRefs.current[deadline.id];
-                                  }
-                                }}
-                                disabled={isUpdating}
-                                onClick={() => setRescheduleDeadlineId(deadline.id)}
-                              >
-                                Reschedule
-                              </button>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
               )}
-            </motion.section>
-
-            <motion.section
-              className="progress-section projects"
-              {...sectionMotionProps(0.08)}
-            >
-              <div className="progress-section-header">
-                <div className="progress-section-heading">
-                  <h3>Projects I Finished</h3>
-                  <p>Big or small, this is the shipped pile.</p>
-                </div>
-              </div>
-
-              {projectGroups.length === 0 ? (
-                <SectionEmpty
-                  tone="sage"
-                  message="No finished projects yet — completed projects will collect here as your shipped pile grows."
-                />
-              ) : (
-                projectGroups.map((group) => (
-                  <div key={group.key} className="progress-group">
-                    <div className="progress-group-divider">
-                      <span>{group.label}</span>
-                    </div>
-                    <div className="progress-item-list">
-                      {group.items.map((project) => {
-                        const isUpdating = Boolean(projectActionState[project.id]);
-                        const mentionLabel = formatMentionNarrative(project);
-
-                        return (
-                          <article
-                            key={project.id}
-                            className="progress-item progress-item-project"
-                          >
-                            <div className="progress-item-main">
-                              <h4 className="progress-item-title">{project.name}</h4>
-                              <p className="progress-item-summary">
-                                {formatFinishedNarrative(project.status_changed_at)}
-                              </p>
-                              {mentionLabel ? (
-                                <p className="progress-item-secondary">
-                                  {mentionLabel}
-                                </p>
-                              ) : null}
-                            </div>
-
-                            <div className="progress-item-actions">
-                              <button
-                                type="button"
-                                className="progress-action-btn"
-                                disabled={isUpdating}
-                                onClick={() =>
-                                  handleProjectStatusChange(project, "active")
-                                }
-                              >
-                                Reopen
-                              </button>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
-              )}
-            </motion.section>
-          </div>
+            </div>
+          )}
         </div>
       )}
 

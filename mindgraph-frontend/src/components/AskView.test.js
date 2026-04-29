@@ -72,13 +72,13 @@ describe("AskView", () => {
 
     render(<AskView isActive />);
 
-    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/write a thought or ask a question/i)).not.toBeInTheDocument();
 
     expect(await screen.findByText("What am I working on?")).toBeInTheDocument();
     expect(
       await screen.findByText("You mentioned MindGraph and a report.")
     ).toBeInTheDocument();
-    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/write a thought or ask a question/i)).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(authHeaders).toHaveBeenCalled();
@@ -98,7 +98,7 @@ describe("AskView", () => {
 
     render(<AskView isActive />);
 
-    expect(screen.queryByText(/welcome to mindgraph/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/write a thought or ask a question/i)).not.toBeInTheDocument();
 
     expect(
       await screen.findByText(/write a thought or ask a question to get started/i)

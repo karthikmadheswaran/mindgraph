@@ -1,12 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
-import { entityColors, nodeLabels, pipelineOrder } from "../utils/constants";
-import {
-  deadlineColor,
-  deadlineLabel,
-  deadlineSortValue,
-} from "../utils/dateHelpers";
+import { deadlineLabel, deadlineSortValue } from "../utils/dateHelpers";
 import {
   getCachedDashboardSnapshot,
   loadDashboardSnapshot,
@@ -15,27 +10,8 @@ import {
 } from "../utils/dashboardSnapshot";
 import AnimatedView from "./AnimatedView";
 import DateTimePicker from "./DateTimePicker";
-import KnowledgeGraph from "./KnowledgeGraph";
 import Toast from "./Toast";
 import "../styles/dashboard.css";
-
-const staggerContainer = {
-  initial: {},
-  animate: {
-    transition: {
-      staggerChildren: 0.06,
-    },
-  },
-};
-
-const cardEntrance = {
-  initial: { opacity: 0, y: 16 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 400, damping: 28 },
-  },
-};
 
 const normalizeDeadline = (deadline) => ({
   ...deadline,
@@ -84,6 +60,230 @@ const sortProgressProjects = (items) =>
 const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
   sorter([...items.filter((existingItem) => existingItem.id !== item.id), item]);
 
+// ——— Dashboard design constants ———
+
+const PROGRESS_WIDTHS = [72, 18, 40, 55, 62];
+
+const DAILY_THREADS = [
+  {
+    q: "You've mentioned the dentist 4 times since January. What's the actual plan?",
+    tag: "AVOIDANCE · OPEN SINCE JAN",
+  },
+  {
+    q: "Rafael's tone shifted this week. Want to write about why?",
+    tag: "PATTERN · 14 DAYS",
+  },
+  {
+    q: "The Pune trip hasn't moved in 11 days. Book it, or let it go?",
+    tag: "STALLED PROJECT",
+  },
+];
+
+const MOOD_WEATHER = [
+  { text: "Mostly reflective this week. Chance of avoidance by Thursday.", dot: "" },
+  { text: "High energy Mon–Wed. Things quieted down after that.", dot: "warm" },
+  { text: "Lots of planning, less feeling. Due for a heart-forward entry.", dot: "cool" },
+];
+
+const MONTH_ABBR = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+const formatEntryDate = (dateStr) => {
+  const d = new Date(dateStr);
+  const month = d.toLocaleString("en", { month: "short" });
+  const day = d.getDate();
+  const time = d.toLocaleString("en", { hour: "numeric", minute: "2-digit", hour12: true });
+  return `${month} ${day} · ${time}`;
+};
+const DAY_FULL = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+
+function getProjectMeta(project) {
+  if (!project.status_changed_at) {
+    return { state: "warm", meta: "No recent activity" };
+  }
+  const days = Math.floor(
+    (Date.now() - new Date(project.status_changed_at).getTime()) / 86400000
+  );
+  if (days === 0) return { state: "active", meta: "Active · moved today" };
+  if (days === 1) return { state: "active", meta: "Active · moved yesterday" };
+  if (days <= 3) return { state: "active", meta: `Active · ${days} days ago` };
+  if (days <= 7) return { state: "warm", meta: "Slow · once a week" };
+  return { state: "warm", meta: `Stalled · ${days} days quiet` };
+}
+
+const PO_TYPES = {
+  loop:       { label: "Loop detected",     bg: "#faeee4", text: "#b84a2d", accent: "#b84a2d", tintBg: "#fdf6f2" },
+  language:   { label: "Language signal",   bg: "#e8f0fa", text: "#7a9ab5", accent: "#7a9ab5", tintBg: "#f5f8fd" },
+  avoidance:  { label: "Avoidance signal",  bg: "#e8f2eb", text: "#6b8a6b", accent: "#6b8a6b", tintBg: "#f5faf5" },
+  identity:   { label: "Identity gap",      bg: "#f0e8f5", text: "#9a7ab5", accent: "#9a7ab5", tintBg: "#f8f5fd" },
+  behavioral: { label: "Behavioral rhythm", bg: "#faeee4", text: "#b84a2d", accent: "#b84a2d", tintBg: "#fdf6f2" },
+};
+
+const PATTERN_CARDS_DATA = [
+  {
+    type: "loop",
+    statN: "14×",
+    statU: "entries",
+    title: "You have a guilt cycle. You're in it more than you think.",
+    body: "Loneliness → reach out → smoke → guilt → repeat. The whole cycle is just loneliness with nowhere to go. It surfaces as sudden topic changes and self-criticism spikes — often at night, always on unstructured evenings.",
+    cycle: [
+      { l: "Lonely", on: false },
+      { l: "Reach out", on: false },
+      { l: "Smoke", on: false },
+      { l: "Restless", on: true },
+      { l: "Guilt", on: true },
+      { l: "Repeat", on: true },
+    ],
+    footL: "Detected across 14 entries",
+    footR: "Explore this →",
+  },
+  {
+    type: "language",
+    statN: "7×",
+    statU: "this week",
+    title: "You use 'but' to talk yourself out of things you actually want.",
+    body: "7 of your last 11 entries contain 'but I don't know if…' or 'but maybe I'm just…' — always immediately after stating something you genuinely want. You're shrinking yourself before anyone else can.",
+    quote: "I want to get freelance clients… but maybe I'm not senior enough yet.",
+    quoteSrc: "April 14 · Ask Journal",
+    footL: "7 instances detected",
+    footR: "Show me all →",
+  },
+  {
+    type: "avoidance",
+    statN: "3×",
+    statU: "since you named it",
+    title: "You discovered your uncertainty escape pattern. You're still doing it.",
+    body: "When a task requires uncertain thinking, your brain reads it as threat. Phone, Discord, cigarette become exits. You named this on 30 March. You've written about it 3 times since.",
+    quote: "Uncertain task → discomfort → phone/Discord/cigarette → relief → guilt → back to task → repeat",
+    quoteSrc: "Your own words · 30 March",
+    footL: "Still appearing in recent entries",
+    footR: "Track progress →",
+  },
+  {
+    type: "identity",
+    statN: "9×",
+    statU: "entries",
+    title: "You describe the version of yourself you want to be as if he's someone else. He's already here.",
+    body: "In 9 entries you describe 'Karthik who finishes things, works out, feels proud' as a future person. But in those same entries you shipped MindGraph, fixed real bugs, made real decisions. That version is already showing up.",
+    footL: "Across 9 entries",
+    footR: "See the evidence →",
+  },
+  {
+    type: "behavioral",
+    statN: "2×",
+    statU: "on sundays",
+    title: "You write most when structure collapses. Sundays are your sharpest.",
+    body: "Journal entries cluster on Sundays and late-week evenings — when the week's expectations lift. Your clearest thinking happens when you're not trying.",
+    barchart: true,
+    footL: "Pattern across 7 weeks",
+    footR: "See full chart →",
+  },
+];
+
+const PO_BAR_HEIGHTS = [5, 14, 6, 8, 9, 7, 18];
+
+function PatternsObservatory() {
+  return (
+    <div className="patterns-observatory">
+      <div className="po-sep" />
+      <div className="po-head">
+        <span className="po-eyebrow">What your mind is doing</span>
+        <span className="po-noticed">Noticed from your entries</span>
+      </div>
+      <div className="po-sub">Things you wouldn't see without someone reading all of it.</div>
+      <motion.div
+        className="po-cards"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        {PATTERN_CARDS_DATA.map((c, i) => {
+          const t = PO_TYPES[c.type];
+          return (
+            <motion.div
+              key={i}
+              className="po-card"
+              style={{ borderLeft: `4px solid ${t.accent}` }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <div className="po-card-top">
+                <span className="po-pill" style={{ background: t.bg, color: t.text }}>
+                  {t.label}
+                </span>
+                <div className="po-stat">
+                  <span className="po-stat-n" style={{ color: t.accent }}>{c.statN}</span>
+                  <span className="po-stat-u">{c.statU}</span>
+                </div>
+              </div>
+              <div className="po-title">{c.title}</div>
+              <div className="po-body">{c.body}</div>
+              {c.quote && (
+                <div className="po-quote">
+                  <div className="po-quote-text">"{c.quote}"</div>
+                  <div className="po-quote-src">{c.quoteSrc}</div>
+                </div>
+              )}
+              {c.cycle && (
+                <div className="po-cycle">
+                  {c.cycle.map((s, j) => (
+                    <Fragment key={j}>
+                      <span
+                        className={`po-chip${s.on ? " on" : ""}`}
+                        style={s.on ? { background: "#faeee4", color: "#b84a2d", borderColor: "#f0d0b0" } : undefined}
+                      >
+                        {s.l}
+                      </span>
+                      {j < c.cycle.length - 1 && <span className="po-arrow">→</span>}
+                    </Fragment>
+                  ))}
+                </div>
+              )}
+              {c.barchart && (
+                <div className="po-barchart">
+                  {PO_BAR_HEIGHTS.map((h, bi) => {
+                    const isSunday = bi === 1 || bi === 6;
+                    return (
+                      <span
+                        key={bi}
+                        className="po-bar"
+                        style={{
+                          height: h,
+                          background: isSunday ? "#b84a2d" : "#e8e0d4",
+                          opacity: bi === 1 ? 0.35 : bi === 6 ? 0.7 : 1,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+              <div className="po-foot">
+                <span className="po-foot-l">
+                  <span className="po-dot" style={{ background: t.accent }} />
+                  {c.footL}
+                </span>
+                <button type="button" className="po-foot-btn" style={{ color: t.accent }}>
+                  {c.footR}
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+}
+
+// ——— Shuffle icon ———
+const ShuffleIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="16 3 21 3 21 8" />
+    <line x1="4" y1="20" x2="21" y2="3" />
+    <polyline points="21 16 21 21 16 21" />
+    <line x1="15" y1="15" x2="21" y2="21" />
+  </svg>
+);
+
 function Dashboard({ isActive, userId }) {
   const cachedSnapshot = getCachedDashboardSnapshot({ userId });
 
@@ -96,14 +296,11 @@ function Dashboard({ isActive, userId }) {
   );
   const [entities, setEntities] = useState(cachedSnapshot?.entities || []);
   const [relations, setRelations] = useState(cachedSnapshot?.relations || []);
-  const [patterns, setPatterns] = useState(cachedSnapshot?.patterns || {});
   const [loadingData, setLoadingData] = useState(!cachedSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSynced, setLastSynced] = useState(
     cachedSnapshot?.fetchedAt ? formatSyncTime(cachedSnapshot.fetchedAt) : ""
   );
-  const [expandedEntryId, setExpandedEntryId] = useState(null);
-  const [liveStage, setLiveStage] = useState(null);
   const [hasActivated, setHasActivated] = useState(isActive);
   const [snapshotReady, setSnapshotReady] = useState(Boolean(cachedSnapshot));
   const [showHidden, setShowHidden] = useState(false);
@@ -113,6 +310,9 @@ function Dashboard({ isActive, userId }) {
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
   const [pendingDeletion, setPendingDeletion] = useState(null);
   const [toast, setToast] = useState(null);
+  const [shuffleKey, setShuffleKey] = useState(0);
+  const [shuffling, setShuffling] = useState(false);
+  const [noticedInsight, setNoticedInsight] = useState(null);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -150,7 +350,6 @@ function Dashboard({ isActive, userId }) {
     setAllProjects(nextProjects);
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
-    setPatterns(snapshot.patterns || {});
     setLoadingData(false);
     setRefreshing(false);
     setSnapshotReady(true);
@@ -284,36 +483,6 @@ function Dashboard({ isActive, userId }) {
 
     return () => clearInterval(interval);
   }, [entries, fetchEntries, scheduleSilentRefresh, userId]);
-
-  useEffect(() => {
-    if (!expandedEntryId) return;
-
-    const entry = entries.find((item) => item.id === expandedEntryId);
-    if (!entry || entry.status !== "processing") return;
-
-    setLiveStage(entry.pipeline_stage);
-
-    const interval = setInterval(async () => {
-      try {
-        const headers = await authHeaders();
-        const data = await fetch(`${API}/entries/${expandedEntryId}/status`, {
-          headers,
-        }).then((r) => r.json());
-
-        if (data) setLiveStage(data.pipeline_stage);
-
-        if (data && data.status !== "processing") {
-          setExpandedEntryId(null);
-          setLiveStage(null);
-          scheduleSilentRefresh(0);
-        }
-      } catch {
-        // silently fail
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [expandedEntryId, entries, scheduleSilentRefresh]);
 
   useEffect(() => {
     return () => {
@@ -652,9 +821,6 @@ function Dashboard({ isActive, userId }) {
       pendingDeletionRef.current = deletion;
 
       if (kind === "entry") {
-        if (expandedEntryId === item.id) {
-          setExpandedEntryId(null);
-        }
         setEntriesState((current) =>
           current.filter((entry) => entry.id !== item.id)
         );
@@ -699,7 +865,6 @@ function Dashboard({ isActive, userId }) {
     },
     [
       editingDeadlineId,
-      expandedEntryId,
       finalizePendingDeletion,
       setDeadlinesState,
       setEntriesState,
@@ -969,32 +1134,99 @@ function Dashboard({ isActive, userId }) {
     [closeDeadlinePicker, setDeadlinesState, updateDeadlineDate]
   );
 
+  // Fetch insights for Noticed card when view becomes active
+  useEffect(() => {
+    if (!isActive) return;
+    const fetchInsights = async () => {
+      try {
+        const headers = await authHeaders();
+        const [insightsRes, patternsRes] = await Promise.all([
+          fetch(`${API}/insights`, { headers }),
+          fetch(`${API}/insights/patterns`, { headers }),
+        ]);
+        const insightsData = insightsRes.ok ? await insightsRes.json() : null;
+        const patternsData = patternsRes.ok ? await patternsRes.json() : null;
+
+        console.log("RAW insights response:", JSON.stringify(insightsData, null, 2));
+        console.log("RAW patterns response:", JSON.stringify(patternsData, null, 2));
+
+        const TYPE_LABELS = {
+          tool:    "FORGOTTEN TOOL",
+          person:  "QUIET CONNECTION",
+          project: "STALLED PROJECT",
+          task:    "OPEN TASK",
+        };
+
+        // Actual shape (confirmed from console):
+        // /insights/patterns → { status, data: { repeated_themes, shiny_objects, ... } } — no stale data
+        // /insights          → { insights: [{ insight_type: "forgotten_projects", content: JSON_STRING, ... }] }
+        //   insight.content is a JSON string: { stale: [...], active: [...], stale_count, active_count }
+        //   Must JSON.parse(insight.content) to get the stale array.
+
+        const forgottenInsight = insightsData?.insights?.find(
+          (i) => i.insight_type === "forgotten_projects"
+        );
+        let parsedContent = null;
+        try { parsedContent = forgottenInsight ? JSON.parse(forgottenInsight.content) : null; } catch { /* malformed */ }
+
+        const stale = Array.isArray(parsedContent?.stale) ? parsedContent.stale : [];
+        const item = [...stale].sort(
+          (a, b) => (b.mention_count || 0) - (a.mention_count || 0)
+        )[0] || null;
+
+        if (item) {
+          const typeLabel = TYPE_LABELS[item.type] || "PATTERN";
+          const dateTag = `QUIET FOR ${item.days_since_mention} DAYS`;
+          const cardText = `${item.name} hasn't come up in ${item.days_since_mention} days. ${item.context || ""}`.trim();
+          setNoticedInsight({
+            category: typeLabel,
+            dateTag,
+            content: cardText,
+            hasActions: true,
+          });
+        } else {
+          setNoticedInsight({
+            category: "PATTERN",
+            content: "No patterns detected yet. Keep journaling.",
+            hasActions: false,
+          });
+        }
+      } catch {
+        // keep null — fallback shown in JSX
+      }
+    };
+    fetchInsights();
+  }, [isActive]);
+
   const deadlines = showSnoozed
     ? allDeadlines
     : allDeadlines.filter((deadline) => deadline.status === "pending");
   const projects = showHidden
     ? allProjects
     : allProjects.filter((project) => project.status === "active");
-  const deleteLocked = Boolean(pendingDeletion);
+
   const activePickerDeadline =
     deadlines.find((deadline) => deadline.id === editingDeadlineId) || null;
-
-  const people = entities.filter((entity) => entity.entity_type === "person");
-  const places = entities.filter((entity) => entity.entity_type === "place");
-  const others = entities.filter(
-    (entity) => !["project", "person", "place"].includes(entity.entity_type)
-  );
-  const graphDeadlines = allDeadlines.filter(
-    (deadline) => (deadline.status || "pending") === "pending"
-  );
-
-  const dashboardMotionState = hasActivated ? "animate" : "initial";
 
   useEffect(() => {
     if (editingDeadlineId && !activePickerDeadline) {
       setEditingDeadlineId(null);
     }
   }, [activePickerDeadline, editingDeadlineId]);
+
+  // ——— Computed display values ———
+  const now = new Date();
+  const formattedDate = `${DAY_FULL[now.getDay()]}, ${MONTH_ABBR[now.getMonth()]} ${now.getDate()}`;
+  const weekStart = new Date(now);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+  const entriesThisWeek = entries.filter((e) => new Date(e.created_at) >= weekStart).length;
+  const currentThread = DAILY_THREADS[shuffleKey % DAILY_THREADS.length];
+  const currentWeather = MOOD_WEATHER[shuffleKey % MOOD_WEATHER.length];
+  const handleShuffle = () => {
+    setShuffling(true);
+    setTimeout(() => { setShuffleKey((k) => k + 1); setShuffling(false); }, 400);
+  };
 
   return (
     <AnimatedView viewKey="dashboard" isActive={isActive}>
@@ -1010,651 +1242,206 @@ function Dashboard({ isActive, userId }) {
           <p style={{ marginTop: 12 }}>Loading your journal...</p>
         </div>
       ) : (
-        <div className="dashboard">
-          <div className="dashboard-header">
-            <h2 className="dashboard-title">Dashboard</h2>
-            <div className="dashboard-sync">
-              <span className="sync-time">
-                {lastSynced ? `Synced ${lastSynced}` : ""}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setRefreshing(true);
-                  scheduleSilentRefresh(0);
-                }}
-                className="refresh-btn"
-                title="Refresh"
-                disabled={refreshing}
-              >
-                <svg
-                  className={`refresh-icon ${refreshing ? "spinning" : ""}`}
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+        <>
+        <div className="spread">
+
+          {/* ——— LEFT COLUMN ——— */}
+          <div key={"l" + shuffleKey} className={`spread-col${shuffling ? " shuffling" : ""}`}>
+
+            {/* Masthead */}
+            <div className="spread-masthead">
+              <h1>The <em>Daily</em> Mind</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div className="issue">VOL. {loadingData ? "—" : entries.length} · {formattedDate}</div>
+                <button
+                  type="button"
+                  className={`shuffle-btn${shuffling ? " spinning" : ""}`}
+                  onClick={handleShuffle}
                 >
-                  <polyline points="23 4 23 10 17 10" />
-                  <polyline points="1 20 1 14 7 14" />
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                </svg>
-              </button>
+                  <ShuffleIcon /> Shuffle
+                </button>
+              </div>
             </div>
+
+            {/* Mood weather */}
+            <p className="weather-line" style={{ marginTop: "-10px", marginBottom: "6px" }}>
+              {currentWeather.text}
+            </p>
+
+            {/* Stats ticker */}
+            <div className="ticker">
+              <div className="tick">
+                <div className="tick-n">{entriesThisWeek}</div>
+                <div className="tick-l">entries this week</div>
+              </div>
+              <div className="tick">
+                <div className="tick-n">
+                  {projects.length}<em>+2</em>
+                </div>
+                <div className="tick-l">active projects</div>
+              </div>
+              <div className="tick">
+                <div className="tick-n">{entities.length}</div>
+                <div className="tick-l">entities tracked</div>
+              </div>
+            </div>
+
+            {/*
+              // GET /insights returned: checked in console.log above
+              // GET /insights/patterns returned: checked in console.log above
+              // noticedInsight uses: .type/.category (tag), .content/.description (body), .created_at (month), .title
+            */}
+            {/* MindGraph Noticed / Daily Thread */}
+            <div className="dthread">
+              {noticedInsight ? (
+                <>
+                  <div className="dthread-kicker">
+                    <span className="pulse-sm" />
+                    MINDGRAPH NOTICED ·{" "}
+                    {(noticedInsight.category || noticedInsight.type || "PATTERN").toUpperCase()}
+                    {noticedInsight.dateTag
+                      ? ` · ${noticedInsight.dateTag}`
+                      : noticedInsight.created_at
+                      ? ` · OPEN SINCE ${new Date(noticedInsight.created_at).toLocaleString("en", { month: "short" }).toUpperCase()}`
+                      : ""}
+                  </div>
+                  {noticedInsight.title && (
+                    <div className="dthread-q">{noticedInsight.title}</div>
+                  )}
+                  <div className="dthread-q" style={noticedInsight.title ? { fontSize: "16px", marginTop: "-6px" } : undefined}>
+                    {noticedInsight.content || noticedInsight.description}
+                  </div>
+                  {noticedInsight.hasActions !== false && (
+                    <div className="dthread-actions">
+                      <button type="button" className="dthread-btn primary">Answer now</button>
+                      <button type="button" className="dthread-btn">Snooze</button>
+                      <button type="button" className="dthread-btn">Not now</button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="dthread-kicker">
+                    <span className="pulse-sm" />
+                    MINDGRAPH NOTICED · {currentThread.tag}
+                  </div>
+                  <div className="dthread-q">{currentThread.q}</div>
+                  <div className="dthread-actions">
+                    <button type="button" className="dthread-btn primary">Answer now</button>
+                    <button type="button" className="dthread-btn">Snooze</button>
+                    <button type="button" className="dthread-btn">Not now</button>
+                  </div>
+                </>
+              )}
+            </div>
+
           </div>
 
-          <KnowledgeGraph
-            entities={entities}
-            entries={entries}
-            deadlines={graphDeadlines}
-            relations={relations}
-          />
+          {/* ——— RIGHT COLUMN ——— */}
+          <div key={"r" + shuffleKey} className={`spread-col${shuffling ? " shuffling" : ""}`}>
 
-          <motion.div
-            className="dashboard-columns"
-            variants={staggerContainer}
-            initial="initial"
-            animate={dashboardMotionState}
-          >
-            <div className="dashboard-col-left">
-              <motion.div variants={cardEntrance}>
-                <div className="grid-card">
-                  <h3>Patterns Detected</h3>
-                  {!patterns.repeated_themes ? (
-                    <p className="empty">
-                      Keep journaling - MindGraph detects patterns after a few
-                      entries.
-                    </p>
-                  ) : patterns.repeated_themes.length === 0 ? (
-                    <p className="empty">
-                      No patterns yet. Write a few more entries and check back.
-                    </p>
-                  ) : (
-                    patterns.repeated_themes.map((theme, index) => (
-                      <div key={`${theme.theme}-${index}`} className="pattern-item">
-                        <div className="pattern-title">{theme.theme}</div>
-                        <div className="pattern-obs">{theme.observation}</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            </div>
-
-            <div className="dashboard-col-right">
-              <motion.div variants={cardEntrance}>
-                <div className="grid-card">
-                  <div className="projects-card-header">
-                    <h3>Active Projects</h3>
-                    <label className="deadline-toggle" htmlFor="show-hidden">
-                      <span className="deadline-toggle-label">Show hidden</span>
-                      <span
-                        className={`deadline-toggle-switch ${
-                          showHidden ? "active" : ""
-                        }`}
-                        aria-hidden="true"
-                      >
-                        <span className="deadline-toggle-thumb" />
-                      </span>
-                      <input
-                        id="show-hidden"
-                        type="checkbox"
-                        checked={showHidden}
-                        onChange={(event) => setShowHidden(event.target.checked)}
-                      />
-                    </label>
-                  </div>
-                  {projects.length === 0 ? (
-                    <p className="empty">
-                      {showHidden
-                        ? "No active or hidden projects right now."
-                        : "Your projects will appear here as you journal. Try writing about something you're working on."}
-                    </p>
-                  ) : (
-                    <div className="project-list" role="list">
-                      {projects.map((project) => {
-                        const isHidden = project.status === "hidden";
-                        const isUpdating = Boolean(projectActionState[project.id]);
-
-                        return (
-                          <div
-                            key={project.id}
-                            className={`project-item ${isHidden ? "hidden" : ""}`}
-                            role="listitem"
-                          >
-                            <div className="project-main">
-                              <div className="project-name">{project.name}</div>
-                              <div className="project-meta">
-                                Mentioned {project.mention_count || 0} time
-                                {(project.mention_count || 0) !== 1 ? "s" : ""}
-                                <span
-                                  className={`status-badge ${
-                                    isHidden ? "hidden" : "active"
-                                  }`}
-                                >
-                                  {isHidden ? "Hidden" : "Active"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="project-actions">
-                              {!isHidden && (
-                                <button
-                                  type="button"
-                                  className="deadline-action-btn"
-                                  aria-label={`Complete ${project.name}`}
-                                  title="Complete"
-                                  disabled={isUpdating}
-                                  onClick={() =>
-                                    handleProjectStatusChange(project, "completed")
-                                  }
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                </button>
-                              )}
-
-                              {isHidden ? (
-                                <button
-                                  type="button"
-                                  className="deadline-action-btn"
-                                  aria-label={`Unhide ${project.name}`}
-                                  title="Unhide"
-                                  disabled={isUpdating}
-                                  onClick={() =>
-                                    handleProjectStatusChange(project, "active")
-                                  }
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="deadline-action-btn"
-                                  aria-label={`Hide ${project.name}`}
-                                  title="Hide"
-                                  disabled={isUpdating}
-                                  onClick={() =>
-                                    handleProjectStatusChange(project, "hidden")
-                                  }
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <path d="M10.73 5.08A11.2 11.2 0 0 1 12 5c6.5 0 10 7 10 7a17.7 17.7 0 0 1-2.18 2.93" />
-                                    <path d="M6.61 6.61A17.2 17.2 0 0 0 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.39-1.61" />
-                                    <line x1="2" y1="2" x2="22" y2="22" />
-                                  </svg>
-                                </button>
-                              )}
-
-                              <button
-                                type="button"
-                                className="deadline-action-btn danger"
-                                aria-label={`Delete ${project.name}`}
-                                title="Delete"
-                                disabled={isUpdating || deleteLocked}
-                                onClick={() => scheduleDelete("project", project)}
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  aria-hidden="true"
-                                >
-                                  <path d="M3 6h18" />
-                                  <path d="M8 6V4h8v2" />
-                                  <path d="M19 6l-1 14H6L5 6" />
-                                  <path d="M10 11v6" />
-                                  <path d="M14 11v6" />
-                                </svg>
-                              </button>
-                            </div>
+            {/* Active Projects */}
+            <div>
+              <h2>
+                Active Projects
+                <span className="count">{projects.length} TRACKED</span>
+              </h2>
+              <div className="proj-list">
+                {projects.length === 0 ? (
+                  <p className="spread-empty">
+                    No active projects. Write about something you're working on.
+                  </p>
+                ) : (
+                  projects.slice(0, 5).map((project, idx) => {
+                    const pm = getProjectMeta(project);
+                    return (
+                      <div key={project.id} className="proj">
+                        <div>
+                          <div className="proj-title">{project.name}</div>
+                          <div className="proj-meta">
+                            <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
+                            {pm.meta}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.div variants={cardEntrance}>
-                <div className="grid-card">
-                  <div className="deadlines-card-header">
-                    <h3>Upcoming Deadlines</h3>
-                    <label className="deadline-toggle" htmlFor="show-snoozed">
-                      <span className="deadline-toggle-label">Show snoozed</span>
-                      <span
-                        className={`deadline-toggle-switch ${
-                          showSnoozed ? "active" : ""
-                        }`}
-                        aria-hidden="true"
-                      >
-                        <span className="deadline-toggle-thumb" />
-                      </span>
-                      <input
-                        id="show-snoozed"
-                        type="checkbox"
-                        checked={showSnoozed}
-                        onChange={(event) => setShowSnoozed(event.target.checked)}
-                      />
-                    </label>
-                  </div>
-                  {deadlines.length === 0 ? (
-                    <p className="empty">
-                      {showSnoozed
-                        ? "No pending or snoozed deadlines right now."
-                        : "Deadlines you mention will show up here. Try: 'I need to finish the report by Friday.'"}
-                    </p>
-                  ) : (
-                    <div className="deadline-list" role="list">
-                      {deadlines.map((deadline) => {
-                        const color = deadlineColor(deadline.due_date);
-                        const label = deadlineLabel(deadline.due_date);
-                        const isSnoozed = deadline.status === "snoozed";
-                        const isUpdating = Boolean(deadlineActionState[deadline.id]);
-
-                        return (
-                          <div
-                            key={deadline.id}
-                            className={`deadline-item ${
-                              isSnoozed ? "snoozed" : ""
-                            }`}
-                            role="listitem"
-                          >
-                            <div className="deadline-main">
-                              <span className="deadline-desc">
-                                {deadline.description}
-                              </span>
-                              <div className="deadline-meta">
-                                {isSnoozed && (
-                                  <span className="deadline-status-tag">
-                                    Snoozed
-                                  </span>
-                                )}
-                                <button
-                                  type="button"
-                                  ref={(node) => {
-                                    if (node) {
-                                      deadlineBadgeRefs.current[deadline.id] = node;
-                                    } else {
-                                      delete deadlineBadgeRefs.current[deadline.id];
-                                    }
-                                  }}
-                                  className="deadline-badge"
-                                  aria-label={`Edit date for ${deadline.description}`}
-                                  title="Edit date and time"
-                                  disabled={isUpdating}
-                                  onClick={() => toggleDeadlinePicker(deadline.id)}
-                                  style={{
-                                    background: color.bg,
-                                    color: color.text,
-                                    border: "none",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <span>{label}</span>
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="deadline-actions">
-                              <button
-                                type="button"
-                                className="deadline-action-btn"
-                                aria-label={`Mark ${deadline.description} as done`}
-                                title="Mark done"
-                                disabled={isUpdating}
-                                onClick={() =>
-                                  handleDeadlineStatusChange(deadline, "done")
-                                }
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2.2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  aria-hidden="true"
-                                >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              </button>
-
-                              {isSnoozed ? (
-                                <button
-                                  type="button"
-                                  className="deadline-action-btn"
-                                  aria-label={`Unsnooze ${deadline.description}`}
-                                  title="Unsnooze"
-                                  disabled={isUpdating}
-                                  onClick={() =>
-                                    handleDeadlineStatusChange(deadline, "pending")
-                                  }
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <path d="M12 19V5" />
-                                    <polyline points="7 10 12 5 17 10" />
-                                  </svg>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="deadline-action-btn"
-                                  aria-label={`Snooze ${deadline.description}`}
-                                  title="Snooze"
-                                  disabled={isUpdating}
-                                  onClick={() =>
-                                    handleDeadlineStatusChange(deadline, "snoozed")
-                                  }
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    aria-hidden="true"
-                                  >
-                                    <path d="M18 13a6 6 0 1 1-6-6 4 4 0 0 0 6 6Z" />
-                                  </svg>
-                                </button>
-                              )}
-
-                              <button
-                                type="button"
-                                className="deadline-action-btn danger"
-                                aria-label={`Delete ${deadline.description}`}
-                                title="Delete"
-                                disabled={isUpdating || deleteLocked}
-                                onClick={() => scheduleDelete("deadline", deadline)}
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  aria-hidden="true"
-                                >
-                                  <path d="M3 6h18" />
-                                  <path d="M8 6V4h8v2" />
-                                  <path d="M19 6l-1 14H6L5 6" />
-                                  <path d="M10 11v6" />
-                                  <path d="M14 11v6" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.div variants={cardEntrance}>
-                <div className="grid-card">
-                  <h3>People & Entities</h3>
-                  <div className="entity-group">
-                    {[...people, ...places, ...others]
-                      .slice(0, 15)
-                      .map((entity) => {
-                        const color =
-                          entityColors[entity.entity_type] || entityColors.task;
-
-                        return (
+                        </div>
+                        <div className="proj-bar">
                           <span
-                            key={entity.id}
-                            className="entity-chip"
-                            style={{ background: color.bg, color: color.text }}
-                          >
-                            {entity.name}
-                            {entity.mention_count > 1 && (
-                              <span className="mention-count">
-                                {entity.mention_count}
-                              </span>
-                            )}
-                          </span>
-                        );
-                      })}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          <div className="entries-section">
-            <div className="entries-header">
-              <h3 className="section-title">Recent Entries</h3>
-            </div>
-
-            {entries.length === 0 ? (
-              <p className="empty entries-empty">
-                Your journal is empty. Switch to Write and share what's on your
-                mind.
-              </p>
-            ) : (
-              <motion.div
-                className="entries-list"
-                variants={staggerContainer}
-                initial="initial"
-                animate={dashboardMotionState}
-              >
-                {entries.map((entry) => (
-                  <motion.div key={entry.id} variants={cardEntrance}>
-                    <div
-                      className={`entry-card${
-                        entry.status === "processing" ? " processing" : ""
-                      }`}
-                      onClick={() =>
-                        setExpandedEntryId(
-                          expandedEntryId === entry.id ? null : entry.id
-                        )
-                      }
-                    >
-                      <div className="entry-header">
-                        <div className="entry-header-main">
-                          {entry.status === "processing" ? (
-                            <span className="entry-title processing-title">
-                              <span
-                                className="spinner small"
-                                style={{ marginRight: 8 }}
-                              />
-                              Processing your entry...
-                            </span>
-                          ) : (
-                            <span className="entry-title">
-                              {entry.auto_title || "Untitled Entry"}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="entry-header-meta">
-                          <span className="entry-date">
-                            {new Date(entry.created_at).toLocaleString()}
-                          </span>
-                          {entry.status !== "processing" && (
-                            <button
-                              type="button"
-                              className="entry-delete-btn"
-                              aria-label={`Delete entry ${
-                                entry.auto_title || "untitled"
-                              }`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                scheduleDelete("entry", entry);
-                              }}
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M3 6h18" />
-                                <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
-                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                <path d="M10 11v6" />
-                                <path d="M14 11v6" />
-                              </svg>
-                            </button>
-                          )}
-                          <svg
-                            className={`entry-chevron ${
-                              expandedEntryId === entry.id ? "expanded" : ""
-                            }`}
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
+                            style={{
+                              width: `${PROGRESS_WIDTHS[idx % PROGRESS_WIDTHS.length]}%`,
+                            }}
+                          />
                         </div>
                       </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
 
-                      {entry.status === "processing" ? (
-                        <div className="entry-summary">
-                          {expandedEntryId === entry.id ? (
-                            <div className="pipeline-tracker">
-                              {pipelineOrder.map((stage, idx) => {
-                                const currentIndex = liveStage
-                                  ? pipelineOrder.indexOf(liveStage)
-                                  : -1;
-                                const isDone = idx < currentIndex;
-                                const isActive = stage === liveStage;
+            <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
 
-                                return (
-                                  <div
-                                    key={stage}
-                                    className={`pipeline-node ${
-                                      isDone ? "done" : isActive ? "active" : ""
-                                    }`}
-                                  >
-                                    <div className="pipeline-dot" />
-                                    <div className="pipeline-label">
-                                      {nodeLabels[stage] || stage}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <em>Click to view live progress...</em>
-                          )}
+            {/* Upcoming Deadlines */}
+            <div>
+              <h2>
+                Upcoming Deadlines
+                <span className="count">{formattedDate}</span>
+              </h2>
+              {deadlines.length === 0 ? (
+                <p className="spread-empty">
+                  No upcoming deadlines. Mention a due date in your next entry.
+                </p>
+              ) : (
+                <div className="deadlines">
+                  {deadlines.slice(0, 4).map((deadline) => {
+                    const dDate = deadline.due_date ? new Date(deadline.due_date) : null;
+                    const isUrgent =
+                      dDate && dDate - now < 2 * 24 * 60 * 60 * 1000 && dDate > now;
+                    const day = dDate
+                      ? String(dDate.getDate()).padStart(2, "0")
+                      : "?";
+                    const mon = dDate
+                      ? dDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
+                      : "";
+                    const when = deadlineLabel(deadline.due_date);
+                    const isUpdating = Boolean(deadlineActionState[deadline.id]);
+
+                    return (
+                      <div key={deadline.id} className={`dl${isUrgent ? " urgent" : ""}`}>
+                        <div className="dl-date">
+                          <span className="day">{day}</span>
+                          <span className="mon">{mon}</span>
                         </div>
-                      ) : (
-                        <AnimatePresence mode="wait" initial={false}>
-                          {expandedEntryId === entry.id ? (
-                            <motion.div
-                              key="raw"
-                              className="entry-expanded"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 400,
-                                damping: 32,
-                              }}
-                            >
-                              <div className="entry-raw-text">
-                                {entry.raw_text}
-                              </div>
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="summary"
-                              className="entry-summary"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.16 }}
-                            >
-                              {entry.summary || entry.raw_text}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
+                        <div>
+                          <div className="dl-title">{deadline.description}</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <div className="dl-when">{when}</div>
+                          <button
+                            type="button"
+                            className="dl-done-btn"
+                            aria-label={`Mark done: ${deadline.description}`}
+                            disabled={isUpdating}
+                            onClick={() => handleDeadlineStatusChange(deadline, "done")}
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+
           </div>
         </div>
+
+        {/* ——— Patterns Observatory — full width below both columns ——— */}
+        <div className="spread-full" style={{ marginTop: "2rem" }}>
+          <PatternsObservatory />
+        </div>
+
+        </>
       )}
 
       <AnimatePresence>

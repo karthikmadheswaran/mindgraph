@@ -119,8 +119,8 @@ export default function Sidebar({
   const navItems = [
     { id: "write", label: "Write", icon: icons.write },
     { id: "ask", label: "Ask", icon: icons.ask },
-    { id: "dashboard", label: "Dashboard", icon: icons.dashboard },
-    { id: "graph", label: "Knowledge Graph", icon: icons.graph },
+    { id: "dashboard", label: "Today", icon: icons.dashboard },
+    { id: "graph", label: "Graph", icon: icons.graph },
   ];
 
   return (
