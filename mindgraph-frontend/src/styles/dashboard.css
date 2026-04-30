@@ -183,6 +183,7 @@
   background: linear-gradient(135deg, #faf5ea, #ece4d5);
   border: 1px solid rgba(26, 22, 18, 0.10);
   border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(26,22,18,0.04), 0 6px 18px rgba(26,22,18,0.04);
   position: relative;
 }
 
