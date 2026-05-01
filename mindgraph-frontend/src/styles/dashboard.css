@@ -25,7 +25,7 @@
 }
 
 .spread-col {
-  padding: 48px 48px 64px;
+  padding: 24px 48px 64px;
   display: flex;
   flex-direction: column;
   gap: 36px;
@@ -44,9 +44,13 @@
 
 /* ——— Masthead ——— */
 
+.spread-masthead-wrap {
+  padding: 48px 48px 0;
+}
+
 .spread-masthead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   padding-bottom: 18px;
   border-bottom: 2px solid #1a1612;
@@ -75,6 +79,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #9a8d77;
+  white-space: nowrap;
 }
 
 /* ——— Section headings ——— */

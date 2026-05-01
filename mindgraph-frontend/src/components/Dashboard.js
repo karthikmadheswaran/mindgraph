@@ -1252,26 +1252,28 @@ function Dashboard({ isActive, userId }) {
         </div>
       ) : (
         <>
+        {/* ——— Full-width masthead ——— */}
+        <div className="spread-masthead-wrap">
+          <div className="spread-masthead">
+            <h1>The <em>Daily</em> Mind</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div className="issue">VOL. {loadingData ? "—" : entries.length} · {formattedDate}</div>
+              <button
+                type="button"
+                className={`sync-btn${syncing ? " syncing" : ""}`}
+                onClick={handleSync}
+                disabled={syncing}
+              >
+                <SyncIcon /> {syncing ? "Syncing…" : "Sync"}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="spread">
 
           {/* ——— LEFT COLUMN ——— */}
           <div key={"l" + shuffleKey} className={`spread-col${shuffling ? " shuffling" : ""}`}>
-
-            {/* Masthead */}
-            <div className="spread-masthead">
-              <h1>The <em>Daily</em> Mind</h1>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
-                <div className="issue">VOL. {loadingData ? "—" : entries.length} · {formattedDate}</div>
-                <button
-                  type="button"
-                  className={`sync-btn${syncing ? " syncing" : ""}`}
-                  onClick={handleSync}
-                  disabled={syncing}
-                >
-                  <SyncIcon /> {syncing ? "Syncing…" : "Sync"}
-                </button>
-              </div>
-            </div>
 
             {/* Mood weather */}
             <p className="weather-line" style={{ marginTop: "-10px", marginBottom: "6px" }}>
