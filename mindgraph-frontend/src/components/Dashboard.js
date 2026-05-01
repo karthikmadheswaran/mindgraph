@@ -274,13 +274,11 @@ function PatternsObservatory() {
   );
 }
 
-// ——— Shuffle icon ———
-const ShuffleIcon = () => (
+// ——— Sync icon ———
+const SyncIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="16 3 21 3 21 8" />
-    <line x1="4" y1="20" x2="21" y2="3" />
-    <polyline points="21 16 21 21 16 21" />
-    <line x1="15" y1="15" x2="21" y2="21" />
+    <polyline points="1 4 1 10 7 10" />
+    <path d="M3.51 15a9 9 0 1 0 .49-4.95" />
   </svg>
 );
 
@@ -312,6 +310,7 @@ function Dashboard({ isActive, userId }) {
   const [toast, setToast] = useState(null);
   const [shuffleKey, setShuffleKey] = useState(0);
   const [shuffling, setShuffling] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [noticedInsight, setNoticedInsight] = useState(null);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
@@ -1227,6 +1226,16 @@ function Dashboard({ isActive, userId }) {
     setShuffling(true);
     setTimeout(() => { setShuffleKey((k) => k + 1); setShuffling(false); }, 400);
   };
+  const handleSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const headers = await authHeaders();
+      await fetch(`${API}/insights`, { headers });
+    } catch { /* ignore */ } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <AnimatedView viewKey="dashboard" isActive={isActive}>
@@ -1251,14 +1260,15 @@ function Dashboard({ isActive, userId }) {
             {/* Masthead */}
             <div className="spread-masthead">
               <h1>The <em>Daily</em> Mind</h1>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
                 <div className="issue">VOL. {loadingData ? "—" : entries.length} · {formattedDate}</div>
                 <button
                   type="button"
-                  className={`shuffle-btn${shuffling ? " spinning" : ""}`}
-                  onClick={handleShuffle}
+                  className={`sync-btn${syncing ? " syncing" : ""}`}
+                  onClick={handleSync}
+                  disabled={syncing}
                 >
-                  <ShuffleIcon /> Shuffle
+                  <SyncIcon /> {syncing ? "Syncing…" : "Sync"}
                 </button>
               </div>
             </div>

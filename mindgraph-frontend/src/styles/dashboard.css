@@ -337,9 +337,9 @@
   border-radius: 999px;
 }
 
-/* ——— Shuffle button ——— */
+/* ——— Sync button ——— */
 
-.shuffle-btn {
+.sync-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -356,16 +356,21 @@
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.shuffle-btn:hover {
+.sync-btn:hover:not(:disabled) {
   color: #b84a2d;
   border-color: #b84a2d;
 }
 
-.shuffle-btn.spinning svg {
-  animation: spinOnce 0.6s linear;
+.sync-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
-@keyframes spinOnce {
+.sync-btn.syncing svg {
+  animation: spinLoop 1s linear infinite;
+}
+
+@keyframes spinLoop {
   to { transform: rotate(360deg); }
 }
 
