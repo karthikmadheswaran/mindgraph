@@ -1,5 +1,7 @@
+import asyncio
 import json
 import logging
+import uuid
 
 from fastapi import BackgroundTasks
 from fastapi.responses import StreamingResponse
@@ -394,6 +396,7 @@ async def process_entry_background(
 ) -> None:
     final_result = {}
     message_metadata = {"pipeline_stage": "normalize"}
+    trace_id = str(uuid.uuid4())
 
     try:
         if conversation_message_id:
@@ -403,7 +406,9 @@ async def process_entry_background(
                 message_metadata,
             )
 
-        async for event in workflow.astream(state, config=langfuse_config()):
+        async for event in workflow.astream(
+            state, config=langfuse_config(trace_id=trace_id, user_id=user_id)
+        ):
             node_name = list(event.keys())[0]
             node_output = event[node_name]
             if node_output and isinstance(node_output, dict):
@@ -425,6 +430,10 @@ async def process_entry_background(
                 )
 
         await regenerate_insights_background(user_id)
+
+        from app.services.cost_cap import record_cost
+
+        asyncio.create_task(record_cost(user_id, "entry", trace_id=trace_id))
 
         if conversation_message_id and entry_id:
             try:

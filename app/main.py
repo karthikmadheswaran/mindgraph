@@ -4,11 +4,14 @@ import os
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, Query
+from fastapi import BackgroundTasks, Depends, FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse
 
 from app.auth import get_current_user
+from app.dependencies.rate_limit import ask_rate_limit, entry_rate_limit
+from app.services.cost_cap import check_cost_cap
+from app.services.tier_service import tier_service
 from app.schemas import (
     DeadlineDateUpdateRequest,
     DeadlineStatusUpdateRequest,
@@ -112,8 +115,12 @@ async def new_ask_session(user_id: str = Depends(get_current_user)):
 async def ask_question(
     question: str,
     background_tasks: BackgroundTasks,
+    request: Request,
     user_id: str = Depends(get_current_user),
+    _rl: None = Depends(ask_rate_limit),
 ):
+    tier = await tier_service.get_user_tier(user_id)
+    await check_cost_cap(user_id, tier)
     answer = await ask_service.ask(question, user_id)
     background_tasks.add_task(ask_service.compact_old_messages, user_id)
     return {"answer": answer}
@@ -247,8 +254,12 @@ async def create_entry_stream(entry: EntryRequest, user_id: str = Depends(get_cu
 async def create_entry_async(
     entry: EntryRequest,
     background_tasks: BackgroundTasks,
+    request: Request,
     user_id: str = Depends(get_current_user),
+    _rl: None = Depends(entry_rate_limit),
 ):
+    tier = await tier_service.get_user_tier(user_id)
+    await check_cost_cap(user_id, tier)
     return await entry_service.create_entry_async(entry, background_tasks, user_id)
 
 

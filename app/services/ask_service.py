@@ -839,4 +839,7 @@ async def ask(question: str, user_id: str) -> str:
         ]
     ).execute()
 
+    from app.services.cost_cap import record_cost
+
+    await record_cost(user_id, "ask")
     return answer

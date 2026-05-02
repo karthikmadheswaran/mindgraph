@@ -1,6 +1,15 @@
 .env
+.config/
 __pycache__/
 *.pyc
 .pytest_cache/
 node_modules/
 Ui inspirations/
+
+# Ignore AI IDE Workspace States
+.claude/
+.gemini/
+.cursor/
+.antigravity/
+
+generation_evaluation_results.json
