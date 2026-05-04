@@ -30,6 +30,9 @@
       "react-app/jest"
     ]
   },
+  "overrides": {
+    "yaml": "^2.4.2"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
