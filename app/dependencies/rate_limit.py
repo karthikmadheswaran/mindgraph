@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Request
 
 from app.auth import get_current_user
 from app.db import supabase
+from app.services.analytics import track
 from app.services.tier_service import tier_service
 
 # (limit, window_str) per endpoint per tier
@@ -73,6 +74,7 @@ async def entry_rate_limit(
     limit, window_str = LIMITS.get(tier, LIMITS["free"])["entries"]
     ws = _window_start(window_str)
     if not _try_rate_limit(f"user:{user_id}:entries", ws, limit):
+        track(user_id, "rate_limit_hit", {"endpoint": "entries", "tier": tier})
         raise HTTPException(
             status_code=429,
             detail=f"Entry limit reached ({limit} per {window_str}). Upgrade to Pro for higher limits.",
@@ -103,6 +105,7 @@ async def ask_rate_limit(
     limit, window_str = LIMITS.get(tier, LIMITS["free"])["asks"]
     ws = _window_start(window_str)
     if not _try_rate_limit(f"user:{user_id}:asks", ws, limit):
+        track(user_id, "rate_limit_hit", {"endpoint": "asks", "tier": tier})
         raise HTTPException(
             status_code=429,
             detail=f"Ask limit reached ({limit} per {window_str}). Upgrade to Pro for higher limits.",

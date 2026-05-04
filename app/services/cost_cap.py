@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from app.db import supabase
+from app.services.analytics import track
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ async def check_cost_cap(user_id: str, tier: str) -> None:
     rows = result.data or []
     spent = Decimal(str(rows[0].get("cost_usd", "0"))) if rows else Decimal("0")
     if spent >= cap:
+        track(user_id, "cost_cap_hit", {"tier": tier})
         raise HTTPException(
             status_code=429,
             detail=f"Daily LLM cost cap reached (${cap}). Resets at midnight UTC.",

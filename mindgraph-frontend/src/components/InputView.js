@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { API, authHeaders } from "../utils/auth";
 import { supabase } from "../supabaseClient";
+import { trackEvent } from "../posthog";
 import AnimatedView from "./AnimatedView";
 import Toast from "./Toast";
 import "../styles/input.css";
@@ -130,6 +131,7 @@ function InputView({ isActive, onEntrySubmitted }) {
       if (!response.ok) throw new Error("Entry submission failed");
       await response.json();
       setToast({ message: "Entry submitted! Processing...", type: "success" });
+      trackEvent("entry_submitted", { input_type: "text", char_count: text.length });
       setText("");
       if (onEntrySubmitted) onEntrySubmitted();
       fetchEntries(); // refresh list after submit

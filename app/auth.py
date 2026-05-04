@@ -1,4 +1,5 @@
 import jwt
+import sentry_sdk
 from jwt import PyJWKClient
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
@@ -42,6 +43,7 @@ async def get_current_user(credentials=Depends(security)) -> str:
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token: no user ID")
 
+        sentry_sdk.set_user({"id": user_id})
         return user_id
 
     except jwt.ExpiredSignatureError:

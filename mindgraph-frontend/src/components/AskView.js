@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { API, authHeaders } from "../utils/auth";
+import { trackEvent } from "../posthog";
 import AnimatedView from "./AnimatedView";
 import "../styles/ask.css";
 
@@ -797,6 +798,7 @@ export default function AskView({ isActive }) {
 
         if (!res.ok) throw new Error(`Conversation ask failed: ${res.status}`);
 
+        trackEvent("ask_question", { question_length: content.length });
         const data = await res.json();
         replaceMessages([tempUser.id, typingMessage.id], data.messages || []);
       } catch {

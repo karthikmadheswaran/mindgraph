@@ -3,13 +3,17 @@ import logging
 import os
 from typing import Optional
 
+import sentry_sdk
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from app.auth import get_current_user
 from app.dependencies.rate_limit import ask_rate_limit, entry_rate_limit
+from app.services.analytics import track
 from app.services.cost_cap import check_cost_cap
 from app.services.tier_service import tier_service
 from app.schemas import (
@@ -37,6 +41,14 @@ logging.basicConfig(
 )
 
 load_dotenv()
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN_BACKEND"),
+    integrations=[StarletteIntegration(), FastApiIntegration()],
+    traces_sample_rate=0.2,
+    profiles_sample_rate=0.1,
+    environment="production",
+    send_default_pii=False,
+)
 Langfuse(
     public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
     secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
@@ -260,6 +272,7 @@ async def create_entry_async(
 ):
     tier = await tier_service.get_user_tier(user_id)
     await check_cost_cap(user_id, tier)
+    track(user_id, "entry_submitted", {"tier": tier})
     return await entry_service.create_entry_async(entry, background_tasks, user_id)
 
 

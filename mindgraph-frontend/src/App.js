@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabaseClient";
 import { API, authHeaders } from "./utils/auth";
+import { identifyUser, resetUser, trackEvent } from "./posthog";
 import {
   clearDashboardSnapshotCache,
   loadDashboardSnapshot,
@@ -175,6 +176,14 @@ export default function App() {
         );
 
         if (!hasProcessingEntries(nextEntries)) {
+          const recentCompleted = nextEntries
+            .filter((e) => e.status === "completed" && e.created_at)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+          if (recentCompleted) {
+            trackEvent("entry_pipeline_complete", {
+              processing_time_ms: Date.now() - new Date(recentCompleted.created_at).getTime(),
+            });
+          }
           stopBackgroundEntriesPolling();
           await loadDashboardSnapshot({ force: true, userId });
         }
@@ -237,6 +246,7 @@ export default function App() {
       hasBootstrappedAuthViewRef.current = false;
       stopBackgroundEntriesPolling();
       clearDashboardSnapshotCache();
+      resetUser();
       clearHashView();
       setSession(null);
 
@@ -267,6 +277,7 @@ export default function App() {
       }
 
       activeUserIdRef.current = nextUserId;
+      if (nextUserId) identifyUser(nextUserId);
       setSession(nextSession);
       setView("app");
 
@@ -321,6 +332,11 @@ export default function App() {
     if (currentView === "dashboard") {
       setHasVisitedDashboard(true);
     }
+  }, [currentView]);
+
+  useEffect(() => {
+    if (currentView === "graph") trackEvent("graph_viewed");
+    else if (currentView === "progress") trackEvent("progress_viewed");
   }, [currentView]);
 
   useEffect(() => {
