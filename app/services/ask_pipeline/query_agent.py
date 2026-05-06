@@ -72,10 +72,8 @@ def _format_recent_summaries(entries: list[dict], now: datetime) -> str:
 
 def _strip_code_fence(text: str) -> str:
     text = text.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
-    return text.strip()
+    text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    return text
 
 
 def _parse_agent_json(raw: str) -> dict:
@@ -115,7 +113,9 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         f"{entity_list}\n\n"
         "Recent entries (last 3):\n"
         f"{recent}\n\n"
-        "Output ONLY valid JSON matching this schema — no explanation, no markdown:\n"
+        "Output ONLY raw valid JSON. No markdown. No code fences. No backticks. "
+        "No explanation. Start your response with { and end with }.\n"
+        "Schema:\n"
         "{\n"
         "  \"query_types\": [\"temporal\" | \"semantic\" | \"recent\" | \"dashboard\" | \"keyword\"],\n"
         "  \"time_range\": {\"start\": \"YYYY-MM-DD\", \"end\": \"YYYY-MM-DD\"} | null,\n"
