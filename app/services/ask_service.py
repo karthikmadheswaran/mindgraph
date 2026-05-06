@@ -1,9 +1,7 @@
 import logging
-import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from app.ask_memory import (
-    build_ask_prompt,
     build_compaction_prompt,
     format_conversation_messages,
 )
@@ -68,212 +66,6 @@ _BROAD_QUERY_SIGNALS = (
 def is_broad_query(question: str) -> bool:
     q = question.lower().strip()
     return any(signal in q for signal in _BROAD_QUERY_SIGNALS)
-
-
-# --- Temporal recency boost ---
-_TEMPORAL_SIGNALS = (
-    "today",
-    "this week",
-    "this month",
-    "recently",
-    "lately",
-    "last few days",
-    "past week",
-    "current",
-    "right now",
-    "what have i been",
-    "what am i",
-)
-
-
-def has_temporal_signal(question: str) -> bool:
-    q = question.lower()
-    return any(signal in q for signal in _TEMPORAL_SIGNALS)
-
-
-# --- Temporal query classification (for routing) ---
-
-# Pure temporal summary phrases — these bypass the content-word check entirely.
-# They are unambiguously asking for a time-period overview, not a topical filter.
-_PURE_TEMPORAL_PATTERNS = [
-    r"\bwhat did i do (?:today|this week|yesterday|recently|this morning|this evening)\b",
-    r"\bwhat happened (?:today|this week|yesterday|last week|this month)\b",
-    r"\bgive me .{0,30}(?:my|this) week\b",
-    r"\bgive me my (?:today|week|month)\b",
-    r"\bweekly summary\b",
-    r"\bany updates (?:today|this week|recently)\b",
-    r"\brecent entries\b",
-    r"\b(?:summarize|summary of) (?:my )?(?:today|this week|last week|this month|the week)\b",
-    r"\bwhat (?:did i write|have i written) (?:today|yesterday|this week|recently)\b",
-]
-
-# Each tuple: (regex, days_back, is_yesterday_special_case)
-_TEMPORAL_WINDOW_PATTERNS = [
-    (r"\btoday\b|\bthis morning\b|\bthis evening\b", 1, False),
-    (r"\byesterday\b", 2, True),
-    (r"\bthis week\b|\bpast week\b|\blast 7 days\b|\blast week\b", 7, False),
-    (r"\bweekly\b|\bweek\b", 7, False),
-    (r"\bthis month\b|\bpast month\b|\blast 30 days\b", 30, False),
-    (r"\brecently\b|\brecent\b", 7, False),
-]
-
-# Function/filler words that don't constitute a topical filter
-_CONTENT_WORD_FILLERS = {
-    "i", "me", "my", "you", "your", "we", "our", "it", "its",
-    "the", "a", "an",
-    "is", "are", "was", "were", "be", "been", "am",
-    "do", "did", "does", "have", "has", "had",
-    "give", "tell", "show", "get", "find", "see", "know", "think",
-    "what", "when", "where", "who", "how", "which",
-    "this", "that", "these", "those", "here", "there",
-    "for", "of", "to", "and", "or", "but", "in", "on", "at", "about",
-    "with", "by", "from", "into", "any", "some",
-    "something", "anything", "everything", "nothing",
-    "factual", "recent", "new", "latest", "general", "overview",
-}
-
-# Temporal phrases to strip before counting content words
-_TEMPORAL_CLEANUP_PATTERNS = [
-    r"\blast\s+\d+\s+days?\b",
-    r"\btoday\b", r"\bthis morning\b", r"\bthis evening\b",
-    r"\byesterday\b",
-    r"\bthis week\b", r"\bpast week\b", r"\blast 7 days\b", r"\blast week\b",
-    r"\bthis month\b", r"\bpast month\b", r"\blast 30 days\b",
-    r"\brecently\b", r"\brecent\b", r"\bweekly\b",
-]
-
-
-def classify_temporal_query(question: str) -> dict | None:
-    """
-    Detect pure temporal queries (asking for a time-period summary) and return
-    {"start_date": datetime, "end_date": datetime} if so, else None.
-
-    Mixed queries like "what have I been stressed about this week?" are routed to
-    the normal retrieval pipeline (return None).
-    """
-    q = question.lower().strip().rstrip("?.,!")
-    now = datetime.now(timezone.utc)
-
-    # Phase 1: "last N days" explicit pattern
-    m = re.search(r"\blast\s+(\d+)\s+days?\b", q)
-    custom_days = int(m.group(1)) if m else None
-
-    # Phase 2: Detect temporal window from keywords
-    days_back = custom_days
-    is_yesterday = False
-    if days_back is None:
-        for pattern, days, yesterday_flag in _TEMPORAL_WINDOW_PATTERNS:
-            if re.search(pattern, q):
-                days_back = days
-                is_yesterday = yesterday_flag
-                break
-
-    if days_back is None:
-        return None  # No temporal signal — normal pipeline
-
-    # Phase 3: Pure temporal phrase check — short-circuit content-word analysis
-    is_pure = any(re.search(p, q) for p in _PURE_TEMPORAL_PATTERNS)
-
-    if not is_pure:
-        # Phase 4: Strip temporal phrases, count remaining content words.
-        # Any meaningful topical word → mixed query → normal pipeline.
-        stripped = q
-        for pattern in _TEMPORAL_CLEANUP_PATTERNS:
-            stripped = re.sub(pattern, "", stripped)
-
-        content_words = [
-            w for w in re.split(r"\W+", stripped)
-            if w and w not in _CONTENT_WORD_FILLERS
-        ]
-        if content_words:
-            return None  # Topical+temporal → normal pipeline
-
-    end_date = now
-    if is_yesterday:
-        # "yesterday" → 24–48 hours ago
-        end_date = now - timedelta(hours=24)
-        start_date = now - timedelta(hours=48)
-    else:
-        start_date = now - timedelta(days=days_back)
-
-    return {"start_date": start_date, "end_date": end_date}
-
-
-def fetch_entries_by_date_range(
-    user_id: str,
-    start_date: datetime,
-    end_date: datetime,
-    max_summary_tokens: int = 3000,
-) -> list[dict]:
-    """
-    Fetch completed journal entries within a date range directly from the DB.
-    Bypasses embedding, vector search, and reranking entirely.
-
-    Uses summary fields (~50 tokens each) instead of raw text so far more
-    entries fit within the token budget. Entries are ordered most-recent-first;
-    accumulation stops when the next entry would exceed max_summary_tokens.
-    """
-    result = (
-        supabase.table("entries")
-        .select("id, auto_title, summary, created_at")
-        .eq("user_id", user_id)
-        .eq("status", "completed")
-        .is_("deleted_at", "null")
-        .gte("created_at", start_date.isoformat())
-        .lte("created_at", end_date.isoformat())
-        .order("created_at", desc=True)
-        .execute()
-    )
-    all_entries = result.data or []
-
-    included: list[dict] = []
-    token_count = 0
-    for entry in all_entries:
-        text = entry.get("summary") or ""
-        entry_tokens = len(text.split()) * 1.3
-        if token_count + entry_tokens > max_summary_tokens:
-            break
-        entry["relevance"] = "temporal_match"
-        included.append(entry)
-        token_count += entry_tokens
-
-    if len(all_entries) > len(included):
-        logger.warning(
-            "Temporal fetch truncated: %d/%d entries included (token cap %d)",
-            len(included),
-            len(all_entries),
-            max_summary_tokens,
-        )
-
-    return included
-
-
-def apply_temporal_boost(entries: list[dict], question: str) -> list[dict]:
-    """Boost recent entries' similarity scores. Decays over 7 days."""
-    now = datetime.now(timezone.utc)
-    boost_factor = 0.12 if has_temporal_signal(question) else 0.08
-
-    for entry in entries:
-        created_at_str = entry.get("created_at", "")
-        try:
-            if isinstance(created_at_str, str):
-                created_at = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
-            else:
-                created_at = created_at_str
-
-            days_ago = (now - created_at).days
-            if days_ago <= 7:
-                boost = boost_factor * (1 - days_ago / 8)
-                entry["_recency_boost"] = round(boost, 4)
-                vec_sim = entry.get("_vector_sim", 0) or entry.get("similarity", 0) or 0
-                if vec_sim > 0:
-                    entry["similarity"] = vec_sim + boost
-            else:
-                entry["_recency_boost"] = 0
-        except (ValueError, TypeError):
-            entry["_recency_boost"] = 0
-
-    return entries
 
 
 # --- Topic switch detection ---
@@ -530,9 +322,6 @@ async def retrieve_relevant_entries(
         if not candidates:
             return []
 
-        # Apply temporal boost for ranking (not threshold filtering)
-        candidates = apply_temporal_boost(candidates, question)
-
     with trace.stage("rerank"):
         if len(candidates) > max_entries:
             # Use the enriched retrieval query so the reranker has
@@ -682,6 +471,8 @@ async def generate_answer(
     user_id: str,
     exclude_message_id: str | None = None,
 ) -> str:
+    from app.services.ask_pipeline import AskState, ask_pipeline
+
     trace = LatencyTrace()
 
     with trace.stage("conversation_fetch"):
@@ -716,56 +507,37 @@ async def generate_answer(
         if memory_result.data:
             user_memory = memory_result.data[0].get("memory_text", "")
 
-    # Context pruning — if a repetition loop is detected in history,
-    # strip history entirely. The LLM generates from memory + retrieved
-    # entries only, with no bad pattern to follow.
-    # This is a code-level intervention: examples in context beat
-    # instructions, so we remove the examples rather than fight them.
     if detect_repetition_loop(history_messages):
         logger.warning(
             "Repetition loop detected for user %s — pruning conversation "
             "history from prompt. Generating from memory only.",
             user_id,
         )
-        history_messages = []
         conversation_history = ""
 
-    temporal_range = classify_temporal_query(question)
-    logger.info(
-        "Ask routing: %s (question: %s)",
-        "temporal" if temporal_range else "topical",
-        question[:80],
-    )
-
-    if temporal_range:
-        with trace.stage("temporal_fetch"):
-            relevant_entries = fetch_entries_by_date_range(
-                user_id=user_id,
-                start_date=temporal_range["start_date"],
-                end_date=temporal_range["end_date"],
-            )
-    else:
-        relevant_entries = await retrieve_relevant_entries(
-            question,
-            user_id,
-            history_messages=history_messages,
-            trace=trace,
-        )
-    context_text = format_retrieved_entries(relevant_entries)
-
-    with trace.stage("prompt_build"):
-        prompt = build_ask_prompt(
-            question=question,
-            user_memory=user_memory,
-            conversation_history=conversation_history,
-            context_text=context_text,
-        )
+    initial_state: AskState = {
+        "question": question,
+        "user_id": user_id,
+        "conversation_history": conversation_history,
+        "long_term_memory": user_memory,
+        "query_types": [],
+        "time_range": None,
+        "entities_mentioned": [],
+        "dashboard_context_needed": False,
+        "today_str": "",
+        "temporal_entries": [],
+        "recent_summaries": [],
+        "rag_entries": [],
+        "dashboard_context": {},
+        "assembled_context": "",
+        "answer": "",
+    }
 
     with trace.stage("llm_generation"):
-        response = await model.ainvoke(prompt, config=langfuse_config())
+        result = await ask_pipeline.ainvoke(initial_state)
 
     trace.log(question)
-    return extract_text(response)
+    return result.get("answer", "")
 
 
 async def new_session(user_id: str) -> dict:

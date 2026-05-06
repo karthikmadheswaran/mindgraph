@@ -15,6 +15,7 @@ langfuse
 langchain
 PyJWT[crypto]
 cohere>=5.0.0
+dateparser==1.2.0
 upstash-redis
 sentry-sdk[fastapi]
 posthog
