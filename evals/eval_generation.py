@@ -1188,6 +1188,119 @@ TEST_CASES = [
         "expected_tone": "warm_grounded",
         "failure_modes": ["broken_record", "fact_regurgitation"],
     },
+
+    # -----------------------------------------------------------------------
+    # Category 7: Overwhelm — emotional loop where user signals "guide me / idk / all"
+    # The model must commit to a concrete answer instead of asking another clarifying question.
+    # -----------------------------------------------------------------------
+    {
+        "id": "overwhelm_guide_me_once",
+        "category": "overwhelm",
+        "description": "User says 'guide me' after being asked a priority question — model should commit to a concrete numbered list, not ask another clarifying question",
+        "provided_entries": "",
+        "memory": "User is jobless for a year, working on MindGraph SaaS, dealing with health and financial stress.",
+        "conversation": (
+            "User: i dont know what to focus on\n"
+            "Assistant: It sounds like you're feeling pulled in many directions. Is the pressure coming more from the technical work on MindGraph, or from the financial stress?\n"
+            "User: guide me"
+        ),
+        "question": "guide me",
+        "expected_behavior": (
+            "Commits to a concrete answer with specific numbered/ordered next steps. "
+            "Does NOT ask another clarifying question. "
+            "Acts like a thoughtful friend making a decision for the user."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what feels most pressing",
+            "what would you like to focus on",
+            "what feels like the most immediate",
+        ],
+        "expected_tone": "decisive_caring",
+        "failure_modes": ["broken_record", "opinion_refusal"],
+    },
+    {
+        "id": "overwhelm_guide_me_repeated",
+        "category": "overwhelm",
+        "description": "User says 'i dont know' twice after two clarifying questions — model MUST commit, not ask again",
+        "provided_entries": "",
+        "memory": "User is jobless for a year, working on MindGraph SaaS, dealing with health and financial stress.",
+        "conversation": (
+            "User: i dont know what to do\n"
+            "Assistant: Given everything on your plate, what feels like the most immediate source of stress?\n"
+            "User: i dont know guide me....\n"
+            "Assistant: What feels most pressing — the MindGraph integrations, a health concern, or financial stability?\n"
+            "User: i dont know"
+        ),
+        "question": "i dont know",
+        "expected_behavior": (
+            "Commits to a concrete prioritized list without asking another question. "
+            "Gives specific actionable steps based on journal knowledge. "
+            "Acts like a thoughtful friend making a decision for the user."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what feels most pressing",
+            "what would you like to focus on",
+            "what feels like the most immediate",
+            "what do you think",
+        ],
+        "expected_tone": "decisive_caring",
+        "failure_modes": ["broken_record", "opinion_refusal"],
+    },
+    {
+        "id": "overwhelm_user_says_all",
+        "category": "overwhelm",
+        "description": "User says 'all' in response to a priority question — model should commit to a concrete ordered list",
+        "provided_entries": "",
+        "memory": "User is jobless for a year, working on MindGraph SaaS. Active projects: MindGraph. Upcoming deadline: Sachin's marriage May 31, get a job by May 31.",
+        "conversation": (
+            "User: i dont know what to focus on\n"
+            "Assistant: What feels most pressing — the technical work, health concerns, or financial stability?\n"
+            "User: all"
+        ),
+        "question": "all",
+        "expected_behavior": (
+            "Does not ask another clarifying question. "
+            "Commits to a specific numbered priority order. "
+            "References actual journal context (MindGraph, deadlines, financial situation)."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what feels most pressing",
+            "does that feel like",
+            "what would you like",
+        ],
+        "expected_tone": "decisive_caring",
+        "failure_modes": ["broken_record", "opinion_refusal"],
+    },
+    {
+        "id": "overwhelm_user_corrects_model",
+        "category": "overwhelm",
+        "description": "User corrects a wrong assumption and reveals deeper stress — model should acknowledge and pivot, not loop",
+        "provided_entries": "",
+        "memory": "User is jobless for a year, working on MindGraph SaaS, integrated Sentry/PostHog, Ask V2 shipped.",
+        "conversation": (
+            "User: i dont know what to work on\n"
+            "Assistant: You mentioned the RAG integration breakthrough. Does that feel like something that could give you momentum?\n"
+            "User: i already did that, i am jobless for a year now"
+        ),
+        "question": "i already did that, i am jobless for a year now",
+        "expected_behavior": (
+            "Acknowledges the correction directly. "
+            "Pivots to the financial/career stress as the real issue. "
+            "Does not ask what they want to work on again. "
+            "Gives concrete next step toward financial stability or MindGraph launch."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "what feels most pressing",
+            "what would you like to focus on",
+            "does that feel like something that could give you momentum",
+        ],
+        "expected_tone": "empathetic_decisive",
+        "failure_modes": ["broken_record", "opinion_refusal", "emotional_deflection"],
+    },
 ]
 
 # ---------------------------------------------------------------------------
@@ -1514,14 +1627,21 @@ def print_report(results: list[dict], skip_judge: bool) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
-async def main(skip_judge: bool) -> None:
+async def main(skip_judge: bool, filter_substr: str | None = None) -> None:
     run_id = f"gen-eval-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+
+    if filter_substr:
+        needle = filter_substr.lower()
+        cases = [tc for tc in TEST_CASES if needle in tc["id"].lower() or needle in tc["category"].lower()]
+    else:
+        cases = list(TEST_CASES)
+
     print(f"Starting MindGraph Generation eval run {run_id}")
-    print(f"Test cases: {len(TEST_CASES)} | Judge: {'disabled' if skip_judge else 'enabled'}")
+    print(f"Test cases: {len(cases)}{f' (filtered by {filter_substr!r})' if filter_substr else ''} | Judge: {'disabled' if skip_judge else 'enabled'}")
 
     results = []
-    for i, tc in enumerate(TEST_CASES, 1):
-        print(f"[{i}/{len(TEST_CASES)}] {tc['id']}", flush=True)
+    for i, tc in enumerate(cases, 1):
+        print(f"[{i}/{len(cases)}] {tc['id']}", flush=True)
         result = await evaluate_case(tc, skip_judge)
         results.append(result)
 
@@ -1563,5 +1683,7 @@ async def main(skip_judge: bool) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MindGraph generation quality eval")
     parser.add_argument("--skip-judge", action="store_true", help="Skip LLM-as-judge scoring")
+    parser.add_argument("--filter", dest="filter_substr", default=None,
+                        help="Run only cases whose id or category contains this substring (e.g. 'overwhelm')")
     args = parser.parse_args()
-    asyncio.run(main(skip_judge=args.skip_judge))
+    asyncio.run(main(skip_judge=args.skip_judge, filter_substr=args.filter_substr))
