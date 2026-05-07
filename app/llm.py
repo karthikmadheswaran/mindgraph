@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-load_dotenv()
+load_dotenv(encoding="utf-8-sig")
 os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
 # Pipeline nodes use flash (fast, cheap).
