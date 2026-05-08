@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing | rawtxt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1714;
+    --paper: #f5f0e8;
+    --paper-warm: #ede7db;
+    --amber: #c4841d;
+    --amber-glow: rgba(196, 132, 29, 0.12);
+    --muted: #8a8278;
+    --divider: rgba(26, 23, 20, 0.08);
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 80px;
+  }
+  .back-link { margin-bottom: 48px; }
+  .back-link a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.3px;
+    transition: color 0.2s;
+  }
+  .back-link a:hover { color: var(--ink); }
+  .last-updated {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(32px, 5vw, 48px);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .page-intro {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 48px;
+    max-width: 520px;
+  }
+  h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    letter-spacing: -0.4px;
+    margin-top: 56px;
+    margin-bottom: 24px;
+  }
+  p {
+    font-size: 15px;
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+  a { color: var(--amber); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .rule { border: none; border-top: 1px solid var(--divider); margin: 48px 0; }
+
+  /* Pricing grid */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+  .pricing-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 36px 32px 32px;
+    border: 1px solid var(--divider);
+    position: relative;
+  }
+  .pricing-card.featured {
+    border-color: var(--amber);
+  }
+  .badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--amber);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 100px;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .plan-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .price-currency {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .price-amount {
+    font-family: 'Instrument Serif', serif;
+    font-size: 52px;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .price-period {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .price-note {
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 24px;
+    min-height: 18px;
+  }
+  .plan-divider {
+    border: none;
+    border-top: 1px solid var(--divider);
+    margin: 0 0 20px;
+  }
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .plan-features li {
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--ink);
+  }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--amber);
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+  .trial-note {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 16px;
+  }
+  .trial-note strong { color: var(--ink); }
+
+  /* FAQ */
+  .faq-list {
+    margin-top: 8px;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--divider);
+    padding: 24px 0;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q {
+    font-family: 'Instrument Serif', serif;
+    font-size: 19px;
+    letter-spacing: -0.2px;
+    margin-bottom: 10px;
+  }
+  .faq-a {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--divider);
+    text-align: center;
+  }
+  .footer-operator p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .footer-links-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 16px;
+  }
+  .footer-links-row a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .footer-links-row a:hover { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .page-wrap { padding: 40px 20px 60px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .pricing-card { padding: 28px 24px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="back-link"><a href="/">&larr; rawtxt.in</a></div>
+
+  <p class="last-updated">Last updated: 08 May 2026</p>
+  <h1>Pricing</h1>
+  <p class="page-intro">One product. One tier. No feature-gating, no upsells. The full experience from day one, starting with a 14-day free trial. No card required.</p>
+
+  <div class="pricing-grid">
+
+    <div class="pricing-card">
+      <p class="plan-name">Monthly</p>
+      <div class="plan-price">
+        <span class="price-currency">&#8377;</span>
+        <span class="price-amount">799</span>
+      </div>
+      <p class="price-period">per month, billed monthly</p>
+      <p class="price-note">&nbsp;</p>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Unlimited journal entries</li>
+        <li>Full AI pipeline: entities, deadlines, projects, patterns</li>
+        <li>Ask Journal with hybrid RAG retrieval</li>
+        <li>Interactive knowledge graph</li>
+        <li>Behavioral pattern insights</li>
+        <li>Weekly digest and forgotten-project alerts</li>
+        <li>Dashboard with deadlines and progress tracking</li>
+        <li>7-day refund window</li>
+      </ul>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="badge">Save 27%</div>
+      <p class="plan-name">Annual</p>
+      <div class="plan-price">
+        <span class="price-currency">&#8377;</span>
+        <span class="price-amount">6,999</span>
+      </div>
+      <p class="price-period">per year, billed annually</p>
+      <p class="price-note">&#8377;583 / month</p>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Everything in Monthly</li>
+        <li>Two months free vs. monthly billing</li>
+        <li>Billed once per year, no monthly charge</li>
+        <li>Same 7-day refund window</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <p class="trial-note"><strong>14-day free trial included.</strong> No payment information required. Cancel anytime.</p>
+
+  <hr class="rule">
+
+  <h2>Frequently Asked Questions</h2>
+
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <p class="faq-q">Can I cancel anytime?</p>
+      <p class="faq-a">Yes. Cancel from your account settings at any time. Your access continues until the end of your current billing period, monthly or annual. No cancellation fees, no questions asked. See our <a href="/cancellation.html">Cancellation Policy</a> for full details.</p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Do you offer refunds?</p>
+      <p class="faq-a">Yes. If you are not satisfied within 7 days of your purchase, contact us at <a href="mailto:karthik@rawtxt.in">karthik@rawtxt.in</a> for a full refund. Refunds are processed within 5 to 7 business days to your original payment method. See our <a href="/refunds.html">Refund Policy</a> for full details.</p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Is GST included in the price?</p>
+      <p class="faq-a">rawtxt is operated as a sole proprietorship and is not currently GST-registered. No GST is charged on subscriptions at this time. If our registration status changes, we will update this page and notify active subscribers before any change takes effect.</p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">What payment methods are accepted?</p>
+      <p class="faq-a">We accept major credit cards, debit cards, UPI, and net banking. Payments are processed securely by our payment provider. Your card details are never stored on our servers.</p>
+    </div>
+
+  </div>
+
+  <hr class="rule">
+
+  <footer>
+    <div class="footer-operator">
+      <p>Operated by Karthik Madheswaran &middot; Bengaluru, India</p>
+      <p>Contact: <a href="mailto:karthik@rawtxt.in">karthik@rawtxt.in</a></p>
+    </div>
+    <div class="footer-links-row">
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/refunds.html">Refunds</a>
+      <a href="/cancellation.html">Cancellation</a>
+      <a href="/about.html">About</a>
+      <a href="/pricing.html">Pricing</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

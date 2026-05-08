@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About | rawtxt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1714;
+    --paper: #f5f0e8;
+    --amber: #c4841d;
+    --muted: #8a8278;
+    --divider: rgba(26, 23, 20, 0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 32px 80px;
+  }
+  .back-link { margin-bottom: 48px; }
+  .back-link a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.3px;
+    transition: color 0.2s;
+  }
+  .back-link a:hover { color: var(--ink); }
+  .last-updated {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(32px, 5vw, 48px);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.3px;
+    margin-top: 40px;
+    margin-bottom: 14px;
+  }
+  p {
+    font-size: 15px;
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+  a { color: var(--amber); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .rule { border: none; border-top: 1px solid var(--divider); margin: 40px 0; }
+  .contact-block {
+    background: rgba(26, 23, 20, 0.03);
+    border: 1px solid var(--divider);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 32px 0;
+  }
+  .contact-block p {
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  .contact-block p:last-child { margin-bottom: 0; }
+  .contact-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--divider);
+    text-align: center;
+  }
+  .footer-operator p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .footer-links-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 16px;
+  }
+  .footer-links-row a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .footer-links-row a:hover { color: var(--ink); }
+  @media (max-width: 600px) {
+    .page-wrap { padding: 40px 20px 60px; }
+    .contact-block { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="back-link"><a href="/">&larr; rawtxt.in</a></div>
+
+  <p class="last-updated">Last updated: 08 May 2026</p>
+  <h1>About rawtxt</h1>
+
+  <p>rawtxt is an AI-powered journaling tool built for people who think in text. You write freely, without structure or categories, and the product takes care of the rest: extracting the people, projects, deadlines, and behavioral patterns embedded in what you wrote, and building a living knowledge graph of your life over time.</p>
+
+  <p>The product is designed around a single conviction: the friction between having a thought and writing it down should be as close to zero as possible. No dropdowns. No tag selectors. No "choose a project" modal. If the AI can figure it out, it does. If it can't, it asks you exactly one question.</p>
+
+  <p>rawtxt runs an 8-node AI pipeline on every entry you submit: normalizing dates to your actual timezone, deduplicating near-identical submissions, extracting entities and their relationships, catching deadlines buried in casual language, and generating behavioral pattern insights across weeks of writing. The Ask Journal feature lets you query your own journal history through a conversational interface backed by hybrid retrieval (BM25 keyword search, vector similarity, and neural reranking).</p>
+
+  <p>The product is built and operated by a single person. It is not backed by venture capital and does not depend on advertising revenue. It is funded entirely by the people who find it useful enough to pay for.</p>
+
+  <h2>The Operator</h2>
+
+  <p>rawtxt is built and operated by <strong>Karthik Madheswaran</strong>, an AI engineer based in Bengaluru, Karnataka, India. Karthik has a background in building production AI systems: LangGraph pipelines, hybrid RAG retrieval, knowledge graphs, and evaluation-driven prompt engineering. The source code for the backend pipeline and architecture are publicly documented.</p>
+
+  <p>This is a sole proprietor operation. There is no registered company behind rawtxt at this time. When you pay for rawtxt, you are paying Karthik Madheswaran directly for access to the Service.</p>
+
+  <div class="contact-block">
+    <p class="contact-label">Contact</p>
+    <p><strong>Operator:</strong> Karthik Madheswaran</p>
+    <p><strong>Location:</strong> Bengaluru, Karnataka, India</p>
+    <p><strong>Email:</strong> <a href="mailto:karthik@rawtxt.in">karthik@rawtxt.in</a></p>
+    <p><strong>GitHub:</strong> <a href="https://github.com/karthikmadheswaran/mindgraph" target="_blank" rel="noopener noreferrer">github.com/karthikmadheswaran/mindgraph</a></p>
+    <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/karthikmadheswaran/" target="_blank" rel="noopener noreferrer">linkedin.com/in/karthikmadheswaran</a></p>
+  </div>
+
+  <h2>Reach Out</h2>
+
+  <p>For support, refund requests, data deletion requests, or any other questions about the product, send an email to <a href="mailto:karthik@rawtxt.in">karthik@rawtxt.in</a>. I aim to respond to all messages within 3 business days.</p>
+
+  <p>Feature requests and bug reports are also welcome at the same address. If you find something broken, I would genuinely like to know.</p>
+
+  <hr class="rule">
+
+  <footer>
+    <div class="footer-operator">
+      <p>Operated by Karthik Madheswaran &middot; Bengaluru, India</p>
+      <p>Contact: <a href="mailto:karthik@rawtxt.in">karthik@rawtxt.in</a></p>
+    </div>
+    <div class="footer-links-row">
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/refunds.html">Refunds</a>
+      <a href="/cancellation.html">Cancellation</a>
+      <a href="/about.html">About</a>
+      <a href="/pricing.html">Pricing</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
