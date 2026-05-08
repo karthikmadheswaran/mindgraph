@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 import uuid
 
 from fastapi import BackgroundTasks
@@ -207,6 +208,82 @@ async def create_entry(entry: EntryRequest, user_id: str) -> EntryResponse:
         core_entities=result["core_entities"],
         deadline=result["deadline"],
     )
+
+
+_redis_client = None
+_redis_attempted = False
+_FILTER_OPTIONS_TTL = 60
+
+
+def _get_redis():
+    global _redis_client, _redis_attempted
+    if _redis_attempted:
+        return _redis_client
+    _redis_attempted = True
+    url = os.getenv("UPSTASH_REDIS_REST_URL")
+    token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+    if not url or not token:
+        return None
+    try:
+        from upstash_redis.asyncio import Redis
+        _redis_client = Redis(url=url, token=token)
+        return _redis_client
+    except Exception as exc:
+        logger.warning("entry_service Redis unavailable: %s", exc)
+        return None
+
+
+async def get_filter_options(user_id: str) -> dict:
+    redis = _get_redis()
+    cache_key = f"filter_options:{user_id}"
+
+    if redis:
+        try:
+            cached = await redis.get(cache_key)
+            if cached:
+                raw = cached if isinstance(cached, str) else cached.decode()
+                return json.loads(raw)
+        except Exception as exc:
+            logger.warning("filter_options Redis get failed: %s", exc)
+
+    entry_rows = (
+        supabase.table("entries")
+        .select("id")
+        .eq("user_id", user_id)
+        .is_("deleted_at", "null")
+        .execute()
+    )
+    entry_ids = [r["id"] for r in (entry_rows.data or [])]
+
+    categories: list[str] = []
+    if entry_ids:
+        tag_rows = (
+            supabase.table("entry_tags")
+            .select("category")
+            .in_("entry_id", entry_ids[:500])
+            .execute()
+        )
+        categories = sorted({r["category"] for r in (tag_rows.data or []) if r.get("category")})
+
+    person_rows = (
+        supabase.table("entities")
+        .select("name")
+        .eq("user_id", user_id)
+        .eq("entity_type", "person")
+        .limit(100)
+        .execute()
+    )
+    persons = sorted({r["name"] for r in (person_rows.data or []) if r.get("name")})
+
+    result = {"mood": categories, "person": persons, "category": categories}
+
+    if redis:
+        try:
+            await redis.set(cache_key, json.dumps(result), ex=_FILTER_OPTIONS_TTL)
+        except Exception as exc:
+            logger.warning("filter_options Redis set failed: %s", exc)
+
+    return result
 
 
 async def list_entries(
@@ -559,7 +636,15 @@ async def get_entry_status(entry_id: str, user_id: str):
         .single()
         .execute()
     )
-    return result.data
+    data = result.data
+    if data:
+        dp = data.get("dispatch_payload")
+        if isinstance(dp, str):
+            try:
+                data["dispatch_payload"] = json.loads(dp)
+            except Exception:
+                logger.warning("get_entry_status: dispatch_payload is non-parseable string for entry %s", entry_id)
+    return data
 
 
 async def save_extraction_edit(

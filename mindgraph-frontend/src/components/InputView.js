@@ -51,7 +51,6 @@ function buildFilterOptions(entries) {
   const moods = new Set();
   const persons = new Set();
   const categories = new Set();
-
   for (const e of entries) {
     const stamps = e.dispatch_payload?.stamps || [];
     for (const s of stamps) {
@@ -60,7 +59,6 @@ function buildFilterOptions(entries) {
       if (s.kind === "pattern" && s.value) categories.add(s.value);
     }
   }
-
   return {
     mood: Array.from(moods),
     person: Array.from(persons),
@@ -141,9 +139,11 @@ function InputView({ isActive, onEntrySubmitted }) {
         setEntries((prev) => [...(prev || []), ...fetched]);
       } else {
         setEntries(fetched);
-        // Seed filter options from first full fetch
-        if (pg === 1 && !Object.values(activeFilters).some(Boolean)) {
-          setFilterOptions(buildFilterOptions(fetched));
+        if (pg === 1 && !Object.values(activeFilters).some(Boolean) && fetched.length > 0) {
+          setFilterOptions((prev) => {
+            const hasOptions = prev.mood.length > 0 || prev.person.length > 0 || prev.category.length > 0;
+            return hasOptions ? prev : buildFilterOptions(fetched);
+          });
         }
       }
       setTotalCount(data.total_count || 0);
@@ -155,10 +155,30 @@ function InputView({ isActive, onEntrySubmitted }) {
     }
   }, []);
 
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API}/entries/filter-options`, { headers });
+      if (!res.ok) {
+        console.warn(`filter-options: ${res.status} — filter dropdowns will use client-side fallback`);
+        setFilterOptions({ mood: [], person: [], category: [] });
+        return;
+      }
+      const data = await res.json();
+      if (data && Array.isArray(data.mood) && Array.isArray(data.person) && Array.isArray(data.category)) {
+        setFilterOptions(data);
+      }
+    } catch (err) {
+      console.warn("filter-options fetch failed:", err);
+      setFilterOptions({ mood: [], person: [], category: [] });
+    }
+  }, []);
+
   useEffect(() => {
     if (isActive) {
       setPage(1);
       fetchEntries(1, filters);
+      fetchFilterOptions();
     }
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -207,8 +227,9 @@ function InputView({ isActive, onEntrySubmitted }) {
           } else {
             setDispatchPhase("idle");
           }
-          // Refresh entries list
+          // Refresh entries list and filter options
           fetchEntries(1, {});
+          fetchFilterOptions();
           setPage(1);
           setFilters({});
         }
@@ -216,7 +237,7 @@ function InputView({ isActive, onEntrySubmitted }) {
         /* keep polling */
       }
     }, POLL_INTERVAL_MS);
-  }, [fetchEntries]);
+  }, [fetchEntries, fetchFilterOptions]);
 
   useEffect(() => {
     return () => clearInterval(pollRef.current);

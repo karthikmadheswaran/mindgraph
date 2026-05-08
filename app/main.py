@@ -297,6 +297,12 @@ async def create_entry_async(
     return await entry_service.create_entry_async(entry, background_tasks, user_id)
 
 
+# Must be declared before /entries/{entry_id} routes -- FastAPI matches in declaration order.
+@app.get("/entries/filter-options")
+async def get_filter_options(user_id: str = Depends(get_current_user)):
+    return await entry_service.get_filter_options(user_id)
+
+
 @app.get("/entries/{entry_id}/status")
 async def get_entry_status(entry_id: str, user_id: str = Depends(get_current_user)):
     return await entry_service.get_entry_status(entry_id, user_id)
