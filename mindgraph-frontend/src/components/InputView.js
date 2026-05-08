@@ -362,6 +362,7 @@ function InputView({ isActive, onEntrySubmitted }) {
               dispatch={dispatchPayload}
               entryId={dispatchEntryId}
               phase={dispatchPhase}
+              firstName={firstName}
             />
           )}
 

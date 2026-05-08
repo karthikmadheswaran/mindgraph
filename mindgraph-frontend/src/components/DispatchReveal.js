@@ -1,20 +1,64 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
 import "../styles/dispatch.css";
 
-const STATUS_PHRASES = [
+const PHRASES_GENERIC = [
   "reading what you wrote",
-  "wait, this rings a bell...",
-  "looking through your past",
   "noticing some things",
   "putting it together",
-  "almost there",
-  "there.",
+  "thinking it through",
+  "looking for the thread",
+  "wait, this rings a bell",
 ];
 
+const PHRASES_CREATIVE = [
+  "untangling your morning",
+  "matching today's words to last month's promises",
+  "scrolling through an earlier you",
+  "tracing a thread back",
+  "looking for echoes",
+  "rummaging through your notes",
+  "humming and squinting at the page",
+  "comparing this week to last",
+];
+
+const PHRASES_SARCASTIC = [
+  "pretending to read carefully",
+  "putting on reading glasses",
+  "looking up what 'soon' means again",
+  "asking your past self what they meant",
+  "filing this under 'feelings'",
+  "checking if 'busy' is a personality",
+];
+
+const PHRASES_USER = [
+  "checking what {name} usually circles back to",
+  "remembering what {name} said last time",
+  "comparing this {name} to yesterday's {name}",
+  "looking at {name}'s last few weeks",
+];
+
+function buildPhrasePool(firstName) {
+  const safeName = (firstName || "you").trim() || "you";
+  const userPool = PHRASES_USER.map((p) => p.replace(/\{name\}/g, safeName));
+  const all = [
+    ...PHRASES_GENERIC,
+    ...PHRASES_CREATIVE,
+    ...PHRASES_SARCASTIC,
+    ...userPool,
+  ];
+  // Fisher-Yates shuffle so each submission feels different
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  return [...all, "almost there."];
+}
+
 const CHAR_BASE_MS = 18;
-const DISCOVERY_GAP_MS = 1100;
+const DISCOVERY_GAP_MS = 800;
+const STAMP_STAGGER_MS = 50;
 
 function jitter(base, char) {
   if (char === " ") return base * 0.5;
@@ -104,7 +148,7 @@ function Stamp({ stamp, entryId, onSaved, style }) {
 }
 
 // Phase: "processing" | "revealing" | "done"
-export default function DispatchReveal({ dispatch, entryId, phase }) {
+export default function DispatchReveal({ dispatch, entryId, phase, firstName }) {
   const [statusIdx, setStatusIdx] = useState(0);
   const [subjectTyped, setSubjectTyped] = useState("");
   const [subjectDone, setSubjectDone] = useState(false);
@@ -114,14 +158,29 @@ export default function DispatchReveal({ dispatch, entryId, phase }) {
   const [stampsVisible, setStampsVisible] = useState([]);
   const [hintVisible, setHintVisible] = useState(false);
 
-  // Cycle status phrases while processing
+  // Build a fresh shuffled phrase pool each time we enter processing
+  const phrasePool = useMemo(
+    () => (phase === "processing" ? buildPhrasePool(firstName) : []),
+    [phase, firstName]
+  );
+
+  // Reset cycle position when a new processing run starts
   useEffect(() => {
-    if (phase !== "processing") return;
-    const id = setInterval(() => {
-      setStatusIdx((i) => Math.min(i + 1, STATUS_PHRASES.length - 1));
-    }, 950);
-    return () => clearInterval(id);
+    if (phase === "processing") setStatusIdx(0);
   }, [phase]);
+
+  // Cycle through phrases with organic timing (760-1180ms) while processing
+  useEffect(() => {
+    if (phase !== "processing" || phrasePool.length === 0) return;
+    let timeout;
+    const tick = () => {
+      setStatusIdx((i) => Math.min(i + 1, phrasePool.length - 1));
+      const delay = 760 + Math.random() * 420;
+      timeout = setTimeout(tick, delay);
+    };
+    timeout = setTimeout(tick, 760 + Math.random() * 420);
+    return () => clearTimeout(timeout);
+  }, [phase, phrasePool]);
 
   // Type the subject line when revealing starts
   useEffect(() => {
@@ -177,7 +236,7 @@ export default function DispatchReveal({ dispatch, entryId, phase }) {
     return () => clearTimeout(timeout);
   }, [subjectDone, dispatch]);
 
-  // Stagger stamps in after signature
+  // Stamps appear in a tight wave (50ms stagger) right after the signature
   useEffect(() => {
     if (!sigVisible || !dispatch) return;
     const s = dispatch.stamps || [];
@@ -185,10 +244,10 @@ export default function DispatchReveal({ dispatch, entryId, phase }) {
     s.forEach((_, i) => {
       setTimeout(() => {
         setStampsVisible((prev) => [...prev, i]);
-      }, 400 + i * 180);
+      }, 280 + i * STAMP_STAGGER_MS);
     });
-    const total = 400 + s.length * 180 + 600;
-    const hintTimer = setTimeout(() => setHintVisible(true), total + 1500);
+    const total = 280 + s.length * STAMP_STAGGER_MS + 400;
+    const hintTimer = setTimeout(() => setHintVisible(true), total + 1200);
     return () => clearTimeout(hintTimer);
   }, [sigVisible, dispatch]);
 
@@ -204,24 +263,16 @@ export default function DispatchReveal({ dispatch, entryId, phase }) {
 
   return (
     <div className="dispatch-wrap" style={{ marginBottom: 32 }}>
-      {/* Wire status indicator */}
+      {/* Morse-code thinking indicator (telegram-themed) */}
       <div className="dispatch-wire-wrap">
-        <div className="dispatch-blob-box">
-          <svg
-            className="dispatch-blob"
-            width="48"
-            height="36"
-            viewBox="0 0 48 36"
-          >
-            <path
-              d="M 24 8 C 30 8, 34 12, 34 18 C 34 24, 30 28, 24 28 C 18 28, 14 24, 14 18 C 14 12, 18 8, 24 8 Z"
-              fill="#3a2f1c"
-              fillOpacity="0.85"
-            />
-          </svg>
+        <div className="dispatch-morse">
+          <span className="morse-unit morse-dot"  style={{ animationDelay: "0s"   }} />
+          <span className="morse-unit morse-dash" style={{ animationDelay: "0.18s" }} />
+          <span className="morse-unit morse-dot"  style={{ animationDelay: "0.36s" }} />
+          <span className="morse-unit morse-dash" style={{ animationDelay: "0.54s" }} />
         </div>
         <div className="dispatch-status-text">
-          {STATUS_PHRASES[statusIdx]}
+          {phrasePool[statusIdx] || ""}
         </div>
       </div>
 
@@ -286,26 +337,20 @@ export default function DispatchReveal({ dispatch, entryId, phase }) {
             {/* Stamps row */}
             {stamps.length > 0 && (
               <div className="dispatch-stamps-row" style={{ marginTop: 20 }}>
-                {stamps.map((stamp, i) => (
-                  <AnimatePresence key={`${stamp.kind}-${stamp.value}-${i}`}>
-                    {stampsVisible.includes(i) && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -25 }}
-                        animate={[
-                          { scale: 1.3, rotate: -3, transition: { duration: 0.2 } },
-                          { scale: 1, rotate: -2, transition: { duration: 0.25 } },
-                        ]}
-                        style={{ display: "inline-block" }}
-                      >
-                        <Stamp
-                          stamp={stamp}
-                          entryId={entryId}
-                          onSaved={handleStampSaved}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                ))}
+                {stamps.map((stamp, i) =>
+                  stampsVisible.includes(i) && (
+                    <span
+                      key={`${stamp.kind}-${stamp.value}-${i}`}
+                      className="dispatch-stamp-thump"
+                    >
+                      <Stamp
+                        stamp={stamp}
+                        entryId={entryId}
+                        onSaved={handleStampSaved}
+                      />
+                    </span>
+                  )
+                )}
               </div>
             )}
 

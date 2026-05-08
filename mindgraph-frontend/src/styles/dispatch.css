@@ -9,44 +9,29 @@
   margin: 32px 0 24px;
 }
 
-.dispatch-blob-box {
-  width: 48px;
-  height: 36px;
-  display: flex;
+/* Morse-code dot/dash thinking indicator (telegram-themed) */
+.dispatch-morse {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  height: 36px;
 }
 
-.dispatch-blob {
-  animation:
-    blobMorph 2.4s ease-in-out infinite,
-    blobScale 1.4s ease-in-out infinite 0.3s,
-    blobTremor 0.06s linear infinite;
+.morse-unit {
+  height: 5px;
+  background: #3a2f1c;
+  border-radius: 2.5px;
+  animation: morsePulse 1.4s ease-in-out infinite;
+  transform-origin: center;
 }
 
-@keyframes blobMorph {
-  0%   { d: path("M 24 8 C 30 8, 34 12, 34 18 C 34 24, 30 28, 24 28 C 18 28, 14 24, 14 18 C 14 12, 18 8, 24 8 Z"); }
-  12%  { d: path("M 24 6 C 32 8, 36 14, 34 19 C 32 25, 28 28, 23 27 C 17 26, 13 22, 14 17 C 15 11, 19 7, 24 6 Z"); }
-  25%  { d: path("M 25 9 C 31 7, 36 13, 35 19 C 34 25, 29 29, 23 27 C 16 25, 12 21, 14 16 C 16 10, 20 8, 25 9 Z"); }
-  37%  { d: path("M 23 7 C 30 9, 35 13, 35 19 C 35 25, 29 28, 24 27 C 18 26, 13 23, 14 17 C 15 12, 18 7, 23 7 Z"); }
-  50%  { d: path("M 26 10 C 32 11, 35 16, 33 21 C 31 26, 27 28, 22 26 C 16 24, 13 20, 15 15 C 17 11, 21 9, 26 10 Z"); }
-  62%  { d: path("M 22 8 C 29 6, 35 11, 35 17 C 35 24, 31 29, 25 28 C 19 27, 13 24, 13 18 C 13 12, 17 9, 22 8 Z"); }
-  75%  { d: path("M 24 7 C 31 7, 36 13, 34 20 C 32 26, 28 28, 23 28 C 17 27, 13 23, 14 17 C 15 11, 19 7, 24 7 Z"); }
-  87%  { d: path("M 25 8 C 30 8, 34 13, 34 19 C 34 25, 30 28, 24 27 C 18 26, 14 23, 14 17 C 14 12, 19 8, 25 8 Z"); }
-  100% { d: path("M 24 8 C 30 8, 34 12, 34 18 C 34 24, 30 28, 24 28 C 18 28, 14 24, 14 18 C 14 12, 18 8, 24 8 Z"); }
-}
+.morse-dot  { width: 5px;  }
+.morse-dash { width: 16px; }
 
-@keyframes blobScale {
-  0%, 100% { transform: scale(0.95); }
-  50%       { transform: scale(1.05); }
-}
-
-@keyframes blobTremor {
-  0%   { translate: 0 0; }
-  25%  { translate: 0.4px -0.2px; }
-  50%  { translate: -0.3px 0.4px; }
-  75%  { translate: 0.2px 0.3px; }
-  100% { translate: 0 0; }
+@keyframes morsePulse {
+  0%, 100% { opacity: 0.18; transform: scaleY(0.7); }
+  45%       { opacity: 0.95; transform: scaleY(1.1); }
+  60%       { opacity: 0.95; transform: scaleY(1.1); }
 }
 
 .dispatch-status-text {
@@ -261,6 +246,18 @@
 @keyframes stampSavedPulse {
   0%, 100% { background: inherit; }
   50%       { background: #f0e6d0 !important; }
+}
+
+/* Stamp entry — gentler thump, quick to settle so a row of stamps reads as fluid */
+@keyframes stampThump {
+  0%   { transform: scale(0.7) rotate(-6deg); opacity: 0; }
+  55%  { transform: scale(1.06) rotate(-2deg); opacity: 1; }
+  100% { transform: scale(1)    rotate(-2deg); }
+}
+
+.dispatch-stamp-thump {
+  display: inline-block;
+  animation: stampThump 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
 /* Footer hint */
