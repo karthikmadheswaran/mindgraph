@@ -221,8 +221,14 @@ function InputView({ isActive, onEntrySubmitted }) {
 
         if (data.status === "completed" || data.status === "error") {
           clearInterval(pollRef.current);
-          if (data.status === "completed" && data.dispatch_payload) {
-            setDispatchPayload(data.dispatch_payload);
+          // Defensive: dispatch_payload may come back as a JSON string if the
+          // column is TEXT or supabase-py double-stringified during write.
+          let dp = data.dispatch_payload;
+          if (typeof dp === "string") {
+            try { dp = JSON.parse(dp); } catch { dp = null; }
+          }
+          if (data.status === "completed" && dp && typeof dp === "object") {
+            setDispatchPayload(dp);
             setDispatchPhase("revealing");
           } else {
             setDispatchPhase("idle");
