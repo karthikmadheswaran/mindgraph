@@ -32,10 +32,18 @@ def _first_mention_names(user_id: str) -> set[str]:
 
 
 async def assemble_dispatch(state: JournalState) -> dict:
+    entry_id = state.get("entry_id")
+
     if state.get("dedup_check_result") == "duplicate":
+        if entry_id:
+            try:
+                supabase.table("entries").update(
+                    {"status": "completed", "pipeline_stage": None}
+                ).eq("id", str(entry_id)).execute()
+            except Exception:
+                pass
         return {}
 
-    entry_id = state.get("entry_id")
     if not entry_id:
         return {}
 
@@ -157,11 +165,25 @@ async def assemble_dispatch(state: JournalState) -> dict:
     }
 
     try:
-        supabase.table("entries").update(
-            {"dispatch_payload": dispatch_payload}
-        ).eq("id", str(entry_id)).execute()
+        supabase.table("entries").update({
+            "dispatch_payload": dispatch_payload,
+            "status": "completed",
+            "pipeline_stage": None,
+        }).eq("id", str(entry_id)).execute()
         logger.info("assemble_dispatch: stored dispatch_payload for entry %s", entry_id)
     except Exception as exc:
-        logger.warning("assemble_dispatch: failed to persist dispatch_payload: %s", exc)
+        # If migration 014 (dispatch_payload column) hasn't been applied, this UPDATE fails
+        # and the row stays at status="processing" — frontend hangs on the streaming loop.
+        # Surface the failure so the frontend exits the poll instead of spinning forever.
+        logger.error(
+            "assemble_dispatch: failed to persist dispatch_payload for entry %s: %s",
+            entry_id, exc, exc_info=True,
+        )
+        try:
+            supabase.table("entries").update(
+                {"status": "error", "pipeline_stage": None}
+            ).eq("id", str(entry_id)).execute()
+        except Exception:
+            pass
 
     return {"dispatch_payload": dispatch_payload}
