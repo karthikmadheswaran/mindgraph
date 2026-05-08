@@ -11,7 +11,7 @@ import "../styles/input.css";
 
 const STREAK_COUNT = 47;
 const POLL_INTERVAL_MS = 2500;
-const MAX_POLLS = 40; // 100s ceiling
+const MAX_POLLS = 80; // 200s ceiling — non-dedup pipeline runs 5+ Gemini calls and can take 60-90s
 
 function getGreeting() {
   const h = new Date().getHours();

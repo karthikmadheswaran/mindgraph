@@ -56,9 +56,10 @@ function buildPhrasePool(firstName) {
   return [...all, "almost there."];
 }
 
-const CHAR_BASE_MS = 18;
+const CHAR_BASE_MS = 14;
 const DISCOVERY_GAP_MS = 800;
 const STAMP_STAGGER_MS = 50;
+const PHRASE_CYCLE_MS = 2800; // synced with 3s pulse-orb breath
 
 function jitter(base, char) {
   if (char === " ") return base * 0.5;
@@ -169,17 +170,13 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
     if (phase === "processing") setStatusIdx(0);
   }, [phase]);
 
-  // Cycle through phrases with organic timing (760-1180ms) while processing
+  // Phrases breathe with the pulse-orb: one phrase per 2.8s cycle, synced to icon
   useEffect(() => {
     if (phase !== "processing" || phrasePool.length === 0) return;
-    let timeout;
-    const tick = () => {
+    const id = setInterval(() => {
       setStatusIdx((i) => Math.min(i + 1, phrasePool.length - 1));
-      const delay = 760 + Math.random() * 420;
-      timeout = setTimeout(tick, delay);
-    };
-    timeout = setTimeout(tick, 760 + Math.random() * 420);
-    return () => clearTimeout(timeout);
+    }, PHRASE_CYCLE_MS);
+    return () => clearInterval(id);
   }, [phase, phrasePool]);
 
   // Type the subject line when revealing starts
@@ -263,16 +260,27 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
 
   return (
     <div className="dispatch-wrap" style={{ marginBottom: 32 }}>
-      {/* Morse-code thinking indicator (telegram-themed) */}
+      {/* Pulse-orb thinking indicator: warm glow that breathes */}
       <div className="dispatch-wire-wrap">
-        <div className="dispatch-morse">
-          <span className="morse-unit morse-dot"  style={{ animationDelay: "0s"   }} />
-          <span className="morse-unit morse-dash" style={{ animationDelay: "0.18s" }} />
-          <span className="morse-unit morse-dot"  style={{ animationDelay: "0.36s" }} />
-          <span className="morse-unit morse-dash" style={{ animationDelay: "0.54s" }} />
+        <div className="dispatch-pulse">
+          <span className="dispatch-pulse-ring  dispatch-pulse-ring--1" />
+          <span className="dispatch-pulse-ring  dispatch-pulse-ring--2" />
+          <span className="dispatch-pulse-glow" />
+          <span className="dispatch-pulse-core" />
         </div>
-        <div className="dispatch-status-text">
-          {phrasePool[statusIdx] || ""}
+        <div className="dispatch-status-text-wrap">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={statusIdx}
+              className="dispatch-status-text"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {phrasePool[statusIdx] || ""}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
@@ -281,15 +289,10 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
         {phase === "revealing" && dispatch && (
           <motion.div
             className="dispatch-telegram"
-            initial={{ y: 28, opacity: 0 }}
+            initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 18,
-              mass: 0.8,
-            }}
+            transition={{ duration: 0.65, ease: [0.2, 0.85, 0.3, 1] }}
           >
             <span className="dispatch-postmark">
               RAWTXT &middot; ENTRY {String(entryId || "").slice(-6).toUpperCase()}

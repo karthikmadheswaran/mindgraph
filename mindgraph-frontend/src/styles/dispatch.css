@@ -9,39 +9,94 @@
   margin: 32px 0 24px;
 }
 
-/* Morse-code dot/dash thinking indicator (telegram-themed) */
-.dispatch-morse {
-  display: inline-flex;
+/* Pulse-orb thinking indicator: premium warm-glow that breathes */
+.dispatch-pulse {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
+  justify-content: center;
 }
 
-.morse-unit {
-  height: 5px;
-  background: #3a2f1c;
-  border-radius: 2.5px;
-  animation: morsePulse 1.4s ease-in-out infinite;
-  transform-origin: center;
+/* Soft outer halo */
+.dispatch-pulse-glow {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      rgba(58, 47, 28, 0.42) 0%,
+      rgba(58, 47, 28, 0.18) 38%,
+      transparent 72%);
+  filter: blur(2px);
+  animation: pulseGlow 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-.morse-dot  { width: 5px;  }
-.morse-dash { width: 16px; }
+/* Inner core: dense ink dot */
+.dispatch-pulse-core {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      #1f1810 0%,
+      #3a2f1c 60%,
+      rgba(58, 47, 28, 0.4) 100%);
+  box-shadow:
+    0 0 6px rgba(58, 47, 28, 0.55),
+    0 0 12px rgba(180, 140, 60, 0.18);
+  animation: pulseCore 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
 
-@keyframes morsePulse {
-  0%, 100% { opacity: 0.18; transform: scaleY(0.7); }
-  45%       { opacity: 0.95; transform: scaleY(1.1); }
-  60%       { opacity: 0.95; transform: scaleY(1.1); }
+/* Two ripple rings, offset, fading outward */
+.dispatch-pulse-ring {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(58, 47, 28, 0.55);
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulseRipple 3s ease-out infinite;
+}
+
+.dispatch-pulse-ring--2 { animation-delay: 1.5s; }
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(0.82); opacity: 0.45; }
+  50%      { transform: scale(1.15); opacity: 0.85; }
+}
+
+@keyframes pulseCore {
+  0%, 100% { transform: scale(0.88); opacity: 0.85; }
+  50%      { transform: scale(1.12); opacity: 1;    }
+}
+
+@keyframes pulseRipple {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  80%  { opacity: 0;            }
+  100% { transform: scale(3.2);  opacity: 0; }
+}
+
+.dispatch-status-text-wrap {
+  position: relative;
+  height: 22px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .dispatch-status-text {
   font-family: "Newsreader", Georgia, serif;
   font-style: italic;
-  font-size: 12px;
+  font-size: 13px;
   color: #5c4a2a;
   text-align: center;
-  min-height: 18px;
-  transition: opacity 0.3s;
+  letter-spacing: 0.01em;
+  position: absolute;
 }
 
 /* ---- Telegram envelope ---- */
