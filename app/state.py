@@ -80,6 +80,8 @@ class JournalState(TypedDict):
     dedup_check_result: Annotated[Optional[str], keep_latest]
     entry_id: Annotated[Optional[str], keep_latest]
     relations: Annotated[list, keep_latest]
+    discoveries: Annotated[list, keep_latest]
+    dispatch_payload: Annotated[Optional[dict], keep_latest]
 
 
 

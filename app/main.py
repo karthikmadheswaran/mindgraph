@@ -21,6 +21,7 @@ from app.schemas import (
     DeadlineStatusUpdateRequest,
     EntryRequest,
     EntryResponse,
+    ExtractionEditRequest,
     MessagesResponse,
     ProjectStatusUpdateRequest,
     SendMessageRequest,
@@ -99,8 +100,28 @@ async def create_entry(entry: EntryRequest, user_id: str = Depends(get_current_u
 
 
 @app.get("/entries")
-async def get_entries(user_id: str = Depends(get_current_user)):
-    return await entry_service.list_entries(user_id)
+async def get_entries(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+    mood: Optional[str] = Query(default=None),
+    person: Optional[str] = Query(default=None),
+    category: Optional[str] = Query(default=None),
+    date_from: Optional[str] = Query(default=None),
+    date_to: Optional[str] = Query(default=None),
+    search: Optional[str] = Query(default=None),
+    user_id: str = Depends(get_current_user),
+):
+    return await entry_service.list_entries(
+        user_id,
+        page=page,
+        page_size=page_size,
+        mood=mood,
+        person=person,
+        category=category,
+        date_from=date_from,
+        date_to=date_to,
+        search=search,
+    )
 
 
 @app.get("/search")
@@ -284,6 +305,23 @@ async def get_entry_status(entry_id: str, user_id: str = Depends(get_current_use
 @app.delete("/entries/{entry_id}")
 async def delete_entry(entry_id: str, user_id: str = Depends(get_current_user)):
     return await entry_service.soft_delete_entry(entry_id, user_id)
+
+
+@app.post("/entries/{entry_id}/edits")
+async def save_entry_edit(
+    entry_id: str,
+    edit: ExtractionEditRequest,
+    user_id: str = Depends(get_current_user),
+):
+    return await entry_service.save_extraction_edit(
+        entry_id=entry_id,
+        user_id=user_id,
+        stamp_kind=edit.stamp_kind,
+        field_path=edit.field_path,
+        original_value=edit.original_value,
+        edited_value=edit.edited_value,
+        edit_type=edit.edit_type,
+    )
 
 
 @app.get("/search")

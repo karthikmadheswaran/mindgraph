@@ -209,18 +209,88 @@ async def create_entry(entry: EntryRequest, user_id: str) -> EntryResponse:
     )
 
 
-async def list_entries(user_id: str) -> dict:
-    result = (
+async def list_entries(
+    user_id: str,
+    page: int = 1,
+    page_size: int = 10,
+    mood: str | None = None,
+    person: str | None = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    search: str | None = None,
+) -> dict:
+    # Build a set of entry IDs to include when entity/category filters are active
+    filter_ids: set[str] | None = None
+
+    if person:
+        ent_rows = (
+            supabase.table("entities")
+            .select("id")
+            .eq("user_id", user_id)
+            .ilike("name", f"%{person}%")
+            .execute()
+        )
+        ent_ids = [r["id"] for r in (ent_rows.data or [])]
+        if ent_ids:
+            link_rows = (
+                supabase.table("entry_entities")
+                .select("entry_id")
+                .in_("entity_id", ent_ids[:50])
+                .execute()
+            )
+            ids = {r["entry_id"] for r in (link_rows.data or [])}
+        else:
+            ids = set()
+        filter_ids = ids if filter_ids is None else filter_ids & ids
+
+    target_category = category or mood
+    if target_category:
+        tag_rows = (
+            supabase.table("entry_tags")
+            .select("entry_id")
+            .eq("category", target_category)
+            .execute()
+        )
+        ids = {r["entry_id"] for r in (tag_rows.data or [])}
+        filter_ids = ids if filter_ids is None else filter_ids & ids
+
+    query = (
         supabase.table("entries")
-        .select("id, raw_text, cleaned_text, auto_title, summary, created_at, status, pipeline_stage")
+        .select(
+            "id, raw_text, cleaned_text, auto_title, summary, "
+            "created_at, status, pipeline_stage, dispatch_payload",
+            count="exact",
+        )
         .eq("user_id", user_id)
         .is_("deleted_at", "null")
         .order("created_at", desc=True)
-        .limit(20)
-        .execute()
     )
 
-    return {"entries": result.data}
+    if filter_ids is not None:
+        if not filter_ids:
+            return {"entries": [], "total_count": 0, "page": page, "page_size": page_size}
+        query = query.in_("id", list(filter_ids)[:200])
+
+    if date_from:
+        query = query.gte("created_at", date_from)
+    if date_to:
+        query = query.lte("created_at", date_to)
+    if search:
+        query = query.ilike("raw_text", f"%{search}%")
+
+    offset = (page - 1) * page_size
+    query = query.range(offset, offset + page_size - 1)
+
+    result = query.execute()
+    total_count = result.count if result.count is not None else len(result.data or [])
+
+    return {
+        "entries": result.data or [],
+        "total_count": total_count,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 async def soft_delete_entry(entry_id: str, user_id: str) -> dict:
@@ -483,10 +553,70 @@ async def process_entry_background(
 async def get_entry_status(entry_id: str, user_id: str):
     result = (
         supabase.table("entries")
-        .select("id, status, pipeline_stage")
+        .select("id, status, pipeline_stage, dispatch_payload")
         .eq("id", entry_id)
         .eq("user_id", user_id)
         .single()
         .execute()
     )
     return result.data
+
+
+async def save_extraction_edit(
+    entry_id: str,
+    user_id: str,
+    stamp_kind: str,
+    field_path: str,
+    original_value: str | None,
+    edited_value: str,
+    edit_type: str,
+    pipeline_version: str | None = None,
+) -> dict:
+    from fastapi import HTTPException
+
+    entry_row = (
+        supabase.table("entries")
+        .select("id, user_id, dispatch_payload")
+        .eq("id", entry_id)
+        .eq("user_id", user_id)
+        .is_("deleted_at", "null")
+        .limit(1)
+        .execute()
+    )
+    if not entry_row.data:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    row = entry_row.data[0]
+
+    supabase.table("extraction_edits").insert(
+        {
+            "user_id": user_id,
+            "entry_id": entry_id,
+            "stamp_kind": stamp_kind,
+            "field_path": field_path,
+            "original_value": original_value,
+            "edited_value": edited_value,
+            "edit_type": edit_type,
+            "pipeline_version": pipeline_version,
+        }
+    ).execute()
+
+    # Patch dispatch_payload.stamps in-place
+    dispatch = row.get("dispatch_payload") or {}
+    stamps = dispatch.get("stamps", [])
+    for stamp in stamps:
+        if stamp.get("kind") == stamp_kind and stamp.get("value") == original_value:
+            stamp["value"] = edited_value
+            break
+    dispatch["stamps"] = stamps
+
+    supabase.table("entries").update({"dispatch_payload": dispatch}).eq("id", entry_id).execute()
+
+    logger.info(
+        "Extraction edit saved: entry=%s kind=%s '%s' -> '%s'",
+        entry_id,
+        stamp_kind,
+        original_value,
+        edited_value,
+    )
+    return {"status": "saved"}

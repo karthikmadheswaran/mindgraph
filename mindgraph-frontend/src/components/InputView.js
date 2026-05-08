@@ -4,9 +4,14 @@ import { supabase } from "../supabaseClient";
 import { trackEvent } from "../posthog";
 import AnimatedView from "./AnimatedView";
 import Toast from "./Toast";
+import DispatchReveal from "./DispatchReveal";
+import EntriesList from "./EntriesList";
+import EntriesControls from "./EntriesControls";
 import "../styles/input.css";
 
 const STREAK_COUNT = 47;
+const POLL_INTERVAL_MS = 2500;
+const MAX_POLLS = 40; // 100s ceiling
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -29,13 +34,6 @@ function fmtTime(d) {
   return `${hh}:${mm}`;
 }
 
-function fmtEntryDate(dateStr) {
-  const d = new Date(dateStr);
-  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-  return `${date} · ${time}`;
-}
-
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <rect x="9" y="3" width="6" height="11" rx="3" />
@@ -49,36 +47,58 @@ const AttachIcon = () => (
   </svg>
 );
 
-function EntrySkeleton() {
-  return (
-    <div className="recent-entry-skeleton">
-      <div className="skeleton-line" style={{ width: "68%" }} />
-      <div className="skeleton-line short" />
-    </div>
-  );
+function buildFilterOptions(entries) {
+  const moods = new Set();
+  const persons = new Set();
+  const categories = new Set();
+
+  for (const e of entries) {
+    const stamps = e.dispatch_payload?.stamps || [];
+    for (const s of stamps) {
+      if (s.kind === "mood" && s.value) moods.add(s.value);
+      if (s.kind === "person" && s.value) persons.add(s.value);
+      if (s.kind === "pattern" && s.value) categories.add(s.value);
+    }
+  }
+
+  return {
+    mood: Array.from(moods),
+    person: Array.from(persons),
+    category: Array.from(categories),
+  };
 }
 
 function InputView({ isActive, onEntrySubmitted }) {
   const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
   const [toast, setToast] = useState(null);
   const [firstName, setFirstName] = useState("there");
   const [now, setNow] = useState(new Date());
-  const [recording, setRecording] = useState(false);
-  const [entries, setEntries] = useState(null); // null = not yet fetched
-  const [entriesLoading, setEntriesLoading] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
   const taRef = useRef(null);
+
+  // Dispatch reveal state
+  const [dispatchPhase, setDispatchPhase] = useState("idle"); // "idle"|"processing"|"revealing"
+  const [dispatchPayload, setDispatchPayload] = useState(null);
+  const [dispatchEntryId, setDispatchEntryId] = useState(null);
+  const pollRef = useRef(null);
+  const pollCountRef = useRef(0);
+
+  // Entries list state
+  const [entries, setEntries] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [entriesLoading, setEntriesLoading] = useState(false);
+  const [appendingMore, setAppendingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({});
+  const [filterOptions, setFilterOptions] = useState({ mood: [], person: [], category: [] });
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user;
       if (!user) return;
       const full = user.user_metadata?.full_name;
-      const raw = full
-        ? full.split(" ")[0]
-        : user.email?.split("@")[0] || "there";
-      // Fix 3: always capitalize first letter
+      const raw = full ? full.split(" ")[0] : user.email?.split("@")[0] || "there";
       setFirstName(raw.charAt(0).toUpperCase() + raw.slice(1));
     });
   }, []);
@@ -92,60 +112,153 @@ function InputView({ isActive, onEntrySubmitted }) {
     if (isActive && taRef.current) taRef.current.focus();
   }, [isActive]);
 
-  const fetchEntries = useCallback(async () => {
-    setEntriesLoading(true);
+  const fetchEntries = useCallback(async (pg = 1, activeFilters = {}, append = false) => {
+    if (append) {
+      setAppendingMore(true);
+    } else {
+      setEntriesLoading(true);
+    }
+
     try {
+      const params = new URLSearchParams({
+        page: String(pg),
+        page_size: String(PAGE_SIZE),
+      });
+      if (activeFilters.mood) params.set("mood", activeFilters.mood);
+      if (activeFilters.person) params.set("person", activeFilters.person);
+      if (activeFilters.category) params.set("category", activeFilters.category);
+      if (activeFilters.date_from) params.set("date_from", activeFilters.date_from);
+      if (activeFilters.date_to) params.set("date_to", activeFilters.date_to);
+      if (activeFilters.search) params.set("search", activeFilters.search);
+
       const headers = await authHeaders();
-      const res = await fetch(`${API}/entries`, { headers });
+      const res = await fetch(`${API}/entries?${params}`, { headers });
       if (!res.ok) throw new Error("fetch failed");
       const data = await res.json();
-      setEntries((data.entries || []).slice(0, 5));
+      const fetched = data.entries || [];
+
+      if (append) {
+        setEntries((prev) => [...(prev || []), ...fetched]);
+      } else {
+        setEntries(fetched);
+        // Seed filter options from first full fetch
+        if (pg === 1 && !Object.values(activeFilters).some(Boolean)) {
+          setFilterOptions(buildFilterOptions(fetched));
+        }
+      }
+      setTotalCount(data.total_count || 0);
     } catch {
-      setEntries([]);
+      if (!append) setEntries([]);
     } finally {
       setEntriesLoading(false);
+      setAppendingMore(false);
     }
   }, []);
 
-  // Fetch when the view becomes active
   useEffect(() => {
-    if (isActive) fetchEntries();
-  }, [isActive, fetchEntries]);
+    if (isActive) {
+      setPage(1);
+      fetchEntries(1, filters);
+    }
+  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch when filters change
+  const handleFiltersChange = useCallback((newFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+    fetchEntries(1, newFilters);
+  }, [fetchEntries]);
+
+  const handlePageChange = useCallback((pg) => {
+    setPage(pg);
+    fetchEntries(pg, filters);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [fetchEntries, filters]);
+
+  const handleLoadMore = useCallback(() => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchEntries(nextPage, filters, true);
+  }, [fetchEntries, filters, page]);
+
+  // Poll entry status until complete
+  const startPolling = useCallback((entryId) => {
+    pollCountRef.current = 0;
+    pollRef.current = setInterval(async () => {
+      pollCountRef.current++;
+      if (pollCountRef.current > MAX_POLLS) {
+        clearInterval(pollRef.current);
+        setDispatchPhase("idle");
+        setToast({ message: "Processing is taking a while. Check back soon.", type: "success" });
+        return;
+      }
+
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API}/entries/${entryId}/status`, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.status === "completed" || data.status === "error") {
+          clearInterval(pollRef.current);
+          if (data.status === "completed" && data.dispatch_payload) {
+            setDispatchPayload(data.dispatch_payload);
+            setDispatchPhase("revealing");
+          } else {
+            setDispatchPhase("idle");
+          }
+          // Refresh entries list
+          fetchEntries(1, {});
+          setPage(1);
+          setFilters({});
+        }
+      } catch {
+        /* keep polling */
+      }
+    }, POLL_INTERVAL_MS);
+  }, [fetchEntries]);
+
+  useEffect(() => {
+    return () => clearInterval(pollRef.current);
+  }, []);
+
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
-    setLoading(true);
+    const submittedText = text;
+
+    setDispatchPhase("processing");
+    setDispatchPayload(null);
+    setText("");
+
     try {
-      const userTimezone =
-        Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
       const headers = await authHeaders();
       const response = await fetch(`${API}/entries/async`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ raw_text: text, user_timezone: userTimezone }),
+        body: JSON.stringify({ raw_text: submittedText, user_timezone: userTimezone }),
       });
       if (response.status === 401) {
+        setDispatchPhase("idle");
         setToast({ message: "Session expired. Please log in again.", type: "error" });
         return;
       }
-      if (!response.ok) throw new Error("Entry submission failed");
-      await response.json();
-      setToast({ message: "Entry submitted! Processing...", type: "success" });
-      trackEvent("entry_submitted", { input_type: "text", char_count: text.length });
-      setText("");
+      if (!response.ok) throw new Error("submission failed");
+
+      const data = await response.json();
+      const entryId = data.entry_id;
+      setDispatchEntryId(entryId);
+      trackEvent("entry_submitted", { input_type: "text", char_count: submittedText.length });
+
       if (onEntrySubmitted) onEntrySubmitted();
-      fetchEntries(); // refresh list after submit
+      startPolling(entryId);
     } catch {
+      setDispatchPhase("idle");
       setToast({ message: "Failed to submit entry. Please try again.", type: "error" });
-    } finally {
-      setLoading(false);
     }
   };
-
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-
-  const toggleExpand = (id) =>
-    setExpandedId((prev) => (prev === id ? null : id));
 
   return (
     <AnimatedView viewKey="write" isActive={isActive}>
@@ -154,7 +267,7 @@ function InputView({ isActive, onEntrySubmitted }) {
           <div className="write-mini-head">
             <div className="write-date">{fmtDate(now)}</div>
             <div className="write-weather">
-              {fmtTime(now)} · Day {STREAK_COUNT}
+              {fmtTime(now)} &middot; Day {STREAK_COUNT}
             </div>
           </div>
 
@@ -166,15 +279,15 @@ function InputView({ isActive, onEntrySubmitted }) {
             What&apos;s been on your mind that you haven&apos;t said out loud?
           </p>
 
+          {/* Composer - always visible */}
           <div className="composer tall">
             <textarea
               ref={taRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Start anywhere…"
+              placeholder="Start anywhere..."
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
-                  handleSubmit();
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
               }}
             />
 
@@ -185,25 +298,16 @@ function InputView({ isActive, onEntrySubmitted }) {
               <span className="rail-dot" />
               {recording ? (
                 <>
-                  <button
-                    className="rail-btn recording"
-                    onClick={() => setRecording(false)}
-                  >
+                  <button className="rail-btn recording" onClick={() => setRecording(false)}>
                     <MicIcon />
                   </button>
                   <span className="voice-wave rec">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                      <span key={i} className="bar" />
-                    ))}
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <span key={i} className="bar" />)}
                   </span>
                 </>
               ) : (
                 <>
-                  <button
-                    className="rail-btn"
-                    title="Voice"
-                    onClick={() => setRecording(true)}
-                  >
+                  <button className="rail-btn" title="Voice" onClick={() => setRecording(true)}>
                     <MicIcon />
                   </button>
                   <button className="rail-btn" title="Attach">
@@ -213,66 +317,53 @@ function InputView({ isActive, onEntrySubmitted }) {
               )}
               <button
                 className="send-btn"
-                disabled={loading || !text.trim()}
+                disabled={dispatchPhase === "processing" || !text.trim()}
                 onClick={handleSubmit}
               >
-                {loading ? (
+                {dispatchPhase === "processing" ? (
                   <span className="spinner small" />
                 ) : (
-                  <>
-                    Send <span className="kbd">⌘↵</span>
-                  </>
+                  <>Send <span className="kbd">⌘↵</span></>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Fix 2: Recent entries */}
-          <div className="recent-entries-section">
-            <div className="recent-entries-head">
-              <span>Recent entries</span>
-            </div>
-            <hr className="recent-entries-rule" />
+          {/* Dispatch reveal -- shows after submit */}
+          {dispatchPhase !== "idle" && (
+            <DispatchReveal
+              dispatch={dispatchPayload}
+              entryId={dispatchEntryId}
+              phase={dispatchPhase}
+            />
+          )}
 
-            {entriesLoading || entries === null ? (
-              <div className="recent-entries-list">
-                <EntrySkeleton />
-                <EntrySkeleton />
-                <EntrySkeleton />
-              </div>
-            ) : entries.length === 0 ? (
-              <p className="recent-empty">Nothing yet. Start writing.</p>
-            ) : (
-              <div className="recent-entries-list">
-                {entries.map((entry) => {
-                  const id = entry.id || entry.created_at;
-                  const title =
-                    entry.auto_title ||
-                    (entry.raw_text
-                      ? entry.raw_text.slice(0, 60) +
-                        (entry.raw_text.length > 60 ? "…" : "")
-                      : "Untitled");
-                  const isOpen = expandedId === id;
-                  return (
-                    <div
-                      key={id}
-                      className="recent-entry-row"
-                      onClick={() => toggleExpand(id)}
-                    >
-                      <div className="recent-entry-title">{title}</div>
-                      <div className="recent-entry-date">
-                        {fmtEntryDate(entry.created_at)}
-                      </div>
-                      {isOpen && entry.raw_text && (
-                        <p className="recent-entry-body">
-                          {entry.raw_text}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          {/* Entries list section */}
+          <div className="recent-entries-section">
+            <div className="entries-section-head">
+              <span className="entries-section-label">Your entries</span>
+              {totalCount > 0 && (
+                <span className="entries-section-count">{totalCount} total</span>
+              )}
+            </div>
+
+            <EntriesControls
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              filterOptions={filterOptions}
+              page={page}
+              totalCount={totalCount}
+              pageSize={PAGE_SIZE}
+              onPageChange={handlePageChange}
+              onLoadMore={handleLoadMore}
+              loadingMore={appendingMore}
+            />
+
+            <EntriesList
+              entries={entries}
+              loading={entriesLoading}
+              appended={appendingMore}
+            />
           </div>
         </div>
 

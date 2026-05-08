@@ -1,0 +1,279 @@
+/* DispatchReveal — telegram-style post-submit reveal */
+
+/* ---- Wire status indicator ---- */
+.dispatch-wire-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 32px 0 24px;
+}
+
+.dispatch-blob-box {
+  width: 48px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dispatch-blob {
+  animation:
+    blobMorph 2.4s ease-in-out infinite,
+    blobScale 1.4s ease-in-out infinite 0.3s,
+    blobTremor 0.06s linear infinite;
+}
+
+@keyframes blobMorph {
+  0%   { d: path("M 24 8 C 30 8, 34 12, 34 18 C 34 24, 30 28, 24 28 C 18 28, 14 24, 14 18 C 14 12, 18 8, 24 8 Z"); }
+  12%  { d: path("M 24 6 C 32 8, 36 14, 34 19 C 32 25, 28 28, 23 27 C 17 26, 13 22, 14 17 C 15 11, 19 7, 24 6 Z"); }
+  25%  { d: path("M 25 9 C 31 7, 36 13, 35 19 C 34 25, 29 29, 23 27 C 16 25, 12 21, 14 16 C 16 10, 20 8, 25 9 Z"); }
+  37%  { d: path("M 23 7 C 30 9, 35 13, 35 19 C 35 25, 29 28, 24 27 C 18 26, 13 23, 14 17 C 15 12, 18 7, 23 7 Z"); }
+  50%  { d: path("M 26 10 C 32 11, 35 16, 33 21 C 31 26, 27 28, 22 26 C 16 24, 13 20, 15 15 C 17 11, 21 9, 26 10 Z"); }
+  62%  { d: path("M 22 8 C 29 6, 35 11, 35 17 C 35 24, 31 29, 25 28 C 19 27, 13 24, 13 18 C 13 12, 17 9, 22 8 Z"); }
+  75%  { d: path("M 24 7 C 31 7, 36 13, 34 20 C 32 26, 28 28, 23 28 C 17 27, 13 23, 14 17 C 15 11, 19 7, 24 7 Z"); }
+  87%  { d: path("M 25 8 C 30 8, 34 13, 34 19 C 34 25, 30 28, 24 27 C 18 26, 14 23, 14 17 C 14 12, 19 8, 25 8 Z"); }
+  100% { d: path("M 24 8 C 30 8, 34 12, 34 18 C 34 24, 30 28, 24 28 C 18 28, 14 24, 14 18 C 14 12, 18 8, 24 8 Z"); }
+}
+
+@keyframes blobScale {
+  0%, 100% { transform: scale(0.95); }
+  50%       { transform: scale(1.05); }
+}
+
+@keyframes blobTremor {
+  0%   { translate: 0 0; }
+  25%  { translate: 0.4px -0.2px; }
+  50%  { translate: -0.3px 0.4px; }
+  75%  { translate: 0.2px 0.3px; }
+  100% { translate: 0 0; }
+}
+
+.dispatch-status-text {
+  font-family: "Newsreader", Georgia, serif;
+  font-style: italic;
+  font-size: 12px;
+  color: #5c4a2a;
+  text-align: center;
+  min-height: 18px;
+  transition: opacity 0.3s;
+}
+
+/* ---- Telegram envelope ---- */
+.dispatch-telegram {
+  background: #fdfaf3;
+  border: 0.5px solid #c9b896;
+  border-radius: 2px;
+  padding: 26px 32px;
+  max-width: 540px;
+  margin: 0 auto 24px;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(58, 47, 28, 0.06);
+}
+
+.dispatch-postmark {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  transform: rotate(7deg);
+  border: 1.2px solid #b94a3a;
+  border-radius: 2px;
+  padding: 3px 6px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: #b94a3a;
+  text-transform: uppercase;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.dispatch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #c9b896;
+  margin-bottom: 14px;
+}
+
+.dispatch-header-from {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: #8a7a5c;
+  text-transform: uppercase;
+}
+
+.dispatch-header-time {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  color: #8a7a5c;
+}
+
+/* Subject line with typing cursor */
+.dispatch-subject {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #2a2014;
+  margin-bottom: 16px;
+  min-height: 24px;
+}
+
+.dispatch-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  background: #2a2014;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: cursorBlink 0.85s steps(2) infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Discoveries body */
+.dispatch-body {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #3a2f1c;
+  margin-bottom: 18px;
+  min-height: 40px;
+}
+
+.dispatch-discovery-line {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Underline numbers with soft yellow */
+.dispatch-number {
+  background-image: linear-gradient(180deg, transparent 65%, rgba(212, 175, 55, 0.32) 65%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/* Entity references — dotted underline, editable */
+.dispatch-entity {
+  border-bottom: 1.5px dotted #8a7a5c;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.dispatch-entity:hover {
+  color: #5c4a2a;
+}
+
+/* Closing signature */
+.dispatch-signature {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  color: #3a2f1c;
+  display: block;
+  margin-top: 12px;
+  transform: rotate(-2deg);
+  transform-origin: left center;
+}
+
+/* ---- Stamps row ---- */
+.dispatch-stamps-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dispatch-stamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 2px;
+  border-width: 1px;
+  border-style: solid;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s, background 0.15s;
+}
+
+/* Dashed inset border effect */
+.dispatch-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 0.5px dashed #5c4a2a;
+  opacity: 0.4;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.dispatch-stamp:hover {
+  transform: scale(1.05) rotate(-2deg);
+  background: #f0e6d0 !important;
+}
+
+/* Kind-specific colors */
+.dispatch-stamp--deadline  { border-color: #9c4a2a; color: #9c4a2a; background: #fdfaf3; }
+.dispatch-stamp--mood      { border-color: #6b3a5c; color: #6b3a5c; background: #fdfaf3; }
+.dispatch-stamp--pattern   { border-color: #5c4a2a; color: #5c4a2a; background: #fdfaf3; }
+.dispatch-stamp--person    { border-color: #4a4a2a; color: #4a4a2a; background: #fdfaf3; }
+.dispatch-stamp--project   { border-color: #6b4423; color: #6b4423; background: #fdfaf3; }
+.dispatch-stamp--topic     { border-color: #3a5c4a; color: #3a5c4a; background: #fdfaf3; }
+
+/* Gold first-mention variant */
+.dispatch-stamp--firstmention {
+  border: 1.5px solid #8c6a1a;
+  color: #6b4a10;
+  background: #faf3dd;
+  box-shadow: 0 0 0 1px #faf5ea, 0 0 0 2.5px #d4af55;
+}
+
+/* Stamp edit input */
+.dispatch-stamp-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  width: 80px;
+  min-width: 40px;
+}
+
+/* Saved pulse */
+.dispatch-stamp--saved {
+  animation: stampSavedPulse 0.5s ease-out;
+}
+
+@keyframes stampSavedPulse {
+  0%, 100% { background: inherit; }
+  50%       { background: #f0e6d0 !important; }
+}
+
+/* Footer hint */
+.dispatch-footer-hint {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  color: #8a7a5c;
+  text-align: center;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.dispatch-footer-hint.visible {
+  opacity: 1;
+}

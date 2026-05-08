@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -47,3 +47,22 @@ class MessageResponse(BaseModel):
 class MessagesResponse(BaseModel):
     messages: list[MessageResponse]
     has_more: bool = False
+
+
+class ExtractionEditRequest(BaseModel):
+    stamp_kind: str
+    field_path: str
+    original_value: Optional[str] = None
+    edited_value: str
+    edit_type: Literal["correction", "deletion", "addition"]
+
+
+class EntriesQueryParams(BaseModel):
+    page: int = Field(default=1, ge=1)
+    page_size: int = Field(default=10, ge=1, le=50)
+    mood: Optional[str] = None
+    person: Optional[str] = None
+    category: Optional[str] = None
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+    search: Optional[str] = None
