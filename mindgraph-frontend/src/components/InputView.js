@@ -237,30 +237,41 @@ function InputView({ isActive, onEntrySubmitted }) {
           }`,
         );
 
-        if (data.status === "completed" || data.status === "error") {
+        // Defensive: dispatch_payload may come back as a JSON string if the
+        // column is TEXT or supabase-py double-stringified during write.
+        let dp = data.dispatch_payload;
+        if (typeof dp === "string") {
+          try { dp = JSON.parse(dp); } catch { dp = null; }
+        }
+        const hasDispatch = dp && typeof dp === "object";
+
+        if (data.status === "error") {
+          // Pipeline crashed — stop polling and surface a toast.
           clearInterval(pollRef.current);
-          // Defensive: dispatch_payload may come back as a JSON string if the
-          // column is TEXT or supabase-py double-stringified during write.
-          let dp = data.dispatch_payload;
-          if (typeof dp === "string") {
-            try { dp = JSON.parse(dp); } catch { dp = null; }
-          }
-          if (data.status === "completed" && dp && typeof dp === "object") {
-            console.log("[dispatch poll] revealing with payload:", dp);
-            setDispatchPayload(dp);
-            setDispatchPhase("revealing");
-          } else {
-            console.warn(
-              `[dispatch poll] no payload to reveal (status=${data.status}, dp_type=${typeof dp}) — returning to idle`,
-            );
-            setDispatchPhase("idle");
-          }
-          // Refresh entries list and filter options
+          console.warn("[dispatch poll] status=error — returning to idle");
+          setDispatchPhase("idle");
+          setToast({ message: "Processing failed. Please try again.", type: "error" });
           fetchEntries(1, {});
           fetchFilterOptions();
           setPage(1);
           setFilters({});
+        } else if (data.status === "completed" && hasDispatch) {
+          // Both signals present — reveal the telegram.
+          clearInterval(pollRef.current);
+          console.log("[dispatch poll] revealing with payload:", dp);
+          setDispatchPayload(dp);
+          setDispatchPhase("revealing");
+          fetchEntries(1, {});
+          fetchFilterOptions();
+          setPage(1);
+          setFilters({});
+        } else if (data.status === "completed" && !hasDispatch) {
+          // Status flipped but dispatch_payload hasn't arrived in the read yet
+          // — read-after-write inconsistency. Keep polling instead of giving up;
+          // the next 1-2 polls should catch the payload.
+          console.log("[dispatch poll] status=completed but dp not yet visible — continuing to poll");
         }
+        // else: status=processing — keep polling normally
       } catch (err) {
         console.warn("[dispatch poll] exception:", err);
         /* keep polling */
