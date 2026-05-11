@@ -203,6 +203,12 @@ function InputView({ isActive, onEntrySubmitted }) {
 
   // Poll entry status until complete
   const startPolling = useCallback((entryId) => {
+    // Defensive: kill any prior poller before starting a new one — without this,
+    // back-to-back submissions leak intervals and produce duplicate poll-N logs.
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
     pollCountRef.current = 0;
     pollRef.current = setInterval(async () => {
       pollCountRef.current++;
