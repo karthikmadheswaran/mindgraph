@@ -628,7 +628,9 @@ async def process_entry_background(
 
 
 async def get_entry_status(entry_id: str, user_id: str):
-    result = (
+    # DEBUG: run both an explicit-column select and a select(*) to identify whether
+    # PostgREST/supabase-py is dropping dispatch_payload on the explicit form.
+    explicit = (
         supabase.table("entries")
         .select("id, status, pipeline_stage, dispatch_payload")
         .eq("id", entry_id)
@@ -636,14 +638,46 @@ async def get_entry_status(entry_id: str, user_id: str):
         .single()
         .execute()
     )
-    data = result.data
-    if data:
-        dp = data.get("dispatch_payload")
-        if isinstance(dp, str):
-            try:
-                data["dispatch_payload"] = json.loads(dp)
-            except Exception:
-                logger.warning("get_entry_status: dispatch_payload is non-parseable string for entry %s", entry_id)
+    star = (
+        supabase.table("entries")
+        .select("*")
+        .eq("id", entry_id)
+        .eq("user_id", user_id)
+        .single()
+        .execute()
+    )
+
+    e_data = explicit.data or {}
+    s_data = star.data or {}
+    e_dp = e_data.get("dispatch_payload")
+    s_dp = s_data.get("dispatch_payload")
+
+    logger.info(
+        "get_entry_status: entry=%s | explicit dp_type=%s isnull=%s len=%s | star dp_type=%s isnull=%s len=%s",
+        entry_id,
+        type(e_dp).__name__, e_dp is None,
+        len(e_dp) if isinstance(e_dp, (str, dict, list)) else "-",
+        type(s_dp).__name__, s_dp is None,
+        len(s_dp) if isinstance(s_dp, (str, dict, list)) else "-",
+    )
+
+    # Prefer whichever has the payload. Falls back gracefully if both are null.
+    data = {
+        "id": e_data.get("id") or s_data.get("id"),
+        "status": e_data.get("status") or s_data.get("status"),
+        "pipeline_stage": e_data.get("pipeline_stage") if "pipeline_stage" in e_data else s_data.get("pipeline_stage"),
+        "dispatch_payload": e_dp if e_dp is not None else s_dp,
+    }
+
+    dp = data.get("dispatch_payload")
+    if isinstance(dp, str):
+        try:
+            data["dispatch_payload"] = json.loads(dp)
+        except Exception:
+            logger.warning(
+                "get_entry_status: dispatch_payload is non-parseable string for entry %s",
+                entry_id,
+            )
     return data
 
 
