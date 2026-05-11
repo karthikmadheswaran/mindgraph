@@ -48,7 +48,6 @@ function buildPhrasePool(firstName) {
     ...PHRASES_SARCASTIC,
     ...userPool,
   ];
-  // Fisher-Yates shuffle so each submission feels different
   for (let i = all.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [all[i], all[j]] = [all[j], all[i]];
@@ -56,16 +55,7 @@ function buildPhrasePool(firstName) {
   return [...all, "almost there."];
 }
 
-const CHAR_BASE_MS = 14;
-const DISCOVERY_GAP_MS = 800;
-const STAMP_STAGGER_MS = 50;
 const PHRASE_CYCLE_MS = 2800; // synced with 3s pulse-orb breath
-
-function jitter(base, char) {
-  if (char === " ") return base * 0.5;
-  if (".,;:!?".includes(char)) return base * 5;
-  return base * (0.5 + Math.random());
-}
 
 function fmtTime(d) {
   const hh = String(d.getHours()).padStart(2, "0");
@@ -151,13 +141,7 @@ function Stamp({ stamp, entryId, onSaved, style }) {
 // Phase: "processing" | "revealing" | "done"
 export default function DispatchReveal({ dispatch, entryId, phase, firstName }) {
   const [statusIdx, setStatusIdx] = useState(0);
-  const [subjectTyped, setSubjectTyped] = useState("");
-  const [subjectDone, setSubjectDone] = useState(false);
-  const [discoveryLines, setDiscoveryLines] = useState([]);
-  const [sigVisible, setSigVisible] = useState(false);
   const [stamps, setStamps] = useState([]);
-  const [stampsVisible, setStampsVisible] = useState([]);
-  const [hintVisible, setHintVisible] = useState(false);
 
   // Build a fresh shuffled phrase pool each time we enter processing
   const phrasePool = useMemo(
@@ -165,23 +149,15 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
     [phase, firstName]
   );
 
-  // Reset ALL reveal state when a new processing run starts — without this,
-  // a 2nd submission lays the new content on top of the previous, which looks
-  // like the reveal is "staggering" or restarting mid-stream.
+  // Reset cycle position when a new processing run starts
   useEffect(() => {
     if (phase === "processing") {
       setStatusIdx(0);
-      setSubjectTyped("");
-      setSubjectDone(false);
-      setDiscoveryLines([]);
-      setSigVisible(false);
       setStamps([]);
-      setStampsVisible([]);
-      setHintVisible(false);
     }
   }, [phase]);
 
-  // Phrases breathe with the pulse-orb: one phrase per 2.8s cycle, synced to icon
+  // Phrases breathe with the pulse-orb: one phrase per 2.8s cycle
   useEffect(() => {
     if (phase !== "processing" || phrasePool.length === 0) return;
     const id = setInterval(() => {
@@ -190,74 +166,12 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
     return () => clearInterval(id);
   }, [phase, phrasePool]);
 
-  // Type the subject line when revealing starts
+  // Snapshot stamps from dispatch when we enter the revealing phase
   useEffect(() => {
-    if (phase !== "revealing" || !dispatch) return;
-    const subject = `RE: ${dispatch.subject || "untitled"}`;
-    let i = 0;
-    let timeout;
-    function typeNext() {
-      if (i >= subject.length) { setSubjectDone(true); return; }
-      const ch = subject[i];
-      setSubjectTyped(subject.slice(0, i + 1));
-      i++;
-      timeout = setTimeout(typeNext, jitter(CHAR_BASE_MS, ch));
+    if (phase === "revealing" && dispatch) {
+      setStamps(dispatch.stamps || []);
     }
-    timeout = setTimeout(typeNext, 200);
-    return () => clearTimeout(timeout);
   }, [phase, dispatch]);
-
-  // Type discoveries sequentially after subject is done
-  useEffect(() => {
-    if (!subjectDone || !dispatch) return;
-    const lines = dispatch.discoveries || [];
-    if (!lines.length) { setSigVisible(true); return; }
-
-    let lineIdx = 0;
-    let charIdx = 0;
-    let buffer = "";
-    let timeout;
-
-    function typeDiscovery() {
-      if (lineIdx >= lines.length) { setSigVisible(true); return; }
-      const phrase = lines[lineIdx].phrase || "";
-
-      if (charIdx < phrase.length) {
-        const ch = phrase[charIdx];
-        buffer += ch;
-        setDiscoveryLines((prev) => {
-          const next = [...prev];
-          next[lineIdx] = buffer;
-          return next;
-        });
-        charIdx++;
-        timeout = setTimeout(typeDiscovery, jitter(CHAR_BASE_MS, ch));
-      } else {
-        lineIdx++;
-        charIdx = 0;
-        buffer = "";
-        timeout = setTimeout(typeDiscovery, DISCOVERY_GAP_MS);
-      }
-    }
-
-    timeout = setTimeout(typeDiscovery, 400);
-    return () => clearTimeout(timeout);
-  }, [subjectDone, dispatch]);
-
-  // Stamps appear in a tight wave (50ms stagger) right after the signature
-  useEffect(() => {
-    if (!sigVisible || !dispatch) return;
-    const s = dispatch.stamps || [];
-    setStamps(s);
-    s.forEach((_, i) => {
-      setTimeout(() => {
-        setStampsVisible((prev) => [...prev, i]);
-      }, 280 + i * STAMP_STAGGER_MS);
-    });
-    const total = 280 + s.length * STAMP_STAGGER_MS + 400;
-    const hintTimer = setTimeout(() => setHintVisible(true), total + 1200);
-    return () => clearTimeout(hintTimer);
-  }, [sigVisible, dispatch]);
 
   const handleStampSaved = useCallback((kind, oldVal, newVal) => {
     setStamps((prev) =>
@@ -268,6 +182,8 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
   }, []);
 
   if (phase === "idle") return null;
+
+  const discoveries = (dispatch?.discoveries) || [];
 
   return (
     <div className="dispatch-wrap" style={{ marginBottom: 32 }}>
@@ -303,7 +219,7 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
             initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.65, ease: [0.2, 0.85, 0.3, 1] }}
+            transition={{ duration: 0.5, ease: [0.2, 0.85, 0.3, 1] }}
           >
             <span className="dispatch-postmark">
               RAWTXT &middot; ENTRY {String(entryId || "").slice(-6).toUpperCase()}
@@ -314,63 +230,44 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
               <span className="dispatch-header-time">{fmtTime(new Date())}</span>
             </div>
 
-            {/* Subject typing */}
-            <div className="dispatch-subject">
-              {subjectTyped}
-              {!subjectDone && <span className="dispatch-cursor" />}
-            </div>
-
-            {/* Discoveries body */}
-            <div className="dispatch-body">
-              {discoveryLines.map((line, i) => (
-                <span
-                  key={i}
-                  className="dispatch-discovery-line"
-                  dangerouslySetInnerHTML={{ __html: numberize(line) }}
-                />
-              ))}
-              {discoveryLines.length > 0 && discoveryLines.length < (dispatch.discoveries || []).length && (
-                <span className="dispatch-cursor" />
-              )}
-            </div>
-
-            {/* Closing signature */}
-            <AnimatePresence>
-              {sigVisible && (
-                <motion.span
-                  className="dispatch-signature"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.7 }}
-                >
-                  -- your journal
-                </motion.span>
-              )}
-            </AnimatePresence>
-
-            {/* Stamps row */}
-            {stamps.length > 0 && (
-              <div className="dispatch-stamps-row" style={{ marginTop: 20 }}>
-                {stamps.map((stamp, i) =>
-                  stampsVisible.includes(i) && (
-                    <span
-                      key={`${stamp.kind}-${stamp.value}-${i}`}
-                      className="dispatch-stamp-thump"
-                    >
-                      <Stamp
-                        stamp={stamp}
-                        entryId={entryId}
-                        onSaved={handleStampSaved}
-                      />
-                    </span>
-                  )
-                )}
+            {/* All content reveals together in a single coordinated fade-up */}
+            <div className="dispatch-content">
+              <div className="dispatch-subject">
+                RE: {dispatch.subject || "untitled"}
               </div>
-            )}
 
-            {/* Footer hint */}
-            <div className={`dispatch-footer-hint ${hintVisible ? "visible" : ""}`}>
-              tap any stamp to correct it &middot; we learn from every mark you make
+              {discoveries.length > 0 && (
+                <div className="dispatch-body">
+                  {discoveries.map((d, i) => (
+                    <span
+                      key={i}
+                      className="dispatch-discovery-line"
+                      dangerouslySetInnerHTML={{ __html: numberize(d.phrase || "") }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <span className="dispatch-signature">
+                -- your journal
+              </span>
+
+              {stamps.length > 0 && (
+                <div className="dispatch-stamps-row" style={{ marginTop: 20 }}>
+                  {stamps.map((stamp, i) => (
+                    <Stamp
+                      key={`${stamp.kind}-${stamp.value}-${i}`}
+                      stamp={stamp}
+                      entryId={entryId}
+                      onSaved={handleStampSaved}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="dispatch-footer-hint visible">
+                tap any stamp to correct it &middot; we learn from every mark you make
+              </div>
             </div>
           </motion.div>
         )}
