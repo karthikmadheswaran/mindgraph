@@ -91,7 +91,14 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "alive"}
+    # Railway injects RAILWAY_GIT_COMMIT_SHA on every deploy. Surface it here so
+    # we can curl /health and instantly verify which commit is live.
+    commit = os.getenv("RAILWAY_GIT_COMMIT_SHA", "unknown")
+    return {
+        "status": "alive",
+        "commit": commit[:8] if commit != "unknown" else "unknown",
+        "service": "mindgraph-backend",
+    }
 
 
 @app.post("/entries", response_model=EntryResponse)
