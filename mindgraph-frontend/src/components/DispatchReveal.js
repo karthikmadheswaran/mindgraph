@@ -165,9 +165,20 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
     [phase, firstName]
   );
 
-  // Reset cycle position when a new processing run starts
+  // Reset ALL reveal state when a new processing run starts — without this,
+  // a 2nd submission lays the new content on top of the previous, which looks
+  // like the reveal is "staggering" or restarting mid-stream.
   useEffect(() => {
-    if (phase === "processing") setStatusIdx(0);
+    if (phase === "processing") {
+      setStatusIdx(0);
+      setSubjectTyped("");
+      setSubjectDone(false);
+      setDiscoveryLines([]);
+      setSigVisible(false);
+      setStamps([]);
+      setStampsVisible([]);
+      setHintVisible(false);
+    }
   }, [phase]);
 
   // Phrases breathe with the pulse-orb: one phrase per 2.8s cycle, synced to icon

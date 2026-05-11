@@ -19,7 +19,7 @@
   justify-content: center;
 }
 
-/* Soft outer halo */
+/* Soft outer halo — no blur filter (cheaper on slow devices) */
 .dispatch-pulse-glow {
   position: absolute;
   width: 38px;
@@ -30,8 +30,8 @@
       rgba(58, 47, 28, 0.42) 0%,
       rgba(58, 47, 28, 0.18) 38%,
       transparent 72%);
-  filter: blur(2px);
   animation: pulseGlow 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
 }
 
 /* Inner core: dense ink dot */
@@ -51,7 +51,7 @@
   animation: pulseCore 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Two ripple rings, offset, fading outward */
+/* Single ripple ring expanding outward (kept lightweight) */
 .dispatch-pulse-ring {
   position: absolute;
   width: 12px;
@@ -60,9 +60,10 @@
   border-radius: 50%;
   opacity: 0;
   animation: pulseRipple 3s ease-out infinite;
+  will-change: transform, opacity;
 }
 
-.dispatch-pulse-ring--2 { animation-delay: 1.5s; }
+.dispatch-pulse-ring--2 { display: none; }
 
 @keyframes pulseGlow {
   0%, 100% { transform: scale(0.82); opacity: 0.45; }

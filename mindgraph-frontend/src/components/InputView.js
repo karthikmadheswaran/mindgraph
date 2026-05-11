@@ -216,8 +216,20 @@ function InputView({ isActive, onEntrySubmitted }) {
       try {
         const headers = await authHeaders();
         const res = await fetch(`${API}/entries/${entryId}/status`, { headers });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.warn(`[dispatch poll] status fetch ${res.status} for entry ${entryId}`);
+          return;
+        }
         const data = await res.json();
+        console.log(
+          `[dispatch poll #${pollCountRef.current}] status=${data?.status} stage=${data?.pipeline_stage} dp=${
+            data?.dispatch_payload == null
+              ? "null"
+              : typeof data.dispatch_payload === "string"
+              ? `string(${data.dispatch_payload.length}c)`
+              : `object(${Object.keys(data.dispatch_payload).length}k)`
+          }`,
+        );
 
         if (data.status === "completed" || data.status === "error") {
           clearInterval(pollRef.current);
@@ -228,9 +240,13 @@ function InputView({ isActive, onEntrySubmitted }) {
             try { dp = JSON.parse(dp); } catch { dp = null; }
           }
           if (data.status === "completed" && dp && typeof dp === "object") {
+            console.log("[dispatch poll] revealing with payload:", dp);
             setDispatchPayload(dp);
             setDispatchPhase("revealing");
           } else {
+            console.warn(
+              `[dispatch poll] no payload to reveal (status=${data.status}, dp_type=${typeof dp}) — returning to idle`,
+            );
             setDispatchPhase("idle");
           }
           // Refresh entries list and filter options
@@ -239,7 +255,8 @@ function InputView({ isActive, onEntrySubmitted }) {
           setPage(1);
           setFilters({});
         }
-      } catch {
+      } catch (err) {
+        console.warn("[dispatch poll] exception:", err);
         /* keep polling */
       }
     }, POLL_INTERVAL_MS);
