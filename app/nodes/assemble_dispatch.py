@@ -164,17 +164,56 @@ async def assemble_dispatch(state: JournalState) -> dict:
         "entry_id": str(entry_id),
     }
 
+    # DEBUG: track the exact payload size + shape we're about to send.
     try:
-        supabase.table("entries").update({
+        import json as _json
+        dp_size = len(_json.dumps(dispatch_payload, default=str))
+    except Exception:
+        dp_size = -1
+    logger.info(
+        "assemble_dispatch: writing dp size=%dB keys=%s for entry %s",
+        dp_size, list(dispatch_payload.keys()), entry_id,
+    )
+
+    try:
+        res = supabase.table("entries").update({
             "dispatch_payload": dispatch_payload,
             "status": "completed",
             "pipeline_stage": None,
         }).eq("id", str(entry_id)).execute()
-        logger.info("assemble_dispatch: stored dispatch_payload for entry %s", entry_id)
+
+        # DEBUG: did the UPDATE actually persist dispatch_payload?
+        returned_dp = None
+        if res.data and len(res.data) > 0:
+            returned_dp = res.data[0].get("dispatch_payload")
+        logger.info(
+            "assemble_dispatch: UPDATE returned rows=%d, returned_dp_type=%s for entry %s",
+            len(res.data) if res.data else 0,
+            type(returned_dp).__name__,
+            entry_id,
+        )
+
+        # DEBUG: immediate re-read to confirm what's actually in the column post-write
+        try:
+            verify = (
+                supabase.table("entries")
+                .select("dispatch_payload, status, pipeline_stage")
+                .eq("id", str(entry_id))
+                .single()
+                .execute()
+            )
+            v = verify.data or {}
+            v_dp = v.get("dispatch_payload")
+            logger.info(
+                "assemble_dispatch: POST-WRITE verify dp_type=%s status=%s stage=%s for entry %s",
+                type(v_dp).__name__,
+                v.get("status"),
+                v.get("pipeline_stage"),
+                entry_id,
+            )
+        except Exception as verify_exc:
+            logger.warning("assemble_dispatch: post-write verify failed: %s", verify_exc)
     except Exception as exc:
-        # If migration 014 (dispatch_payload column) hasn't been applied, this UPDATE fails
-        # and the row stays at status="processing" — frontend hangs on the streaming loop.
-        # Surface the failure so the frontend exits the poll instead of spinning forever.
         logger.error(
             "assemble_dispatch: failed to persist dispatch_payload for entry %s: %s",
             entry_id, exc, exc_info=True,
