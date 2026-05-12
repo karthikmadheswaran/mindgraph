@@ -64,7 +64,11 @@ const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
 
 const PROGRESS_WIDTHS = [72, 18, 40, 55, 62];
 
-const DAILY_THREADS = [
+// Fallback content for the MindGraph Noticed card. Only renders when
+// /insights has not yet produced a forgotten_projects item for this user
+// (cold start, network error, or empty insights table). Once real data
+// arrives, `noticedInsight` is populated and this array is not consulted.
+const DAILY_THREADS_FALLBACK = [
   {
     q: "You've mentioned the dentist 4 times since January. What's the actual plan?",
     tag: "AVOIDANCE · OPEN SINCE JAN",
@@ -118,7 +122,10 @@ const PO_TYPES = {
   behavioral: { label: "Behavioral rhythm", bg: "#faeee4", text: "#b84a2d", accent: "#b84a2d", tintBg: "#fdf6f2" },
 };
 
-const PATTERN_CARDS_DATA = [
+// Fallback only — rendered when /insights/patterns has no cached pattern
+// yet (cold start, network error, or before the first daily regen). Once
+// real patterns arrive they replace these entries.
+const PATTERN_CARDS_FALLBACK = [
   {
     type: "loop",
     statN: "14×",
@@ -181,7 +188,66 @@ const PATTERN_CARDS_DATA = [
 
 const PO_BAR_HEIGHTS = [5, 14, 6, 8, 9, 7, 18];
 
-function PatternsObservatory() {
+// Map a /insights/patterns response payload to the card shape this
+// component renders. Backend returns four arrays; we flatten them into
+// up to 5 cards, preserving each item's category color treatment.
+function buildPatternCards(patternsData) {
+  if (!patternsData || typeof patternsData !== "object") return [];
+  const cards = [];
+
+  for (const item of patternsData.repeated_themes || []) {
+    if (!item?.observation) continue;
+    cards.push({
+      type: "behavioral",
+      statN: item.count ? `${item.count}×` : "",
+      statU: item.count === 1 ? "entry" : "entries",
+      title: item.theme || "Repeated theme",
+      body: item.observation,
+      footL: "Repeated theme",
+      footR: "Explore this →",
+    });
+  }
+  for (const item of patternsData.shiny_objects || []) {
+    if (!item?.observation) continue;
+    cards.push({
+      type: "avoidance",
+      statN: "",
+      statU: "",
+      title: item.name || "Shiny object",
+      body: item.observation,
+      footL: "Shiny-object signal",
+      footR: "Track progress →",
+    });
+  }
+  for (const item of patternsData.commitment_gaps || []) {
+    if (!item?.observation) continue;
+    cards.push({
+      type: "identity",
+      statN: "",
+      statU: "",
+      title: "Commitment vs follow-through",
+      body: item.observation,
+      footL: "Commitment gap",
+      footR: "See the evidence →",
+    });
+  }
+  for (const item of patternsData.relationship_patterns || []) {
+    if (!item?.observation) continue;
+    cards.push({
+      type: "language",
+      statN: "",
+      statU: "",
+      title: item.entity || "Relationship pattern",
+      body: item.observation,
+      footL: "Relationship signal",
+      footR: "Show me all →",
+    });
+  }
+  return cards.slice(0, 5);
+}
+
+function PatternsObservatory({ cards }) {
+  const renderCards = cards && cards.length > 0 ? cards : PATTERN_CARDS_FALLBACK;
   return (
     <div className="patterns-observatory">
       <div className="po-sep" />
@@ -196,7 +262,7 @@ function PatternsObservatory() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        {PATTERN_CARDS_DATA.map((c, i) => {
+        {renderCards.map((c, i) => {
           const t = PO_TYPES[c.type];
           return (
             <motion.div
@@ -317,6 +383,7 @@ function Dashboard({ isActive, userId }) {
   const [shuffling, setShuffling] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [noticedInsight, setNoticedInsight] = useState(null);
+  const [patternCards, setPatternCards] = useState([]);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -1303,6 +1370,8 @@ function Dashboard({ isActive, userId }) {
         console.log("RAW insights response:", JSON.stringify(insightsData, null, 2));
         console.log("RAW patterns response:", JSON.stringify(patternsData, null, 2));
 
+        setPatternCards(buildPatternCards(patternsData?.data));
+
         const TYPE_LABELS = {
           tool:    "FORGOTTEN TOOL",
           person:  "QUIET CONNECTION",
@@ -1383,7 +1452,7 @@ function Dashboard({ isActive, userId }) {
   const activeProjectsCount = stats?.active_projects ?? projects.length;
   const hiddenProjectsCount = stats?.hidden_projects ?? 0;
   const entitiesTracked = stats?.entities_tracked ?? entities.length;
-  const currentThread = DAILY_THREADS[shuffleKey % DAILY_THREADS.length];
+  const currentThread = DAILY_THREADS_FALLBACK[shuffleKey % DAILY_THREADS_FALLBACK.length];
   const currentWeather = MOOD_WEATHER[shuffleKey % MOOD_WEATHER.length];
   const handleShuffle = () => {
     setShuffling(true);
@@ -1709,7 +1778,7 @@ function Dashboard({ isActive, userId }) {
 
         {/* ——— Patterns Observatory — full width below both columns ——— */}
         <div className="spread-full" style={{ marginTop: "2rem" }}>
-          <PatternsObservatory />
+          <PatternsObservatory cards={patternCards} />
         </div>
 
         </>
