@@ -9,7 +9,6 @@ import EntriesList from "./EntriesList";
 import EntriesControls from "./EntriesControls";
 import "../styles/input.css";
 
-const STREAK_COUNT = 47;
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLLS = 80; // 200s ceiling — non-dedup pipeline runs 5+ Gemini calls and can take 60-90s
 
@@ -328,7 +327,7 @@ function InputView({ isActive, onEntrySubmitted }) {
           <div className="write-mini-head">
             <div className="write-date">{fmtDate(now)}</div>
             <div className="write-weather">
-              {fmtTime(now)} &middot; Day {STREAK_COUNT}
+              {fmtTime(now)}
             </div>
           </div>
 
