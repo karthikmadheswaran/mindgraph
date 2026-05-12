@@ -748,7 +748,8 @@ async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
           "total_entries": int,        # all-time completed, non-deleted (VOL.)
           "entries_this_week": int,    # Monday 00:00 -> Sunday 23:59:59 in user tz
           "active_projects": int,      # projects with status='active'
-          "completed_projects": int,   # projects with status='completed' (the "+N")
+          "completed_projects": int,   # projects with status='completed'
+          "hidden_projects": int,      # projects with status='hidden' (the "+N")
           "entities_tracked": int,     # distinct entities with mention_count > 0
         }
     """
@@ -805,6 +806,15 @@ async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
     )
     completed_projects = completed_resp.count or 0
 
+    hidden_resp = (
+        supabase.table("projects")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("status", "hidden")
+        .execute()
+    )
+    hidden_projects = hidden_resp.count or 0
+
     entities_resp = (
         supabase.table("entities")
         .select("id", count="exact")
@@ -819,6 +829,7 @@ async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
         "entries_this_week": entries_this_week,
         "active_projects": active_projects,
         "completed_projects": completed_projects,
+        "hidden_projects": hidden_projects,
         "entities_tracked": entities_tracked,
     }
 

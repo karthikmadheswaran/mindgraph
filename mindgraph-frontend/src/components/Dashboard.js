@@ -1381,7 +1381,7 @@ function Dashboard({ isActive, userId }) {
   // Real values from /stats/dashboard. Falls back to 0 while the snapshot loads.
   const entriesThisWeek = stats?.entries_this_week ?? 0;
   const activeProjectsCount = stats?.active_projects ?? projects.length;
-  const completedProjectsCount = stats?.completed_projects ?? 0;
+  const hiddenProjectsCount = stats?.hidden_projects ?? 0;
   const entitiesTracked = stats?.entities_tracked ?? entities.length;
   const currentThread = DAILY_THREADS[shuffleKey % DAILY_THREADS.length];
   const currentWeather = MOOD_WEATHER[shuffleKey % MOOD_WEATHER.length];
@@ -1550,7 +1550,7 @@ function Dashboard({ isActive, userId }) {
               <div className="tick">
                 <div className="tick-n">
                   {activeProjectsCount}
-                  {completedProjectsCount > 0 && <em>+{completedProjectsCount}</em>}
+                  {hiddenProjectsCount > 0 && <em>+{hiddenProjectsCount}</em>}
                 </div>
                 <div className="tick-l">active projects</div>
               </div>
