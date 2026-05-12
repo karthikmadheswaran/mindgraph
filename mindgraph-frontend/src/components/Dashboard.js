@@ -294,6 +294,7 @@ function Dashboard({ isActive, userId }) {
   );
   const [entities, setEntities] = useState(cachedSnapshot?.entities || []);
   const [relations, setRelations] = useState(cachedSnapshot?.relations || []);
+  const [stats, setStats] = useState(cachedSnapshot?.stats || null);
   const [loadingData, setLoadingData] = useState(!cachedSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSynced, setLastSynced] = useState(
@@ -354,6 +355,7 @@ function Dashboard({ isActive, userId }) {
     setAllProjects(nextProjects);
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
+    setStats(snapshot.stats || null);
     setLoadingData(false);
     setRefreshing(false);
     setSnapshotReady(true);
@@ -1509,7 +1511,7 @@ function Dashboard({ isActive, userId }) {
           <div className="spread-masthead">
             <h1>The <em>Daily</em> Mind</h1>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div className="issue">VOL. {loadingData ? "—" : entries.length} · {formattedDate}</div>
+              <div className="issue">VOL. {loadingData ? "—" : (stats?.total_entries ?? 0)} · {formattedDate}</div>
               <button
                 type="button"
                 className={`sync-btn${syncing ? " syncing" : ""}`}

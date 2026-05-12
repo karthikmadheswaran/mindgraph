@@ -368,3 +368,11 @@ async def get_showed_up_stats(
     user_id: str = Depends(get_current_user),
 ):
     return await entry_service.get_showed_up_stats(user_id, user_tz or "UTC")
+
+
+@app.get("/stats/dashboard")
+async def get_dashboard_stats(
+    user_tz: Optional[str] = Query(default="UTC"),
+    user_id: str = Depends(get_current_user),
+):
+    return await entry_service.get_dashboard_stats(user_id, user_tz or "UTC")

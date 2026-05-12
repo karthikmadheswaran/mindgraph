@@ -740,6 +740,89 @@ async def save_extraction_edit(
     )
 
 
+async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
+    """Real counts for the Today view header + stat cards.
+
+    Returns:
+        {
+          "total_entries": int,        # all-time completed, non-deleted (VOL.)
+          "entries_this_week": int,    # Monday 00:00 -> Sunday 23:59:59 in user tz
+          "active_projects": int,      # projects with status='active'
+          "completed_projects": int,   # projects with status='completed' (the "+N")
+          "entities_tracked": int,     # distinct entities with mention_count > 0
+        }
+    """
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    try:
+        tz = ZoneInfo(user_timezone or "UTC")
+    except Exception:
+        tz = ZoneInfo("UTC")
+
+    now_local = datetime.now(tz)
+    # Monday-start week in the user's local timezone, then convert to UTC for filtering.
+    weekday = now_local.weekday()  # Monday = 0
+    week_start_local = now_local.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=weekday)
+    week_start_utc = week_start_local.astimezone(ZoneInfo("UTC"))
+
+    total_resp = (
+        supabase.table("entries")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .is_("deleted_at", "null")
+        .execute()
+    )
+    total_entries = total_resp.count or 0
+
+    week_resp = (
+        supabase.table("entries")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .is_("deleted_at", "null")
+        .gte("created_at", week_start_utc.isoformat())
+        .execute()
+    )
+    entries_this_week = week_resp.count or 0
+
+    active_resp = (
+        supabase.table("projects")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("status", "active")
+        .execute()
+    )
+    active_projects = active_resp.count or 0
+
+    completed_resp = (
+        supabase.table("projects")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .execute()
+    )
+    completed_projects = completed_resp.count or 0
+
+    entities_resp = (
+        supabase.table("entities")
+        .select("id", count="exact")
+        .eq("user_id", user_id)
+        .gt("mention_count", 0)
+        .execute()
+    )
+    entities_tracked = entities_resp.count or 0
+
+    return {
+        "total_entries": total_entries,
+        "entries_this_week": entries_this_week,
+        "active_projects": active_projects,
+        "completed_projects": completed_projects,
+        "entities_tracked": entities_tracked,
+    }
+
+
 async def get_showed_up_stats(user_id: str, user_timezone: str = "UTC") -> dict:
     """Distinct-day journal-submission stats for the sidebar widget.
 

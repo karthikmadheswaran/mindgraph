@@ -13,6 +13,14 @@ const normalizeProgress = (progress = {}) => ({
   projects: progress.projects || [],
 });
 
+const normalizeStats = (stats = {}) => ({
+  total_entries: Number(stats.total_entries) || 0,
+  entries_this_week: Number(stats.entries_this_week) || 0,
+  active_projects: Number(stats.active_projects) || 0,
+  completed_projects: Number(stats.completed_projects) || 0,
+  entities_tracked: Number(stats.entities_tracked) || 0,
+});
+
 const normalizeSnapshot = (snapshot = {}) => ({
   entries: snapshot.entries || [],
   deadlines: snapshot.deadlines || [],
@@ -21,7 +29,16 @@ const normalizeSnapshot = (snapshot = {}) => ({
   relations: snapshot.relations || [],
   patterns: snapshot.patterns || {},
   progress: normalizeProgress(snapshot.progress),
+  stats: normalizeStats(snapshot.stats),
 });
+
+const getUserTimezone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+};
 
 const stampSnapshot = (snapshot) => ({
   ...normalizeSnapshot(snapshot),
@@ -56,6 +73,7 @@ const syncUserScope = (userId) => {
 
 const fetchDashboardSnapshot = async () => {
   const headers = await authHeaders();
+  const userTz = encodeURIComponent(getUserTimezone());
 
   const [
     entriesData,
@@ -65,6 +83,7 @@ const fetchDashboardSnapshot = async () => {
     entitiesData,
     relationsData,
     patternsData,
+    statsData,
   ] = await Promise.all([
     fetch(`${API}/entries`, { headers }).then((response) => response.json()),
     fetch(`${API}/deadlines?status=pending,snoozed,missed`, { headers }).then(
@@ -99,6 +118,9 @@ const fetchDashboardSnapshot = async () => {
     fetch(`${API}/insights/patterns`, { headers })
       .then((response) => response.json())
       .catch(() => ({ data: {} })),
+    fetch(`${API}/stats/dashboard?user_tz=${userTz}`, { headers })
+      .then((response) => (response.ok ? response.json() : {}))
+      .catch(() => ({})),
   ]);
 
   return stampSnapshot({
@@ -109,6 +131,7 @@ const fetchDashboardSnapshot = async () => {
     entities: entitiesData.entities || [],
     relations: relationsData.relations || [],
     patterns: patternsData.data || {},
+    stats: statsData,
   });
 };
 
