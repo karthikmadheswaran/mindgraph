@@ -307,6 +307,8 @@ function Dashboard({ isActive, userId }) {
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
+  const [openDeadlineMenuId, setOpenDeadlineMenuId] = useState(null);
+  const [pendingSnooze, setPendingSnooze] = useState(null);
   const [pendingDeletion, setPendingDeletion] = useState(null);
   const [toast, setToast] = useState(null);
   const [shuffleKey, setShuffleKey] = useState(0);
@@ -320,6 +322,8 @@ function Dashboard({ isActive, userId }) {
   const deadlineBadgeRefs = useRef({});
   const pendingDeletionRef = useRef(null);
   const pendingDeletionTimerRef = useRef(null);
+  const pendingSnoozeRef = useRef(null);
+  const pendingSnoozeTimerRef = useRef(null);
 
   const applySnapshot = useCallback((snapshot) => {
     const activePendingDeletion = pendingDeletionRef.current;
@@ -489,8 +493,13 @@ function Dashboard({ isActive, userId }) {
       clearTimeout(refreshTimeoutRef.current);
       clearTimeout(retryTimeoutRef.current);
       clearTimeout(pendingDeletionTimerRef.current);
+      clearTimeout(pendingSnoozeTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    pendingSnoozeRef.current = pendingSnooze;
+  }, [pendingSnooze]);
 
   const updateDeadlineStatus = useCallback(async (deadlineId, newStatus) => {
     const headers = await authHeaders();
@@ -1134,6 +1143,146 @@ function Dashboard({ isActive, userId }) {
     [closeDeadlinePicker, setDeadlinesState, updateDeadlineDate]
   );
 
+  // ——— Snooze (with 5s undo, mirrors scheduleDelete pattern) ———
+
+  const formatDueDateInput = useCallback((date) => {
+    const datePart = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const mm = String(date.getMinutes()).padStart(2, "0");
+    return `${datePart}T${hh}:${mm}`;
+  }, []);
+
+  const clearPendingSnoozeTimer = useCallback(() => {
+    if (pendingSnoozeTimerRef.current) {
+      clearTimeout(pendingSnoozeTimerRef.current);
+      pendingSnoozeTimerRef.current = null;
+    }
+  }, []);
+
+  const undoPendingSnooze = useCallback(() => {
+    const snooze = pendingSnoozeRef.current;
+    if (!snooze) return;
+    clearPendingSnoozeTimer();
+    pendingSnoozeRef.current = null;
+    setDeadlinesState((current) =>
+      sortDeadlines(
+        current.map((item) =>
+          item.id === snooze.deadlineId
+            ? { ...item, due_date: snooze.oldDueDate, status: snooze.oldStatus }
+            : item
+        )
+      )
+    );
+    setPendingSnooze(null);
+    setToast(null);
+  }, [clearPendingSnoozeTimer, setDeadlinesState]);
+
+  const finalizePendingSnooze = useCallback(
+    async (snooze) => {
+      if (!snooze) return;
+      clearPendingSnoozeTimer();
+      pendingSnoozeRef.current = null;
+      setPendingSnooze(null);
+      setToast(null);
+      try {
+        const updated = normalizeDeadline(
+          await updateDeadlineDate(snooze.deadlineId, snooze.newDueDate)
+        );
+        setDeadlinesState((current) =>
+          sortDeadlines(
+            current.map((item) => (item.id === snooze.deadlineId ? updated : item))
+          )
+        );
+      } catch (error) {
+        setDeadlinesState((current) =>
+          sortDeadlines(
+            current.map((item) =>
+              item.id === snooze.deadlineId
+                ? { ...item, due_date: snooze.oldDueDate, status: snooze.oldStatus }
+                : item
+            )
+          )
+        );
+        setToast({
+          message: error.message || "Failed to snooze. Please try again.",
+          type: "error",
+        });
+      }
+    },
+    [clearPendingSnoozeTimer, setDeadlinesState, updateDeadlineDate]
+  );
+
+  const scheduleSnooze = useCallback(
+    (deadline, days) => {
+      if (pendingSnoozeRef.current) {
+        // One snooze at a time — finalize whatever's queued before queueing another.
+        finalizePendingSnooze(pendingSnoozeRef.current);
+      }
+      // Anchor: today for missed, current due_date for upcoming. Otherwise
+      // +1d on something 3 weeks overdue stays missed and feels broken.
+      const isMissed = deadline.status === "missed";
+      const baseDate = isMissed
+        ? new Date()
+        : (deadline.due_date ? new Date(deadline.due_date) : new Date());
+      const target = new Date(baseDate);
+      target.setDate(target.getDate() + days);
+      const newDueDate = formatDueDateInput(target);
+
+      const snooze = {
+        deadlineId: deadline.id,
+        oldDueDate: deadline.due_date,
+        oldStatus: deadline.status,
+        newDueDate,
+        days,
+      };
+
+      pendingSnoozeRef.current = snooze;
+      setPendingSnooze(snooze);
+      setOpenDeadlineMenuId(null);
+
+      // Optimistic: update due_date + flip missed -> pending if the new date
+      // is in the future (matches backend reconcile behavior).
+      setDeadlinesState((current) =>
+        sortDeadlines(
+          current.map((item) => {
+            if (item.id !== deadline.id) return item;
+            const nextStatus =
+              item.status === "missed" && target > new Date() ? "pending" : item.status;
+            return { ...item, due_date: newDueDate, status: nextStatus };
+          })
+        )
+      );
+
+      const label = days === 1 ? "1 day" : days === 7 ? "1 week" : `${days} days`;
+      setToast({
+        message: `Snoozed ${label}.`,
+        type: "success",
+        actionLabel: "Undo",
+        actionAriaLabel: `Undo snooze for ${deadline.description}`,
+        onAction: undoPendingSnooze,
+        duration: 5000,
+      });
+
+      pendingSnoozeTimerRef.current = setTimeout(() => {
+        finalizePendingSnooze(snooze);
+      }, 5000);
+    },
+    [
+      finalizePendingSnooze,
+      formatDueDateInput,
+      setDeadlinesState,
+      undoPendingSnooze,
+    ]
+  );
+
+  const toggleDeadlineMenu = useCallback((deadlineId) => {
+    setOpenDeadlineMenuId((current) => (current === deadlineId ? null : deadlineId));
+  }, []);
+
   // Fetch insights for Noticed card when view becomes active
   useEffect(() => {
     if (!isActive) return;
@@ -1244,6 +1393,100 @@ function Dashboard({ isActive, userId }) {
     } catch { /* ignore */ } finally {
       setSyncing(false);
     }
+  };
+
+  const renderDeadlineRow = (deadline, { missed }) => {
+    const dDate = deadline.due_date ? new Date(deadline.due_date) : null;
+    const isUrgent =
+      !missed && dDate && dDate - now < 2 * 24 * 60 * 60 * 1000 && dDate > now;
+    const day = dDate ? String(dDate.getDate()).padStart(2, "0") : "?";
+    const mon = dDate
+      ? dDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
+      : "";
+    const when = deadlineLabel(deadline.due_date);
+    const isUpdating = Boolean(deadlineActionState[deadline.id]);
+    const menuOpen = openDeadlineMenuId === deadline.id;
+    const rowClass = [
+      "dl",
+      isUrgent ? "urgent" : "",
+      missed ? "dl--missed" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <div key={deadline.id} className="dl-wrap">
+        <div className={rowClass}>
+          <div className="dl-date">
+            <span className="day">{day}</span>
+            <span className="mon">{mon}</span>
+          </div>
+          <div>
+            <div className="dl-title">{deadline.description}</div>
+            {missed && <div className="dl-missed-tag">missed</div>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="dl-when">{when}</div>
+            <button
+              type="button"
+              className={`dl-menu-btn${menuOpen ? " open" : ""}`}
+              aria-label={`Actions for ${deadline.description}`}
+              aria-expanded={menuOpen}
+              ref={(el) => {
+                if (el) deadlineBadgeRefs.current[deadline.id] = el;
+              }}
+              onClick={() => toggleDeadlineMenu(deadline.id)}
+            >
+              <span aria-hidden="true">⋯</span>
+            </button>
+            <button
+              type="button"
+              className="dl-done-btn"
+              aria-label={`Mark done: ${deadline.description}`}
+              disabled={isUpdating}
+              onClick={() => handleDeadlineStatusChange(deadline, "done")}
+            >
+              ✓
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <div className="dl-actions">
+            <button
+              type="button"
+              className="dl-chip"
+              onClick={() => scheduleSnooze(deadline, 1)}
+            >
+              +1 day
+            </button>
+            <button
+              type="button"
+              className="dl-chip"
+              onClick={() => scheduleSnooze(deadline, 3)}
+            >
+              +3 days
+            </button>
+            <button
+              type="button"
+              className="dl-chip"
+              onClick={() => scheduleSnooze(deadline, 7)}
+            >
+              +1 week
+            </button>
+            <button
+              type="button"
+              className="dl-chip dl-chip--ghost"
+              onClick={() => {
+                setOpenDeadlineMenuId(null);
+                toggleDeadlinePicker(deadline.id);
+              }}
+            >
+              Change date
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -1409,42 +1652,9 @@ function Dashboard({ isActive, userId }) {
                   <span className="count">{missedDeadlines.length} slipped</span>
                 </h2>
                 <div className="deadlines">
-                  {(showAllMissed ? missedDeadlines : missedDeadlines.slice(0, 5)).map((deadline) => {
-                    const dDate = deadline.due_date ? new Date(deadline.due_date) : null;
-                    const day = dDate
-                      ? String(dDate.getDate()).padStart(2, "0")
-                      : "?";
-                    const mon = dDate
-                      ? dDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
-                      : "";
-                    const when = deadlineLabel(deadline.due_date);
-                    const isUpdating = Boolean(deadlineActionState[deadline.id]);
-
-                    return (
-                      <div key={deadline.id} className="dl dl--missed">
-                        <div className="dl-date">
-                          <span className="day">{day}</span>
-                          <span className="mon">{mon}</span>
-                        </div>
-                        <div>
-                          <div className="dl-title">{deadline.description}</div>
-                          <div className="dl-missed-tag">missed</div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div className="dl-when">{when}</div>
-                          <button
-                            type="button"
-                            className="dl-done-btn"
-                            aria-label={`Mark done: ${deadline.description}`}
-                            disabled={isUpdating}
-                            onClick={() => handleDeadlineStatusChange(deadline, "done")}
-                          >
-                            ✓
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {(showAllMissed ? missedDeadlines : missedDeadlines.slice(0, 5)).map((deadline) =>
+                    renderDeadlineRow(deadline, { missed: true })
+                  )}
                 </div>
                 {missedDeadlines.length > 5 && (
                   <button
@@ -1476,43 +1686,9 @@ function Dashboard({ isActive, userId }) {
                 </p>
               ) : (
                 <div className="deadlines">
-                  {deadlines.slice(0, 4).map((deadline) => {
-                    const dDate = deadline.due_date ? new Date(deadline.due_date) : null;
-                    const isUrgent =
-                      dDate && dDate - now < 2 * 24 * 60 * 60 * 1000 && dDate > now;
-                    const day = dDate
-                      ? String(dDate.getDate()).padStart(2, "0")
-                      : "?";
-                    const mon = dDate
-                      ? dDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
-                      : "";
-                    const when = deadlineLabel(deadline.due_date);
-                    const isUpdating = Boolean(deadlineActionState[deadline.id]);
-
-                    return (
-                      <div key={deadline.id} className={`dl${isUrgent ? " urgent" : ""}`}>
-                        <div className="dl-date">
-                          <span className="day">{day}</span>
-                          <span className="mon">{mon}</span>
-                        </div>
-                        <div>
-                          <div className="dl-title">{deadline.description}</div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div className="dl-when">{when}</div>
-                          <button
-                            type="button"
-                            className="dl-done-btn"
-                            aria-label={`Mark done: ${deadline.description}`}
-                            disabled={isUpdating}
-                            onClick={() => handleDeadlineStatusChange(deadline, "done")}
-                          >
-                            ✓
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {deadlines.slice(0, 4).map((deadline) =>
+                    renderDeadlineRow(deadline, { missed: false })
+                  )}
                 </div>
               )}
             </div>

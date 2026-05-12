@@ -475,6 +475,73 @@
   color: #1a1612;
 }
 
+/* Row wrapper holds the .dl grid + an optional action strip below it. */
+.dl-wrap {
+  display: block;
+}
+
+.dl-menu-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9a8d77;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.dl-menu-btn span { display: block; transform: translateY(-3px); }
+.dl-menu-btn:hover {
+  background: #faf5ea;
+  border-color: rgba(26, 22, 18, 0.10);
+  color: #1a1612;
+}
+.dl-menu-btn.open {
+  background: #faf5ea;
+  border-color: rgba(26, 22, 18, 0.18);
+  color: #1a1612;
+}
+
+.dl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+  padding: 8px 14px 4px 68px; /* indent past the date tile column */
+}
+
+.dl-chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(26, 22, 18, 0.12);
+  background: #faf5ea;
+  color: #3a3228;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dl-chip:hover {
+  background: #f0e6d0;
+  border-color: rgba(26, 22, 18, 0.18);
+}
+.dl-chip--ghost {
+  background: transparent;
+  border-style: dashed;
+  color: #6b5f4e;
+}
+.dl-chip--ghost:hover {
+  background: rgba(250, 245, 234, 0.7);
+  color: #1a1612;
+}
+
 .dl-title {
   font-family: "Newsreader", Georgia, serif;
   font-size: 15.5px;

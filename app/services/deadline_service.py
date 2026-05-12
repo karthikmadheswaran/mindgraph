@@ -11,18 +11,26 @@ from app.services.helpers import (
 
 
 def mark_overdue_deadlines_as_missed(user_id: str) -> None:
+    """Idempotently reconcile deadline status against current time.
+
+    pending + past  -> missed   (overdue items slip naturally)
+    missed  + future -> pending (snoozing a missed deadline graduates it back)
+    """
     now_iso = utc_now_iso()
     (
         supabase.table("deadlines")
-        .update(
-            {
-                "status": "missed",
-                "status_changed_at": now_iso,
-            }
-        )
+        .update({"status": "missed", "status_changed_at": now_iso})
         .eq("user_id", user_id)
         .eq("status", "pending")
         .lt("due_date", now_iso)
+        .execute()
+    )
+    (
+        supabase.table("deadlines")
+        .update({"status": "pending", "status_changed_at": now_iso})
+        .eq("user_id", user_id)
+        .eq("status", "missed")
+        .gte("due_date", now_iso)
         .execute()
     )
 
