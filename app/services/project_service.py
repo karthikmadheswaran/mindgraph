@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import HTTPException
@@ -5,6 +6,46 @@ from fastapi import HTTPException
 from app.db import supabase
 from app.services.deadline_service import mark_overdue_deadlines_as_missed
 from app.services.helpers import parse_project_status_filter, utc_now_iso
+
+
+def _count_recent_mentions_by_entity(user_id: str, entity_ids: list[str], days: int = 7) -> dict[str, int]:
+    """Count entry_entities joins to each entity within the trailing window.
+
+    Filters out soft-deleted and non-completed entries — those represent
+    pipeline-in-flight or removed entries and shouldn't pad the mention count.
+    """
+    if not entity_ids:
+        return {}
+
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+    recent_entries_resp = (
+        supabase.table("entries")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .is_("deleted_at", "null")
+        .gte("created_at", since)
+        .execute()
+    )
+    recent_entry_ids = [row["id"] for row in (recent_entries_resp.data or [])]
+    if not recent_entry_ids:
+        return {entity_id: 0 for entity_id in entity_ids}
+
+    links_resp = (
+        supabase.table("entry_entities")
+        .select("entity_id, entry_id")
+        .in_("entity_id", entity_ids)
+        .in_("entry_id", recent_entry_ids)
+        .execute()
+    )
+
+    counts: dict[str, int] = {entity_id: 0 for entity_id in entity_ids}
+    for row in (links_resp.data or []):
+        entity_id = row.get("entity_id")
+        if entity_id in counts:
+            counts[entity_id] += 1
+    return counts
 
 
 def get_suppressed_project_entity_ids(user_id: str) -> set[str]:
@@ -45,7 +86,7 @@ async def list_projects(status: Optional[str], user_id: str) -> dict:
         supabase.table("projects")
         .select(
             "id, name, status, first_mentioned_at, last_mentioned_at, "
-            "mention_count, running_summary, status_changed_at"
+            "mention_count, running_summary, status_changed_at, source_entity_id"
         )
         .eq("user_id", user_id)
         .in_("status", status_filters)
@@ -53,7 +94,14 @@ async def list_projects(status: Optional[str], user_id: str) -> dict:
         .execute()
     )
 
-    return {"projects": result.data}
+    projects = result.data or []
+    source_entity_ids = [p["source_entity_id"] for p in projects if p.get("source_entity_id")]
+    recent_counts = _count_recent_mentions_by_entity(user_id, source_entity_ids, days=7)
+    for project in projects:
+        source_id = project.get("source_entity_id")
+        project["mention_count_last_7d"] = recent_counts.get(source_id, 0) if source_id else 0
+
+    return {"projects": projects}
 
 
 async def update_project_status(project_id: str, status: str, user_id: str) -> dict:

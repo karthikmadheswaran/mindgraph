@@ -62,7 +62,10 @@ const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
 
 // ——— Dashboard design constants ———
 
-const PROGRESS_WIDTHS = [72, 18, 40, 55, 62];
+// Minimum bar width for active projects with no recent mentions. Avoids
+// rendering an empty/0-width bar that looks broken, while still reading
+// as "quiet" next to bars driven by real density.
+const PROGRESS_MIN_WIDTH = 8;
 
 // Fallback content for the MindGraph Noticed card. Only renders when
 // /insights has not yet produced a forgotten_projects item for this user
@@ -1694,9 +1697,22 @@ function Dashboard({ isActive, userId }) {
                   <p className="spread-empty">
                     No active projects. Write about something you're working on.
                   </p>
-                ) : (
-                  projects.slice(0, 5).map((project, idx) => {
+                ) : (() => {
+                  // Bar width encodes 7-day mention density, normalized
+                  // 0.0 → 1.0 against the project with the highest count in
+                  // this user's set. When max is 0 (nobody mentioned this
+                  // week) every bar collapses to PROGRESS_MIN_WIDTH so the
+                  // row still reads visually instead of being invisible.
+                  const maxMentions = projects.reduce(
+                    (acc, project) => Math.max(acc, project.mention_count_last_7d || 0),
+                    0
+                  );
+                  return projects.slice(0, 5).map((project) => {
                     const pm = getProjectMeta(project);
+                    const mentions = project.mention_count_last_7d || 0;
+                    const widthPct = maxMentions === 0
+                      ? PROGRESS_MIN_WIDTH
+                      : Math.max(PROGRESS_MIN_WIDTH, Math.round((mentions / maxMentions) * 100));
                     return (
                       <div key={project.id} className="proj">
                         <div>
@@ -1707,16 +1723,12 @@ function Dashboard({ isActive, userId }) {
                           </div>
                         </div>
                         <div className="proj-bar">
-                          <span
-                            style={{
-                              width: `${PROGRESS_WIDTHS[idx % PROGRESS_WIDTHS.length]}%`,
-                            }}
-                          />
+                          <span style={{ width: `${widthPct}%` }} />
                         </div>
                       </div>
                     );
-                  })
-                )}
+                  });
+                })()}
               </div>
             </div>
 
