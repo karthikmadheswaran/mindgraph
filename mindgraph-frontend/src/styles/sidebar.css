@@ -125,6 +125,35 @@
   border-radius: 2px 2px 1px 1px;
 }
 
+/* Ambient pulse on the Graph nav icon. Each connecting edge breathes 0.7 -> 1.0 -> 0.7
+   on a shared 3s cycle, staggered 0.75s apart so the network reads as "transmitting"
+   rather than blinking. */
+.graph-icon .graph-edge {
+  animation: graphEdgePulse 3s ease-in-out infinite;
+}
+.graph-icon .graph-edge:nth-of-type(1) { animation-delay: 0s; }
+.graph-icon .graph-edge:nth-of-type(2) { animation-delay: 0.75s; }
+.graph-icon .graph-edge:nth-of-type(3) { animation-delay: 1.5s; }
+.graph-icon .graph-edge:nth-of-type(4) { animation-delay: 2.25s; }
+
+@keyframes graphEdgePulse {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1.0; }
+}
+
+/* Pause the pulse on the active Graph view -- no need to advertise where you already are. */
+.sidebar-nav-item.active .graph-icon .graph-edge,
+.mobile-tab.active .graph-icon .graph-edge {
+  animation: none;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-icon .graph-edge {
+    animation: none;
+  }
+}
+
 .sidebar-bottom {
   display: flex;
   flex-direction: column;

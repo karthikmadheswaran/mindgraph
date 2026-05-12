@@ -108,15 +108,16 @@ const icons = {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className="graph-icon"
     >
       <circle cx="6" cy="7" r="3" />
       <circle cx="17" cy="6" r="3" />
       <circle cx="18" cy="17" r="3" />
       <circle cx="7" cy="18" r="3" />
-      <path d="m9 7 5-.5" />
-      <path d="m16 9 1.4 5" />
-      <path d="m15.5 18-5.5.2" />
-      <path d="m7 15 .2-5" />
+      <path className="graph-edge" d="m9 7 5-.5" />
+      <path className="graph-edge" d="m16 9 1.4 5" />
+      <path className="graph-edge" d="m15.5 18-5.5.2" />
+      <path className="graph-edge" d="m7 15 .2-5" />
     </svg>
   ),
 };
