@@ -437,6 +437,44 @@
 .dl.urgent .dl-date .day { color: #fff; }
 .dl.urgent .dl-date .mon { color: rgba(255, 255, 255, 0.75); }
 
+/* Missed deadlines: muted/desaturated tile (NOT red) — important but calm.
+   Cooler sand than upcoming, dimmer day numeral, subtle "missed" label. */
+.dl--missed .dl-date {
+  background: #ebe6db;
+  border-color: rgba(60, 50, 36, 0.10);
+}
+.dl--missed .dl-date .day { color: #6b5f4e; }
+.dl--missed .dl-date .mon { color: #9a8d77; }
+.dl--missed .dl-title { color: #3a3228; }
+.dl--missed .dl-when { color: #8b7b69; }
+
+.dl-missed-tag {
+  display: inline-block;
+  margin-top: 3px;
+  font-family: "Newsreader", Georgia, serif;
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  color: #8b7b69;
+}
+
+.dl-view-all {
+  margin: 10px 0 0;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: #6b5f4e;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.dl-view-all:hover {
+  color: #1a1612;
+}
+
 .dl-title {
   font-family: "Newsreader", Georgia, serif;
   font-size: 15.5px;

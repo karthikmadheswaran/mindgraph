@@ -30,12 +30,29 @@ def mark_overdue_deadlines_as_missed(user_id: str) -> None:
 async def list_deadlines(status: Optional[str], user_id: str) -> dict:
     mark_overdue_deadlines_as_missed(user_id)
     status_filters = parse_deadline_status_filter(status)
+
+    # Only surface deadlines whose parent entry is completed and not soft-deleted.
+    # Pipeline-stuck or deleted-entry deadlines should not appear on the dashboard.
+    visible_entries = (
+        supabase.table("entries")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .is_("deleted_at", "null")
+        .execute()
+    )
+    visible_entry_ids = [row["id"] for row in (visible_entries.data or [])]
+    if not visible_entry_ids:
+        return {"deadlines": []}
+
+    sort_descending = "missed" in status_filters and "pending" not in status_filters
     result = (
         supabase.table("deadlines")
-        .select("id, description, due_date, status, status_changed_at")
+        .select("id, description, due_date, status, status_changed_at, source_entry_id")
         .eq("user_id", user_id)
         .in_("status", status_filters)
-        .order("due_date", desc=False)
+        .in_("source_entry_id", visible_entry_ids)
+        .order("due_date", desc=sort_descending)
         .execute()
     )
 

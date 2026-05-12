@@ -303,6 +303,7 @@ function Dashboard({ isActive, userId }) {
   const [snapshotReady, setSnapshotReady] = useState(Boolean(cachedSnapshot));
   const [showHidden, setShowHidden] = useState(false);
   const [showSnoozed, setShowSnoozed] = useState(false);
+  const [showAllMissed, setShowAllMissed] = useState(false);
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
@@ -1198,14 +1199,22 @@ function Dashboard({ isActive, userId }) {
   }, [isActive]);
 
   const deadlines = showSnoozed
-    ? allDeadlines
+    ? allDeadlines.filter((deadline) => deadline.status !== "missed")
     : allDeadlines.filter((deadline) => deadline.status === "pending");
+  const missedDeadlines = allDeadlines
+    .filter((deadline) => deadline.status === "missed")
+    .sort(
+      (left, right) =>
+        deadlineSortValue(right.due_date).localeCompare(deadlineSortValue(left.due_date))
+    );
   const projects = showHidden
     ? allProjects
     : allProjects.filter((project) => project.status === "active");
 
   const activePickerDeadline =
-    deadlines.find((deadline) => deadline.id === editingDeadlineId) || null;
+    deadlines.find((deadline) => deadline.id === editingDeadlineId) ||
+    missedDeadlines.find((deadline) => deadline.id === editingDeadlineId) ||
+    null;
 
   useEffect(() => {
     if (editingDeadlineId && !activePickerDeadline) {
@@ -1390,6 +1399,70 @@ function Dashboard({ isActive, userId }) {
             </div>
 
             <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
+
+            {/* Missed Deadlines — only render when there is something to show.
+                Empty-state for absence-of-bad-news is noise. */}
+            {missedDeadlines.length > 0 && (
+              <div>
+                <h2>
+                  Missed deadlines
+                  <span className="count">{missedDeadlines.length} slipped</span>
+                </h2>
+                <div className="deadlines">
+                  {(showAllMissed ? missedDeadlines : missedDeadlines.slice(0, 5)).map((deadline) => {
+                    const dDate = deadline.due_date ? new Date(deadline.due_date) : null;
+                    const day = dDate
+                      ? String(dDate.getDate()).padStart(2, "0")
+                      : "?";
+                    const mon = dDate
+                      ? dDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
+                      : "";
+                    const when = deadlineLabel(deadline.due_date);
+                    const isUpdating = Boolean(deadlineActionState[deadline.id]);
+
+                    return (
+                      <div key={deadline.id} className="dl dl--missed">
+                        <div className="dl-date">
+                          <span className="day">{day}</span>
+                          <span className="mon">{mon}</span>
+                        </div>
+                        <div>
+                          <div className="dl-title">{deadline.description}</div>
+                          <div className="dl-missed-tag">missed</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <div className="dl-when">{when}</div>
+                          <button
+                            type="button"
+                            className="dl-done-btn"
+                            aria-label={`Mark done: ${deadline.description}`}
+                            disabled={isUpdating}
+                            onClick={() => handleDeadlineStatusChange(deadline, "done")}
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {missedDeadlines.length > 5 && (
+                  <button
+                    type="button"
+                    className="dl-view-all"
+                    onClick={() => setShowAllMissed((v) => !v)}
+                  >
+                    {showAllMissed
+                      ? "Show fewer"
+                      : `View all ${missedDeadlines.length}`}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {missedDeadlines.length > 0 && (
+              <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
+            )}
 
             {/* Upcoming Deadlines */}
             <div>

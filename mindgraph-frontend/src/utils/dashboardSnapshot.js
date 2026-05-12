@@ -67,7 +67,7 @@ const fetchDashboardSnapshot = async () => {
     patternsData,
   ] = await Promise.all([
     fetch(`${API}/entries`, { headers }).then((response) => response.json()),
-    fetch(`${API}/deadlines?status=pending,snoozed`, { headers }).then(
+    fetch(`${API}/deadlines?status=pending,snoozed,missed`, { headers }).then(
       async (response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch deadlines");
