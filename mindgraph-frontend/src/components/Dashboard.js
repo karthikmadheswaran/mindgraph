@@ -295,6 +295,7 @@ function Dashboard({ isActive, userId }) {
   const [entities, setEntities] = useState(cachedSnapshot?.entities || []);
   const [relations, setRelations] = useState(cachedSnapshot?.relations || []);
   const [stats, setStats] = useState(cachedSnapshot?.stats || null);
+  const [tagline, setTagline] = useState(cachedSnapshot?.tagline || null);
   const [loadingData, setLoadingData] = useState(!cachedSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [lastSynced, setLastSynced] = useState(
@@ -356,6 +357,7 @@ function Dashboard({ isActive, userId }) {
     setEntities(snapshot.entities || []);
     setRelations(snapshot.relations || []);
     setStats(snapshot.stats || null);
+    setTagline(snapshot.tagline || null);
     setLoadingData(false);
     setRefreshing(false);
     setSnapshotReady(true);
@@ -1530,9 +1532,11 @@ function Dashboard({ isActive, userId }) {
           {/* ——— LEFT COLUMN ——— */}
           <div key={"l" + shuffleKey} className={`spread-col${shuffling ? " shuffling" : ""}`}>
 
-            {/* Mood weather */}
+            {/* Inner-state forecast for the week. Generated weekly per user via
+                LLM and cached in the insights table -- falls back to the rotating
+                hardcoded copy while the snapshot is still loading. */}
             <p className="weather-line" style={{ marginTop: "-10px", marginBottom: "6px" }}>
-              {currentWeather.text}
+              {tagline?.text || currentWeather.text}
             </p>
 
             {/* Stats ticker */}

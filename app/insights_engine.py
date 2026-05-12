@@ -273,16 +273,25 @@ def generate_forgotten_projects(user_id: str) -> dict:
 
     return result
 
-def clear_old_insights(user_id: str):
-    """Delete old insights before regenerating"""
-    supabase.table("insights").delete().eq("user_id", user_id).execute()
+def clear_old_insights(user_id: str, types: list[str] | None = None):
+    """Delete old insights before regenerating.
+
+    Pass `types` to clear only specific insight_types. Default (None) wipes ALL
+    types -- but the entry-pipeline path now passes a narrow list so cached
+    artefacts that have their own lifecycles (weekly_tagline, weekly_digest)
+    survive every entry submission.
+    """
+    query = supabase.table("insights").delete().eq("user_id", user_id)
+    if types is not None:
+        query = query.in_("insight_type", types)
+    query.execute()
 
 
 async def regenerate_insights_background(user_id: str):
     """Background task: clear old insights and regenerate patterns + forgotten projects.
     Called after each new entry is processed."""
     try:
-        clear_old_insights(user_id)
+        clear_old_insights(user_id, ["pattern", "forgotten_projects"])
         generate_patterns(user_id)
         generate_forgotten_projects(user_id)
     except Exception as e:

@@ -34,6 +34,7 @@ from app.services import (
     entry_service,
     insight_service,
     project_service,
+    tagline_service,
 )
 
 logging.basicConfig(
@@ -360,6 +361,14 @@ async def insights_patterns(user_id: str = Depends(get_current_user)):
 @app.get("/insights/forgotten")
 async def insights_forgotten(user_id: str = Depends(get_current_user)):
     return await insight_service.get_forgotten(user_id)
+
+
+@app.get("/insights/tagline")
+async def insights_tagline(
+    user_tz: Optional[str] = Query(default="UTC"),
+    user_id: str = Depends(get_current_user),
+):
+    return await tagline_service.get_or_generate_tagline(user_id, user_tz or "UTC")
 
 
 @app.get("/stats/showed-up")
