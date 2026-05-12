@@ -265,18 +265,30 @@
   flex-direction: column;
 }
 
+.proj-wrap {
+  border-bottom: 1px solid rgba(26, 22, 18, 0.06);
+}
+.proj-wrap:last-child { border-bottom: none; }
+
 .proj {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
   gap: 14px;
   padding: 16px 0;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.06);
   cursor: pointer;
   transition: padding-left 0.2s ease;
 }
 
 .proj:hover { padding-left: 6px; }
-.proj:last-child { border-bottom: none; }
+
+.proj-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0 0 4px;
+}
 
 .proj-title {
   font-family: "Fraunces", "Instrument Serif", Georgia, serif;

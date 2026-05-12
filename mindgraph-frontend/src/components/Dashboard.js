@@ -379,6 +379,7 @@ function Dashboard({ isActive, userId }) {
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
   const [openDeadlineMenuId, setOpenDeadlineMenuId] = useState(null);
+  const [openProjectMenuId, setOpenProjectMenuId] = useState(null);
   const [pendingSnooze, setPendingSnooze] = useState(null);
   const [pendingDeletion, setPendingDeletion] = useState(null);
   const [toast, setToast] = useState(null);
@@ -1357,6 +1358,10 @@ function Dashboard({ isActive, userId }) {
     setOpenDeadlineMenuId((current) => (current === deadlineId ? null : deadlineId));
   }, []);
 
+  const toggleProjectMenu = useCallback((projectId) => {
+    setOpenProjectMenuId((current) => (current === projectId ? null : projectId));
+  }, []);
+
   // Fetch insights for Noticed card when view becomes active
   useEffect(() => {
     if (!isActive) return;
@@ -1713,18 +1718,57 @@ function Dashboard({ isActive, userId }) {
                     const widthPct = maxMentions === 0
                       ? PROGRESS_MIN_WIDTH
                       : Math.max(PROGRESS_MIN_WIDTH, Math.round((mentions / maxMentions) * 100));
+                    const menuOpen = openProjectMenuId === project.id;
+                    const isUpdating = Boolean(projectActionState[project.id]);
                     return (
-                      <div key={project.id} className="proj">
-                        <div>
-                          <div className="proj-title">{project.name}</div>
-                          <div className="proj-meta">
-                            <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
-                            {pm.meta}
+                      <div key={project.id} className="proj-wrap">
+                        <div className="proj">
+                          <div>
+                            <div className="proj-title">{project.name}</div>
+                            <div className="proj-meta">
+                              <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
+                              {pm.meta}
+                            </div>
                           </div>
+                          <div className="proj-bar">
+                            <span style={{ width: `${widthPct}%` }} />
+                          </div>
+                          <button
+                            type="button"
+                            className={`dl-menu-btn${menuOpen ? " open" : ""}`}
+                            aria-label={`Actions for ${project.name}`}
+                            aria-expanded={menuOpen}
+                            onClick={() => toggleProjectMenu(project.id)}
+                          >
+                            <span aria-hidden="true">⋯</span>
+                          </button>
                         </div>
-                        <div className="proj-bar">
-                          <span style={{ width: `${widthPct}%` }} />
-                        </div>
+                        {menuOpen && (
+                          <div className="proj-actions">
+                            <button
+                              type="button"
+                              className="dl-chip"
+                              disabled={isUpdating}
+                              onClick={() => {
+                                setOpenProjectMenuId(null);
+                                handleProjectStatusChange(project, "hidden");
+                              }}
+                            >
+                              Hide
+                            </button>
+                            <button
+                              type="button"
+                              className="dl-chip dl-chip--ghost"
+                              disabled={isUpdating}
+                              onClick={() => {
+                                setOpenProjectMenuId(null);
+                                handleProjectStatusChange(project, "completed");
+                              }}
+                            >
+                              Mark complete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   });
