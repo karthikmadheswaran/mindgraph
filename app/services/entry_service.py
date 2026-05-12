@@ -738,4 +738,53 @@ async def save_extraction_edit(
         original_value,
         edited_value,
     )
+
+
+async def get_showed_up_stats(user_id: str, user_timezone: str = "UTC") -> dict:
+    """Distinct-day journal-submission stats for the sidebar widget.
+
+    Returns:
+        {
+          "count": int             # distinct local-calendar days journaled, all-time
+          "daily_buckets": int[]   # entry counts for the last 14 days, oldest-first
+        }
+    """
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    try:
+        tz = ZoneInfo(user_timezone or "UTC")
+    except Exception:
+        tz = ZoneInfo("UTC")
+
+    rows = (
+        supabase.table("entries")
+        .select("created_at")
+        .eq("user_id", user_id)
+        .eq("status", "completed")
+        .is_("deleted_at", "null")
+        .execute()
+    )
+    entries = rows.data or []
+
+    today_local = datetime.now(tz).date()
+    bucket_dates = [today_local - timedelta(days=13 - i) for i in range(14)]
+    bucket_index = {d: i for i, d in enumerate(bucket_dates)}
+    buckets = [0] * 14
+    distinct_days: set[str] = set()
+
+    for row in entries:
+        raw_ts = row.get("created_at")
+        if not raw_ts:
+            continue
+        try:
+            ts = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+        except Exception:
+            continue
+        local_date = ts.astimezone(tz).date()
+        distinct_days.add(local_date.isoformat())
+        if local_date in bucket_index:
+            buckets[bucket_index[local_date]] += 1
+
+    return {"count": len(distinct_days), "daily_buckets": buckets}
     return {"status": "saved"}

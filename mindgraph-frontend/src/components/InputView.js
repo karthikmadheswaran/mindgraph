@@ -311,6 +311,7 @@ function InputView({ isActive, onEntrySubmitted }) {
       const entryId = data.entry_id;
       setDispatchEntryId(entryId);
       trackEvent("entry_submitted", { input_type: "text", char_count: submittedText.length });
+      window.dispatchEvent(new CustomEvent("mindgraph:entry-submitted"));
 
       if (onEntrySubmitted) onEntrySubmitted();
       startPolling(entryId);

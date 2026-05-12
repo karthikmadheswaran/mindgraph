@@ -360,3 +360,11 @@ async def insights_patterns(user_id: str = Depends(get_current_user)):
 @app.get("/insights/forgotten")
 async def insights_forgotten(user_id: str = Depends(get_current_user)):
     return await insight_service.get_forgotten(user_id)
+
+
+@app.get("/stats/showed-up")
+async def get_showed_up_stats(
+    user_tz: Optional[str] = Query(default="UTC"),
+    user_id: str = Depends(get_current_user),
+):
+    return await entry_service.get_showed_up_stats(user_id, user_tz or "UTC")

@@ -116,7 +116,8 @@
 .growth-bars {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
+  gap: 2px;
+  height: 14px;
 }
 
 .growth-bar {
