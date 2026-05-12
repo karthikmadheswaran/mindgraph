@@ -1437,9 +1437,8 @@ function Dashboard({ isActive, userId }) {
       (left, right) =>
         deadlineSortValue(right.due_date).localeCompare(deadlineSortValue(left.due_date))
     );
-  const projects = showHidden
-    ? allProjects
-    : allProjects.filter((project) => project.status === "active");
+  const activeProjects = allProjects.filter((project) => project.status === "active");
+  const hiddenProjects = allProjects.filter((project) => project.status === "hidden");
 
   const activePickerDeadline =
     deadlines.find((deadline) => deadline.id === editingDeadlineId) ||
@@ -1457,7 +1456,7 @@ function Dashboard({ isActive, userId }) {
   const formattedDate = `${DAY_FULL[now.getDay()]}, ${MONTH_ABBR[now.getMonth()]} ${now.getDate()}`;
   // Real values from /stats/dashboard. Falls back to 0 while the snapshot loads.
   const entriesThisWeek = stats?.entries_this_week ?? 0;
-  const activeProjectsCount = stats?.active_projects ?? projects.length;
+  const activeProjectsCount = stats?.active_projects ?? activeProjects.length;
   const hiddenProjectsCount = stats?.hidden_projects ?? 0;
   const entitiesTracked = stats?.entities_tracked ?? entities.length;
   const currentThread = DAILY_THREADS_FALLBACK[shuffleKey % DAILY_THREADS_FALLBACK.length];
@@ -1564,6 +1563,86 @@ function Dashboard({ isActive, userId }) {
               }}
             >
               Change date
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderProjectRow = (project, maxMentions) => {
+    const pm = getProjectMeta(project);
+    const mentions = project.mention_count_last_7d || 0;
+    const widthPct = maxMentions === 0
+      ? PROGRESS_MIN_WIDTH
+      : Math.max(PROGRESS_MIN_WIDTH, Math.round((mentions / maxMentions) * 100));
+    const menuOpen = openProjectMenuId === project.id;
+    const isUpdating = Boolean(projectActionState[project.id]);
+    const isHidden = project.status === "hidden";
+
+    return (
+      <div key={project.id} className={`proj-wrap${isHidden ? " proj-wrap--hidden" : ""}`}>
+        <div className="proj">
+          <div>
+            <div className="proj-title">
+              {project.name}
+              {isHidden && <span className="proj-hidden-tag">Hidden</span>}
+            </div>
+            <div className="proj-meta">
+              <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
+              {pm.meta}
+            </div>
+          </div>
+          <div className="proj-bar">
+            <span style={{ width: `${widthPct}%` }} />
+          </div>
+          <button
+            type="button"
+            className={`dl-menu-btn${menuOpen ? " open" : ""}`}
+            aria-label={`Actions for ${project.name}`}
+            aria-expanded={menuOpen}
+            onClick={() => toggleProjectMenu(project.id)}
+          >
+            <span aria-hidden="true">⋯</span>
+          </button>
+        </div>
+        {menuOpen && (
+          <div className="proj-actions">
+            {isHidden ? (
+              <button
+                type="button"
+                className="dl-chip"
+                disabled={isUpdating}
+                onClick={() => {
+                  setOpenProjectMenuId(null);
+                  handleProjectStatusChange(project, "active");
+                }}
+              >
+                Restore to active
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="dl-chip"
+                disabled={isUpdating}
+                onClick={() => {
+                  setOpenProjectMenuId(null);
+                  handleProjectStatusChange(project, "hidden");
+                }}
+              >
+                Hide
+              </button>
+            )}
+            <button
+              type="button"
+              className="dl-chip dl-chip--ghost"
+              disabled={isUpdating}
+              onClick={() => {
+                setOpenProjectMenuId(null);
+                handleProjectStatusChange(project, "completed");
+              }}
+            >
+              Mark complete
             </button>
           </div>
         )}
@@ -1686,6 +1765,29 @@ function Dashboard({ isActive, userId }) {
               )}
             </div>
 
+            <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
+
+            {/* Upcoming Deadlines — moved to left column for layout balance.
+                Right column holds the actionable project list + missed
+                deadlines (when present); reading flow stays left-to-right. */}
+            <div>
+              <h2>
+                Upcoming Deadlines
+                <span className="count">{formattedDate}</span>
+              </h2>
+              {deadlines.length === 0 ? (
+                <p className="spread-empty">
+                  No upcoming deadlines. Mention a due date in your next entry.
+                </p>
+              ) : (
+                <div className="deadlines">
+                  {deadlines.slice(0, 4).map((deadline) =>
+                    renderDeadlineRow(deadline, { missed: false })
+                  )}
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* ——— RIGHT COLUMN ——— */}
@@ -1695,91 +1797,58 @@ function Dashboard({ isActive, userId }) {
             <div>
               <h2>
                 Active Projects
-                <span className="count">{projects.length} TRACKED</span>
+                <span className="count">
+                  {activeProjects.length} ACTIVE
+                  {hiddenProjects.length > 0 && ` · ${hiddenProjects.length} HIDDEN`}
+                </span>
               </h2>
               <div className="proj-list">
-                {projects.length === 0 ? (
+                {activeProjects.length === 0 ? (
                   <p className="spread-empty">
                     No active projects. Write about something you're working on.
                   </p>
                 ) : (() => {
                   // Bar width encodes 7-day mention density, normalized
                   // 0.0 → 1.0 against the project with the highest count in
-                  // this user's set. When max is 0 (nobody mentioned this
-                  // week) every bar collapses to PROGRESS_MIN_WIDTH so the
-                  // row still reads visually instead of being invisible.
-                  const maxMentions = projects.reduce(
+                  // this user's active set. When max is 0 (nobody mentioned
+                  // anything this week) every bar collapses to
+                  // PROGRESS_MIN_WIDTH so the row still reads visually
+                  // instead of being invisible.
+                  const maxMentions = activeProjects.reduce(
                     (acc, project) => Math.max(acc, project.mention_count_last_7d || 0),
                     0
                   );
-                  return projects.slice(0, 5).map((project) => {
-                    const pm = getProjectMeta(project);
-                    const mentions = project.mention_count_last_7d || 0;
-                    const widthPct = maxMentions === 0
-                      ? PROGRESS_MIN_WIDTH
-                      : Math.max(PROGRESS_MIN_WIDTH, Math.round((mentions / maxMentions) * 100));
-                    const menuOpen = openProjectMenuId === project.id;
-                    const isUpdating = Boolean(projectActionState[project.id]);
-                    return (
-                      <div key={project.id} className="proj-wrap">
-                        <div className="proj">
-                          <div>
-                            <div className="proj-title">{project.name}</div>
-                            <div className="proj-meta">
-                              <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
-                              {pm.meta}
-                            </div>
-                          </div>
-                          <div className="proj-bar">
-                            <span style={{ width: `${widthPct}%` }} />
-                          </div>
-                          <button
-                            type="button"
-                            className={`dl-menu-btn${menuOpen ? " open" : ""}`}
-                            aria-label={`Actions for ${project.name}`}
-                            aria-expanded={menuOpen}
-                            onClick={() => toggleProjectMenu(project.id)}
-                          >
-                            <span aria-hidden="true">⋯</span>
-                          </button>
-                        </div>
-                        {menuOpen && (
-                          <div className="proj-actions">
-                            <button
-                              type="button"
-                              className="dl-chip"
-                              disabled={isUpdating}
-                              onClick={() => {
-                                setOpenProjectMenuId(null);
-                                handleProjectStatusChange(project, "hidden");
-                              }}
-                            >
-                              Hide
-                            </button>
-                            <button
-                              type="button"
-                              className="dl-chip dl-chip--ghost"
-                              disabled={isUpdating}
-                              onClick={() => {
-                                setOpenProjectMenuId(null);
-                                handleProjectStatusChange(project, "completed");
-                              }}
-                            >
-                              Mark complete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  });
+                  return activeProjects.slice(0, 5).map((project) =>
+                    renderProjectRow(project, maxMentions)
+                  );
                 })()}
-              </div>
-            </div>
 
-            <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
+                {showHidden && hiddenProjects.length > 0 && (
+                  <>
+                    <div className="proj-section-label">Hidden</div>
+                    {hiddenProjects.map((project) => renderProjectRow(project, 0))}
+                  </>
+                )}
+              </div>
+
+              {hiddenProjects.length > 0 && (
+                <button
+                  type="button"
+                  className="dl-view-all"
+                  onClick={() => setShowHidden((v) => !v)}
+                >
+                  {showHidden
+                    ? "Hide hidden projects"
+                    : `Show ${hiddenProjects.length} hidden`}
+                </button>
+              )}
+            </div>
 
             {/* Missed Deadlines — only render when there is something to show.
                 Empty-state for absence-of-bad-news is noise. */}
+            {missedDeadlines.length > 0 && (
+              <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
+            )}
             {missedDeadlines.length > 0 && (
               <div>
                 <h2>
@@ -1804,30 +1873,6 @@ function Dashboard({ isActive, userId }) {
                 )}
               </div>
             )}
-
-            {missedDeadlines.length > 0 && (
-              <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
-            )}
-
-            {/* Upcoming Deadlines */}
-            <div>
-              <h2>
-                Upcoming Deadlines
-                <span className="count">{formattedDate}</span>
-              </h2>
-              {deadlines.length === 0 ? (
-                <p className="spread-empty">
-                  No upcoming deadlines. Mention a due date in your next entry.
-                </p>
-              ) : (
-                <div className="deadlines">
-                  {deadlines.slice(0, 4).map((deadline) =>
-                    renderDeadlineRow(deadline, { missed: false })
-                  )}
-                </div>
-              )}
-            </div>
-
 
           </div>
         </div>
