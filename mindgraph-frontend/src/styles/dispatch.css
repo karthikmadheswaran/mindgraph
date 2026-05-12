@@ -114,24 +114,35 @@
 
 .dispatch-postmark {
   position: absolute;
-  top: 18px;
-  right: 20px;
+  top: 14px;
+  right: 18px;
   transform: rotate(7deg);
-  border: 1.2px solid #b94a3a;
+  transform-origin: center;
+  border: 1.2px dashed #b94a3a;
   border-radius: 2px;
-  padding: 3px 6px;
+  padding: 4px 7px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 8px;
   letter-spacing: 0.12em;
   color: #b94a3a;
   text-transform: uppercase;
   opacity: 0.85;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.dispatch-postmark-line {
+  display: block;
   white-space: nowrap;
 }
 
 .dispatch-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: baseline;
   padding-bottom: 10px;
   border-bottom: 1px dashed #c9b896;
@@ -144,13 +155,6 @@
   letter-spacing: 0.14em;
   color: #8a7a5c;
   text-transform: uppercase;
-}
-
-.dispatch-header-time {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  color: #8a7a5c;
 }
 
 /* Subject line with typing cursor */

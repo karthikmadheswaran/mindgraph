@@ -222,12 +222,14 @@ export default function DispatchReveal({ dispatch, entryId, phase, firstName }) 
             transition={{ duration: 0.5, ease: [0.2, 0.85, 0.3, 1] }}
           >
             <span className="dispatch-postmark">
-              RAWTXT &middot; ENTRY {String(entryId || "").slice(-6).toUpperCase()}
+              <span className="dispatch-postmark-line">
+                RAWTXT &middot; ENTRY {String(entryId || "").slice(-6).toUpperCase()}
+              </span>
+              <span className="dispatch-postmark-line">{fmtTime(new Date())}</span>
             </span>
 
             <div className="dispatch-header">
               <span className="dispatch-header-from">FROM YOUR JOURNAL &middot; TO YOU</span>
-              <span className="dispatch-header-time">{fmtTime(new Date())}</span>
             </div>
 
             {/* All content reveals together in a single coordinated fade-up */}
