@@ -1376,10 +1376,11 @@ function Dashboard({ isActive, userId }) {
   // ——— Computed display values ———
   const now = new Date();
   const formattedDate = `${DAY_FULL[now.getDay()]}, ${MONTH_ABBR[now.getMonth()]} ${now.getDate()}`;
-  const weekStart = new Date(now);
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-  weekStart.setHours(0, 0, 0, 0);
-  const entriesThisWeek = entries.filter((e) => new Date(e.created_at) >= weekStart).length;
+  // Real values from /stats/dashboard. Falls back to 0 while the snapshot loads.
+  const entriesThisWeek = stats?.entries_this_week ?? 0;
+  const activeProjectsCount = stats?.active_projects ?? projects.length;
+  const completedProjectsCount = stats?.completed_projects ?? 0;
+  const entitiesTracked = stats?.entities_tracked ?? entities.length;
   const currentThread = DAILY_THREADS[shuffleKey % DAILY_THREADS.length];
   const currentWeather = MOOD_WEATHER[shuffleKey % MOOD_WEATHER.length];
   const handleShuffle = () => {
@@ -1538,16 +1539,19 @@ function Dashboard({ isActive, userId }) {
             <div className="ticker">
               <div className="tick">
                 <div className="tick-n">{entriesThisWeek}</div>
-                <div className="tick-l">entries this week</div>
+                <div className="tick-l">
+                  {entriesThisWeek === 1 ? "entry this week" : "entries this week"}
+                </div>
               </div>
               <div className="tick">
                 <div className="tick-n">
-                  {projects.length}<em>+2</em>
+                  {activeProjectsCount}
+                  {completedProjectsCount > 0 && <em>+{completedProjectsCount}</em>}
                 </div>
                 <div className="tick-l">active projects</div>
               </div>
               <div className="tick">
-                <div className="tick-n">{entities.length}</div>
+                <div className="tick-n">{entitiesTracked}</div>
                 <div className="tick-l">entities tracked</div>
               </div>
             </div>
