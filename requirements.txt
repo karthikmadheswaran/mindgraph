@@ -19,3 +19,4 @@ dateparser==1.2.0
 upstash-redis
 sentry-sdk[fastapi]
 posthog
+razorpay==2.0.1
