@@ -36,6 +36,7 @@ from app.services import (
     project_service,
     tagline_service,
 )
+from app.payments.router import router as payments_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -88,6 +89,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(payments_router, prefix="/payments", tags=["payments"])
 
 
 @app.get("/health")
