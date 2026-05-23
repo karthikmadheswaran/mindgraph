@@ -1,0 +1,1857 @@
+{
+  "fetched_utc": "20260523T131230Z",
+  "trace": {
+    "id": "83cd7552d62b160c20d63ad1948a9cc1",
+    "timestamp": "2026-05-22 10:17:55.079000+00:00",
+    "name": "LangGraph",
+    "user_id": null,
+    "session_id": null,
+    "environment": "default",
+    "tags": [],
+    "latency": 34.665,
+    "total_cost": 0.0006294,
+    "input": {
+      "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+      "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+      "user_timezone": "Asia/Calcutta",
+      "input_type": "text",
+      "cleaned_text": "",
+      "auto_title": "",
+      "summary": "",
+      "attachment_url": "",
+      "classifier": [],
+      "core_entities": [],
+      "deadline": [],
+      "relations": [],
+      "trigger_check": false,
+      "duplicate_of": null,
+      "dedup_check_result": null,
+      "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296"
+    },
+    "output": {
+      "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+      "user_timezone": "Asia/Calcutta",
+      "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+      "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+      "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+      "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+      "input_type": "text",
+      "attachment_url": "",
+      "classifier": [
+        "family"
+      ],
+      "core_entities": [
+        {
+          "name": "naveen",
+          "type": "person"
+        },
+        {
+          "name": "erode",
+          "type": "place"
+        }
+      ],
+      "deadline": [
+        {
+          "description": "marriage",
+          "due_at": "2026-05-28T00:00:00Z",
+          "raw_text": "on 2026-05-28"
+        },
+        {
+          "description": "reception",
+          "due_at": "2026-05-28T00:00:00Z",
+          "raw_text": "on 2026-05-28"
+        },
+        {
+          "description": "naveen marriage",
+          "due_at": "2026-05-29T00:00:00Z",
+          "raw_text": "on 2026-05-29"
+        }
+      ],
+      "trigger_check": false,
+      "duplicate_of": null,
+      "dedup_check_result": "not_duplicate",
+      "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+      "relations": [
+        {
+          "source": "naveen",
+          "source_type": "person",
+          "target": "erode",
+          "target_type": "place",
+          "relation": "located_at"
+        }
+      ],
+      "discoveries": [
+        {
+          "type": "pattern_recurrence",
+          "pattern": "family",
+          "count": 3,
+          "period": "month",
+          "phrase_template": "{ordinal} time you've written about {pattern} this month",
+          "phrase": "3rd time you've written about family this month"
+        },
+        {
+          "type": "first_mention",
+          "entity_name": "naveen",
+          "entity_type": "person",
+          "phrase_template": "first time {entity_name} appears in your journal",
+          "phrase": "first time naveen appears in your journal"
+        },
+        {
+          "type": "first_mention",
+          "entity_name": "erode",
+          "entity_type": "place",
+          "phrase_template": "first time {entity_name} appears in your journal",
+          "phrase": "first time erode appears in your journal"
+        },
+        {
+          "type": "unmet_deadline_echo",
+          "count": 6,
+          "phrase_template": "{count} past deadline{plural} still open",
+          "phrase": "6 past deadlines still open"
+        }
+      ],
+      "dispatch_payload": {
+        "subject": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "discoveries": [
+          {
+            "type": "pattern_recurrence",
+            "pattern": "family",
+            "count": 3,
+            "period": "month",
+            "phrase_template": "{ordinal} time you've written about {pattern} this month",
+            "phrase": "3rd time you've written about family this month"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "naveen",
+            "entity_type": "person",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time naveen appears in your journal"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "erode",
+            "entity_type": "place",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time erode appears in your journal"
+          },
+          {
+            "type": "unmet_deadline_echo",
+            "count": 6,
+            "phrase_template": "{count} past deadline{plural} still open",
+            "phrase": "6 past deadlines still open"
+          }
+        ],
+        "stamps": [
+          {
+            "kind": "deadline",
+            "label": "DEADLINE",
+            "value": "marriage -- 2026-05-28 00:00:00",
+            "editable": true,
+            "original_value": "marriage -- 2026-05-28 00:00:00"
+          },
+          {
+            "kind": "deadline",
+            "label": "DEADLINE",
+            "value": "reception -- 2026-05-28 00:00:00",
+            "editable": true,
+            "original_value": "reception -- 2026-05-28 00:00:00"
+          },
+          {
+            "kind": "deadline",
+            "label": "DEADLINE",
+            "value": "naveen marriage -- 2026-05-29 00:00:00",
+            "editable": true,
+            "original_value": "naveen marriage -- 2026-05-29 00:00:00"
+          },
+          {
+            "kind": "mood",
+            "label": "MOOD",
+            "value": "family",
+            "editable": true,
+            "original_value": "family"
+          },
+          {
+            "kind": "person",
+            "label": "PERSON",
+            "value": "naveen",
+            "editable": true,
+            "original_value": "naveen",
+            "is_first_mention": false
+          },
+          {
+            "kind": "topic",
+            "label": "TOPIC",
+            "value": "erode",
+            "editable": true,
+            "original_value": "erode",
+            "is_first_mention": false
+          }
+        ],
+        "pipeline_version": "12a657d4",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296"
+      }
+    },
+    "metadata": {
+      "is_langchain_root": true,
+      "resourceAttributes": {
+        "telemetry.sdk.language": "python",
+        "telemetry.sdk.name": "opentelemetry",
+        "telemetry.sdk.version": "1.41.1",
+        "service.name": "unknown_service"
+      },
+      "scope": {
+        "name": "langfuse-sdk",
+        "version": "4.6.1",
+        "attributes": {
+          "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+        }
+      }
+    },
+    "html_path": "/project/cmn73wi3702x6ad078pl7k5l4/traces/83cd7552d62b160c20d63ad1948a9cc1"
+  },
+  "observations": [
+    {
+      "id": "058717c6f9b07325",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": null,
+      "type": "CHAIN",
+      "name": "LangGraph",
+      "start_time": "2026-05-22 10:17:55.079000+00:00",
+      "end_time": "2026-05-22 10:18:29.744000+00:00",
+      "latency": 34.665,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "input_type": "text",
+        "cleaned_text": "",
+        "auto_title": "",
+        "summary": "",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "relations": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": null,
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296"
+      },
+      "output": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [
+          "family"
+        ],
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ],
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [
+          {
+            "source": "naveen",
+            "source_type": "person",
+            "target": "erode",
+            "target_type": "place",
+            "relation": "located_at"
+          }
+        ],
+        "discoveries": [
+          {
+            "type": "pattern_recurrence",
+            "pattern": "family",
+            "count": 3,
+            "period": "month",
+            "phrase_template": "{ordinal} time you've written about {pattern} this month",
+            "phrase": "3rd time you've written about family this month"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "naveen",
+            "entity_type": "person",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time naveen appears in your journal"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "erode",
+            "entity_type": "place",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time erode appears in your journal"
+          },
+          {
+            "type": "unmet_deadline_echo",
+            "count": 6,
+            "phrase_template": "{count} past deadline{plural} still open",
+            "phrase": "6 past deadlines still open"
+          }
+        ],
+        "dispatch_payload": {
+          "subject": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+          "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+          "discoveries": [
+            {
+              "type": "pattern_recurrence",
+              "pattern": "family",
+              "count": 3,
+              "period": "month",
+              "phrase_template": "{ordinal} time you've written about {pattern} this month",
+              "phrase": "3rd time you've written about family this month"
+            },
+            {
+              "type": "first_mention",
+              "entity_name": "naveen",
+              "entity_type": "person",
+              "phrase_template": "first time {entity_name} appears in your journal",
+              "phrase": "first time naveen appears in your journal"
+            },
+            {
+              "type": "first_mention",
+              "entity_name": "erode",
+              "entity_type": "place",
+              "phrase_template": "first time {entity_name} appears in your journal",
+              "phrase": "first time erode appears in your journal"
+            },
+            {
+              "type": "unmet_deadline_echo",
+              "count": 6,
+              "phrase_template": "{count} past deadline{plural} still open",
+              "phrase": "6 past deadlines still open"
+            }
+          ],
+          "stamps": [
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "marriage -- 2026-05-28 00:00:00",
+              "editable": true,
+              "original_value": "marriage -- 2026-05-28 00:00:00"
+            },
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "reception -- 2026-05-28 00:00:00",
+              "editable": true,
+              "original_value": "reception -- 2026-05-28 00:00:00"
+            },
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "naveen marriage -- 2026-05-29 00:00:00",
+              "editable": true,
+              "original_value": "naveen marriage -- 2026-05-29 00:00:00"
+            },
+            {
+              "kind": "mood",
+              "label": "MOOD",
+              "value": "family",
+              "editable": true,
+              "original_value": "family"
+            },
+            {
+              "kind": "person",
+              "label": "PERSON",
+              "value": "naveen",
+              "editable": true,
+              "original_value": "naveen",
+              "is_first_mention": false
+            },
+            {
+              "kind": "topic",
+              "label": "TOPIC",
+              "value": "erode",
+              "editable": true,
+              "original_value": "erode",
+              "is_first_mention": false
+            }
+          ],
+          "pipeline_version": "12a657d4",
+          "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296"
+        }
+      },
+      "metadata": {
+        "is_langchain_root": true,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "1292ffac7a857c81",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "dedup",
+      "start_time": "2026-05-22 10:17:57.927000+00:00",
+      "end_time": "2026-05-22 10:17:59.040000+00:00",
+      "latency": 1.113,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": null,
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "dedup_check_result": "not_duplicate"
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:2"
+        ],
+        "langgraph_step": 2,
+        "langgraph_node": "dedup",
+        "langgraph_triggers": [
+          "branch:to:dedup"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "dedup"
+        ],
+        "langgraph_checkpoint_ns": "dedup:3adde996-8c05-919e-1167-406a2f0e8c42",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "21d5f76b29724793",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "extract_relations",
+      "start_time": "2026-05-22 10:18:05.522000+00:00",
+      "end_time": "2026-05-22 10:18:22.385000+00:00",
+      "latency": 16.863,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [
+          "family"
+        ],
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ],
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "relations": [
+          {
+            "source": "naveen",
+            "source_type": "person",
+            "target": "erode",
+            "target_type": "place",
+            "relation": "located_at"
+          }
+        ]
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:4"
+        ],
+        "langgraph_step": 4,
+        "langgraph_node": "extract_relations",
+        "langgraph_triggers": [
+          "branch:to:extract_relations",
+          "join:title_summary+classify+entities+deadline:extract_relations"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "extract_relations"
+        ],
+        "langgraph_checkpoint_ns": "extract_relations:67b06584-c27c-a215-d210-0ad7ef6d72f6",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "30dbc9f1e4178f89",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "1292ffac7a857c81",
+      "type": "CHAIN",
+      "name": "dedup_router",
+      "start_time": "2026-05-22 10:17:58.532000+00:00",
+      "end_time": "2026-05-22 10:17:59.040000+00:00",
+      "latency": 0.508,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": [
+        "title_summary",
+        "classify",
+        "entities",
+        "deadline"
+      ],
+      "metadata": {
+        "tags": [
+          "seq:step:3"
+        ],
+        "langgraph_step": 2,
+        "langgraph_node": "dedup",
+        "langgraph_triggers": [
+          "branch:to:dedup"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "dedup"
+        ],
+        "langgraph_checkpoint_ns": "dedup:3adde996-8c05-919e-1167-406a2f0e8c42",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "4229dce64e44e118",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "normalize",
+      "start_time": "2026-05-22 10:17:55.083000+00:00",
+      "end_time": "2026-05-22 10:17:57.673000+00:00",
+      "latency": 2.59,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": null,
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28..."
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:1"
+        ],
+        "langgraph_step": 1,
+        "langgraph_node": "normalize",
+        "langgraph_triggers": [
+          "branch:to:normalize"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "normalize"
+        ],
+        "langgraph_checkpoint_ns": "normalize:68bd3372-de48-d4aa-c847-f8a1d720d392",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "533204bc841826c3",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "compute_discoveries",
+      "start_time": "2026-05-22 10:18:05.521000+00:00",
+      "end_time": "2026-05-22 10:18:09.261000+00:00",
+      "latency": 3.74,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [
+          "family"
+        ],
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ],
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "discoveries": [
+          {
+            "type": "pattern_recurrence",
+            "pattern": "family",
+            "count": 3,
+            "period": "month",
+            "phrase_template": "{ordinal} time you've written about {pattern} this month",
+            "phrase": "3rd time you've written about family this month"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "naveen",
+            "entity_type": "person",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time naveen appears in your journal"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "erode",
+            "entity_type": "place",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time erode appears in your journal"
+          },
+          {
+            "type": "unmet_deadline_echo",
+            "count": 6,
+            "phrase_template": "{count} past deadline{plural} still open",
+            "phrase": "6 past deadlines still open"
+          }
+        ]
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:4"
+        ],
+        "langgraph_step": 4,
+        "langgraph_node": "compute_discoveries",
+        "langgraph_triggers": [
+          "branch:to:compute_discoveries",
+          "join:title_summary+classify+entities+deadline:compute_discoveries"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "compute_discoveries"
+        ],
+        "langgraph_checkpoint_ns": "compute_discoveries:30c6fcab-eae2-1398-7440-a2155e5c0080",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "64a36cfd2ad1fa78",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "title_summary",
+      "start_time": "2026-05-22 10:17:59.290000+00:00",
+      "end_time": "2026-05-22 10:17:59.293000+00:00",
+      "latency": 0.003,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may..."
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:3"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "title_summary",
+        "langgraph_triggers": [
+          "branch:to:title_summary"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "title_summary"
+        ],
+        "langgraph_checkpoint_ns": "title_summary:72258a9b-b34f-cf2a-29c6-2201fe8d2fe9",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "850d5a6654e13a42",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "deadline",
+      "start_time": "2026-05-22 10:17:59.289000+00:00",
+      "end_time": "2026-05-22 10:18:00.819000+00:00",
+      "latency": 1.53,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ]
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:3"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "deadline",
+        "langgraph_triggers": [
+          "branch:to:deadline"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "deadline"
+        ],
+        "langgraph_checkpoint_ns": "deadline:9c91a3c1-4c13-daf6-178c-e842e9c98efe",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "babc5599abdbc5ee",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "entities",
+      "start_time": "2026-05-22 10:17:59.290000+00:00",
+      "end_time": "2026-05-22 10:18:04.333000+00:00",
+      "latency": 5.043,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ]
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:3"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "entities",
+        "langgraph_triggers": [
+          "branch:to:entities"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "entities"
+        ],
+        "langgraph_checkpoint_ns": "entities:64954b91-52de-a20e-aa0c-22896bfd0bb9",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "cec3d6cffac4d03d",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "classify",
+      "start_time": "2026-05-22 10:17:59.289000+00:00",
+      "end_time": "2026-05-22 10:18:05.272000+00:00",
+      "latency": 5.983,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "",
+        "summary": "",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [],
+        "core_entities": [],
+        "deadline": [],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [],
+        "discoveries": []
+      },
+      "output": {
+        "classifier": [
+          "family"
+        ]
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:3"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "classify",
+        "langgraph_triggers": [
+          "branch:to:classify"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "classify"
+        ],
+        "langgraph_checkpoint_ns": "classify:5c326267-6ea7-f265-cf5d-87b42e635eb2",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "e213ae6ddf834447",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "store",
+      "start_time": "2026-05-22 10:18:22.645000+00:00",
+      "end_time": "2026-05-22 10:18:27.187000+00:00",
+      "latency": 4.542,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [
+          "family"
+        ],
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ],
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [
+          {
+            "source": "naveen",
+            "source_type": "person",
+            "target": "erode",
+            "target_type": "place",
+            "relation": "located_at"
+          }
+        ],
+        "discoveries": [
+          {
+            "type": "pattern_recurrence",
+            "pattern": "family",
+            "count": 3,
+            "period": "month",
+            "phrase_template": "{ordinal} time you've written about {pattern} this month",
+            "phrase": "3rd time you've written about family this month"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "naveen",
+            "entity_type": "person",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time naveen appears in your journal"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "erode",
+            "entity_type": "place",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time erode appears in your journal"
+          },
+          {
+            "type": "unmet_deadline_echo",
+            "count": 6,
+            "phrase_template": "{count} past deadline{plural} still open",
+            "phrase": "6 past deadlines still open"
+          }
+        ]
+      },
+      "output": {},
+      "metadata": {
+        "tags": [
+          "graph:step:5"
+        ],
+        "langgraph_step": 5,
+        "langgraph_node": "store",
+        "langgraph_triggers": [
+          "branch:to:store",
+          "join:extract_relations+compute_discoveries:store"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "store"
+        ],
+        "langgraph_checkpoint_ns": "store:b0d72696-98eb-4a8e-1a1f-24d35a67ce4e",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "ec973241fe6ffa65",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "058717c6f9b07325",
+      "type": "CHAIN",
+      "name": "assemble_dispatch",
+      "start_time": "2026-05-22 10:18:27.435000+00:00",
+      "end_time": "2026-05-22 10:18:29.494000+00:00",
+      "latency": 2.059,
+      "model": null,
+      "model_parameters": {},
+      "usage_details": {},
+      "cost_details": {},
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": {
+        "user_id": "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8",
+        "user_timezone": "Asia/Calcutta",
+        "raw_text": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n",
+        "cleaned_text": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...",
+        "auto_title": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+        "input_type": "text",
+        "attachment_url": "",
+        "classifier": [
+          "family"
+        ],
+        "core_entities": [
+          {
+            "name": "naveen",
+            "type": "person"
+          },
+          {
+            "name": "erode",
+            "type": "place"
+          }
+        ],
+        "deadline": [
+          {
+            "description": "marriage",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "reception",
+            "due_at": "2026-05-28T00:00:00Z",
+            "raw_text": "on 2026-05-28"
+          },
+          {
+            "description": "naveen marriage",
+            "due_at": "2026-05-29T00:00:00Z",
+            "raw_text": "on 2026-05-29"
+          }
+        ],
+        "trigger_check": false,
+        "duplicate_of": null,
+        "dedup_check_result": "not_duplicate",
+        "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296",
+        "relations": [
+          {
+            "source": "naveen",
+            "source_type": "person",
+            "target": "erode",
+            "target_type": "place",
+            "relation": "located_at"
+          }
+        ],
+        "discoveries": [
+          {
+            "type": "pattern_recurrence",
+            "pattern": "family",
+            "count": 3,
+            "period": "month",
+            "phrase_template": "{ordinal} time you've written about {pattern} this month",
+            "phrase": "3rd time you've written about family this month"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "naveen",
+            "entity_type": "person",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time naveen appears in your journal"
+          },
+          {
+            "type": "first_mention",
+            "entity_name": "erode",
+            "entity_type": "place",
+            "phrase_template": "first time {entity_name} appears in your journal",
+            "phrase": "first time erode appears in your journal"
+          },
+          {
+            "type": "unmet_deadline_echo",
+            "count": 6,
+            "phrase_template": "{count} past deadline{plural} still open",
+            "phrase": "6 past deadlines still open"
+          }
+        ]
+      },
+      "output": {
+        "dispatch_payload": {
+          "subject": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+          "summary": "i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...",
+          "discoveries": [
+            {
+              "type": "pattern_recurrence",
+              "pattern": "family",
+              "count": 3,
+              "period": "month",
+              "phrase_template": "{ordinal} time you've written about {pattern} this month",
+              "phrase": "3rd time you've written about family this month"
+            },
+            {
+              "type": "first_mention",
+              "entity_name": "naveen",
+              "entity_type": "person",
+              "phrase_template": "first time {entity_name} appears in your journal",
+              "phrase": "first time naveen appears in your journal"
+            },
+            {
+              "type": "first_mention",
+              "entity_name": "erode",
+              "entity_type": "place",
+              "phrase_template": "first time {entity_name} appears in your journal",
+              "phrase": "first time erode appears in your journal"
+            },
+            {
+              "type": "unmet_deadline_echo",
+              "count": 6,
+              "phrase_template": "{count} past deadline{plural} still open",
+              "phrase": "6 past deadlines still open"
+            }
+          ],
+          "stamps": [
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "marriage -- 2026-05-28 00:00:00",
+              "editable": true,
+              "original_value": "marriage -- 2026-05-28 00:00:00"
+            },
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "reception -- 2026-05-28 00:00:00",
+              "editable": true,
+              "original_value": "reception -- 2026-05-28 00:00:00"
+            },
+            {
+              "kind": "deadline",
+              "label": "DEADLINE",
+              "value": "naveen marriage -- 2026-05-29 00:00:00",
+              "editable": true,
+              "original_value": "naveen marriage -- 2026-05-29 00:00:00"
+            },
+            {
+              "kind": "mood",
+              "label": "MOOD",
+              "value": "family",
+              "editable": true,
+              "original_value": "family"
+            },
+            {
+              "kind": "person",
+              "label": "PERSON",
+              "value": "naveen",
+              "editable": true,
+              "original_value": "naveen",
+              "is_first_mention": false
+            },
+            {
+              "kind": "topic",
+              "label": "TOPIC",
+              "value": "erode",
+              "editable": true,
+              "original_value": "erode",
+              "is_first_mention": false
+            }
+          ],
+          "pipeline_version": "12a657d4",
+          "entry_id": "5872c2eb-841e-4d13-b465-5de192fae296"
+        }
+      },
+      "metadata": {
+        "tags": [
+          "graph:step:6"
+        ],
+        "langgraph_step": 6,
+        "langgraph_node": "assemble_dispatch",
+        "langgraph_triggers": [
+          "branch:to:assemble_dispatch"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "assemble_dispatch"
+        ],
+        "langgraph_checkpoint_ns": "assemble_dispatch:d88b31d6-c412-e659-489d-a2d0114e3592",
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "5ae09ff1a18b719b",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "4229dce64e44e118",
+      "type": "GENERATION",
+      "name": "ChatGoogleGenerativeAI",
+      "start_time": "2026-05-22 10:17:55.085000+00:00",
+      "end_time": "2026-05-22 10:17:57.672000+00:00",
+      "latency": 2.587,
+      "model": "gemini-2.5-flash-lite",
+      "model_parameters": {
+        "temperature": 0.1
+      },
+      "usage_details": {
+        "input": 2409,
+        "output": 56,
+        "total": 2465,
+        "input_cache_read": 0
+      },
+      "cost_details": {
+        "input": 0.0002409,
+        "output": 2.24e-05,
+        "total": 0.0002633
+      },
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": [
+        {
+          "role": "user",
+          "content": "You are a text normalization engine.\n\nCRITICAL RULE: You MUST use the calendar reference below to look up dates. Do NOT calculate or compute dates yourself. The calendar is generated by a computer and is guaranteed correct. Your math is not.\nCRITICAL RULE: If the original text contains no relative date phrases (like \"tomorrow\", \"next Monday\", \"by Friday\", \"last week\", \"in 3 days\", etc.), do NOT add any dates. Only replace dates that clearly exist in the original text. When in doubt, do NOT add a date.\n\n---\n\nToday is Friday, 2026-05-22.\n\nWEEK ANCHORS \u2014 use these to find the correct calendar row:\n- TODAY (2026-05-22) is in the row starting with: \"Week of May 18:\"\n- \"next week\" row starts with: \"Week of May 25:\"\n- \"last week\" row starts with: \"Week of May 11:\"\n\nHOW TO USE THE CALENDAR FOR \"next [weekday]\" AND \"last [weekday]\":\n- \"next Monday\" \u2192 go to the \"next week\" row above, find Mon=YYYY-MM-DD, copy that date.\n- \"next Tuesday\" \u2192 go to the \"next week\" row above, find Tue=YYYY-MM-DD, copy that date.\n- \"next [any weekday]\" \u2192 always use the \"next week\" row, never the current week row.\n- \"last [weekday]\" \u2192 means THE MOST RECENT occurrence of that weekday BEFORE today, NOT necessarily last week's row.\n  Rule: weekday order is Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7.\n  If the target weekday number < today's weekday number: the most recent occurrence is IN THIS WEEK's row (it already passed this week). Use today's row.\n  If the target weekday number >= today's weekday number: the most recent occurrence was last week. Use the \"last week\" row.\n  Example: today is Thursday (4). \"Last Tuesday\" \u2192 Tuesday=2, which is less than 4, so Tuesday already passed THIS week \u2192 use today's row \u2192 find Tue= in \"Week of May 18:\" row.\n  Example: today is Thursday (4). \"Last Friday\" \u2192 Friday=5, which is >= 4, so Friday has NOT passed this week \u2192 use last week's row \u2192 find Fri= in \"Week of May 11:\" row.\n\nHOW TO RESOLVE \"end of next month\":\n- \"next month\" = the month AFTER the current month. Current month is May 2026.\n- \"end of next month\" = the last day of that next month. Look up the last day of that month in the calendar.\n- Example: if today is in April 2026, \"end of next month\" = last day of May 2026 = 2026-05-31. Find the row containing \"May 31\" in the calendar and copy that date.\n\nCalendar reference (use this to look up every date \u2014 do not compute):\nIMPORTANT: Do NOT calculate dates yourself. Find the exact row using the WEEK ANCHORS above, then copy the date from the correct column.\n\nWeek of Apr 20: Mon=2026-04-20, Tue=2026-04-21, Wed=2026-04-22, Thu=2026-04-23, Fri=2026-04-24, Sat=2026-04-25, Sun=2026-04-26\nWeek of Apr 27: Mon=2026-04-27, Tue=2026-04-28, Wed=2026-04-29, Thu=2026-04-30, Fri=2026-05-01, Sat=2026-05-02, Sun=2026-05-03\nWeek of May 4: Mon=2026-05-04, Tue=2026-05-05, Wed=2026-05-06, Thu=2026-05-07, Fri=2026-05-08, Sat=2026-05-09, Sun=2026-05-10\nWeek of May 11: Mon=2026-05-11, Tue=2026-05-12, Wed=2026-05-13, Thu=2026-05-14, Fri=2026-05-15, Sat=2026-05-16, Sun=2026-05-17\nWeek of May 18: Mon=2026-05-18, Tue=2026-05-19, Wed=2026-05-20, Thu=2026-05-21, Fri=2026-05-22, Sat=2026-05-23, Sun=2026-05-24\nWeek of May 25: Mon=2026-05-25, Tue=2026-05-26, Wed=2026-05-27, Thu=2026-05-28, Fri=2026-05-29, Sat=2026-05-30, Sun=2026-05-31\nWeek of Jun 1: Mon=2026-06-01, Tue=2026-06-02, Wed=2026-06-03, Thu=2026-06-04, Fri=2026-06-05, Sat=2026-06-06, Sun=2026-06-07\nWeek of Jun 8: Mon=2026-06-08, Tue=2026-06-09, Wed=2026-06-10, Thu=2026-06-11, Fri=2026-06-12, Sat=2026-06-13, Sun=2026-06-14\nWeek of Jun 15: Mon=2026-06-15, Tue=2026-06-16, Wed=2026-06-17, Thu=2026-06-18, Fri=2026-06-19, Sat=2026-06-20, Sun=2026-06-21\nWeek of Jun 22: Mon=2026-06-22, Tue=2026-06-23, Wed=2026-06-24, Thu=2026-06-25, Fri=2026-06-26, Sat=2026-06-27, Sun=2026-06-28\nWeek of Jun 29: Mon=2026-06-29, Tue=2026-06-30, Wed=2026-07-01, Thu=2026-07-02, Fri=2026-07-03, Sat=2026-07-04, Sun=2026-07-05\nWeek of Jul 6: Mon=2026-07-06, Tue=2026-07-07, Wed=2026-07-08, Thu=2026-07-09, Fri=2026-07-10, Sat=2026-07-11, Sun=2026-07-12\nWeek of Jul 13: Mon=2026-07-13, Tue=2026-07-14, Wed=2026-07-15, Thu=2026-07-16, Fri=2026-07-17, Sat=2026-07-18, Sun=2026-07-19\n\n---\n\nHow to resolve relative dates (follow these steps in order):\n\nStep 1: Identify any relative date phrase in the text (e.g., \"next Monday\", \"by Friday\", \"tomorrow\", \"last Tuesday\", \"in 2 weeks\", \"nxt monday\", \"tmrw\").\nStep 2: If NO relative date phrase exists in the original text, skip date conversion entirely. Do not invent or add any dates.\nStep 3: For each relative date phrase found, use the WEEK ANCHORS and HOW TO USE THE CALENDAR rules above to determine which exact calendar row to look in.\nStep 4: Find that specific row in the calendar reference. Copy the exact YYYY-MM-DD date from the correct column.\nStep 5: Replace the relative phrase in the text with the looked-up date. Do not compute the date yourself.\n\n---\n\nText cleanup rules:\n\n- Fix obvious typos, grammar, and slang while preserving meaning (e.g., \"gonna\" \u2192 \"going to\", \"gotta\" \u2192 \"have to\", \"abt\" \u2192 \"about\", \"tmrw\" \u2192 the resolved date, \"nxt\" \u2192 \"next\").\n- Preserve ALL proper nouns, project names, people's names, nicknames, and specific terms exactly as written, even if they look like typos (e.g., \"ProjectX\", \"MindGraph\", \"Sagarika\", \"Rahul\").\n- Do NOT summarize, shorten, or remove any content from the original text.\n- Do NOT add new content, opinions, or information that was not in the original text.\n\n---\n\nOutput format:\n\nReturn ONLY the cleaned text. Nothing else. No explanations, no headers, no labels, no markdown.\n\n---\n\nOriginal Text: i need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n\n"
+        }
+      ],
+      "output": {
+        "role": "assistant",
+        "content": "i need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28..."
+      },
+      "metadata": {
+        "tags": [
+          "seq:step:1"
+        ],
+        "langgraph_step": 1,
+        "langgraph_node": "normalize",
+        "langgraph_triggers": [
+          "branch:to:normalize"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "normalize"
+        ],
+        "langgraph_checkpoint_ns": "normalize:68bd3372-de48-d4aa-c847-f8a1d720d392",
+        "checkpoint_ns": "normalize:68bd3372-de48-d4aa-c847-f8a1d720d392",
+        "ls_provider": "google_genai",
+        "ls_model_name": "gemini-2.5-flash-lite",
+        "ls_model_type": "chat",
+        "ls_temperature": 0.1,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "9a67fba761335df7",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "850d5a6654e13a42",
+      "type": "GENERATION",
+      "name": "ChatGoogleGenerativeAI",
+      "start_time": "2026-05-22 10:17:59.292000+00:00",
+      "end_time": "2026-05-22 10:18:00.818000+00:00",
+      "latency": 1.526,
+      "model": "gemini-2.5-flash-lite",
+      "model_parameters": {
+        "temperature": 0.1
+      },
+      "usage_details": {
+        "input": 649,
+        "output": 138,
+        "total": 787,
+        "input_cache_read": 0
+      },
+      "cost_details": {
+        "input": 6.49e-05,
+        "output": 5.52e-05,
+        "total": 0.0001201
+      },
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": [
+        {
+          "role": "user",
+          "content": "You are a strict deadline extraction engine.\n\nExtract only concrete deadlines or scheduled commitments.\n\nReference Date:\n2026-05-22\n\nCleaned Input:\ni need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...\n\nRaw Input:\ni need to to go to naveen marriage on may29 at erode.. i guess reception is on 28th may and marriage is one 28th may...\n\n\nRules:\n- Extract only if there is a clear time reference.\n- The time reference must be tied to a real task, obligation, meeting, payment, submission, appointment, or event.\n- Do not extract hopes, vague future thoughts, reflections, metadata dates, or project/status phrases.\n- Do not invent deadlines that are not in the text.\n- If the same event is mentioned multiple times, extract it only once. Do not create separate items for repeated references to the same event on the same date.\n- If a date is ambiguous and cannot be resolved confidently, skip it.\n\nDo NOT extract examples like:\n- new possibilities\n- hope for a better day\n- entry date\n- project progress\n- [{\"description\": \"meeting with X\", \"due_at\": \"2026-04-09\", \"raw_text\": \"meeting tomorrow\"}, {\"description\": \"meeting with X\", \"due_at\": \"2026-04-09\", \"raw_text\": \"scheduled for tomorrow\"}]\n  -> This is ONE event, extract it only once.\n\nOutput Rules:\n- Return STRICT JSON only.\n- No markdown, no code fences, no explanation.\n- Return a JSON array.\n- If no deadlines exist, return [].\n- Use exactly these keys for each item: \"description\", \"due_at\", \"raw_text\"\n- \"description\" = short description of what the deadline is for\n- \"due_at\" = date in YYYY-MM-DD format, or datetime in YYYY-MM-DDTHH:MM format if a specific time is mentioned. Use YYYY-MM-DD when no time is mentioned.\n- Do not invent times - only include a time if the original text explicitly states one.\n- \"raw_text\" = the exact deadline phrase from the journal text\n- Resolve relative dates using the Reference Date.\n- Do not include extra fields.\n\nFormat:\n[\n  {\"description\": \"submit visa documents\", \"due_at\": \"2026-04-10\", \"raw_text\": \"by Friday\"},\n  {\"description\": \"meeting with Manuel\", \"due_at\": \"2026-04-09T19:30\", \"raw_text\": \"meeting at 19:30 today\"}\n]"
+        }
+      ],
+      "output": {
+        "role": "assistant",
+        "content": "[\n  {\"description\": \"naveen marriage\", \"due_at\": \"2026-05-29\", \"raw_text\": \"on 2026-05-29\"},\n  {\"description\": \"reception\", \"due_at\": \"2026-05-28\", \"raw_text\": \"on 2026-05-28\"},\n  {\"description\": \"marriage\", \"due_at\": \"2026-05-28\", \"raw_text\": \"on 2026-05-28\"}\n]"
+      },
+      "metadata": {
+        "tags": [
+          "seq:step:1"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "deadline",
+        "langgraph_triggers": [
+          "branch:to:deadline"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "deadline"
+        ],
+        "langgraph_checkpoint_ns": "deadline:9c91a3c1-4c13-daf6-178c-e842e9c98efe",
+        "checkpoint_ns": "deadline:9c91a3c1-4c13-daf6-178c-e842e9c98efe",
+        "ls_provider": "google_genai",
+        "ls_model_name": "gemini-2.5-flash-lite",
+        "ls_model_type": "chat",
+        "ls_temperature": 0.1,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "a0ee9d1658da3a2b",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "21d5f76b29724793",
+      "type": "GENERATION",
+      "name": "ChatGoogleGenerativeAI",
+      "start_time": "2026-05-22 10:18:08.520000+00:00",
+      "end_time": "2026-05-22 10:18:22.384000+00:00",
+      "latency": 13.864,
+      "model": "gemini-2.5-flash-lite",
+      "model_parameters": {
+        "temperature": 0.1
+      },
+      "usage_details": {
+        "input": 461,
+        "output": 56,
+        "total": 517,
+        "input_cache_read": 0
+      },
+      "cost_details": {
+        "input": 4.61e-05,
+        "output": 2.24e-05,
+        "total": 6.85e-05
+      },
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": [
+        {
+          "role": "user",
+          "content": "\nYou are a strict semantic relationship extraction engine for a personal journal.\n\nGiven a journal entry and its extracted entities, identify only meaningful semantic\nrelationships between the entities.\n\nValid relation types: uses, built_with, works_on, works_with, located_at, belongs_to, part_of\n\nDirection rules:\n- uses: person/organization/project -> tool\n- built_with: project -> tool\n- works_on: person -> project/task\n- works_with: person <-> person or person <-> organization\n- located_at: person/project/organization/event/task -> place\n- belongs_to: entity -> organization/project\n- part_of: smaller entity -> larger entity\n\nCritical rules:\n- Do not extract co-occurrence.\n- \"I talked to Sachin. Also worked on MindGraph.\" -> no relationship.\n- \"I used Claude to build MindGraph.\" -> MindGraph(project) built_with Claude(tool) or I(person) uses Claude(tool) only if both entities are present.\n- \"Met Sachin at Inspiral office.\" -> Sachin(person) located_at Inspiral office(place).\n- Use only entity names and types from the provided list.\n- Return [] if no clear semantic relationship exists.\n- Never create self-relations.\n- Maximum 5 relations.\n- If the relation is ambiguous, drop it.\n\nEntities in this entry:\n- \"naveen\" (person)\n- \"erode\" (place)\n\nReturn STRICT JSON only. No explanation.\nFormat:\n[\n  {\n    \"source\": \"entity_name\",\n    \"source_type\": \"entity_type\",\n    \"target\": \"entity_name\",\n    \"target_type\": \"entity_type\",\n    \"relation\": \"relation_type\"\n  }\n]\n\nJournal Entry:\ni need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...\n"
+        }
+      ],
+      "output": {
+        "role": "assistant",
+        "content": "[\n  {\n    \"source\": \"naveen\",\n    \"source_type\": \"person\",\n    \"target\": \"erode\",\n    \"target_type\": \"place\",\n    \"relation\": \"located_at\"\n  }\n]"
+      },
+      "metadata": {
+        "tags": [
+          "seq:step:1"
+        ],
+        "langgraph_step": 4,
+        "langgraph_node": "extract_relations",
+        "langgraph_triggers": [
+          "branch:to:extract_relations",
+          "join:title_summary+classify+entities+deadline:extract_relations"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "extract_relations"
+        ],
+        "langgraph_checkpoint_ns": "extract_relations:67b06584-c27c-a215-d210-0ad7ef6d72f6",
+        "checkpoint_ns": "extract_relations:67b06584-c27c-a215-d210-0ad7ef6d72f6",
+        "ls_provider": "google_genai",
+        "ls_model_name": "gemini-2.5-flash-lite",
+        "ls_model_type": "chat",
+        "ls_temperature": 0.1,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "c9584beb9a3d84fc",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "cec3d6cffac4d03d",
+      "type": "GENERATION",
+      "name": "ChatGoogleGenerativeAI",
+      "start_time": "2026-05-22 10:17:59.292000+00:00",
+      "end_time": "2026-05-22 10:18:05.272000+00:00",
+      "latency": 5.98,
+      "model": "gemini-2.5-flash-lite",
+      "model_parameters": {
+        "temperature": 0.1
+      },
+      "usage_details": {
+        "input": 174,
+        "output": 8,
+        "total": 182,
+        "input_cache_read": 0
+      },
+      "cost_details": {
+        "input": 1.74e-05,
+        "output": 3.2e-06,
+        "total": 2.06e-05
+      },
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": [
+        {
+          "role": "user",
+          "content": "\nYou are a classifier engine.\n\nClassify the journal entry into one of the following categories:\n\nwork, personal, health, finance, family, hobby, travel, education, other\n\nJournal Entry:\ni need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...\n\nExtract all suitable classifiers from the journal entry, if nothing suits, only select \"other\".\n\nReturn list of strings only. No explanation.\n\nFormat:\n[\n    \"category_name\", ...\n]\n\nRules:\n- Use only allowed types.\n- If no classifiers exist, return [\"other\"].\n- Do not include extra fields.\n\n"
+        }
+      ],
+      "output": {
+        "role": "assistant",
+        "content": "[\n    \"family\"\n]"
+      },
+      "metadata": {
+        "tags": [
+          "seq:step:1"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "classify",
+        "langgraph_triggers": [
+          "branch:to:classify"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "classify"
+        ],
+        "langgraph_checkpoint_ns": "classify:5c326267-6ea7-f265-cf5d-87b42e635eb2",
+        "checkpoint_ns": "classify:5c326267-6ea7-f265-cf5d-87b42e635eb2",
+        "ls_provider": "google_genai",
+        "ls_model_name": "gemini-2.5-flash-lite",
+        "ls_model_type": "chat",
+        "ls_temperature": 0.1,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    },
+    {
+      "id": "d033cd6b3f135f92",
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "parent_observation_id": "babc5599abdbc5ee",
+      "type": "GENERATION",
+      "name": "ChatGoogleGenerativeAI",
+      "start_time": "2026-05-22 10:17:59.292000+00:00",
+      "end_time": "2026-05-22 10:18:04.333000+00:00",
+      "latency": 5.041,
+      "model": "gemini-2.5-flash-lite",
+      "model_parameters": {
+        "temperature": 0.1
+      },
+      "usage_details": {
+        "input": 1441,
+        "output": 32,
+        "total": 1473,
+        "input_cache_read": 0
+      },
+      "cost_details": {
+        "input": 0.0001441,
+        "output": 1.28e-05,
+        "total": 0.0001569
+      },
+      "total_cost": null,
+      "level": "DEFAULT",
+      "status_message": null,
+      "input": [
+        {
+          "role": "user",
+          "content": "\nYou are a strict entity extraction engine.\n\nExtract only concrete, meaningful named entities from the journal entry.\nAllowed types: person, project, tool, place, organization, event, task, none\n\nReturn STRICT JSON only. No explanation.\nFormat:\n[\n  {\"name\": \"entity_name\", \"type\": \"entity_type\"}\n]\n\nRules:\n- Use only these types: person, project, tool, place, organization, event, task, none\n- If no valid entities exist, return []\n- Do not include extra fields\n- Extract only entities that are specific and meaningful in context\n- Do not guess or infer entities that are not clearly mentioned\n\nNever extract:\n- dates, times, timestamps, years, months, weekdays\n- generic nouns like \"project\", \"conversation\", \"meeting\", \"task\", \"work\"\n- vague concepts like \"life\", \"mind\", \"thoughts\", \"feelings\", \"my own mind\"\n- pronouns or generic references like \"I\", \"me\", \"someone\", \"my friend\"\n- generic role/document words: \"proposal\", \"team\", \"council\", \"review\", \"group\" as standalone names (these are only valid when embedded in a full proper name like \"Surrey County Council\")\n- sentence fragments\n- duplicate entities\n- anything with type \"none\"\n\nEntity guidance:\n- person: a specific person's name or uniquely identified person\n- project: a clearly named app, product, initiative, workstream, feature build, client engagement, or ongoing effort; do not use \"project\" for unfamiliar capitalized words unless the surrounding text clearly shows building, working on, planning, designing, shipping, fixing, or discussing that named effort; if unsure, omit\n- tool: a specific software, framework, platform, data format, or device that is actively used, tested, or built with in this entry; when comparing two tools (\"tested X to compare it with Y\"), extract only X (the one being tested), not Y (the baseline); data formats and open table formats (e.g. Delta Lake, Parquet, Iceberg) are tools\n- place: a specific location, city, office, venue, or geographic place\n- organization: a company, institution, university, or brand; named teams like \"Google Cloud\" qualify, but generic noun phrases like \"the council team\", \"the internal team\", \"the leadership group\", or bare \"council\" without a specific name (e.g. not \"Surrey County Council\") are not organizations \u2014 omit them entirely\n- event: a specific named event, appointment, or occasion\n- task: a specific actionable item, not a generic word\n\nNormalization rules:\n- Keep names concise\n- Remove filler words unless they are part of the real name\n- Prefer \"MindGraph\" over \"my MindGraph project\"\n- Prefer singular canonical names\n- Strip trailing UI/feature words from project names: do not include \"onboarding\", \"dashboard\", \"auth\", \"screen\", \"module\", \"page\", \"settings\", \"flow\" as part of the name \u2014 extract only the root (e.g. \"Velora\" not \"Velora dashboard\", \"mindgraph\" not \"mindgraph auth page\")\n- Do not extract sub-strings from compound entity names (e.g. do not extract \"Surrey\" from \"SurreyCare\" \u2014 the full compound is the entity)\n\nProject disambiguation rules:\n- Do not use \"project\" as a fallback for unfamiliar capitalized words.\n- A capitalized or brand-like word is only a project if the surrounding text clearly shows it is something being built, worked on, planned, designed, launched, shipped, fixed, or discussed as an ongoing named effort.\n- Omit any brand-like word that appears only in a mental, personal, or medical context. Do NOT classify it as project or tool. This includes: taking medicine (\"I took X\"), mental preoccupation (\"thinking about X\", \"X came up in my mind\", \"I kept thinking about X\"), or a passing thought (\"it was just a passing thought about X\").\n- For tools: only extract a word if you recognize it as a real, existing technology from your knowledge. An unfamiliar word in a usage context (\"I used X to generate/create/design\") may refer to the user's own project or a niche/fictional product \u2014 omit it if you do not know it. Contrast: \"I used Figma to design\" \u2192 extract Figma (recognized tool); \"I used Velora to generate wireframes\" \u2192 omit Velora (not a known technology).\n- If the context is unclear, omit rather than guessing \"project\".\n\nTask disambiguation rules:\n- Use \"task\" only for a specific actionable deliverable or work item phrase.\n- Good task examples: \"provider renewal summary\", \"quarterly provider report\", \"quality assurance report\", \"migration notes\", \"release notes\".\n- Do not extract generic verbs or vague actions like \"finish\", \"send\", \"review\", \"work\", or \"meeting\" as tasks.\n- Prefer the concrete deliverable name, not the action around it.\n\nExamples of invalid outputs:\n- {\"name\": \"2026-03-31\", \"type\": \"event\"}\n- {\"name\": \"project\", \"type\": \"project\"}\n- {\"name\": \"conversation\", \"type\": \"event\"}\n- {\"name\": \"my own mind\", \"type\": \"none\"}\n- {\"name\": \"Inspiral\", \"type\": \"tool\"}  (personal/medical context: \"I took Inspiral\")\n- {\"name\": \"Inspiral\", \"type\": \"project\"}  (reflective context: \"came up in my mind\")\n- {\"name\": \"Velora\", \"type\": \"project\"}  (reflective: \"kept thinking about Velora\")\n- {\"name\": \"Velora\", \"type\": \"tool\"}  (from \"I used Velora to generate wireframes\": Velora is not a known technology \u2014 omit unrecognized words even in usage context)\n- {\"name\": \"Claude\", \"type\": \"tool\"}  (comparison only: \"compare it with Claude\")\n- {\"name\": \"council\", \"type\": \"organization\"}  (from \"council team\": stripping \"team\" leaves \"council\" which is also generic \u2014 omit entirely)\n- {\"name\": \"Google proposal\", \"type\": \"task\"}  (do not combine org name with generic document word; extract \"Google\" as org and omit \"proposal\")\n\nJournal Entry:\ni need to to go to naveen marriage on 2026-05-29 at erode.. i guess reception is on 2026-05-28 and marriage is one 2026-05-28...\n"
+        }
+      ],
+      "output": {
+        "role": "assistant",
+        "content": "[\n  {\"name\": \"naveen\", \"type\": \"person\"},\n  {\"name\": \"erode\", \"type\": \"place\"}\n]"
+      },
+      "metadata": {
+        "tags": [
+          "seq:step:1"
+        ],
+        "langgraph_step": 3,
+        "langgraph_node": "entities",
+        "langgraph_triggers": [
+          "branch:to:entities"
+        ],
+        "langgraph_path": [
+          "__pregel_pull",
+          "entities"
+        ],
+        "langgraph_checkpoint_ns": "entities:64954b91-52de-a20e-aa0c-22896bfd0bb9",
+        "checkpoint_ns": "entities:64954b91-52de-a20e-aa0c-22896bfd0bb9",
+        "ls_provider": "google_genai",
+        "ls_model_name": "gemini-2.5-flash-lite",
+        "ls_model_type": "chat",
+        "ls_temperature": 0.1,
+        "resourceAttributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.41.1",
+          "service.name": "unknown_service"
+        },
+        "scope": {
+          "name": "langfuse-sdk",
+          "version": "4.6.1",
+          "attributes": {
+            "public_key": "pk-lf-705f4f47-3af7-4415-857b-84dddb8a8a9f"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,325 @@
+{
+  "generated_utc": "20260523T125641Z",
+  "cutoff_utc": "2026-05-23T10:00:00+00:00",
+  "window_hours": 48.0,
+  "before_range": [
+    "2026-05-21T10:00:00+00:00",
+    "2026-05-23T10:00:00+00:00"
+  ],
+  "after_range": [
+    "2026-05-23T10:00:00+00:00",
+    "2026-05-25T10:00:00+00:00"
+  ],
+  "nodes": [
+    "normalize",
+    "classify",
+    "extract_entities",
+    "extract_relations",
+    "deadline",
+    "title_summary"
+  ],
+  "pricing_fallback": {
+    "input_per_mtok": 0.1,
+    "output_per_mtok": 0.4
+  },
+  "summary_before": {
+    "normalize": {
+      "count": 1,
+      "p50_latency_ms": 2590.0,
+      "p95_latency_ms": 2590.0,
+      "mean_input_tokens": 2409,
+      "mean_output_tokens": 56,
+      "total_cost_usd": 0.0002633,
+      "mean_cost_per_call_usd": 0.0002633,
+      "any_cost_computed": false
+    },
+    "classify": {
+      "count": 1,
+      "p50_latency_ms": 5983.0,
+      "p95_latency_ms": 5983.0,
+      "mean_input_tokens": 174,
+      "mean_output_tokens": 8,
+      "total_cost_usd": 2.06e-05,
+      "mean_cost_per_call_usd": 2.06e-05,
+      "any_cost_computed": false
+    },
+    "extract_entities": {
+      "count": 0,
+      "p50_latency_ms": null,
+      "p95_latency_ms": null,
+      "mean_input_tokens": null,
+      "mean_output_tokens": null,
+      "total_cost_usd": 0.0,
+      "mean_cost_per_call_usd": null,
+      "any_cost_computed": false
+    },
+    "extract_relations": {
+      "count": 1,
+      "p50_latency_ms": 16863.0,
+      "p95_latency_ms": 16863.0,
+      "mean_input_tokens": 461,
+      "mean_output_tokens": 56,
+      "total_cost_usd": 6.85e-05,
+      "mean_cost_per_call_usd": 6.85e-05,
+      "any_cost_computed": false
+    },
+    "deadline": {
+      "count": 1,
+      "p50_latency_ms": 1530.0,
+      "p95_latency_ms": 1530.0,
+      "mean_input_tokens": 649,
+      "mean_output_tokens": 138,
+      "total_cost_usd": 0.0001201,
+      "mean_cost_per_call_usd": 0.0001201,
+      "any_cost_computed": false
+    },
+    "title_summary": {
+      "count": 1,
+      "p50_latency_ms": 3.0,
+      "p95_latency_ms": 3.0,
+      "mean_input_tokens": 0,
+      "mean_output_tokens": 0,
+      "total_cost_usd": 0.0,
+      "mean_cost_per_call_usd": 0.0,
+      "any_cost_computed": false
+    }
+  },
+  "summary_after": {
+    "normalize": {
+      "count": 2,
+      "p50_latency_ms": 641.0,
+      "p95_latency_ms": 671.0,
+      "mean_input_tokens": 2436,
+      "mean_output_tokens": 67.5,
+      "total_cost_usd": 0.0005411999999999999,
+      "mean_cost_per_call_usd": 0.00027059999999999996,
+      "any_cost_computed": false
+    },
+    "classify": {
+      "count": 2,
+      "p50_latency_ms": 291.0,
+      "p95_latency_ms": 396.0,
+      "mean_input_tokens": 185.5,
+      "mean_output_tokens": 10.5,
+      "total_cost_usd": 4.5499999999999995e-05,
+      "mean_cost_per_call_usd": 2.2749999999999997e-05,
+      "any_cost_computed": false
+    },
+    "extract_entities": {
+      "count": 0,
+      "p50_latency_ms": null,
+      "p95_latency_ms": null,
+      "mean_input_tokens": null,
+      "mean_output_tokens": null,
+      "total_cost_usd": 0.0,
+      "mean_cost_per_call_usd": null,
+      "any_cost_computed": false
+    },
+    "extract_relations": {
+      "count": 2,
+      "p50_latency_ms": 1014.9999999999999,
+      "p95_latency_ms": 15384.0,
+      "mean_input_tokens": 270,
+      "mean_output_tokens": 85.5,
+      "total_cost_usd": 0.0001224,
+      "mean_cost_per_call_usd": 6.12e-05,
+      "any_cost_computed": false
+    },
+    "deadline": {
+      "count": 2,
+      "p50_latency_ms": 1864.0,
+      "p95_latency_ms": 1999.0,
+      "mean_input_tokens": 687.5,
+      "mean_output_tokens": 25.5,
+      "total_cost_usd": 0.0001579,
+      "mean_cost_per_call_usd": 7.895e-05,
+      "any_cost_computed": false
+    },
+    "title_summary": {
+      "count": 2,
+      "p50_latency_ms": 562.0,
+      "p95_latency_ms": 1747.0,
+      "mean_input_tokens": 633,
+      "mean_output_tokens": 48,
+      "total_cost_usd": 0.000164999999,
+      "mean_cost_per_call_usd": 8.24999995e-05,
+      "any_cost_computed": false
+    }
+  },
+  "raw_before": {
+    "normalize": [
+      {
+        "chain_id": "4229dce64e44e118",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 2590.0,
+        "input_tokens": 2409,
+        "output_tokens": 56,
+        "cost_usd": 0.0002633,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "classify": [
+      {
+        "chain_id": "cec3d6cffac4d03d",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 5983.0,
+        "input_tokens": 174,
+        "output_tokens": 8,
+        "cost_usd": 2.06e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "extract_entities": [],
+    "extract_relations": [
+      {
+        "chain_id": "21d5f76b29724793",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 16863.0,
+        "input_tokens": 461,
+        "output_tokens": 56,
+        "cost_usd": 6.85e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "deadline": [
+      {
+        "chain_id": "850d5a6654e13a42",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 1530.0,
+        "input_tokens": 649,
+        "output_tokens": 138,
+        "cost_usd": 0.0001201,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "title_summary": [
+      {
+        "chain_id": "64a36cfd2ad1fa78",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 3.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      }
+    ]
+  },
+  "raw_after": {
+    "normalize": [
+      {
+        "chain_id": "895cbd9c4b3cb5c2",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 641.0,
+        "input_tokens": 2460,
+        "output_tokens": 96,
+        "cost_usd": 0.0002844,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6d67d88a9833f914",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 671.0,
+        "input_tokens": 2412,
+        "output_tokens": 39,
+        "cost_usd": 0.0002568,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "classify": [
+      {
+        "chain_id": "0e3d882d2d9b00bd",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 396.0,
+        "input_tokens": 214,
+        "output_tokens": 13,
+        "cost_usd": 2.66e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "256bae966088d689",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 291.0,
+        "input_tokens": 157,
+        "output_tokens": 8,
+        "cost_usd": 1.89e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "extract_entities": [],
+    "extract_relations": [
+      {
+        "chain_id": "affd31797ab1d92a",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 15384.0,
+        "input_tokens": 540,
+        "output_tokens": 171,
+        "cost_usd": 0.0001224,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1780995d6a2e3de2",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 1014.9999999999999,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      }
+    ],
+    "deadline": [
+      {
+        "chain_id": "3d166e0b51d82c89",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 1999.0,
+        "input_tokens": 740,
+        "output_tokens": 50,
+        "cost_usd": 9.4e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0fae957792926fd5",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 1864.0,
+        "input_tokens": 635,
+        "output_tokens": 1,
+        "cost_usd": 6.39e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "title_summary": [
+      {
+        "chain_id": "c75654b17dfdf1c6",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 1747.0,
+        "input_tokens": 657,
+        "output_tokens": 58,
+        "cost_usd": 8.8899999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "12c07bca4497caab",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 562.0,
+        "input_tokens": 609,
+        "output_tokens": 38,
+        "cost_usd": 7.61e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ]
+  }
+}

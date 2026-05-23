@@ -1,0 +1,2605 @@
+{
+  "generated_utc": "20260523T131405Z",
+  "cutoff_utc": "2026-05-23T10:00:00+00:00",
+  "window_hours": 720.0,
+  "before_range": [
+    "2026-04-23T10:00:00+00:00",
+    "2026-05-23T10:00:00+00:00"
+  ],
+  "after_range": [
+    "2026-05-23T10:00:00+00:00",
+    "2026-06-22T10:00:00+00:00"
+  ],
+  "nodes": [
+    "normalize",
+    "classify",
+    "extract_entities",
+    "extract_relations",
+    "deadline",
+    "title_summary"
+  ],
+  "pricing_fallback": {
+    "input_per_mtok": 0.1,
+    "output_per_mtok": 0.4
+  },
+  "summary_before": {
+    "normalize": {
+      "count": 52,
+      "p50_latency_ms": 1201.0,
+      "p95_latency_ms": 13368.0,
+      "mean_input_tokens": 2309.769230769231,
+      "mean_output_tokens": 101.15384615384616,
+      "total_cost_usd": 0.014114799996,
+      "mean_cost_per_call_usd": 0.00027143846146153845,
+      "any_cost_computed": false
+    },
+    "classify": {
+      "count": 39,
+      "p50_latency_ms": 1092.0,
+      "p95_latency_ms": 5995.0,
+      "mean_input_tokens": 223.97435897435898,
+      "mean_output_tokens": 12.487179487179487,
+      "total_cost_usd": 0.001068299995,
+      "mean_cost_per_call_usd": 2.7392307564102565e-05,
+      "any_cost_computed": false
+    },
+    "extract_entities": {
+      "count": 0,
+      "p50_latency_ms": null,
+      "p95_latency_ms": null,
+      "mean_input_tokens": null,
+      "mean_output_tokens": null,
+      "total_cost_usd": 0.0,
+      "mean_cost_per_call_usd": null,
+      "any_cost_computed": false
+    },
+    "extract_relations": {
+      "count": 39,
+      "p50_latency_ms": 2636.0,
+      "p95_latency_ms": 13410.0,
+      "mean_input_tokens": 288.2307692307692,
+      "mean_output_tokens": 48.333333333333336,
+      "total_cost_usd": 0.0018781,
+      "mean_cost_per_call_usd": 4.8156410256410256e-05,
+      "any_cost_computed": false
+    },
+    "deadline": {
+      "count": 39,
+      "p50_latency_ms": 1270.0,
+      "p95_latency_ms": 8429.0,
+      "mean_input_tokens": 764.2820512820513,
+      "mean_output_tokens": 27.333333333333332,
+      "total_cost_usd": 0.0034070999919999997,
+      "mean_cost_per_call_usd": 8.736153825641026e-05,
+      "any_cost_computed": false
+    },
+    "title_summary": {
+      "count": 39,
+      "p50_latency_ms": 1369.0,
+      "p95_latency_ms": 6200.0,
+      "mean_input_tokens": 565,
+      "mean_output_tokens": 48.1025641025641,
+      "total_cost_usd": 0.0029538999969999998,
+      "mean_cost_per_call_usd": 7.574102556410256e-05,
+      "any_cost_computed": false
+    }
+  },
+  "summary_after": {
+    "normalize": {
+      "count": 7,
+      "p50_latency_ms": 671.0,
+      "p95_latency_ms": 2797.0,
+      "mean_input_tokens": 2433.285714285714,
+      "mean_output_tokens": 70.85714285714286,
+      "total_cost_usd": 0.001901699999,
+      "mean_cost_per_call_usd": 0.00027167142842857145,
+      "any_cost_computed": false
+    },
+    "classify": {
+      "count": 7,
+      "p50_latency_ms": 396.0,
+      "p95_latency_ms": 5138.0,
+      "mean_input_tokens": 188.85714285714286,
+      "mean_output_tokens": 10.857142857142858,
+      "total_cost_usd": 0.000162599999,
+      "mean_cost_per_call_usd": 2.3228571285714287e-05,
+      "any_cost_computed": false
+    },
+    "extract_entities": {
+      "count": 0,
+      "p50_latency_ms": null,
+      "p95_latency_ms": null,
+      "mean_input_tokens": null,
+      "mean_output_tokens": null,
+      "total_cost_usd": 0.0,
+      "mean_cost_per_call_usd": null,
+      "any_cost_computed": false
+    },
+    "extract_relations": {
+      "count": 7,
+      "p50_latency_ms": 8775.0,
+      "p95_latency_ms": 15384.0,
+      "mean_input_tokens": 436.85714285714283,
+      "mean_output_tokens": 139.28571428571428,
+      "total_cost_usd": 0.0006958,
+      "mean_cost_per_call_usd": 9.94e-05,
+      "any_cost_computed": false
+    },
+    "deadline": {
+      "count": 7,
+      "p50_latency_ms": 744.0,
+      "p95_latency_ms": 1999.0,
+      "mean_input_tokens": 688.2857142857143,
+      "mean_output_tokens": 57.857142857142854,
+      "total_cost_usd": 0.0006437999999999999,
+      "mean_cost_per_call_usd": 9.197142857142857e-05,
+      "any_cost_computed": false
+    },
+    "title_summary": {
+      "count": 7,
+      "p50_latency_ms": 1524.0,
+      "p95_latency_ms": 1747.0,
+      "mean_input_tokens": 630.4285714285714,
+      "mean_output_tokens": 50.285714285714285,
+      "total_cost_usd": 0.000582099999,
+      "mean_cost_per_call_usd": 8.315714271428572e-05,
+      "any_cost_computed": false
+    }
+  },
+  "raw_before": {
+    "normalize": [
+      {
+        "chain_id": "4229dce64e44e118",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 2590.0,
+        "input_tokens": 2409,
+        "output_tokens": 56,
+        "cost_usd": 0.0002633,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f7bf9299244007d5",
+        "trace_id": "7c20145c4d42688bb396faf3f3308296",
+        "latency_ms": 5109.0,
+        "input_tokens": 2857,
+        "output_tokens": 498,
+        "cost_usd": 0.0004849,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0e1678726e4260f2",
+        "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+        "latency_ms": 1025.0,
+        "input_tokens": 2432,
+        "output_tokens": 61,
+        "cost_usd": 0.0002676,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9999e3f9eca0dbab",
+        "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+        "latency_ms": 1073.0,
+        "input_tokens": 2458,
+        "output_tokens": 114,
+        "cost_usd": 0.0002914,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a027065d6ac2c7b7",
+        "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+        "latency_ms": 912.0,
+        "input_tokens": 2503,
+        "output_tokens": 123,
+        "cost_usd": 0.0002995,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9768e8f916adce76",
+        "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+        "latency_ms": 8172.000000000001,
+        "input_tokens": 2710,
+        "output_tokens": 343,
+        "cost_usd": 0.000408199999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3ec0e3076e52d04f",
+        "trace_id": "bde255eb647714d056fefec8f7e792fd",
+        "latency_ms": 13368.0,
+        "input_tokens": 2454,
+        "output_tokens": 83,
+        "cost_usd": 0.0002786,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "61fba6352becf103",
+        "trace_id": "a16caad77a0722c760e134d8da4672e5",
+        "latency_ms": 881.0,
+        "input_tokens": 422,
+        "output_tokens": 102,
+        "cost_usd": 8.3e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "8e1e1c8d2391111a",
+        "trace_id": "1b6bac6cf8c74a23516ecabb0d140c71",
+        "latency_ms": 1257.0,
+        "input_tokens": 2463,
+        "output_tokens": 102,
+        "cost_usd": 0.0002871,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d9072b2dd7b38689",
+        "trace_id": "3059d1ec1ca96fed37b57b5517c92e66",
+        "latency_ms": 1800.0,
+        "input_tokens": 2463,
+        "output_tokens": 102,
+        "cost_usd": 0.0002871,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d2b2d00bed33104e",
+        "trace_id": "751fe62af986b1c5b29052ada52469a0",
+        "latency_ms": 859.0,
+        "input_tokens": 2463,
+        "output_tokens": 102,
+        "cost_usd": 0.0002871,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a56b47fcc6fa8500",
+        "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+        "latency_ms": 9511.0,
+        "input_tokens": 2447,
+        "output_tokens": 76,
+        "cost_usd": 0.000275099999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "355cfea2e12c7e23",
+        "trace_id": "6bd566981b4668eeacad79c27b292a26",
+        "latency_ms": 6074.0,
+        "input_tokens": 2432,
+        "output_tokens": 61,
+        "cost_usd": 0.0002676,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "aff425647db47a6d",
+        "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+        "latency_ms": 875.0,
+        "input_tokens": 2432,
+        "output_tokens": 62,
+        "cost_usd": 0.000268,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "130c5bfb9dcd8e53",
+        "trace_id": "c40be8cb98c3551c6441494de13a1429",
+        "latency_ms": 791.0,
+        "input_tokens": 2438,
+        "output_tokens": 67,
+        "cost_usd": 0.000270599999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "840dd42c995af1e2",
+        "trace_id": "78cf18e93dad8d1e588f64002c743290",
+        "latency_ms": 1201.0,
+        "input_tokens": 2464,
+        "output_tokens": 101,
+        "cost_usd": 0.0002868,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "51a6ac20f11ce834",
+        "trace_id": "51d8912b43a928faf9607eda30a0188e",
+        "latency_ms": 1152.0,
+        "input_tokens": 2462,
+        "output_tokens": 96,
+        "cost_usd": 0.0002846,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "712e3b72227b0899",
+        "trace_id": "fa291e3946e0a836e5745a719463df0a",
+        "latency_ms": 1487.0,
+        "input_tokens": 2442,
+        "output_tokens": 71,
+        "cost_usd": 0.0002726,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b3550613c93b3f84",
+        "trace_id": "af88759be1abf4f69b55162056fc28b9",
+        "latency_ms": 709.0,
+        "input_tokens": 2430,
+        "output_tokens": 60,
+        "cost_usd": 0.000267,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "2cfbf9ac730e0c02",
+        "trace_id": "0b0610b420bec781e6b0c8afedf197ec",
+        "latency_ms": 651.0,
+        "input_tokens": 2454,
+        "output_tokens": 95,
+        "cost_usd": 0.0002834,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "204a951544acf4d3",
+        "trace_id": "f94a8c6917072e714227443b72498130",
+        "latency_ms": 839.0,
+        "input_tokens": 2499,
+        "output_tokens": 128,
+        "cost_usd": 0.0003011,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "ca58fb5345580cbc",
+        "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+        "latency_ms": 624.0,
+        "input_tokens": 2466,
+        "output_tokens": 95,
+        "cost_usd": 0.0002846,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9788d4a12b64540c",
+        "trace_id": "0bfcf77d82aed4c99e8c7b5e64f32d6b",
+        "latency_ms": 730.0,
+        "input_tokens": 2477,
+        "output_tokens": 125,
+        "cost_usd": 0.0002977,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5d74dc9e0bffbd68",
+        "trace_id": "eca3755086679b3fe97ec413b222065c",
+        "latency_ms": 779.0,
+        "input_tokens": 2500,
+        "output_tokens": 129,
+        "cost_usd": 0.0003016,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6ea6c6c2d7ce2742",
+        "trace_id": "bc63db6ef54f0a60272766a3253767ee",
+        "latency_ms": 1020.9999999999999,
+        "input_tokens": 437,
+        "output_tokens": 126,
+        "cost_usd": 9.41e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "ff9ce744988d2765",
+        "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+        "latency_ms": 902.0,
+        "input_tokens": 2478,
+        "output_tokens": 126,
+        "cost_usd": 0.0002982,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "af7000ecf15dd711",
+        "trace_id": "cb744efd7bcf3707137946af8dfd80b4",
+        "latency_ms": 1276.0,
+        "input_tokens": 425,
+        "output_tokens": 94,
+        "cost_usd": 8.01e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "4bd4f09e86176f3a",
+        "trace_id": "7fddea68689ef5289ed1294d304674ff",
+        "latency_ms": 16588.0,
+        "input_tokens": 2466,
+        "output_tokens": 94,
+        "cost_usd": 0.000284199999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5afc8b478a075682",
+        "trace_id": "6d88e6593758be98bb403f87dc0c9fe2",
+        "latency_ms": 4475.0,
+        "input_tokens": 425,
+        "output_tokens": 106,
+        "cost_usd": 8.49e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "084da78ba2b12823",
+        "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+        "latency_ms": 13332.0,
+        "input_tokens": 2466,
+        "output_tokens": 106,
+        "cost_usd": 0.000289,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "fd833dae033c314a",
+        "trace_id": "17e983ae969b2895f3647999888f3faf",
+        "latency_ms": 1993.0,
+        "input_tokens": 2459,
+        "output_tokens": 107,
+        "cost_usd": 0.0002887,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "59999101dc9ae0c6",
+        "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+        "latency_ms": 10583.0,
+        "input_tokens": 2387,
+        "output_tokens": 16,
+        "cost_usd": 0.0002451,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "61b4b36d0f472cd7",
+        "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+        "latency_ms": 1598.0,
+        "input_tokens": 2387,
+        "output_tokens": 15,
+        "cost_usd": 0.0002447,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "cead923b13c07fc6",
+        "trace_id": "ed7f19602fccebf2337e3c84c43b9cb8",
+        "latency_ms": 4082.0,
+        "input_tokens": 2383,
+        "output_tokens": 12,
+        "cost_usd": 0.0002431,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a276041ea81b647e",
+        "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+        "latency_ms": 709.0,
+        "input_tokens": 2394,
+        "output_tokens": 22,
+        "cost_usd": 0.0002482,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e096dbc39e94d3a4",
+        "trace_id": "2eb13fe19dcbd06eeac521442501b069",
+        "latency_ms": 4342.0,
+        "input_tokens": 2419,
+        "output_tokens": 47,
+        "cost_usd": 0.0002607,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1153b870ba8d434a",
+        "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+        "latency_ms": 718.0,
+        "input_tokens": 2424,
+        "output_tokens": 58,
+        "cost_usd": 0.0002656,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "bd33a3b4e0c02f4b",
+        "trace_id": "14d3f872568688179e766b8a384f9650",
+        "latency_ms": 646.0,
+        "input_tokens": 2419,
+        "output_tokens": 47,
+        "cost_usd": 0.0002607,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "ec185fabac0d4083",
+        "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+        "latency_ms": 7970.0,
+        "input_tokens": 2735,
+        "output_tokens": 382,
+        "cost_usd": 0.0004263,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b78a757ff647303e",
+        "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+        "latency_ms": 713.0,
+        "input_tokens": 2437,
+        "output_tokens": 66,
+        "cost_usd": 0.0002701,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "4ada1a717645d999",
+        "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+        "latency_ms": 1120.0,
+        "input_tokens": 2640,
+        "output_tokens": 268,
+        "cost_usd": 0.0003712,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "87b5ed8f4b53a418",
+        "trace_id": "97cd8836255615c65691a0af4e58f942",
+        "latency_ms": 706.0,
+        "input_tokens": 2376,
+        "output_tokens": 5,
+        "cost_usd": 0.0002396,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "cf73c3592384c9e8",
+        "trace_id": "89edb33e551622f97935afc33066b9a4",
+        "latency_ms": 19674.0,
+        "input_tokens": 2437,
+        "output_tokens": 72,
+        "cost_usd": 0.0002725,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e2926eabb8ae59f4",
+        "trace_id": "787e3721037d362f0be75307e9751382",
+        "latency_ms": 7552.0,
+        "input_tokens": 2437,
+        "output_tokens": 72,
+        "cost_usd": 0.0002725,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "8983a7f8e8d68e5d",
+        "trace_id": "1d52a737d8e3e5337fdca3ca7320b50d",
+        "latency_ms": 1175.0,
+        "input_tokens": 2437,
+        "output_tokens": 72,
+        "cost_usd": 0.0002725,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c1369379b33fc915",
+        "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+        "latency_ms": 7223.0,
+        "input_tokens": 2437,
+        "output_tokens": 72,
+        "cost_usd": 0.0002725,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7c691786ed4cdfbe",
+        "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+        "latency_ms": 1842.0,
+        "input_tokens": 2424,
+        "output_tokens": 53,
+        "cost_usd": 0.0002636,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f60388c17c587be8",
+        "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+        "latency_ms": 13428.0,
+        "input_tokens": 2420,
+        "output_tokens": 48,
+        "cost_usd": 0.0002612,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "2ece56ae5d1792d7",
+        "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+        "latency_ms": 493.0,
+        "input_tokens": 2423,
+        "output_tokens": 50,
+        "cost_usd": 0.0002623,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b256303a39b8ea83",
+        "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+        "latency_ms": 2497.0,
+        "input_tokens": 2401,
+        "output_tokens": 38,
+        "cost_usd": 0.0002553,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f7f95a0d3d64b14c",
+        "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+        "latency_ms": 687.0,
+        "input_tokens": 2403,
+        "output_tokens": 38,
+        "cost_usd": 0.0002555,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "336a4d9cb41eb79f",
+        "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+        "latency_ms": 1104.0,
+        "input_tokens": 2555,
+        "output_tokens": 196,
+        "cost_usd": 0.0003339,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "classify": [
+      {
+        "chain_id": "cec3d6cffac4d03d",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 5983.0,
+        "input_tokens": 174,
+        "output_tokens": 8,
+        "cost_usd": 2.06e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "87c966a8b70e82ae",
+        "trace_id": "7c20145c4d42688bb396faf3f3308296",
+        "latency_ms": 981.0,
+        "input_tokens": 616,
+        "output_tokens": 18,
+        "cost_usd": 6.88e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "71fbfd7d09020032",
+        "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+        "latency_ms": 771.0,
+        "input_tokens": 179,
+        "output_tokens": 8,
+        "cost_usd": 2.11e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "416f3da3480292b4",
+        "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+        "latency_ms": 1425.0,
+        "input_tokens": 232,
+        "output_tokens": 18,
+        "cost_usd": 3.04e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "380b0d59bb6943ba",
+        "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+        "latency_ms": 389.0,
+        "input_tokens": 241,
+        "output_tokens": 18,
+        "cost_usd": 3.13e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0002a8179e997b5f",
+        "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+        "latency_ms": 7043.0,
+        "input_tokens": 461,
+        "output_tokens": 23,
+        "cost_usd": 5.53e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "90be0f8631203e40",
+        "trace_id": "bde255eb647714d056fefec8f7e792fd",
+        "latency_ms": 1674.0,
+        "input_tokens": 201,
+        "output_tokens": 8,
+        "cost_usd": 2.33e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "4b86b71fb242576c",
+        "trace_id": "751fe62af986b1c5b29052ada52469a0",
+        "latency_ms": 463.0,
+        "input_tokens": 220,
+        "output_tokens": 8,
+        "cost_usd": 2.52e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d139f9888f4d5118",
+        "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+        "latency_ms": 4709.0,
+        "input_tokens": 194,
+        "output_tokens": 8,
+        "cost_usd": 2.26e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a64fafaa88371625",
+        "trace_id": "6bd566981b4668eeacad79c27b292a26",
+        "latency_ms": 3993.0,
+        "input_tokens": 179,
+        "output_tokens": 18,
+        "cost_usd": 2.51e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d4870b48684f95d4",
+        "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+        "latency_ms": 3790.0,
+        "input_tokens": 180,
+        "output_tokens": 8,
+        "cost_usd": 2.12e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "29c3e4fb04625b49",
+        "trace_id": "c40be8cb98c3551c6441494de13a1429",
+        "latency_ms": 404.0,
+        "input_tokens": 185,
+        "output_tokens": 8,
+        "cost_usd": 2.17e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "2bac74f0e278e251",
+        "trace_id": "78cf18e93dad8d1e588f64002c743290",
+        "latency_ms": 441.0,
+        "input_tokens": 219,
+        "output_tokens": 8,
+        "cost_usd": 2.51e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f77f17072defc57c",
+        "trace_id": "51d8912b43a928faf9607eda30a0188e",
+        "latency_ms": 466.0,
+        "input_tokens": 214,
+        "output_tokens": 18,
+        "cost_usd": 2.8599999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "072416ef8710a9aa",
+        "trace_id": "fa291e3946e0a836e5745a719463df0a",
+        "latency_ms": 1531.0,
+        "input_tokens": 189,
+        "output_tokens": 13,
+        "cost_usd": 2.41e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "574ffd04f9a0784e",
+        "trace_id": "af88759be1abf4f69b55162056fc28b9",
+        "latency_ms": 884.0,
+        "input_tokens": 178,
+        "output_tokens": 13,
+        "cost_usd": 2.3e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5d071ef2b1c4391a",
+        "trace_id": "f94a8c6917072e714227443b72498130",
+        "latency_ms": 564.0,
+        "input_tokens": 246,
+        "output_tokens": 13,
+        "cost_usd": 2.98e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6ec9bc024e1567ae",
+        "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+        "latency_ms": 389.0,
+        "input_tokens": 213,
+        "output_tokens": 13,
+        "cost_usd": 2.65e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e152fec183da23e2",
+        "trace_id": "eca3755086679b3fe97ec413b222065c",
+        "latency_ms": 697.0,
+        "input_tokens": 247,
+        "output_tokens": 18,
+        "cost_usd": 3.19e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c0582da5bd846c89",
+        "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+        "latency_ms": 2893.0,
+        "input_tokens": 244,
+        "output_tokens": 13,
+        "cost_usd": 2.96e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "68ad1f4450e5f3a7",
+        "trace_id": "7fddea68689ef5289ed1294d304674ff",
+        "latency_ms": 5995.0,
+        "input_tokens": 212,
+        "output_tokens": 18,
+        "cost_usd": 2.84e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6d203201ff0a5e46",
+        "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+        "latency_ms": 2386.0,
+        "input_tokens": 224,
+        "output_tokens": 18,
+        "cost_usd": 2.9599999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a4b50fcebcd6af81",
+        "trace_id": "17e983ae969b2895f3647999888f3faf",
+        "latency_ms": 5278.0,
+        "input_tokens": 225,
+        "output_tokens": 8,
+        "cost_usd": 2.57e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f3b88fe0da89cfe9",
+        "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+        "latency_ms": 1908.0,
+        "input_tokens": 134,
+        "output_tokens": 8,
+        "cost_usd": 1.66e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b3055f3d56cdf188",
+        "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+        "latency_ms": 5016.0,
+        "input_tokens": 133,
+        "output_tokens": 8,
+        "cost_usd": 1.65e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "44eb5846b3a364c3",
+        "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+        "latency_ms": 1646.0,
+        "input_tokens": 140,
+        "output_tokens": 8,
+        "cost_usd": 1.7199999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "947fb09794e6a04f",
+        "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+        "latency_ms": 596.0,
+        "input_tokens": 176,
+        "output_tokens": 8,
+        "cost_usd": 2.08e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "64c52e22236ec9d3",
+        "trace_id": "14d3f872568688179e766b8a384f9650",
+        "latency_ms": 560.0,
+        "input_tokens": 165,
+        "output_tokens": 13,
+        "cost_usd": 2.17e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "80c3d8e1a1ce2877",
+        "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+        "latency_ms": 683.0,
+        "input_tokens": 500,
+        "output_tokens": 23,
+        "cost_usd": 5.92e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "51442431cba3e03e",
+        "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+        "latency_ms": 402.0,
+        "input_tokens": 184,
+        "output_tokens": 13,
+        "cost_usd": 2.36e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "869c84b23e3df7bb",
+        "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+        "latency_ms": 757.0,
+        "input_tokens": 386,
+        "output_tokens": 18,
+        "cost_usd": 4.58e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "04f826a52c1b832e",
+        "trace_id": "97cd8836255615c65691a0af4e58f942",
+        "latency_ms": 17524.0,
+        "input_tokens": 123,
+        "output_tokens": 8,
+        "cost_usd": 1.55e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b366280f858c0273",
+        "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+        "latency_ms": 521.0,
+        "input_tokens": 190,
+        "output_tokens": 18,
+        "cost_usd": 2.62e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "19b4109c98991008",
+        "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+        "latency_ms": 1392.0,
+        "input_tokens": 171,
+        "output_tokens": 8,
+        "cost_usd": 2.03e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "8a326c23cbc19e57",
+        "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+        "latency_ms": 1371.0,
+        "input_tokens": 166,
+        "output_tokens": 13,
+        "cost_usd": 2.18e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "8d425bf69cd2e959",
+        "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+        "latency_ms": 917.0,
+        "input_tokens": 168,
+        "output_tokens": 8,
+        "cost_usd": 1.9999999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6ca77c96f2aff3e1",
+        "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+        "latency_ms": 1092.0,
+        "input_tokens": 156,
+        "output_tokens": 8,
+        "cost_usd": 1.88e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6cbf3d2d011b0911",
+        "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+        "latency_ms": 573.0,
+        "input_tokens": 156,
+        "output_tokens": 8,
+        "cost_usd": 1.88e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "096ed2a6ea36c0e4",
+        "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+        "latency_ms": 1150.0,
+        "input_tokens": 314,
+        "output_tokens": 13,
+        "cost_usd": 3.6599999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "extract_entities": [],
+    "extract_relations": [
+      {
+        "chain_id": "21d5f76b29724793",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 16863.0,
+        "input_tokens": 461,
+        "output_tokens": 56,
+        "cost_usd": 6.85e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "2d7b98ac2653a51c",
+        "trace_id": "7c20145c4d42688bb396faf3f3308296",
+        "latency_ms": 9656.0,
+        "input_tokens": 921,
+        "output_tokens": 115,
+        "cost_usd": 0.0001381,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b156d95a169b1604",
+        "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+        "latency_ms": 13909.0,
+        "input_tokens": 468,
+        "output_tokens": 58,
+        "cost_usd": 7e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7cbba8a2e97df2fc",
+        "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+        "latency_ms": 7818.0,
+        "input_tokens": 564,
+        "output_tokens": 292,
+        "cost_usd": 0.0001732,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d423249d5b1c47d0",
+        "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+        "latency_ms": 1377.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "43ae3b10bf187ed3",
+        "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+        "latency_ms": 6655.0,
+        "input_tokens": 749,
+        "output_tokens": 1,
+        "cost_usd": 7.53e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1d47dfd65f9f9f78",
+        "trace_id": "bde255eb647714d056fefec8f7e792fd",
+        "latency_ms": 3444.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "e91d805b7d510e17",
+        "trace_id": "751fe62af986b1c5b29052ada52469a0",
+        "latency_ms": 5436.0,
+        "input_tokens": 528,
+        "output_tokens": 118,
+        "cost_usd": 0.0001,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3ca9f0f98f8455d9",
+        "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+        "latency_ms": 2373.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "1c2737034c7e574a",
+        "trace_id": "6bd566981b4668eeacad79c27b292a26",
+        "latency_ms": 2375.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "fa9becd1a6606657",
+        "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+        "latency_ms": 2574.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "e8ae5beace038921",
+        "trace_id": "c40be8cb98c3551c6441494de13a1429",
+        "latency_ms": 4106.0,
+        "input_tokens": 474,
+        "output_tokens": 1,
+        "cost_usd": 4.78e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "2b5bd861a7d7064d",
+        "trace_id": "78cf18e93dad8d1e588f64002c743290",
+        "latency_ms": 6486.0,
+        "input_tokens": 530,
+        "output_tokens": 170,
+        "cost_usd": 0.000121,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a4169f0db2ba20bf",
+        "trace_id": "51d8912b43a928faf9607eda30a0188e",
+        "latency_ms": 5598.0,
+        "input_tokens": 502,
+        "output_tokens": 1,
+        "cost_usd": 5.06e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "fe9a46e5b87036a2",
+        "trace_id": "fa291e3946e0a836e5745a719463df0a",
+        "latency_ms": 2295.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "bcf7f019b804c50f",
+        "trace_id": "af88759be1abf4f69b55162056fc28b9",
+        "latency_ms": 3964.0,
+        "input_tokens": 469,
+        "output_tokens": 1,
+        "cost_usd": 4.73e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6bee19101489b3b5",
+        "trace_id": "f94a8c6917072e714227443b72498130",
+        "latency_ms": 3051.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "f76d199e1e52e80f",
+        "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+        "latency_ms": 5207.0,
+        "input_tokens": 514,
+        "output_tokens": 1,
+        "cost_usd": 5.18e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e2a39d65d235430d",
+        "trace_id": "eca3755086679b3fe97ec413b222065c",
+        "latency_ms": 5361.0,
+        "input_tokens": 553,
+        "output_tokens": 172,
+        "cost_usd": 0.0001241,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7ab0cd2984967562",
+        "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+        "latency_ms": 13410.0,
+        "input_tokens": 531,
+        "output_tokens": 1,
+        "cost_usd": 5.35e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "032a5eb33b82d9f1",
+        "trace_id": "7fddea68689ef5289ed1294d304674ff",
+        "latency_ms": 2525.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "eeb314b3520d6509",
+        "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+        "latency_ms": 10291.0,
+        "input_tokens": 522,
+        "output_tokens": 118,
+        "cost_usd": 9.94e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3f786b3829eda48d",
+        "trace_id": "17e983ae969b2895f3647999888f3faf",
+        "latency_ms": 10532.0,
+        "input_tokens": 539,
+        "output_tokens": 221,
+        "cost_usd": 0.0001423,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1e80ca1370ca9606",
+        "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+        "latency_ms": 1376.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "c9b94d1faf136f55",
+        "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+        "latency_ms": 2306.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "7541e6668a3c78cd",
+        "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+        "latency_ms": 1328.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "d313d6e0fa160fc6",
+        "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+        "latency_ms": 2636.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "b7cc30323d26bd0b",
+        "trace_id": "14d3f872568688179e766b8a384f9650",
+        "latency_ms": 3467.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "3e46f18ad5ba8bac",
+        "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+        "latency_ms": 1273.0,
+        "input_tokens": 816,
+        "output_tokens": 272,
+        "cost_usd": 0.0001904,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "802f3732889334b1",
+        "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+        "latency_ms": 266.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "a3188b96b165f6c4",
+        "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+        "latency_ms": 913.0,
+        "input_tokens": 674,
+        "output_tokens": 1,
+        "cost_usd": 6.78e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1ddf736273d9d34d",
+        "trace_id": "97cd8836255615c65691a0af4e58f942",
+        "latency_ms": 272.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "673d46c1f6214721",
+        "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+        "latency_ms": 3168.0,
+        "input_tokens": 504,
+        "output_tokens": 169,
+        "cost_usd": 0.000118,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d266b002099e4eef",
+        "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+        "latency_ms": 894.0,
+        "input_tokens": 468,
+        "output_tokens": 116,
+        "cost_usd": 9.32e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a6759c97d3081330",
+        "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+        "latency_ms": 1123.0,
+        "input_tokens": 454,
+        "output_tokens": 1,
+        "cost_usd": 4.58e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "776902e265cea1ec",
+        "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+        "latency_ms": 1.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "0545dfc85658cfb2",
+        "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+        "latency_ms": 1.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "e171508ec02a6c51",
+        "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+        "latency_ms": 0.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "7672fafb0b6c9233",
+        "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+        "latency_ms": 1.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      }
+    ],
+    "deadline": [
+      {
+        "chain_id": "850d5a6654e13a42",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 1530.0,
+        "input_tokens": 649,
+        "output_tokens": 138,
+        "cost_usd": 0.0001201,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "ce6dd3f559c261d4",
+        "trace_id": "7c20145c4d42688bb396faf3f3308296",
+        "latency_ms": 1569.0,
+        "input_tokens": 1537,
+        "output_tokens": 1,
+        "cost_usd": 0.0001541,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a79345447bf40cc0",
+        "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+        "latency_ms": 3920.0,
+        "input_tokens": 679,
+        "output_tokens": 1,
+        "cost_usd": 6.8299999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b8f7a752625ffb3c",
+        "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+        "latency_ms": 1937.0,
+        "input_tokens": 758,
+        "output_tokens": 135,
+        "cost_usd": 0.0001298,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1a69b24928f3d0fe",
+        "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+        "latency_ms": 2874.0,
+        "input_tokens": 812,
+        "output_tokens": 1,
+        "cost_usd": 8.1599999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7d419e5aae724015",
+        "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+        "latency_ms": 1571.0,
+        "input_tokens": 1239,
+        "output_tokens": 46,
+        "cost_usd": 0.0001423,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5a3b03563c2847f8",
+        "trace_id": "bde255eb647714d056fefec8f7e792fd",
+        "latency_ms": 506.0,
+        "input_tokens": 723,
+        "output_tokens": 1,
+        "cost_usd": 7.2699999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "02cf6643d6a2abfd",
+        "trace_id": "751fe62af986b1c5b29052ada52469a0",
+        "latency_ms": 818.0,
+        "input_tokens": 751,
+        "output_tokens": 45,
+        "cost_usd": 9.31e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "8bf1a92ed81b82b3",
+        "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+        "latency_ms": 533.0,
+        "input_tokens": 709,
+        "output_tokens": 1,
+        "cost_usd": 7.13e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "28d6e4504e25b497",
+        "trace_id": "6bd566981b4668eeacad79c27b292a26",
+        "latency_ms": 598.0,
+        "input_tokens": 679,
+        "output_tokens": 1,
+        "cost_usd": 6.8299999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c57fd37887778b63",
+        "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+        "latency_ms": 595.0,
+        "input_tokens": 681,
+        "output_tokens": 1,
+        "cost_usd": 6.85e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "203ef276e50a23db",
+        "trace_id": "c40be8cb98c3551c6441494de13a1429",
+        "latency_ms": 1516.0,
+        "input_tokens": 691,
+        "output_tokens": 48,
+        "cost_usd": 8.83e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9b8b664fec8b01fe",
+        "trace_id": "78cf18e93dad8d1e588f64002c743290",
+        "latency_ms": 879.0,
+        "input_tokens": 751,
+        "output_tokens": 50,
+        "cost_usd": 9.51e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "819ad6ac417e559a",
+        "trace_id": "51d8912b43a928faf9607eda30a0188e",
+        "latency_ms": 1270.0,
+        "input_tokens": 744,
+        "output_tokens": 42,
+        "cost_usd": 9.12e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f70096af6e8c35cf",
+        "trace_id": "fa291e3946e0a836e5745a719463df0a",
+        "latency_ms": 1994.0,
+        "input_tokens": 699,
+        "output_tokens": 1,
+        "cost_usd": 7.03e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7b57bdd1358bf692",
+        "trace_id": "af88759be1abf4f69b55162056fc28b9",
+        "latency_ms": 531.0,
+        "input_tokens": 677,
+        "output_tokens": 50,
+        "cost_usd": 8.77e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3a6a13f057298ef5",
+        "trace_id": "f94a8c6917072e714227443b72498130",
+        "latency_ms": 563.0,
+        "input_tokens": 813,
+        "output_tokens": 58,
+        "cost_usd": 0.000104499999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "4f2069df4a9cf1f9",
+        "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+        "latency_ms": 643.0,
+        "input_tokens": 747,
+        "output_tokens": 1,
+        "cost_usd": 7.51e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6621ac1ced54ee0f",
+        "trace_id": "eca3755086679b3fe97ec413b222065c",
+        "latency_ms": 424.0,
+        "input_tokens": 815,
+        "output_tokens": 1,
+        "cost_usd": 8.19e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "faf109cc723ead95",
+        "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+        "latency_ms": 3974.0,
+        "input_tokens": 789,
+        "output_tokens": 59,
+        "cost_usd": 0.0001025,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "783c852124e59514",
+        "trace_id": "7fddea68689ef5289ed1294d304674ff",
+        "latency_ms": 9757.0,
+        "input_tokens": 745,
+        "output_tokens": 1,
+        "cost_usd": 7.4899999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1f630427552a953d",
+        "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+        "latency_ms": 1380.0,
+        "input_tokens": 758,
+        "output_tokens": 73,
+        "cost_usd": 0.000105,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a51d4cb5452c9bfb",
+        "trace_id": "17e983ae969b2895f3647999888f3faf",
+        "latency_ms": 6111.0,
+        "input_tokens": 752,
+        "output_tokens": 109,
+        "cost_usd": 0.0001188,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "01b66c1eb43a662b",
+        "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+        "latency_ms": 1280.0,
+        "input_tokens": 589,
+        "output_tokens": 1,
+        "cost_usd": 5.93e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5957055aa017fbf6",
+        "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+        "latency_ms": 3164.0,
+        "input_tokens": 588,
+        "output_tokens": 1,
+        "cost_usd": 5.92e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3588e8478308c5d0",
+        "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+        "latency_ms": 762.0,
+        "input_tokens": 602,
+        "output_tokens": 1,
+        "cost_usd": 6.06e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d862110e7400e886",
+        "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+        "latency_ms": 593.0,
+        "input_tokens": 668,
+        "output_tokens": 1,
+        "cost_usd": 6.72e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e26042b256d71e68",
+        "trace_id": "14d3f872568688179e766b8a384f9650",
+        "latency_ms": 560.0,
+        "input_tokens": 652,
+        "output_tokens": 1,
+        "cost_usd": 6.56e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1fea75b6ba3077a8",
+        "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+        "latency_ms": 3680.0,
+        "input_tokens": 1304,
+        "output_tokens": 44,
+        "cost_usd": 0.000148,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c55f7ae5f98d34e4",
+        "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+        "latency_ms": 676.0,
+        "input_tokens": 690,
+        "output_tokens": 1,
+        "cost_usd": 6.9399999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d0c2078aee3cdb7a",
+        "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+        "latency_ms": 486.0,
+        "input_tokens": 1094,
+        "output_tokens": 1,
+        "cost_usd": 0.0001098,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b4d60511da179874",
+        "trace_id": "97cd8836255615c65691a0af4e58f942",
+        "latency_ms": 2308.0,
+        "input_tokens": 567,
+        "output_tokens": 1,
+        "cost_usd": 5.71e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0053f02fe20fb019",
+        "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+        "latency_ms": 29346.0,
+        "input_tokens": 695,
+        "output_tokens": 1,
+        "cost_usd": 6.9899999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "941ba264b4eb5fcf",
+        "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+        "latency_ms": 1112.0,
+        "input_tokens": 663,
+        "output_tokens": 1,
+        "cost_usd": 6.67e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "41503337f668a7a4",
+        "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+        "latency_ms": 708.0,
+        "input_tokens": 653,
+        "output_tokens": 1,
+        "cost_usd": 6.57e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "30bc6bdada752ce8",
+        "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+        "latency_ms": 400.0,
+        "input_tokens": 658,
+        "output_tokens": 1,
+        "cost_usd": 6.62e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7ce3af5b8b31defd",
+        "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+        "latency_ms": 8429.0,
+        "input_tokens": 624,
+        "output_tokens": 46,
+        "cost_usd": 8.08e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "ba5d2f81e664ae51",
+        "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+        "latency_ms": 838.0,
+        "input_tokens": 626,
+        "output_tokens": 48,
+        "cost_usd": 8.18e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f3ba530bc605ae16",
+        "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+        "latency_ms": 2607.0,
+        "input_tokens": 936,
+        "output_tokens": 52,
+        "cost_usd": 0.0001144,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "title_summary": [
+      {
+        "chain_id": "64a36cfd2ad1fa78",
+        "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+        "latency_ms": 3.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "f569e40e5744fb72",
+        "trace_id": "7c20145c4d42688bb396faf3f3308296",
+        "latency_ms": 2682.0,
+        "input_tokens": 1052,
+        "output_tokens": 63,
+        "cost_usd": 0.0001304,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0eb266ada6222762",
+        "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+        "latency_ms": 4459.0,
+        "input_tokens": 631,
+        "output_tokens": 42,
+        "cost_usd": 7.99e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "a6486a80f3005a91",
+        "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+        "latency_ms": 1423.0,
+        "input_tokens": 657,
+        "output_tokens": 78,
+        "cost_usd": 9.69e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d1e0c6b429bf7995",
+        "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+        "latency_ms": 3737.0,
+        "input_tokens": 702,
+        "output_tokens": 65,
+        "cost_usd": 9.62e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "89c833fbeccf86f3",
+        "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+        "latency_ms": 4256.0,
+        "input_tokens": 909,
+        "output_tokens": 74,
+        "cost_usd": 0.0001205,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f80d1c74202c245f",
+        "trace_id": "bde255eb647714d056fefec8f7e792fd",
+        "latency_ms": 6256.0,
+        "input_tokens": 653,
+        "output_tokens": 57,
+        "cost_usd": 8.81e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "395192574151d2b0",
+        "trace_id": "751fe62af986b1c5b29052ada52469a0",
+        "latency_ms": 4774.0,
+        "input_tokens": 662,
+        "output_tokens": 61,
+        "cost_usd": 9.0599999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "629110cc3f5a9764",
+        "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+        "latency_ms": 1071.0,
+        "input_tokens": 646,
+        "output_tokens": 62,
+        "cost_usd": 8.94e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e3dc1c5ee525d2dd",
+        "trace_id": "6bd566981b4668eeacad79c27b292a26",
+        "latency_ms": 1369.0,
+        "input_tokens": 631,
+        "output_tokens": 44,
+        "cost_usd": 8.07e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5c4b8ee2d583629d",
+        "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+        "latency_ms": 852.0,
+        "input_tokens": 632,
+        "output_tokens": 44,
+        "cost_usd": 8.08e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "01c8364dc9da7b0e",
+        "trace_id": "c40be8cb98c3551c6441494de13a1429",
+        "latency_ms": 1513.0,
+        "input_tokens": 637,
+        "output_tokens": 55,
+        "cost_usd": 8.57e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b5f0ed16c83f50b4",
+        "trace_id": "78cf18e93dad8d1e588f64002c743290",
+        "latency_ms": 1967.0,
+        "input_tokens": 663,
+        "output_tokens": 58,
+        "cost_usd": 8.95e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d027300ea939e496",
+        "trace_id": "51d8912b43a928faf9607eda30a0188e",
+        "latency_ms": 1270.0,
+        "input_tokens": 661,
+        "output_tokens": 67,
+        "cost_usd": 9.29e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d0ae0ddbff21cbf2",
+        "trace_id": "fa291e3946e0a836e5745a719463df0a",
+        "latency_ms": 1263.0,
+        "input_tokens": 641,
+        "output_tokens": 53,
+        "cost_usd": 8.53e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "30204461c7f990e5",
+        "trace_id": "af88759be1abf4f69b55162056fc28b9",
+        "latency_ms": 1410.0,
+        "input_tokens": 630,
+        "output_tokens": 45,
+        "cost_usd": 8.1e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "fa6ec835a5c03258",
+        "trace_id": "f94a8c6917072e714227443b72498130",
+        "latency_ms": 1341.0,
+        "input_tokens": 698,
+        "output_tokens": 61,
+        "cost_usd": 9.42e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3b02d46872a98bff",
+        "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+        "latency_ms": 1404.0,
+        "input_tokens": 665,
+        "output_tokens": 66,
+        "cost_usd": 9.29e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b3c4557c2d059035",
+        "trace_id": "eca3755086679b3fe97ec413b222065c",
+        "latency_ms": 1463.0,
+        "input_tokens": 699,
+        "output_tokens": 71,
+        "cost_usd": 9.83e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "05b143b735ea47cf",
+        "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+        "latency_ms": 3465.0,
+        "input_tokens": 676,
+        "output_tokens": 80,
+        "cost_usd": 9.96e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "dbb45fce5ad8c683",
+        "trace_id": "7fddea68689ef5289ed1294d304674ff",
+        "latency_ms": 21317.0,
+        "input_tokens": 664,
+        "output_tokens": 58,
+        "cost_usd": 8.96e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "648357f805d07768",
+        "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+        "latency_ms": 853.0,
+        "input_tokens": 665,
+        "output_tokens": 57,
+        "cost_usd": 8.93e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5712a9703b8c7751",
+        "trace_id": "17e983ae969b2895f3647999888f3faf",
+        "latency_ms": 5277.0,
+        "input_tokens": 658,
+        "output_tokens": 68,
+        "cost_usd": 9.3e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "cec0f70f8dc68ecf",
+        "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+        "latency_ms": 9.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "746b9196d38f18fe",
+        "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+        "latency_ms": 287.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "dd17908582171abe",
+        "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+        "latency_ms": 13.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "3b9812dade01f424",
+        "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+        "latency_ms": 1717.0,
+        "input_tokens": 623,
+        "output_tokens": 40,
+        "cost_usd": 7.8299999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e3e479bd61890767",
+        "trace_id": "14d3f872568688179e766b8a384f9650",
+        "latency_ms": 1103.0,
+        "input_tokens": 618,
+        "output_tokens": 43,
+        "cost_usd": 7.9e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5dd1edbcabe6d283",
+        "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+        "latency_ms": 974.0,
+        "input_tokens": 935,
+        "output_tokens": 69,
+        "cost_usd": 0.000121099999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "dd58491c029a8098",
+        "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+        "latency_ms": 951.0,
+        "input_tokens": 637,
+        "output_tokens": 68,
+        "cost_usd": 9.09e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e830241ac6c06152",
+        "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+        "latency_ms": 2314.0,
+        "input_tokens": 839,
+        "output_tokens": 64,
+        "cost_usd": 0.0001095,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "f025403fdb7ffca0",
+        "trace_id": "97cd8836255615c65691a0af4e58f942",
+        "latency_ms": 584.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "c2447415160d4374",
+        "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+        "latency_ms": 6200.0,
+        "input_tokens": 636,
+        "output_tokens": 69,
+        "cost_usd": 9.12e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c744bb6ec547e40a",
+        "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+        "latency_ms": 829.0,
+        "input_tokens": 623,
+        "output_tokens": 43,
+        "cost_usd": 7.95e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5f5dfa5a51dc2d8b",
+        "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+        "latency_ms": 705.0,
+        "input_tokens": 618,
+        "output_tokens": 47,
+        "cost_usd": 8.06e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e43c35f336fd2e05",
+        "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+        "latency_ms": 4747.0,
+        "input_tokens": 621,
+        "output_tokens": 41,
+        "cost_usd": 7.85e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9cfbd1129970cbde",
+        "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+        "latency_ms": 6.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "8da405f472dde6ae",
+        "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+        "latency_ms": 3.0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      },
+      {
+        "chain_id": "c4cfbb94c5874dd3",
+        "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+        "latency_ms": 1148.0,
+        "input_tokens": 753,
+        "output_tokens": 63,
+        "cost_usd": 0.0001005,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ]
+  },
+  "raw_after": {
+    "normalize": [
+      {
+        "chain_id": "9ad1e8e4587614d5",
+        "trace_id": "472413c93089909b762eec194378da44",
+        "latency_ms": 578.0,
+        "input_tokens": 2437,
+        "output_tokens": 84,
+        "cost_usd": 0.000277299999,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "289472cca3b7f283",
+        "trace_id": "51a8c61005284d784112e2ea557dcce5",
+        "latency_ms": 2650.0,
+        "input_tokens": 2423,
+        "output_tokens": 61,
+        "cost_usd": 0.0002667,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "511d7376b85e2672",
+        "trace_id": "b74cc24a6ec8e838aff37d0f65ab1bbe",
+        "latency_ms": 2797.0,
+        "input_tokens": 2435,
+        "output_tokens": 62,
+        "cost_usd": 0.0002683,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "38334da0e61a92a6",
+        "trace_id": "880deeef45942d442c88a972f6fd3339",
+        "latency_ms": 588.0,
+        "input_tokens": 2438,
+        "output_tokens": 65,
+        "cost_usd": 0.0002698,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "460a50ccb211b20c",
+        "trace_id": "0cc37b00541cc7c376ad0caf989d8ba6",
+        "latency_ms": 855.0,
+        "input_tokens": 2428,
+        "output_tokens": 89,
+        "cost_usd": 0.0002784,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "895cbd9c4b3cb5c2",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 641.0,
+        "input_tokens": 2460,
+        "output_tokens": 96,
+        "cost_usd": 0.0002844,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6d67d88a9833f914",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 671.0,
+        "input_tokens": 2412,
+        "output_tokens": 39,
+        "cost_usd": 0.0002568,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "classify": [
+      {
+        "chain_id": "aaac6441c8973354",
+        "trace_id": "472413c93089909b762eec194378da44",
+        "latency_ms": 462.0,
+        "input_tokens": 202,
+        "output_tokens": 8,
+        "cost_usd": 2.34e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "094a754114c3bdf5",
+        "trace_id": "51a8c61005284d784112e2ea557dcce5",
+        "latency_ms": 5138.0,
+        "input_tokens": 179,
+        "output_tokens": 18,
+        "cost_usd": 2.51e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "46e650b890e9e5a7",
+        "trace_id": "b74cc24a6ec8e838aff37d0f65ab1bbe",
+        "latency_ms": 394.0,
+        "input_tokens": 180,
+        "output_tokens": 8,
+        "cost_usd": 2.12e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9c54057e6a22fe8e",
+        "trace_id": "880deeef45942d442c88a972f6fd3339",
+        "latency_ms": 386.0,
+        "input_tokens": 183,
+        "output_tokens": 13,
+        "cost_usd": 2.35e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d829e1f510749824",
+        "trace_id": "0cc37b00541cc7c376ad0caf989d8ba6",
+        "latency_ms": 3864.0,
+        "input_tokens": 207,
+        "output_tokens": 8,
+        "cost_usd": 2.3899999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0e3d882d2d9b00bd",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 396.0,
+        "input_tokens": 214,
+        "output_tokens": 13,
+        "cost_usd": 2.66e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "256bae966088d689",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 291.0,
+        "input_tokens": 157,
+        "output_tokens": 8,
+        "cost_usd": 1.89e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "extract_entities": [],
+    "extract_relations": [
+      {
+        "chain_id": "3ccf215b6335a3ed",
+        "trace_id": "472413c93089909b762eec194378da44",
+        "latency_ms": 9023.0,
+        "input_tokens": 521,
+        "output_tokens": 174,
+        "cost_usd": 0.0001217,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "577f0708fab67495",
+        "trace_id": "51a8c61005284d784112e2ea557dcce5",
+        "latency_ms": 5119.0,
+        "input_tokens": 467,
+        "output_tokens": 1,
+        "cost_usd": 4.71e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "9dd9a2ef082f9ec6",
+        "trace_id": "b74cc24a6ec8e838aff37d0f65ab1bbe",
+        "latency_ms": 9371.0,
+        "input_tokens": 519,
+        "output_tokens": 275,
+        "cost_usd": 0.0001619,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "5cc614d02e30517b",
+        "trace_id": "880deeef45942d442c88a972f6fd3339",
+        "latency_ms": 6321.0,
+        "input_tokens": 483,
+        "output_tokens": 118,
+        "cost_usd": 9.55e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "b4dd26eecdb767b5",
+        "trace_id": "0cc37b00541cc7c376ad0caf989d8ba6",
+        "latency_ms": 8775.0,
+        "input_tokens": 528,
+        "output_tokens": 236,
+        "cost_usd": 0.0001472,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "affd31797ab1d92a",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 15384.0,
+        "input_tokens": 540,
+        "output_tokens": 171,
+        "cost_usd": 0.0001224,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "1780995d6a2e3de2",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 1014.9999999999999,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_computed": false,
+        "n_child_generations": 0
+      }
+    ],
+    "deadline": [
+      {
+        "chain_id": "a271e2c350ea191d",
+        "trace_id": "472413c93089909b762eec194378da44",
+        "latency_ms": 742.0,
+        "input_tokens": 705,
+        "output_tokens": 104,
+        "cost_usd": 0.0001121,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "6f3953eededf7564",
+        "trace_id": "51a8c61005284d784112e2ea557dcce5",
+        "latency_ms": 613.0,
+        "input_tokens": 669,
+        "output_tokens": 65,
+        "cost_usd": 9.29e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "db0c8a180e2e3ce4",
+        "trace_id": "b74cc24a6ec8e838aff37d0f65ab1bbe",
+        "latency_ms": 744.0,
+        "input_tokens": 681,
+        "output_tokens": 1,
+        "cost_usd": 6.85e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "e2bba1a36aef2699",
+        "trace_id": "880deeef45942d442c88a972f6fd3339",
+        "latency_ms": 385.0,
+        "input_tokens": 687,
+        "output_tokens": 36,
+        "cost_usd": 8.31e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "37e147dc103903d2",
+        "trace_id": "0cc37b00541cc7c376ad0caf989d8ba6",
+        "latency_ms": 1622.0,
+        "input_tokens": 701,
+        "output_tokens": 148,
+        "cost_usd": 0.0001293,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "3d166e0b51d82c89",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 1999.0,
+        "input_tokens": 740,
+        "output_tokens": 50,
+        "cost_usd": 9.4e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "0fae957792926fd5",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 1864.0,
+        "input_tokens": 635,
+        "output_tokens": 1,
+        "cost_usd": 6.39e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ],
+    "title_summary": [
+      {
+        "chain_id": "9fca772e8128ff8f",
+        "trace_id": "472413c93089909b762eec194378da44",
+        "latency_ms": 1524.0,
+        "input_tokens": 634,
+        "output_tokens": 45,
+        "cost_usd": 8.14e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "d8ac60ebee6c67d0",
+        "trace_id": "51a8c61005284d784112e2ea557dcce5",
+        "latency_ms": 1377.0,
+        "input_tokens": 621,
+        "output_tokens": 47,
+        "cost_usd": 8.09e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "4c56ef06d640bc0a",
+        "trace_id": "b74cc24a6ec8e838aff37d0f65ab1bbe",
+        "latency_ms": 1542.0,
+        "input_tokens": 632,
+        "output_tokens": 51,
+        "cost_usd": 8.36e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "7546bcfbb25645c9",
+        "trace_id": "880deeef45942d442c88a972f6fd3339",
+        "latency_ms": 930.0,
+        "input_tokens": 635,
+        "output_tokens": 67,
+        "cost_usd": 9.03e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "65cc5b158b1b1c36",
+        "trace_id": "0cc37b00541cc7c376ad0caf989d8ba6",
+        "latency_ms": 1621.0,
+        "input_tokens": 625,
+        "output_tokens": 46,
+        "cost_usd": 8.09e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "c75654b17dfdf1c6",
+        "trace_id": "84f205aaacf427243b844426e4e38cd6",
+        "latency_ms": 1747.0,
+        "input_tokens": 657,
+        "output_tokens": 58,
+        "cost_usd": 8.8899999e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      },
+      {
+        "chain_id": "12c07bca4497caab",
+        "trace_id": "0d0b7f0ee338fc49d9aba7e35a86b30a",
+        "latency_ms": 562.0,
+        "input_tokens": 609,
+        "output_tokens": 38,
+        "cost_usd": 7.61e-05,
+        "cost_computed": false,
+        "n_child_generations": 1
+      }
+    ]
+  }
+}

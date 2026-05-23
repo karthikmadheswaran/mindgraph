@@ -1,0 +1,2084 @@
+{
+  "generated_utc": "20260523T133114Z",
+  "model": "gemini-2.5-flash-lite",
+  "temperature": 0.1,
+  "n_runs": 3,
+  "n_cases": 10,
+  "n_total_calls": 60,
+  "estimated_cost_usd": 0.0444082,
+  "total_runtime_s": 305.1383468999993,
+  "pricing": {
+    "input_per_mtok": 0.1,
+    "output_per_mtok": 0.4
+  },
+  "test_cases": [
+    {
+      "id": "case_01_single_entity",
+      "expected_relation_count": 0,
+      "cleaned_text": "I went for a long walk in the morning and felt calm afterward.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        }
+      ]
+    },
+    {
+      "id": "case_02_unrelated_entities",
+      "expected_relation_count": 0,
+      "cleaned_text": "Read an article about France in the morning. Later watched a tutorial about Notion. The two had nothing in common.",
+      "core_entities": [
+        {
+          "name": "France",
+          "type": "place"
+        },
+        {
+          "name": "Notion",
+          "type": "tool"
+        }
+      ]
+    },
+    {
+      "id": "case_03_built_with",
+      "expected_relation_count": 1,
+      "cleaned_text": "Built MindGraph using Figma over the weekend.",
+      "core_entities": [
+        {
+          "name": "MindGraph",
+          "type": "project"
+        },
+        {
+          "name": "Figma",
+          "type": "tool"
+        }
+      ]
+    },
+    {
+      "id": "case_04_located_at",
+      "expected_relation_count": 1,
+      "cleaned_text": "Met Rahul at the Bengaluru office for the design review.",
+      "core_entities": [
+        {
+          "name": "Rahul",
+          "type": "person"
+        },
+        {
+          "name": "Bengaluru",
+          "type": "place"
+        }
+      ]
+    },
+    {
+      "id": "case_05_two_relations",
+      "expected_relation_count": 2,
+      "cleaned_text": "I worked on MindGraph using LangGraph in the afternoon. Made good progress on the dedup node.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        },
+        {
+          "name": "MindGraph",
+          "type": "project"
+        },
+        {
+          "name": "LangGraph",
+          "type": "tool"
+        }
+      ]
+    },
+    {
+      "id": "case_06_medium_5rel",
+      "expected_relation_count": 5,
+      "cleaned_text": "Spent the morning at Inspiral with Sahana working on MindGraph using Cursor. Felt productive.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        },
+        {
+          "name": "Sahana",
+          "type": "person"
+        },
+        {
+          "name": "Inspiral",
+          "type": "place"
+        },
+        {
+          "name": "MindGraph",
+          "type": "project"
+        },
+        {
+          "name": "Cursor",
+          "type": "tool"
+        }
+      ]
+    },
+    {
+      "id": "case_07_three_relations",
+      "expected_relation_count": 3,
+      "cleaned_text": "Naveen recommended Slack for team coordination at Simplico. Said the async culture works well there.",
+      "core_entities": [
+        {
+          "name": "Naveen",
+          "type": "person"
+        },
+        {
+          "name": "Slack",
+          "type": "tool"
+        },
+        {
+          "name": "Simplico",
+          "type": "organization"
+        }
+      ]
+    },
+    {
+      "id": "case_08_event_planning",
+      "expected_relation_count": 4,
+      "cleaned_text": "Started planning the Goa retreat with Priya. We'll use Notion for the itinerary and book flights through Cleartrip.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        },
+        {
+          "name": "Priya",
+          "type": "person"
+        },
+        {
+          "name": "Goa retreat",
+          "type": "event"
+        },
+        {
+          "name": "Goa",
+          "type": "place"
+        },
+        {
+          "name": "Notion",
+          "type": "tool"
+        },
+        {
+          "name": "Cleartrip",
+          "type": "tool"
+        }
+      ]
+    },
+    {
+      "id": "case_09_simplico_dense",
+      "expected_relation_count": 7,
+      "cleaned_text": "Joined Simplico as a contractor. Manuel onboarded me. We use Notion for docs, Slack for chat, GitHub for code, and Linear for tickets. The team sits in the Bengaluru office.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        },
+        {
+          "name": "Manuel",
+          "type": "person"
+        },
+        {
+          "name": "Simplico",
+          "type": "organization"
+        },
+        {
+          "name": "Notion",
+          "type": "tool"
+        },
+        {
+          "name": "Slack",
+          "type": "tool"
+        },
+        {
+          "name": "GitHub",
+          "type": "tool"
+        },
+        {
+          "name": "Linear",
+          "type": "tool"
+        },
+        {
+          "name": "Bengaluru",
+          "type": "place"
+        }
+      ]
+    },
+    {
+      "id": "case_10_mindgraph_stack",
+      "expected_relation_count": 8,
+      "cleaned_text": "Pitched MindGraph to Anthropic. Built it with Python, LangGraph, Supabase, pgvector, and React. Demo went well. Sridhar joined the call from the Mumbai office.",
+      "core_entities": [
+        {
+          "name": "I",
+          "type": "person"
+        },
+        {
+          "name": "Sridhar",
+          "type": "person"
+        },
+        {
+          "name": "MindGraph",
+          "type": "project"
+        },
+        {
+          "name": "Anthropic",
+          "type": "organization"
+        },
+        {
+          "name": "Python",
+          "type": "tool"
+        },
+        {
+          "name": "LangGraph",
+          "type": "tool"
+        },
+        {
+          "name": "Supabase",
+          "type": "tool"
+        },
+        {
+          "name": "pgvector",
+          "type": "tool"
+        },
+        {
+          "name": "React",
+          "type": "tool"
+        },
+        {
+          "name": "Mumbai",
+          "type": "place"
+        }
+      ]
+    }
+  ],
+  "per_config_summary": {
+    "0": {
+      "mean_output_tokens": 149.2,
+      "stddev_output_tokens": 111.73410555791632,
+      "mean_latency_ms": 1814.4549299962819,
+      "stddev_latency_ms": 1521.4407165332827,
+      "total_thoughts_tokens": 0,
+      "n_calls": 30
+    },
+    "-1": {
+      "mean_output_tokens": 1734.1,
+      "stddev_output_tokens": 1042.7018402142612,
+      "mean_latency_ms": 8281.677413337942,
+      "stddev_latency_ms": 4593.702553060515,
+      "total_thoughts_tokens": 47824,
+      "n_calls": 30
+    }
+  },
+  "per_case_results": {
+    "0": {
+      "case_01_single_entity": [
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 2071.034000022337,
+          "input_tokens": 410,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 908.4598000044934,
+          "input_tokens": 410,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 1069.8978999862447,
+          "input_tokens": 410,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        }
+      ],
+      "case_02_unrelated_entities": [
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 607.428599963896,
+          "input_tokens": 428,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 1673.9385999972,
+          "input_tokens": 428,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 756.0149999917485,
+          "input_tokens": 428,
+          "output_tokens": 1,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        }
+      ],
+      "case_03_built_with": [
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 950.1827000058256,
+          "input_tokens": 415,
+          "output_tokens": 62,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 5077.169700001832,
+          "input_tokens": 415,
+          "output_tokens": 62,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 767.0192999648862,
+          "input_tokens": 415,
+          "output_tokens": 62,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        }
+      ],
+      "case_04_located_at": [
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 746.7490999842994,
+          "input_tokens": 416,
+          "output_tokens": 61,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 1390.2027999865822,
+          "input_tokens": 416,
+          "output_tokens": 61,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 929.5271000009961,
+          "input_tokens": 416,
+          "output_tokens": 61,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        }
+      ],
+      "case_05_two_relations": [
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 3,
+          "latency_ms": 1195.926500018686,
+          "input_tokens": 435,
+          "output_tokens": 166,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 438,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 3,
+          "latency_ms": 1115.270199952647,
+          "input_tokens": 435,
+          "output_tokens": 166,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 438,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 3,
+          "latency_ms": 1070.5894000129774,
+          "input_tokens": 435,
+          "output_tokens": 166,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 438,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        }
+      ],
+      "case_06_medium_5rel": [
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 1396.468500024639,
+          "input_tokens": 450,
+          "output_tokens": 271,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 718,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 1064.683199976571,
+          "input_tokens": 450,
+          "output_tokens": 271,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 718,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 1284.2145999893546,
+          "input_tokens": 450,
+          "output_tokens": 271,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 718,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        }
+      ],
+      "case_07_three_relations": [
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 2,
+          "latency_ms": 864.3815999967046,
+          "input_tokens": 435,
+          "output_tokens": 115,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 301,
+          "parsed_output": [
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "works_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 2,
+          "latency_ms": 1056.8796999868937,
+          "input_tokens": 435,
+          "output_tokens": 115,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 301,
+          "parsed_output": [
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "works_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 2,
+          "latency_ms": 856.8152000079863,
+          "input_tokens": 435,
+          "output_tokens": 115,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 301,
+          "parsed_output": [
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "works_with"
+            }
+          ]
+        }
+      ],
+      "case_08_event_planning": [
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 4,
+          "latency_ms": 1405.5994999944232,
+          "input_tokens": 467,
+          "output_tokens": 274,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 706,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "Goa retreat",
+              "source_type": "event",
+              "target": "Goa",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 4,
+          "latency_ms": 1580.3134000161663,
+          "input_tokens": 467,
+          "output_tokens": 274,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 706,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "Goa retreat",
+              "source_type": "event",
+              "target": "Goa",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 4,
+          "latency_ms": 4588.953200029209,
+          "input_tokens": 467,
+          "output_tokens": 274,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 706,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "Goa retreat",
+              "source_type": "event",
+              "target": "Goa",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        }
+      ],
+      "case_09_simplico_dense": [
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 4698.387400014326,
+          "input_tokens": 494,
+          "output_tokens": 264,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 692,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Manuel",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "GitHub",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 4275.959599995986,
+          "input_tokens": 494,
+          "output_tokens": 264,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 692,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Manuel",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "GitHub",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 6411.378399992827,
+          "input_tokens": 494,
+          "output_tokens": 264,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 692,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Manuel",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "GitHub",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        }
+      ],
+      "case_10_mindgraph_stack": [
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 1614.163899968844,
+          "input_tokens": 515,
+          "output_tokens": 277,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 762,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Anthropic",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Supabase",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "pgvector",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 1496.5703000198118,
+          "input_tokens": 515,
+          "output_tokens": 277,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 762,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Anthropic",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Supabase",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "pgvector",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 1509.4686999800615,
+          "input_tokens": 515,
+          "output_tokens": 277,
+          "thoughts_tokens": 0,
+          "raw_output_chars": 762,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Anthropic",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Supabase",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "pgvector",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        }
+      ]
+    },
+    "-1": {
+      "case_01_single_entity": [
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 3197.372400027234,
+          "input_tokens": 410,
+          "output_tokens": 521,
+          "thoughts_tokens": 520,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 3136.224800022319,
+          "input_tokens": 410,
+          "output_tokens": 567,
+          "thoughts_tokens": 566,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_01_single_entity",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 2196.666700008791,
+          "input_tokens": 410,
+          "output_tokens": 384,
+          "thoughts_tokens": 383,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        }
+      ],
+      "case_02_unrelated_entities": [
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 3672.5715000065975,
+          "input_tokens": 428,
+          "output_tokens": 880,
+          "thoughts_tokens": 879,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 16581.86120004393,
+          "input_tokens": 428,
+          "output_tokens": 818,
+          "thoughts_tokens": 817,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        },
+        {
+          "case_id": "case_02_unrelated_entities",
+          "expected_relation_count": 0,
+          "parsed_relation_count": 0,
+          "latency_ms": 2583.956799993757,
+          "input_tokens": 428,
+          "output_tokens": 430,
+          "thoughts_tokens": 429,
+          "raw_output_chars": 2,
+          "parsed_output": []
+        }
+      ],
+      "case_03_built_with": [
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 4055.4596000001766,
+          "input_tokens": 415,
+          "output_tokens": 1011,
+          "thoughts_tokens": 949,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 4391.639099980239,
+          "input_tokens": 415,
+          "output_tokens": 908,
+          "thoughts_tokens": 846,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_03_built_with",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 4520.3363000182435,
+          "input_tokens": 415,
+          "output_tokens": 766,
+          "thoughts_tokens": 704,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Figma",
+              "target_type": "tool",
+              "relation": "built_with"
+            }
+          ]
+        }
+      ],
+      "case_04_located_at": [
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 5154.600600013509,
+          "input_tokens": 416,
+          "output_tokens": 1371,
+          "thoughts_tokens": 1310,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 4827.76620000368,
+          "input_tokens": 416,
+          "output_tokens": 811,
+          "thoughts_tokens": 750,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_04_located_at",
+          "expected_relation_count": 1,
+          "parsed_relation_count": 1,
+          "latency_ms": 8501.910999999382,
+          "input_tokens": 416,
+          "output_tokens": 1323,
+          "thoughts_tokens": 1262,
+          "raw_output_chars": 159,
+          "parsed_output": [
+            {
+              "source": "Rahul",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        }
+      ],
+      "case_05_two_relations": [
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 2,
+          "latency_ms": 6174.0750999888405,
+          "input_tokens": 435,
+          "output_tokens": 1130,
+          "thoughts_tokens": 1018,
+          "raw_output_chars": 289,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 2,
+          "latency_ms": 12850.626200030092,
+          "input_tokens": 435,
+          "output_tokens": 1331,
+          "thoughts_tokens": 1219,
+          "raw_output_chars": 289,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_05_two_relations",
+          "expected_relation_count": 2,
+          "parsed_relation_count": 2,
+          "latency_ms": 14628.7892999826,
+          "input_tokens": 435,
+          "output_tokens": 1123,
+          "thoughts_tokens": 1011,
+          "raw_output_chars": 289,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        }
+      ],
+      "case_06_medium_5rel": [
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 11471.853700000793,
+          "input_tokens": 450,
+          "output_tokens": 2694,
+          "thoughts_tokens": 2423,
+          "raw_output_chars": 710,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Sahana",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 9883.835899992846,
+          "input_tokens": 450,
+          "output_tokens": 2608,
+          "thoughts_tokens": 2333,
+          "raw_output_chars": 725,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Sahana",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            }
+          ]
+        },
+        {
+          "case_id": "case_06_medium_5rel",
+          "expected_relation_count": 5,
+          "parsed_relation_count": 5,
+          "latency_ms": 6019.920399994589,
+          "input_tokens": 450,
+          "output_tokens": 1654,
+          "thoughts_tokens": 1383,
+          "raw_output_chars": 710,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "Sahana",
+              "source_type": "person",
+              "target": "Inspiral",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Sahana",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cursor",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        }
+      ],
+      "case_07_three_relations": [
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 2,
+          "latency_ms": 10704.689799982589,
+          "input_tokens": 435,
+          "output_tokens": 1894,
+          "thoughts_tokens": 1779,
+          "raw_output_chars": 301,
+          "parsed_output": [
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "works_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 1,
+          "latency_ms": 5894.141299999319,
+          "input_tokens": 435,
+          "output_tokens": 1450,
+          "thoughts_tokens": 1391,
+          "raw_output_chars": 157,
+          "parsed_output": [
+            {
+              "source": "Simplico",
+              "source_type": "organization",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_07_three_relations",
+          "expected_relation_count": 3,
+          "parsed_relation_count": 3,
+          "latency_ms": 7970.014700025786,
+          "input_tokens": 435,
+          "output_tokens": 1676,
+          "thoughts_tokens": 1510,
+          "raw_output_chars": 444,
+          "parsed_output": [
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Simplico",
+              "source_type": "organization",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Naveen",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            }
+          ]
+        }
+      ],
+      "case_08_event_planning": [
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 3,
+          "latency_ms": 8481.927799992263,
+          "input_tokens": 467,
+          "output_tokens": 3120,
+          "thoughts_tokens": 2847,
+          "raw_output_chars": 703,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 3,
+          "latency_ms": 11581.560100021306,
+          "input_tokens": 467,
+          "output_tokens": 3200,
+          "thoughts_tokens": 2927,
+          "raw_output_chars": 703,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_08_event_planning",
+          "expected_relation_count": 4,
+          "parsed_relation_count": 3,
+          "latency_ms": 6896.474700013641,
+          "input_tokens": 467,
+          "output_tokens": 2558,
+          "thoughts_tokens": 2394,
+          "raw_output_chars": 417,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Priya",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Cleartrip",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        }
+      ],
+      "case_09_simplico_dense": [
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 16879.22709999839,
+          "input_tokens": 494,
+          "output_tokens": 4647,
+          "thoughts_tokens": 4382,
+          "raw_output_chars": 694,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "GitHub",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 7032.30409999378,
+          "input_tokens": 494,
+          "output_tokens": 2654,
+          "thoughts_tokens": 2390,
+          "raw_output_chars": 692,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Manuel",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "GitHub",
+              "target_type": "tool",
+              "relation": "uses"
+            }
+          ]
+        },
+        {
+          "case_id": "case_09_simplico_dense",
+          "expected_relation_count": 7,
+          "parsed_relation_count": 5,
+          "latency_ms": 12076.384699961636,
+          "input_tokens": 494,
+          "output_tokens": 2594,
+          "thoughts_tokens": 2326,
+          "raw_output_chars": 715,
+          "parsed_output": [
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Simplico",
+              "target_type": "organization",
+              "relation": "belongs_to"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Manuel",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Notion",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Slack",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "Simplico",
+              "source_type": "organization",
+              "target": "Bengaluru",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        }
+      ],
+      "case_10_mindgraph_stack": [
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 19298.919999971986,
+          "input_tokens": 515,
+          "output_tokens": 2896,
+          "thoughts_tokens": 2620,
+          "raw_output_chars": 749,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Supabase",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "Sridhar",
+              "source_type": "person",
+              "target": "Mumbai",
+              "target_type": "place",
+              "relation": "located_at"
+            },
+            {
+              "source": "Anthropic",
+              "source_type": "organization",
+              "target": "I",
+              "target_type": "person",
+              "relation": "works_with"
+            }
+          ]
+        },
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 6534.089500026312,
+          "input_tokens": 515,
+          "output_tokens": 2143,
+          "thoughts_tokens": 1866,
+          "raw_output_chars": 749,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "LangGraph",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Supabase",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "pgvector",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "Sridhar",
+              "source_type": "person",
+              "target": "Mumbai",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        },
+        {
+          "case_id": "case_10_mindgraph_stack",
+          "expected_relation_count": 8,
+          "parsed_relation_count": 5,
+          "latency_ms": 11251.12180004362,
+          "input_tokens": 515,
+          "output_tokens": 2861,
+          "thoughts_tokens": 2590,
+          "raw_output_chars": 724,
+          "parsed_output": [
+            {
+              "source": "MindGraph",
+              "source_type": "project",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "built_with"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "Python",
+              "target_type": "tool",
+              "relation": "uses"
+            },
+            {
+              "source": "I",
+              "source_type": "person",
+              "target": "MindGraph",
+              "target_type": "project",
+              "relation": "works_on"
+            },
+            {
+              "source": "Anthropic",
+              "source_type": "organization",
+              "target": "I",
+              "target_type": "person",
+              "relation": "works_with"
+            },
+            {
+              "source": "Sridhar",
+              "source_type": "person",
+              "target": "Mumbai",
+              "target_type": "place",
+              "relation": "located_at"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "verdict": {
+    "delta_abs_tokens": -1584.8999999999999,
+    "delta_pct": -91.3961132575976,
+    "exceeds_pct_threshold": true,
+    "exceeds_noise": true,
+    "attributable": true,
+    "direction": "thinking_budget=0 OUTPUTS LESS"
+  }
+}

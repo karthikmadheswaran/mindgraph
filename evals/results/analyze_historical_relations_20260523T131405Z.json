@@ -1,0 +1,453 @@
+{
+  "source_diff": "langfuse_diff_30day_20260523T131405Z.json",
+  "n_chains_loaded": 39,
+  "n_chains_resolved": 39,
+  "per_trace": [
+    {
+      "trace_id": "83cd7552d62b160c20d63ad1948a9cc1",
+      "chain_id": "21d5f76b29724793",
+      "entity_count": 2,
+      "text_len_chars": 128,
+      "output_tokens": 56,
+      "entity_names": [
+        "naveen",
+        "erode"
+      ]
+    },
+    {
+      "trace_id": "7c20145c4d42688bb396faf3f3308296",
+      "chain_id": "2d7b98ac2653a51c",
+      "entity_count": 4,
+      "text_len_chars": 1943,
+      "output_tokens": 115,
+      "entity_names": [
+        "Vetri",
+        "Sana",
+        "HR",
+        "Inspiral"
+      ]
+    },
+    {
+      "trace_id": "b0e38d8aa757fd89c8eb2aa0a32a540e",
+      "chain_id": "b156d95a169b1604",
+      "entity_count": 2,
+      "text_len_chars": 269,
+      "output_tokens": 58,
+      "entity_names": [
+        "mindgraph",
+        "razorpay"
+      ]
+    },
+    {
+      "trace_id": "a8608a4a20898c31a390cf8caf1166e9",
+      "chain_id": "7cbba8a2e97df2fc",
+      "entity_count": 6,
+      "text_len_chars": 340,
+      "output_tokens": 292,
+      "entity_names": [
+        "Dharmapuri",
+        "Tanvika",
+        "Pennagaram",
+        "Buy Mechanical Keyboard",
+        "Bring my monitor here",
+        "check my car service"
+      ]
+    },
+    {
+      "trace_id": "d8aa04563b46387dd1056740ae8ed2f7",
+      "chain_id": "d423249d5b1c47d0",
+      "entity_count": 1,
+      "text_len_chars": 532,
+      "output_tokens": 0,
+      "entity_names": [
+        "Mr karthic"
+      ]
+    },
+    {
+      "trace_id": "f882c9792e148b848c0dd4d33ae7380e",
+      "chain_id": "43ae3b10bf187ed3",
+      "entity_count": 2,
+      "text_len_chars": 1406,
+      "output_tokens": 1,
+      "entity_names": [
+        "Bangalore",
+        "MindGraph"
+      ]
+    },
+    {
+      "trace_id": "bde255eb647714d056fefec8f7e792fd",
+      "chain_id": "1d47dfd65f9f9f78",
+      "entity_count": 1,
+      "text_len_chars": 365,
+      "output_tokens": 0,
+      "entity_names": [
+        "MindGraph"
+      ]
+    },
+    {
+      "trace_id": "751fe62af986b1c5b29052ada52469a0",
+      "chain_id": "e91d805b7d510e17",
+      "entity_count": 4,
+      "text_len_chars": 442,
+      "output_tokens": 118,
+      "entity_names": [
+        "eval test cases",
+        "discovery node",
+        "backfill plan",
+        "Loom"
+      ]
+    },
+    {
+      "trace_id": "dda8364226ce16bb3c01178e849b7a01",
+      "chain_id": "3ca9f0f98f8455d9",
+      "entity_count": 1,
+      "text_len_chars": 352,
+      "output_tokens": 0,
+      "entity_names": [
+        "Akka"
+      ]
+    },
+    {
+      "trace_id": "6bd566981b4668eeacad79c27b292a26",
+      "chain_id": "1c2737034c7e574a",
+      "entity_count": 1,
+      "text_len_chars": 306,
+      "output_tokens": 0,
+      "entity_names": [
+        "Neo4j"
+      ]
+    },
+    {
+      "trace_id": "bae2fa07c4ec9c85063d1d224bc15794",
+      "chain_id": "fa9becd1a6606657",
+      "entity_count": 1,
+      "text_len_chars": 304,
+      "output_tokens": 0,
+      "entity_names": [
+        "Priya"
+      ]
+    },
+    {
+      "trace_id": "c40be8cb98c3551c6441494de13a1429",
+      "chain_id": "e8ae5beace038921",
+      "entity_count": 2,
+      "text_len_chars": 330,
+      "output_tokens": 1,
+      "entity_names": [
+        "Razorpay",
+        "mood stamp fix"
+      ]
+    },
+    {
+      "trace_id": "78cf18e93dad8d1e588f64002c743290",
+      "chain_id": "2b5bd861a7d7064d",
+      "entity_count": 4,
+      "text_len_chars": 373,
+      "output_tokens": 170,
+      "entity_names": [
+        "eval harness",
+        "Self-healing RAG",
+        "implicit feedback signals",
+        "compaction tuning"
+      ]
+    },
+    {
+      "trace_id": "51d8912b43a928faf9607eda30a0188e",
+      "chain_id": "a4169f0db2ba20bf",
+      "entity_count": 2,
+      "text_len_chars": 412,
+      "output_tokens": 1,
+      "entity_names": [
+        "MindGraph",
+        "Amma"
+      ]
+    },
+    {
+      "trace_id": "fa291e3946e0a836e5745a719463df0a",
+      "chain_id": "fe9a46e5b87036a2",
+      "entity_count": 1,
+      "text_len_chars": 321,
+      "output_tokens": 0,
+      "entity_names": [
+        "Priya"
+      ]
+    },
+    {
+      "trace_id": "af88759be1abf4f69b55162056fc28b9",
+      "chain_id": "bcf7f019b804c50f",
+      "entity_count": 2,
+      "text_len_chars": 286,
+      "output_tokens": 1,
+      "entity_names": [
+        "100 Feet Road",
+        "RAG"
+      ]
+    },
+    {
+      "trace_id": "f94a8c6917072e714227443b72498130",
+      "chain_id": "6bee19101489b3b5",
+      "entity_count": 1,
+      "text_len_chars": 525,
+      "output_tokens": 0,
+      "entity_names": [
+        "dispatch feature"
+      ]
+    },
+    {
+      "trace_id": "2edb2b71b9950cb9c920b400406d57f4",
+      "chain_id": "f76d199e1e52e80f",
+      "entity_count": 3,
+      "text_len_chars": 437,
+      "output_tokens": 1,
+      "entity_names": [
+        "Cubbon Park",
+        "The Office",
+        "Meghana's"
+      ]
+    },
+    {
+      "trace_id": "eca3755086679b3fe97ec413b222065c",
+      "chain_id": "e2a39d65d235430d",
+      "entity_count": 4,
+      "text_len_chars": 533,
+      "output_tokens": 172,
+      "entity_names": [
+        "telegram",
+        "payu",
+        "ckyc",
+        "pankag"
+      ]
+    },
+    {
+      "trace_id": "f9128e90742a0954f94ab6b23e525ca4",
+      "chain_id": "7ab0cd2984967562",
+      "entity_count": 2,
+      "text_len_chars": 490,
+      "output_tokens": 1,
+      "entity_names": [
+        "Manuel",
+        "pricing section"
+      ]
+    },
+    {
+      "trace_id": "7fddea68689ef5289ed1294d304674ff",
+      "chain_id": "032a5eb33b82d9f1",
+      "entity_count": 1,
+      "text_len_chars": 473,
+      "output_tokens": 0,
+      "entity_names": [
+        "MindGraph"
+      ]
+    },
+    {
+      "trace_id": "7920652e5d06694dd1ba87841fbc4c96",
+      "chain_id": "eeb314b3520d6509",
+      "entity_count": 3,
+      "text_len_chars": 439,
+      "output_tokens": 118,
+      "entity_names": [
+        "Vetri",
+        "Indiranagar",
+        "Amma"
+      ]
+    },
+    {
+      "trace_id": "17e983ae969b2895f3647999888f3faf",
+      "chain_id": "3f786b3829eda48d",
+      "entity_count": 5,
+      "text_len_chars": 417,
+      "output_tokens": 221,
+      "entity_names": [
+        "Manuel",
+        "Simplico",
+        "eval harness",
+        "Vetri",
+        "proposal draft"
+      ]
+    },
+    {
+      "trace_id": "d2f6569a60e4edcc817f62a58d2a8aef",
+      "chain_id": "1e80ca1370ca9606",
+      "entity_count": 0,
+      "text_len_chars": 56,
+      "output_tokens": 0,
+      "entity_names": []
+    },
+    {
+      "trace_id": "148a46483ce976fa9a6d54060c003fe0",
+      "chain_id": "c9b94d1faf136f55",
+      "entity_count": 1,
+      "text_len_chars": 65,
+      "output_tokens": 0,
+      "entity_names": [
+        "dispatch_payload"
+      ]
+    },
+    {
+      "trace_id": "cff86f9301171cc26cff2e01cbe53874",
+      "chain_id": "7541e6668a3c78cd",
+      "entity_count": 0,
+      "text_len_chars": 96,
+      "output_tokens": 0,
+      "entity_names": []
+    },
+    {
+      "trace_id": "1c7ae84a83c1da0b27e44cd2f11aca81",
+      "chain_id": "d313d6e0fa160fc6",
+      "entity_count": 1,
+      "text_len_chars": 250,
+      "output_tokens": 0,
+      "entity_names": [
+        "Vetri"
+      ]
+    },
+    {
+      "trace_id": "14d3f872568688179e766b8a384f9650",
+      "chain_id": "b7cc30323d26bd0b",
+      "entity_count": 1,
+      "text_len_chars": 212,
+      "output_tokens": 0,
+      "entity_names": [
+        "mindgraph"
+      ]
+    },
+    {
+      "trace_id": "7a98ed84f7114cf4e57d6a39ae089b6d",
+      "chain_id": "3e46f18ad5ba8bac",
+      "entity_count": 5,
+      "text_len_chars": 1435,
+      "output_tokens": 272,
+      "entity_names": [
+        "Sana",
+        "UK",
+        "Kirthiga",
+        "London",
+        "methylphenidate"
+      ]
+    },
+    {
+      "trace_id": "f342dc6a71bd6c272dc7763cf4b1bece",
+      "chain_id": "802f3732889334b1",
+      "entity_count": 1,
+      "text_len_chars": 278,
+      "output_tokens": 0,
+      "entity_names": [
+        "mindgraph"
+      ]
+    },
+    {
+      "trace_id": "fb3a00331a5c34e7e44da75a27ba30df",
+      "chain_id": "a3188b96b165f6c4",
+      "entity_count": 2,
+      "text_len_chars": 1255,
+      "output_tokens": 1,
+      "entity_names": [
+        "mindgraph",
+        "rag system"
+      ]
+    },
+    {
+      "trace_id": "97cd8836255615c65691a0af4e58f942",
+      "chain_id": "1ddf736273d9d34d",
+      "entity_count": 0,
+      "text_len_chars": 27,
+      "output_tokens": 0,
+      "entity_names": []
+    },
+    {
+      "trace_id": "f919b338f8a39b80e25113f7959dc0e8",
+      "chain_id": "673d46c1f6214721",
+      "entity_count": 5,
+      "text_len_chars": 280,
+      "output_tokens": 169,
+      "entity_names": [
+        "Sentry",
+        "Posthog",
+        "MindGraph",
+        "Vijay",
+        "Tamil Nadu"
+      ]
+    },
+    {
+      "trace_id": "20b72f1510dfaab5ec40374eabe48794",
+      "chain_id": "d266b002099e4eef",
+      "entity_count": 3,
+      "text_len_chars": 220,
+      "output_tokens": 116,
+      "entity_names": [
+        "posthog",
+        "sentry",
+        "mindgraph"
+      ]
+    },
+    {
+      "trace_id": "48668b6eb9c51ce4a2edd1c5e6d2ccd5",
+      "chain_id": "a6759c97d3081330",
+      "entity_count": 2,
+      "text_len_chars": 209,
+      "output_tokens": 1,
+      "entity_names": [
+        "upstash redis",
+        "redis"
+      ]
+    },
+    {
+      "trace_id": "1ed5962444bcf3403365544d94d02dcb",
+      "chain_id": "776902e265cea1ec",
+      "entity_count": 1,
+      "text_len_chars": 193,
+      "output_tokens": 0,
+      "entity_names": [
+        "mindgraph"
+      ]
+    },
+    {
+      "trace_id": "31ae4c44a849f86dd28023ce301b568c",
+      "chain_id": "0545dfc85658cfb2",
+      "entity_count": 0,
+      "text_len_chars": 125,
+      "output_tokens": 0,
+      "entity_names": []
+    },
+    {
+      "trace_id": "7eb7584cbe501c5cd37cac966f06812d",
+      "chain_id": "e171508ec02a6c51",
+      "entity_count": 0,
+      "text_len_chars": 125,
+      "output_tokens": 0,
+      "entity_names": []
+    },
+    {
+      "trace_id": "beccfb5743ae1d9358aeeecc7399f687",
+      "chain_id": "7672fafb0b6c9233",
+      "entity_count": 1,
+      "text_len_chars": 751,
+      "output_tokens": 0,
+      "entity_names": [
+        "valorant"
+      ]
+    }
+  ],
+  "histogram": {
+    "0": 5,
+    "1": 14,
+    "2": 9,
+    "3": 3,
+    "4": 4,
+    "5": 3,
+    "6": 1
+  },
+  "pearson_entity_vs_output": 0.8998089006838429,
+  "pearson_textlen_vs_output": 0.2656361228608064,
+  "bucket_means": {
+    "1": 0,
+    "2": 13.444444444444445,
+    "3": 78.33333333333333,
+    "4-5": 176.71428571428572,
+    "6+": 292
+  },
+  "low_density_mean": 11.483870967741936,
+  "high_density_mean": 238.5,
+  "confirmed": true,
+  "verdict": "CONFIRMED: historical 48 explained by entity sparsity (low-density mean < 60 AND high-density mean > 150)."
+}
