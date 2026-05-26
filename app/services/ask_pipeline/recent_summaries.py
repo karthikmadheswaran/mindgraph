@@ -10,7 +10,7 @@ async def recent_summaries(state: AskState) -> dict:
     now = datetime.now(timezone.utc)
     result = (
         supabase.table("entries")
-        .select("auto_title, summary, created_at")
+        .select("id, auto_title, summary, created_at")
         .eq("user_id", state["user_id"])
         .eq("status", "completed")
         .is_("deleted_at", "null")
@@ -22,6 +22,7 @@ async def recent_summaries(state: AskState) -> dict:
     rows = result.data or []
     summaries = [
         {
+            "id": row.get("id"),
             "date": format_entry_date(row["created_at"], now),
             "title": (row.get("auto_title") or "Untitled").strip(),
             "summary": (row.get("summary") or "").strip(),
