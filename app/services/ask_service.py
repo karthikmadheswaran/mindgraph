@@ -20,7 +20,13 @@ VECTOR_CANDIDATE_COUNT = 15  # Phase 1.5: raised from 12 — more candidates for
 BM25_CANDIDATE_COUNT = 10
 MAX_CONTEXT_ENTRIES = 3  # iter-1: reduced from 5 — improves precision F1 for 1-expected-entry cases
 MAX_CONTEXT_ENTRIES_BROAD = 6  # Fix 2: broad queries need more context
-MIN_SIMILARITY = 0.56  # iter-1: raised from 0.3 — excludes noise entries
+# MIN_SIMILARITY tuned 26/05/2026 from 0.56 → 0.62 after task_type backfill.
+# Aligned RETRIEVAL_QUERY ↔ RETRIEVAL_DOCUMENT embeddings produce higher
+# cosine scores across the board, so the discrimination threshold also
+# had to rise. Sweep eval confirmed 0.62 is the highest threshold with
+# zero production-side dropouts.
+# See: evals/results/rag_eval_sweep_062_*.json
+MIN_SIMILARITY = 0.62  # iter-1: raised from 0.3 — excludes noise entries
 MIN_SIMILARITY_IDENTITY = 0.50  # Fix 1: lower threshold for identity/current-state queries
 MIN_RERANK_SCORE = 0.05  # Phase 2: drop reranked entries below this score
 
