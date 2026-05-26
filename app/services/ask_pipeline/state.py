@@ -20,5 +20,10 @@ class AskState(TypedDict):
     rag_entries: Annotated[list, keep_latest]
     dashboard_context: Annotated[dict, keep_latest]
 
+    rag_max_similarity: Annotated[float, keep_latest]
+    temporal_has_results: Annotated[bool, keep_latest]
+    dashboard_has_results: Annotated[bool, keep_latest]
+    is_low_confidence: Annotated[bool, keep_latest]
+
     assembled_context: Annotated[str, keep_latest]
     answer: Annotated[str, keep_latest]

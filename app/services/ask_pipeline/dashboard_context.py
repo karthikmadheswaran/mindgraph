@@ -22,7 +22,7 @@ async def dashboard_context(state: AskState) -> dict:
         deadlines_result = await list_deadlines(status=None, user_id=state["user_id"])
     except Exception as exc:
         logger.warning("dashboard_context fetch failed: %s", exc, exc_info=True)
-        return {"dashboard_context": {}}
+        return {"dashboard_context": {}, "dashboard_has_results": False}
 
     project_names = [
         (p.get("name") or "").strip()
@@ -34,9 +34,11 @@ async def dashboard_context(state: AskState) -> dict:
         for d in (deadlines_result.get("deadlines") or [])
     ]
 
+    has_results = bool(project_names) or bool(deadline_strings)
     return {
         "dashboard_context": {
             "projects": project_names,
             "deadlines": deadline_strings,
-        }
+        },
+        "dashboard_has_results": has_results,
     }

@@ -11,6 +11,7 @@ async def generation(state: AskState) -> dict:
         conversation_history=state.get("conversation_history") or "",
         context_text=state.get("assembled_context") or "",
         today_str=state.get("today_str") or "",
+        is_low_confidence=bool(state.get("is_low_confidence")),
     )
     response = await flash.ainvoke(prompt, config=langfuse_config())
     return {"answer": extract_text(response)}

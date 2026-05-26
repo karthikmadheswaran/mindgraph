@@ -132,7 +132,7 @@ async def temporal_retrieval(state: AskState) -> dict:
     )
     if not time_range:
         logger.info("temporal_retrieval: no resolvable date range for query=%r", state["question"])
-        return {}
+        return {"temporal_has_results": False}
 
     result = (
         supabase.table("entries")
@@ -167,4 +167,7 @@ async def temporal_retrieval(state: AskState) -> dict:
         time_range["start"],
         time_range["end"],
     )
-    return {"temporal_entries": entries}
+    return {
+        "temporal_entries": entries,
+        "temporal_has_results": len(entries) > 0,
+    }

@@ -64,7 +64,7 @@ async def hybrid_rag(
         history_messages=None,
     )
     if not candidates:
-        return {"rag_entries": []}
+        return {"rag_entries": [], "rag_max_similarity": 0.0}
 
     now = datetime.now(timezone.utc)
     decayed = apply_recency_decay(candidates, now, lambda_decay=lambda_decay)
@@ -99,10 +99,22 @@ async def hybrid_rag(
             }
         )
 
+    # Confidence signal: top original cosine similarity across returned entries.
+    # Use vector similarity (not rerank score) so the value lives in the same
+    # space as MIN_SIMILARITY / HIGH_CONFIDENCE_THRESHOLD. BM25-only entries
+    # have _vector_sim=0, which is exactly what we want — they shouldn't push
+    # the confidence signal up on their own.
+    max_similarity = 0.0
+    for entry in final:
+        sim = entry.get("_vector_sim") or entry.get("similarity") or 0.0
+        if sim > max_similarity:
+            max_similarity = float(sim)
+
     logger.info(
-        "hybrid_rag: %d entries (lambda=%.4f, max=%d)",
+        "hybrid_rag: %d entries (lambda=%.4f, max=%d, max_sim=%.3f)",
         len(entries),
         lambda_decay,
         max_entries,
+        max_similarity,
     )
-    return {"rag_entries": entries}
+    return {"rag_entries": entries, "rag_max_similarity": max_similarity}

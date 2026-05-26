@@ -29,6 +29,10 @@ MAX_CONTEXT_ENTRIES_BROAD = 6  # Fix 2: broad queries need more context
 MIN_SIMILARITY = 0.62  # iter-1: raised from 0.3 — excludes noise entries
 MIN_SIMILARITY_IDENTITY = 0.50  # Fix 1: lower threshold for identity/current-state queries
 MIN_RERANK_SCORE = 0.05  # Phase 2: drop reranked entries below this score
+# Above this top cosine score we trust hybrid_rag standalone. Between
+# MIN_SIMILARITY and this ceiling is the gray zone where the relevance
+# gate refuses unless another branch corroborates.
+HIGH_CONFIDENCE_THRESHOLD = 0.70
 
 # --- Identity query detection (Fix 1) ---
 _IDENTITY_PREFIXES = (
@@ -535,6 +539,10 @@ async def generate_answer(
         "recent_summaries": [],
         "rag_entries": [],
         "dashboard_context": {},
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": False,
+        "dashboard_has_results": False,
+        "is_low_confidence": False,
         "assembled_context": "",
         "answer": "",
     }

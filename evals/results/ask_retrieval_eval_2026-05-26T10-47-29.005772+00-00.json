@@ -1,0 +1,2729 @@
+{
+  "metadata": {
+    "ran_at": "2026-05-26T10-47-29.005772+00-00",
+    "git_commit": "d828cecb271fc2287586206c093586665d948af2",
+    "min_similarity": 0.62,
+    "high_confidence_threshold": 0.75,
+    "user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
+    "baseline_path": "C:\\projects\\Mindgraph - Frictionless AI journal app\\evals\\results\\rag_eval_sweep_062_2026-05-26T07-16-22.151647+00-00.json",
+    "baseline_metrics": {
+      "avg_f1": 0.794,
+      "mrr": 0.688,
+      "pass_rate": 0.794,
+      "avg_retrieval_latency_ms": 512
+    }
+  },
+  "summary": {
+    "test_cases": 34,
+    "avg_f1": 0.382,
+    "mrr": 0.866,
+    "mrr_scope": "non-null cases only",
+    "pass_rate": 0.382,
+    "pass_count": 13,
+    "category_hit_rate": {
+      "temporal": 0.5,
+      "entity": 0.125,
+      "topic": 0.375,
+      "emotional": 0.333,
+      "hard_null": 1.0,
+      "hard_pronoun": 0.0
+    },
+    "per_branch_attribution": {
+      "temporal_retrieval": {
+        "cases_activated": 6,
+        "hits_when_active": 3,
+        "recall_when_active": 0.5,
+        "median_rank_when_hit": 1
+      },
+      "recent_summaries": {
+        "cases_activated": 34,
+        "hits_when_active": 12,
+        "recall_when_active": 0.353,
+        "median_rank_when_hit": 2.5
+      },
+      "hybrid_rag": {
+        "cases_activated": 31,
+        "hits_when_active": 25,
+        "recall_when_active": 0.806,
+        "median_rank_when_hit": 1
+      },
+      "dashboard_context": {
+        "cases_activated": 1,
+        "hits_when_active": 0,
+        "recall_when_active": 0.0,
+        "median_rank_when_hit": null
+      }
+    },
+    "latency": {
+      "case_ms_p50": 2689.4,
+      "case_ms_p95": 7044.5,
+      "case_ms_mean": 4254.5,
+      "branch_ms_p50": {
+        "query_agent": 1016.1,
+        "router": 0.0,
+        "dashboard_context": 0.0,
+        "hybrid_rag": 1092.8,
+        "recent_summaries": 54.5,
+        "temporal_retrieval": 0.0,
+        "context_assembler": 0.0
+      }
+    },
+    "routing_distribution": {
+      "recent,temporal": 2,
+      "keyword,temporal": 7,
+      "dashboard,temporal": 1,
+      "temporal": 1,
+      "keyword,recent": 3,
+      "keyword,semantic": 7,
+      "keyword": 7,
+      "recent,semantic": 4,
+      "semantic,temporal": 1,
+      "semantic": 1
+    },
+    "mixed_route_count": 25,
+    "calls": {
+      "query_agent": 34,
+      "hybrid_rag_reranker": 33
+    },
+    "regressions": [
+      {
+        "question": "What happened on the morning of May 11th?",
+        "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 10,
+          "recent": 5,
+          "rag": 3
+        }
+      },
+      {
+        "question": "When did I meet with Naveen?",
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What's the latest with Manuel and Simplico?",
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "query_types": [
+          "recent",
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 3
+        }
+      },
+      {
+        "question": "Who is working on the Simplico engineering side?",
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 3
+        }
+      },
+      {
+        "question": "What did Anjali need from me?",
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "query_types": [
+          "keyword",
+          "recent"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 2
+        }
+      },
+      {
+        "question": "What was the outcome of my meeting with Naveen at the Erode office?",
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "query_types": [
+          "keyword",
+          "temporal"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What did Karthik flag as high-impact?",
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "query_types": [
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What did I order from Meghana's?",
+        "expected_entry_id": "1715dd23-4850-4559-b173-e33a4cd85763",
+        "query_types": [
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 2
+        }
+      },
+      {
+        "question": "What was the issue with Razorpay?",
+        "expected_entry_id": "c1288694-01ee-4ced-818b-78bdc7b9679a",
+        "query_types": [
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "How did I debug the langfuse trace pipeline?",
+        "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+        "query_types": [
+          "keyword",
+          "recent"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 2
+        }
+      },
+      {
+        "question": "What were my ideas for the next RAG iteration?",
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What was I reading about knowledge graphs?",
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What was the big improvement in my RAG system's F1 score?",
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "What was the auth issue I debugged?",
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "query_types": [
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      },
+      {
+        "question": "When did I feel like I was procrastinating?",
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 3
+        }
+      },
+      {
+        "question": "When did I feel spread too thin?",
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 3
+        }
+      },
+      {
+        "question": "What was a small win that I needed to remember?",
+        "expected_entry_id": "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 2
+        }
+      },
+      {
+        "question": "What did he want to lock in by next Friday?",
+        "expected_entry_id": "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "branch_entry_counts": {
+          "temporal": 0,
+          "recent": 5,
+          "rag": 1
+        }
+      }
+    ],
+    "null_leaks": []
+  },
+  "idempotence_findings": [],
+  "results": [
+    {
+      "question": "What did I do last week?",
+      "category": "temporal",
+      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "time_range": {
+          "start": "2026-05-17",
+          "end": "2026-05-23"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.662,
+      "latency": {
+        "case_ms": 7157.0,
+        "branch_ms": {
+          "query_agent": 5137.6,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 1867.1,
+          "recent_summaries": 59.6,
+          "temporal_retrieval": 88.3,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was on my mind on May 12th?",
+      "category": "temporal",
+      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": {
+          "start": "2026-05-12",
+          "end": "2026-05-12"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 4,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.717,
+      "latency": {
+        "case_ms": 6026.3,
+        "branch_ms": {
+          "query_agent": 2898.8,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 60.1,
+          "temporal_retrieval": 62.8,
+          "hybrid_rag": 3125.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "When do I need to backfill the embeddings by?",
+      "category": "temporal",
+      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": {
+          "start": "2026-05-23",
+          "end": "2026-05-24"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "backfill plan",
+            "type": "task"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 7,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.707,
+      "latency": {
+        "case_ms": 1776.9,
+        "branch_ms": {
+          "query_agent": 1148.2,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 500.3,
+          "recent_summaries": 53.9,
+          "temporal_retrieval": 71.8,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What happened on the morning of May 11th?",
+      "category": "temporal",
+      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": {
+          "start": "2026-05-11",
+          "end": "2026-05-11"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 10,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": null,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.665,
+      "latency": {
+        "case_ms": 5219.1,
+        "branch_ms": {
+          "query_agent": 1371.0,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 56.7,
+          "temporal_retrieval": 62.7,
+          "hybrid_rag": 3845.6,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What are my deadlines for the end of May?",
+      "category": "temporal",
+      "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "dashboard"
+        ],
+        "time_range": {
+          "start": "2026-05-26",
+          "end": "2026-05-31"
+        },
+        "dashboard_context_needed": true,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 2
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 2,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.684,
+      "latency": {
+        "case_ms": 7019.2,
+        "branch_ms": {
+          "query_agent": 1019.7,
+          "router": 0.0,
+          "dashboard_context": 474.6,
+          "recent_summaries": 53.8,
+          "temporal_retrieval": 57.9,
+          "hybrid_rag": 5522.6,
+          "context_assembler": 0.1
+        }
+      }
+    },
+    {
+      "question": "What was I doing about two weeks ago?",
+      "category": "temporal",
+      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "predicted": {
+        "query_types": [
+          "temporal"
+        ],
+        "time_range": {
+          "start": "2026-05-12",
+          "end": "2026-05-19"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": []
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 4,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.0,
+      "latency": {
+        "case_ms": 1053.7,
+        "branch_ms": {
+          "query_agent": 930.0,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 0.0,
+          "recent_summaries": 62.3,
+          "temporal_retrieval": 58.8,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "When did I meet with Naveen?",
+      "category": "temporal",
+      "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Naveen",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 5
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.729,
+      "latency": {
+        "case_ms": 5970.2,
+        "branch_ms": {
+          "query_agent": 948.0,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 64.2,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5020.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was I doing last Saturday?",
+      "category": "temporal",
+      "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "time_range": {
+          "start": "2026-05-16",
+          "end": "2026-05-16"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 2
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 2,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.667,
+      "latency": {
+        "case_ms": 7122.9,
+        "branch_ms": {
+          "query_agent": 994.2,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 54.5,
+          "temporal_retrieval": 57.6,
+          "hybrid_rag": 6126.3,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What's the latest with Manuel and Simplico?",
+      "category": "entity",
+      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "predicted": {
+        "query_types": [
+          "recent",
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Manuel",
+            "type": "person"
+          },
+          {
+            "name": "Simplico",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 3
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.715,
+      "latency": {
+        "case_ms": 1766.1,
+        "branch_ms": {
+          "query_agent": 928.6,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 784.2,
+          "recent_summaries": 50.7,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "Who is working on the Simplico engineering side?",
+      "category": "entity",
+      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Simplico",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 3
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.707,
+      "latency": {
+        "case_ms": 1841.8,
+        "branch_ms": {
+          "query_agent": 1244.2,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 546.7,
+          "recent_summaries": 48.4,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did Anjali need from me?",
+      "category": "entity",
+      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "recent"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Anjali",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.643,
+      "latency": {
+        "case_ms": 1495.6,
+        "branch_ms": {
+          "query_agent": 940.3,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 500.5,
+          "recent_summaries": 52.3,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was the outcome of my meeting with Naveen at the Erode office?",
+      "category": "entity",
+      "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "temporal"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Naveen",
+            "type": "person"
+          },
+          {
+            "name": "Erode",
+            "type": "place"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 5
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.72,
+      "latency": {
+        "case_ms": 2044.2,
+        "branch_ms": {
+          "query_agent": 958.2,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 1031.6,
+          "recent_summaries": 51.9,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did Priya and I talk about regarding our twenties?",
+      "category": "entity",
+      "expected_entry_id": "39051669-328c-4603-95ce-5c32a3f0749b",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Priya",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.79,
+      "latency": {
+        "case_ms": 6970.6,
+        "branch_ms": {
+          "query_agent": 995.5,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 50.8,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5972.8,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did Karthik flag as high-impact?",
+      "category": "entity",
+      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Karthik",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.706,
+      "latency": {
+        "case_ms": 6973.8,
+        "branch_ms": {
+          "query_agent": 1180.7,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 57.4,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5790.9,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did I order from Meghana's?",
+      "category": "entity",
+      "expected_entry_id": "1715dd23-4850-4559-b173-e33a4cd85763",
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Meghana's",
+            "type": "organization"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.644,
+      "latency": {
+        "case_ms": 2689.4,
+        "branch_ms": {
+          "query_agent": 1965.9,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 669.6,
+          "recent_summaries": 51.4,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was the issue with Razorpay?",
+      "category": "entity",
+      "expected_entry_id": "c1288694-01ee-4ced-818b-78bdc7b9679a",
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Razorpay",
+            "type": "organization"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "c1288694-01ee-4ced-818b-78bdc7b9679a"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.667,
+      "latency": {
+        "case_ms": 1528.6,
+        "branch_ms": {
+          "query_agent": 933.4,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 536.5,
+          "recent_summaries": 56.2,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What were my thoughts on Cohere Rerank vs Voyage?",
+      "category": "topic",
+      "expected_entry_id": "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Cohere Rerank",
+            "type": "tool"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 4
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.815,
+      "latency": {
+        "case_ms": 1481.9,
+        "branch_ms": {
+          "query_agent": 937.8,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 484.3,
+          "recent_summaries": 57.3,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "How did I debug the langfuse trace pipeline?",
+      "category": "topic",
+      "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "recent"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "langfuse",
+            "type": "tool"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.723,
+      "latency": {
+        "case_ms": 1649.4,
+        "branch_ms": {
+          "query_agent": 1072.8,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 525.9,
+          "recent_summaries": 47.8,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "Tell me about the tech stack for the Simplico network.",
+      "category": "topic",
+      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Simplico",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 3
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.751,
+      "latency": {
+        "case_ms": 1606.3,
+        "branch_ms": {
+          "query_agent": 1016.1,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 502.0,
+          "recent_summaries": 85.6,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What were my ideas for the next RAG iteration?",
+      "category": "topic",
+      "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "RAG",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.701,
+      "latency": {
+        "case_ms": 2311.7,
+        "branch_ms": {
+          "query_agent": 1158.9,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 1092.8,
+          "recent_summaries": 57.0,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was I reading about knowledge graphs?",
+      "category": "topic",
+      "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "MindGraph",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.74,
+      "latency": {
+        "case_ms": 6974.4,
+        "branch_ms": {
+          "query_agent": 1094.6,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 46.9,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5877.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was the big improvement in my RAG system's F1 score?",
+      "category": "topic",
+      "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+      "predicted": {
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "RAG",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.697,
+      "latency": {
+        "case_ms": 6938.5,
+        "branch_ms": {
+          "query_agent": 951.9,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 53.6,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5983.6,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was the auth issue I debugged?",
+      "category": "topic",
+      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "auth issue",
+            "type": "keyword"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.668,
+      "latency": {
+        "case_ms": 1526.6,
+        "branch_ms": {
+          "query_agent": 924.5,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 548.9,
+          "recent_summaries": 50.6,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "How did I use MindGraph for my May retrospective?",
+      "category": "topic",
+      "expected_entry_id": "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": {
+          "start": "2026-05-01",
+          "end": "2026-05-31"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "MindGraph",
+            "type": "project"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 10,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.755,
+      "latency": {
+        "case_ms": 5653.0,
+        "branch_ms": {
+          "query_agent": 1124.4,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 51.4,
+          "temporal_retrieval": 62.7,
+          "hybrid_rag": 4526.2,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "When did I feel like I was procrastinating?",
+      "category": "emotional",
+      "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 2
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 2,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.658,
+      "latency": {
+        "case_ms": 6850.9,
+        "branch_ms": {
+          "query_agent": 2981.1,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 70.7,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 3867.5,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was a moment of peace I had recently?",
+      "category": "emotional",
+      "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "time_range": {
+          "start": "2026-05-23",
+          "end": "2026-05-26"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": true,
+          "rank_of_expected": 2
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 2,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.664,
+      "latency": {
+        "case_ms": 7010.7,
+        "branch_ms": {
+          "query_agent": 899.0,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 52.1,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 6109.2,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "When did I feel more optimistic at night?",
+      "category": "emotional",
+      "expected_entry_id": "758e7dcb-e882-4d48-853c-026a5e3104a8",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "temporal"
+        ],
+        "time_range": {
+          "start": "2026-01-01",
+          "end": "2026-05-26"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Rumi",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": true,
+          "entry_count": 10,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 1,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.737,
+      "latency": {
+        "case_ms": 7044.5,
+        "branch_ms": {
+          "query_agent": 973.5,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 57.4,
+          "temporal_retrieval": 61.6,
+          "hybrid_rag": 6068.7,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did my niece's drawing make me feel?",
+      "category": "emotional",
+      "expected_entry_id": "a71921c4-5bde-46ff-9b95-f8cddc466413",
+      "predicted": {
+        "query_types": [
+          "semantic"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 3
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": 3,
+      "is_low_confidence": false,
+      "rag_max_similarity": 0.762,
+      "latency": {
+        "case_ms": 6963.4,
+        "branch_ms": {
+          "query_agent": 1020.2,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 52.7,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 5940.6,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "When did I feel spread too thin?",
+      "category": "emotional",
+      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": true,
+          "rank_of_expected": 2
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 2,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.676,
+      "latency": {
+        "case_ms": 7012.1,
+        "branch_ms": {
+          "query_agent": 804.9,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 69.1,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 6204.8,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What was a small win that I needed to remember?",
+      "category": "emotional",
+      "expected_entry_id": "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": []
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 2,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.697,
+      "latency": {
+        "case_ms": 7034.1,
+        "branch_ms": {
+          "query_agent": 868.4,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "recent_summaries": 52.0,
+          "temporal_retrieval": 0.0,
+          "hybrid_rag": 6163.4,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What were my thoughts on the new GPT-5 model?",
+      "category": "hard_null",
+      "expected_entry_id": null,
+      "predicted": {
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "GPT-5",
+            "type": "tool"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": []
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": null,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.0,
+      "latency": {
+        "case_ms": 1697.1,
+        "branch_ms": {
+          "query_agent": 921.6,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 706.8,
+          "recent_summaries": 66.0,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "How did my trip to Mumbai go?",
+      "category": "hard_null",
+      "expected_entry_id": null,
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Mumbai",
+            "type": "place"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 3,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": null,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.639,
+      "latency": {
+        "case_ms": 1919.1,
+        "branch_ms": {
+          "query_agent": 1221.3,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 639.0,
+          "recent_summaries": 55.9,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did I think of the book 'Klara and the Sun'?",
+      "category": "hard_null",
+      "expected_entry_id": null,
+      "predicted": {
+        "query_types": [
+          "keyword"
+        ],
+        "time_range": null,
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Klara and the Sun",
+            "type": "book"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": []
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        }
+      },
+      "hit": true,
+      "f1_score": 1.0,
+      "union_rank": null,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.0,
+      "latency": {
+        "case_ms": 1851.3,
+        "branch_ms": {
+          "query_agent": 1180.4,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 610.1,
+          "recent_summaries": 57.8,
+          "temporal_retrieval": 0.0,
+          "context_assembler": 0.0
+        }
+      }
+    },
+    {
+      "question": "What did he want to lock in by next Friday?",
+      "category": "hard_pronoun",
+      "expected_entry_id": "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+      "predicted": {
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "time_range": {
+          "start": "2026-05-26",
+          "end": "2026-06-05"
+        },
+        "dashboard_context_needed": false,
+        "entities_mentioned": [
+          {
+            "name": "Manuel",
+            "type": "person"
+          }
+        ]
+      },
+      "retrieved_ids": {
+        "temporal": [],
+        "recent": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "rag": [
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb"
+        ]
+      },
+      "per_branch": {
+        "temporal": {
+          "activated": false,
+          "entry_count": 0,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "recent": {
+          "activated": true,
+          "entry_count": 5,
+          "contains_expected": false,
+          "rank_of_expected": null
+        },
+        "rag": {
+          "activated": true,
+          "entry_count": 1,
+          "contains_expected": true,
+          "rank_of_expected": 1
+        }
+      },
+      "hit": false,
+      "f1_score": 0.0,
+      "union_rank": 1,
+      "is_low_confidence": true,
+      "rag_max_similarity": 0.711,
+      "latency": {
+        "case_ms": 2471.8,
+        "branch_ms": {
+          "query_agent": 1310.9,
+          "router": 0.0,
+          "dashboard_context": 0.0,
+          "hybrid_rag": 1043.2,
+          "recent_summaries": 54.8,
+          "temporal_retrieval": 59.7,
+          "context_assembler": 0.0
+        }
+      }
+    }
+  ]
+}
