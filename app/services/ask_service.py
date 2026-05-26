@@ -32,7 +32,14 @@ MIN_RERANK_SCORE = 0.05  # Phase 2: drop reranked entries below this score
 # Above this top cosine score we trust hybrid_rag standalone. Between
 # MIN_SIMILARITY and this ceiling is the gray zone where the relevance
 # gate refuses unless another branch corroborates.
-HIGH_CONFIDENCE_THRESHOLD = 0.70
+# HIGH_CONFIDENCE_THRESHOLD tuned 26/05/2026 from 0.70 → 0.64 via sweep eval.
+# 0.70 was too aggressive — gated 9 legitimate queries. Cosine discrimination
+# between leakage (Mumbai top_sim 0.639) and legitimate match (Anjali
+# top_sim 0.643) is only 0.004. The eval has 3 hard_null cases; calibration
+# is point-based, not distribution-based. Adding more null cases is a P1
+# follow-up to tighten the gate's confidence.
+# See: evals/results/ask_retrieval_eval_2026-05-26T11-04-*.json
+HIGH_CONFIDENCE_THRESHOLD = 0.64
 
 # --- Identity query detection (Fix 1) ---
 _IDENTITY_PREFIXES = (
