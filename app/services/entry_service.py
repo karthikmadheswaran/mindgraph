@@ -444,7 +444,7 @@ async def soft_delete_entry(entry_id: str, user_id: str) -> dict:
 
 
 async def search_entries(query: str, user_id: str) -> dict:
-    query_embedding = await get_embedding(query)
+    query_embedding = await get_embedding(query, task_type="RETRIEVAL_QUERY")
     result = supabase.rpc(
         "match_entries",
         {

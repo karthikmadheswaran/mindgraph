@@ -1,0 +1,588 @@
+{
+  "summary": {
+    "test_cases": 15,
+    "avg_retrieval_f1": 0.0,
+    "mrr": 0.0,
+    "pass_rate": 0.0,
+    "avg_keyword_score": 0.589,
+    "avg_hallucination_score": 1.0,
+    "avg_retrieval_latency_ms": 706,
+    "avg_generation_latency_ms": 3474,
+    "wall_clock_seconds": 62.7
+  },
+  "results": [
+    {
+      "question": "What have I been working on with Sneha?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Debugging and Startup Ideas",
+          "Debugging Success and Feeling Homesick",
+          "Had coffee with Sneha"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 2247,
+        "similarities": [
+          0.572,
+          0.572,
+          0.54,
+          0.538
+        ]
+      },
+      "answer": {
+        "answer": "I don't know.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "auth",
+          "debug",
+          "Sneha"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2587
+      }
+    },
+    {
+      "question": "What are my health issues recently?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday."
+        ],
+        "expected_titles": [
+          "Struggling Through a Migraine Day",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 565,
+        "similarities": [
+          0.627,
+          0.627,
+          0.567,
+          0.567
+        ]
+      },
+      "answer": {
+        "answer": "Based on your recent journal entries, you have mentioned the following health-related issues:\n\n*   **Persistent Headaches:** On April 11, 2026, you reported having a \"terrible headache all day\" and no...",
+        "keywords_found": [
+          "medicine"
+        ],
+        "keywords_missing": [
+          "migraine"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 4396
+      }
+    },
+    {
+      "question": "Tell me about my family and parents",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Planning Parents' Bangalore Visit",
+          "Upcoming Deadlines and Family Calls"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 617,
+        "similarities": [
+          0.512,
+          0.512,
+          0.491,
+          0.455
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, here is what I found about your family:\n\n*   **Your Mother:** You mentioned that your mom has been recovering from knee surgery. In an entry from April 2026, you noted a...",
+        "keywords_found": [
+          "mom"
+        ],
+        "keywords_missing": [
+          "dad",
+          "Bangalore"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2646
+      }
+    },
+    {
+      "question": "What startup ideas have I discussed?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15"
+        ],
+        "expected_titles": [
+          "Startup Strategy with Arun",
+          "Debugging and Startup Ideas"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 562,
+        "similarities": [
+          0.605,
+          0.573,
+          0.562,
+          0.562
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have discussed the following:\n\n*   **A startup idea with Arun:** You mentioned reaching out to Arun to discuss a startup idea and meeting him for coffee to work on a...",
+        "keywords_found": [
+          "Arun",
+          "startup"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3670
+      }
+    },
+    {
+      "question": "How much money have I been spending?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday."
+        ],
+        "expected_titles": [
+          "Productive Day Amidst Financial Stress",
+          "Struggling Through a Migraine Day",
+          "Cosmic Perspective and Life Logistics",
+          "Amazing Brigade Road Coffee Discovery"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 629,
+        "similarities": [
+          0.55,
+          0.55,
+          0.518,
+          0.504
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have recorded spending **3,000** (presumably in your local currency) on medicines on April 11, 2026.\n\nYou also mentioned spending money on the following occasions, t...",
+        "keywords_found": [
+          "medicine"
+        ],
+        "keywords_missing": [
+          "spent"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3098
+      }
+    },
+    {
+      "question": "What happened when I quit my job?",
+      "retrieval": {
+        "retrieved_titles": [
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday."
+        ],
+        "expected_titles": [
+          "Quitting Job for New Ventures"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 496,
+        "similarities": [
+          0.66,
+          0.542,
+          0.542,
+          0.508
+        ]
+      },
+      "answer": {
+        "answer": "On April 6, 2026, you officially quit your job. Here is a summary of what happened and how you felt based on your entries:\n\n*   **Emotions:** You described the experience as \"scary but exciting,\" thou...",
+        "keywords_found": [
+          "quit",
+          "exciting",
+          "scary"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3380
+      }
+    },
+    {
+      "question": "What places have I visited in Bangalore?",
+      "retrieval": {
+        "retrieved_titles": [
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday."
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick",
+          "Amazing Brigade Road Coffee Discovery",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 615,
+        "similarities": [
+          0.594,
+          0.548,
+          0.548,
+          0.518
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have visited the following places in Bangalore:\n\n*   **A new cafe in Koramangala:** You went here on April 6, 2026, to celebrate quitting your job with Deepa.\n*   **...",
+        "keywords_found": [
+          "Bangalore"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3552
+      }
+    },
+    {
+      "question": "What bugs have I been fixing?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday."
+        ],
+        "expected_titles": [
+          "Addressing Auth Module Issues",
+          "Fixing Session Timeout Bug",
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 478,
+        "similarities": [
+          0.559,
+          0.559,
+          0.528,
+          0.518
+        ]
+      },
+      "answer": {
+        "answer": "I don't know. Based on the journal entries provided, there is no mention of any specific bugs you have been fixing. The entries focus on API documentation, meetings, quitting your job, and preparing a...",
+        "keywords_found": [
+          "bug"
+        ],
+        "keywords_missing": [
+          "auth"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2346
+      }
+    },
+    {
+      "question": "How has my mood been lately?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Quitting Job for New Ventures",
+          "Struggling Through a Migraine Day",
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 570,
+        "similarities": [
+          0.58,
+          0.56,
+          0.56,
+          0.557
+        ]
+      },
+      "answer": {
+        "answer": "Based on your recent entries from early April 2026, your mood has been a mix of **anxiety, nervousness, and excitement** as you navigate some major life changes.\n\nHere is a summary of your mood over t...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5794
+      }
+    },
+    {
+      "question": "What deadlines do I have coming up?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Upcoming Deadlines and Family Calls",
+          "Pitch Deck Prep and Nerves"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 773,
+        "similarities": [
+          0.595,
+          0.595,
+          0.561,
+          0.541
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, here are the deadlines and scheduled events mentioned:\n\n**Upcoming:**\n*   **Update Resume:** You need to update your resume by **April 13, 2026**.\n\n**Recently Passed/Pas...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 7793
+      }
+    },
+    {
+      "question": "Who is Arun and what have we discussed?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Startup Strategy with Arun"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 885,
+        "similarities": [
+          0.614,
+          0.548,
+          0.548,
+          0.539
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, Arun is someone you are collaborating with on a **startup idea**.\n\nHere is what you have discussed or planned with him:\n*   **Startup Idea:** On April 6, 2026, you noted...",
+        "keywords_found": [
+          "Arun",
+          "startup"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3414
+      }
+    },
+    {
+      "question": "What did I do about the MindGraph deployment?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "MindGraph Deployment Success in Bangalore",
+          "Deployment Progress and Security Lessons"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 580,
+        "similarities": [
+          0.528,
+          0.528,
+          0.527,
+          0.516
+        ]
+      },
+      "answer": {
+        "answer": "I don't know.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "deploy",
+          "Railway"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2005
+      }
+    },
+    {
+      "question": "Have I been exercising recently?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick",
+          "Cosmic Perspective and Life Logistics"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 598,
+        "similarities": [
+          0.561,
+          0.561,
+          0.551,
+          0.529
+        ]
+      },
+      "answer": {
+        "answer": "I don't know. Based on the journal entries provided, there is no mention of exercise or physical activity. The entries focus on work, meetings, health issues (headaches), and social outings.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "run",
+          "gym"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2077
+      }
+    },
+    {
+      "question": "What coffee experiences have I had?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Amazing Brigade Road Coffee Discovery",
+          "Debugging and Startup Ideas",
+          "Had coffee with Sneha"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 464,
+        "similarities": [
+          0.571,
+          0.534,
+          0.534,
+          0.529
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you have had the following coffee and cafe experiences:\n\n*   **April 6, 2026:** You met **Arun** for coffee to discuss a pitch deck. You noted feeling nervous about an u...",
+        "keywords_found": [
+          "coffee"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2264
+      }
+    },
+    {
+      "question": "What have I been feeling homesick about?",
+      "retrieval": {
+        "retrieved_titles": [
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Productive Work Despite Persistent Headache \ud83e\udd15",
+          "Met Arun for coffee to discuss the pitch deck. Feeling nervous about the investor meeting next friday.",
+          "New Beginnings, Anxious Future \ud83d\ude80"
+        ],
+        "expected_titles": [
+          "Debugging Success and Feeling Homesick"
+        ],
+        "hits": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0,
+        "retrieval_time_ms": 509,
+        "similarities": [
+          0.498,
+          0.498,
+          0.493,
+          0.478
+        ]
+      },
+      "answer": {
+        "answer": "I don't know.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "home",
+          "missing"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3087
+      }
+    }
+  ]
+}

@@ -267,7 +267,7 @@ async def retrieve_relevant_entries(
     retrieval_query = build_retrieval_query(question, history_messages)
 
     with trace.stage("embedding"):
-        query_embedding = await get_embedding(retrieval_query)
+        query_embedding = await get_embedding(retrieval_query, task_type="RETRIEVAL_QUERY")
 
     # Stage 1: parallel dense + sparse search
     with trace.stage("vector_search"):

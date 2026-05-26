@@ -1,0 +1,1645 @@
+{
+  "summary": {
+    "test_cases": 34,
+    "user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
+    "avg_retrieval_f1": 0.794,
+    "mrr": 0.756,
+    "mrr_scope": "non-null cases only",
+    "pass_rate": 0.794,
+    "category_hit_rate": {
+      "temporal": 0.5,
+      "entity": 1.0,
+      "topic": 1.0,
+      "emotional": 0.833,
+      "hard_null": 0.333,
+      "hard_pronoun": 1.0
+    },
+    "avg_keyword_score": 0.696,
+    "avg_hallucination_score": 1.0,
+    "avg_retrieval_latency_ms": 806,
+    "avg_generation_latency_ms": 9415,
+    "wall_clock_seconds": 347.5
+  },
+  "results": [
+    {
+      "question": "What did I do last week?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "1715dd23-4850-4559-b173-e33a4cd85763"
+        ],
+        "retrieved_titles": [
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Budget Change Performance Hope \ud83e\udd1e",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "category": "temporal",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 2620,
+        "similarities": [
+          0.591,
+          0.588,
+          0.569,
+          0.567,
+          0.564
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from the week of May 8th to May 11th, here is a summary of what you did:\n\n**Family & Social Life**\n*   **Friday (May 8):** You picked up your niece from school and she sh...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "thinking_budget=0",
+          "backfill embeddings",
+          "anjali",
+          "databricks consulting brief"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 8492
+      }
+    },
+    {
+      "question": "What was on my mind on May 12th?",
+      "retrieval": {
+        "retrieved_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee"
+        ],
+        "retrieved_titles": [
+          "Late Night Clarity & Progress \ud83d\udca1",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f",
+          "Simplico & Deadlines \u23f3",
+          "Debugging Success & Future Ideas \ud83d\ude80"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "category": "temporal",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 1136,
+        "similarities": [
+          0.657,
+          0.63,
+          0.627,
+          0.624,
+          0.618
+        ]
+      },
+      "answer": {
+        "answer": "While you didn't write a specific entry on May 12th, your entries from the days leading up to it highlight two main things that were on your mind for that day:\n\n*   **Work Optimism:** Late on the nigh...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "stale token",
+          "spreading myself too thin",
+          "mindgraph",
+          "consulting pipeline"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5309
+      }
+    },
+    {
+      "question": "When do I need to backfill the embeddings by?",
+      "retrieval": {
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb"
+        ],
+        "retrieved_titles": [
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Simplico & Deadlines \u23f3"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "category": "temporal",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 608,
+        "similarities": [
+          0.662,
+          0.55,
+          0.548,
+          0.531,
+          0.527
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from May 23, 2026, there are two related deadlines regarding the embedding updates:\n\n*   **Backfill embeddings:** You noted that you need to backfill the embeddings with ...",
+        "keywords_found": [
+          "backfill embeddings",
+          "task_type",
+          "karthik"
+        ],
+        "keywords_missing": [
+          "2026-05-24"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3760
+      }
+    },
+    {
+      "question": "What happened on the morning of May 11th?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "retrieved_titles": [
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Cafe Chai Over Slack \u2615",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Struggling with Copy, Finding Peace \ud83e\uddd8",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80"
+        ],
+        "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+        "category": "temporal",
+        "hit": true,
+        "rank": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 570,
+        "similarities": [
+          0.595,
+          0.576,
+          0.557,
+          0.554,
+          0.55
+        ]
+      },
+      "answer": {
+        "answer": "On the morning of May 11th, 2026, you had a productive but restless start to the day:\n\n*   **Early Morning (3:00 AM \u2013 5:43 AM):** You couldn't sleep past 3:00 AM because you were thinking about your R...",
+        "keywords_found": [
+          "filter coffee",
+          "dispatch feature",
+          "production"
+        ],
+        "keywords_missing": [
+          "listening to the rain"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5227
+      }
+    },
+    {
+      "question": "What are my deadlines for the end of May?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "retrieved_titles": [
+          "Simplico & Deadlines \u23f3",
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f",
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f"
+        ],
+        "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+        "category": "temporal",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 653,
+        "similarities": [
+          0.648,
+          0.648,
+          0.605,
+          0.599,
+          0.572
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, here are your deadlines and key dates for the end of May:\n\n*   **May 24:** Send the provider renewal draft to the council.\n*   **May 24:** Backfill embeddings with `task...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "ship the embedding",
+          "task_type change",
+          "2026-05-29"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 6592
+      }
+    },
+    {
+      "question": "What was I doing about two weeks ago?",
+      "retrieval": {
+        "retrieved_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee"
+        ],
+        "retrieved_titles": [
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Debugging Success & Future Ideas \ud83d\ude80"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "category": "temporal",
+        "hit": true,
+        "rank": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 718,
+        "similarities": [
+          0.603,
+          0.602,
+          0.595,
+          0.586,
+          0.575
+        ]
+      },
+      "answer": {
+        "answer": "About two weeks ago (around May 8\u201312, 2026), you were balancing some technical work with family time and reflective conversations. Here are the highlights from your journal:\n\n**Work & Projects**\n*   *...",
+        "keywords_found": [
+          "stale token",
+          "chai"
+        ],
+        "keywords_missing": [
+          "slow day",
+          "spreading myself too thin"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5660
+      }
+    },
+    {
+      "question": "When did I meet with Naveen?",
+      "retrieval": {
+        "retrieved_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1"
+        ],
+        "retrieved_titles": [
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Simplico & Deadlines \u23f3",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Cafe Chai Over Slack \u2615",
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f"
+        ],
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "category": "temporal",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 980,
+        "similarities": [
+          0.689,
+          0.612,
+          0.604,
+          0.599,
+          0.567
+        ]
+      },
+      "answer": {
+        "answer": "You met with Naveen on **May 19, 2026**, at the Erode office. During this meeting, you reviewed the quarterly provider renewal summary and agreed to send a draft to the council by May 24.",
+        "keywords_found": [
+          "naveen",
+          "erode office",
+          "provider renewal summary"
+        ],
+        "keywords_missing": [
+          "2026-05-19"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2706
+      }
+    },
+    {
+      "question": "What was I doing last Saturday?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "retrieved_titles": [
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Cafe Chai Over Slack \u2615",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Breakthrough RAG Results \ud83d\ude80"
+        ],
+        "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+        "category": "temporal",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 556,
+        "similarities": [
+          0.612,
+          0.592,
+          0.592,
+          0.583,
+          0.576
+        ]
+      },
+      "answer": {
+        "answer": "I don't know.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "felt off",
+          "rawtxt landing copy",
+          "rumi",
+          "rabbit holes"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 186694
+      }
+    },
+    {
+      "question": "What's the latest with Manuel and Simplico?",
+      "retrieval": {
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ],
+        "retrieved_titles": [
+          "Simplico Freelance Network Opportunity \ud83d\ude80",
+          "Simplico & Deadlines \u23f3",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "A Lesson in Seriousness \ud83c\udf1f"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 1079,
+        "similarities": [
+          0.664,
+          0.622,
+          0.552,
+          0.539,
+          0.514
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, the latest update regarding Manuel and Simplico is from **May 23, 2026**:\n\n*   **Freelance Network Rollout:** You had a long call with Manuel where he expressed interest...",
+        "keywords_found": [
+          "manuel",
+          "simplico",
+          "freelance network rollout",
+          "langgraph"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5658
+      }
+    },
+    {
+      "question": "Who is working on the Simplico engineering side?",
+      "retrieval": {
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "retrieved_titles": [
+          "Simplico Freelance Network Opportunity \ud83d\ude80",
+          "Simplico & Deadlines \u23f3",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Late Night Clarity & Progress \ud83d\udca1",
+          "Debugging and Existential Musings \ud83e\udd14"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 1095,
+        "similarities": [
+          0.668,
+          0.594,
+          0.548,
+          0.515,
+          0.508
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, **Sachin and Rahul** are specifically mentioned as being on the engineering side of Simplico.\n\nAdditionally, your entries note:\n*   **Manuel** is leading the project and...",
+        "keywords_found": [
+          "sachin",
+          "rahul",
+          "engineering side"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2967
+      }
+    },
+    {
+      "question": "What did Anjali need from me?",
+      "retrieval": {
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "1715dd23-4850-4559-b173-e33a4cd85763"
+        ],
+        "retrieved_titles": [
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "A Lesson in Seriousness \ud83c\udf1f",
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 538,
+        "similarities": [
+          0.605,
+          0.547,
+          0.543,
+          0.533,
+          0.53
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 23, 2026, Anjali needs a response from you regarding the **Databricks consulting brief**. The entry notes that she has been waiting for this since May 18, 2026.",
+        "keywords_found": [
+          "anjali",
+          "response",
+          "databricks consulting brief"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2827
+      }
+    },
+    {
+      "question": "What was the outcome of my meeting with Naveen at the Erode office?",
+      "retrieval": {
+        "retrieved_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "retrieved_titles": [
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Cafe Chai Over Slack \u2615",
+          "Simplico & Deadlines \u23f3",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f"
+        ],
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 564,
+        "similarities": [
+          0.703,
+          0.573,
+          0.573,
+          0.565,
+          0.562
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 23, 2026, the outcome of your meeting with Naveen at the Erode office (which took place on May 19) included the following agreements and next steps:\n\n*   **Draft S...",
+        "keywords_found": [
+          "naveen",
+          "erode office",
+          "send the draft",
+          "surrey county council"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3004
+      }
+    },
+    {
+      "question": "What did Priya and I talk about regarding our twenties?",
+      "retrieval": {
+        "retrieved_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "retrieved_titles": [
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "A Lesson in Seriousness \ud83c\udf1f",
+          "Cafe Chai Over Slack \u2615",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f"
+        ],
+        "expected_entry_id": "39051669-328c-4603-95ce-5c32a3f0749b",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 530,
+        "similarities": [
+          0.801,
+          0.667,
+          0.589,
+          0.587,
+          0.576
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from May 11, 2026, you and Priya talked about the gap between what you both expected your twenties to look like versus the reality of your lives now. \n\nDuring that conver...",
+        "keywords_found": [
+          "priya",
+          "twenties",
+          "happy",
+          "getting there"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3811
+      }
+    },
+    {
+      "question": "What did Karthik flag as high-impact?",
+      "retrieval": {
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "retrieved_titles": [
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Cafe Chai Over Slack \u2615",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Simplico Freelance Network Opportunity \ud83d\ude80"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 1418,
+        "similarities": [
+          0.665,
+          0.557,
+          0.549,
+          0.544,
+          0.544
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 23, 2026, Karthik flagged **backfilling embeddings with `task_type`** as the highest-impact change. You noted that this needs to be completed by May 24, 2026.",
+        "keywords_found": [
+          "karthik",
+          "highest-impact change",
+          "task_type"
+        ],
+        "keywords_missing": [
+          "backfill embeddings"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2568
+      }
+    },
+    {
+      "question": "What did I order from Meghana's?",
+      "retrieval": {
+        "retrieved_ids": [
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1"
+        ],
+        "retrieved_titles": [
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f",
+          "Cafe Chai Over Slack \u2615",
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "Budget Change Performance Hope \ud83e\udd1e",
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f"
+        ],
+        "expected_entry_id": "1715dd23-4850-4559-b173-e33a4cd85763",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 1754,
+        "similarities": [
+          0.603,
+          0.554,
+          0.548,
+          0.534,
+          0.533
+        ]
+      },
+      "answer": {
+        "answer": "Based on your entry from May 11, 2026, you ordered **biryani** from Meghana's.",
+        "keywords_found": [
+          "biryani",
+          "meghana's"
+        ],
+        "keywords_missing": [
+          "the office"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2607
+      }
+    },
+    {
+      "question": "What was the issue with Razorpay?",
+      "retrieval": {
+        "retrieved_ids": [
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "retrieved_titles": [
+          "Waiting and Building \u2615",
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Code Push & Urgent Tasks \ud83d\ude80"
+        ],
+        "expected_entry_id": "c1288694-01ee-4ced-818b-78bdc7b9679a",
+        "category": "entity",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 539,
+        "similarities": [
+          0.611,
+          0.532,
+          0.529,
+          0.528,
+          0.521
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 11, 2026, the issue with Razorpay was that your **merchant account review was still pending**. At that time, it had been in review for three weeks, and despite che...",
+        "keywords_found": [
+          "razorpay",
+          "merchant account review",
+          "pending"
+        ],
+        "keywords_missing": [
+          "third week"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2222
+      }
+    },
+    {
+      "question": "What were my thoughts on Cohere Rerank vs Voyage?",
+      "retrieval": {
+        "retrieved_ids": [
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "retrieved_titles": [
+          "Rerank Comparison & Velora Thoughts \ud83e\udd14",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Budget Change Performance Hope \ud83e\udd1e",
+          "Simplico Freelance Network Opportunity \ud83d\ude80"
+        ],
+        "expected_entry_id": "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 496,
+        "similarities": [
+          0.777,
+          0.561,
+          0.553,
+          0.544,
+          0.541
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 23, 2026, you tested both on a 27-case retrieval harness and had the following thoughts:\n\n*   **Voyage:** You noted it was marginally better in terms of the F1 sco...",
+        "keywords_found": [
+          "cohere rerank",
+          "voyage",
+          "f1"
+        ],
+        "keywords_missing": [
+          "latency was rough"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3338
+      }
+    },
+    {
+      "question": "How did I debug the langfuse trace pipeline?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c"
+        ],
+        "retrieved_titles": [
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Simplico Freelance Network Opportunity \ud83d\ude80",
+          "Knowledge Graph Rabbit Hole \ud83e\udde0"
+        ],
+        "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 2157,
+        "similarities": [
+          0.685,
+          0.561,
+          0.556,
+          0.539,
+          0.532
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 23, 2026, you debugged the **langfuse trace pipeline** using **Claude Code**. You successfully got a **before/after diff script** working end-to-end to resolve the...",
+        "keywords_found": [
+          "langfuse trace pipeline",
+          "claude code"
+        ],
+        "keywords_missing": [
+          "diff script working"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3172
+      }
+    },
+    {
+      "question": "Tell me about the tech stack for the Simplico network.",
+      "retrieval": {
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c"
+        ],
+        "retrieved_titles": [
+          "Simplico Freelance Network Opportunity \ud83d\ude80",
+          "Simplico & Deadlines \u23f3",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Rerank Comparison & Velora Thoughts \ud83e\udd14",
+          "Knowledge Graph Rabbit Hole \ud83e\udde0"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 679,
+        "similarities": [
+          0.734,
+          0.547,
+          0.546,
+          0.498,
+          0.496
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, the tech stack for the Simplico network includes:\n\n*   **Core Infrastructure:** The network runs on **Notion** and **Slack**.\n*   **AI & Agent Workflows:** These are bui...",
+        "keywords_found": [
+          "notion",
+          "slack",
+          "langgraph",
+          "gemini"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3000
+      }
+    },
+    {
+      "question": "What were my ideas for the next RAG iteration?",
+      "retrieval": {
+        "retrieved_ids": [
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976"
+        ],
+        "retrieved_titles": [
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Simplico Freelance Network Opportunity \ud83d\ude80",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Budget Change Performance Hope \ud83e\udd1e"
+        ],
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "category": "topic",
+        "hit": true,
+        "rank": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 538,
+        "similarities": [
+          0.63,
+          0.62,
+          0.581,
+          0.576,
+          0.574
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from May 2026, you noted several specific ideas and tasks for the next iteration of your RAG system:\n\n*   **Core Architectural Ideas:** In your entry on May 11, you liste...",
+        "keywords_found": [
+          "self-healing rag",
+          "implicit feedback signals",
+          "compaction tuning"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3719
+      }
+    },
+    {
+      "question": "What was I reading about knowledge graphs?",
+      "retrieval": {
+        "retrieved_ids": [
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "retrieved_titles": [
+          "Knowledge Graph Rabbit Hole \ud83e\udde0",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Breakthrough RAG Results \ud83d\ude80"
+        ],
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 481,
+        "similarities": [
+          0.72,
+          0.611,
+          0.584,
+          0.572,
+          0.57
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries from May 2026, you were diving deep into **knowledge graph architectures** on May 11. Specifically, you mentioned:\n\n*   **Neo4j:** You started your research here.\n*   **T...",
+        "keywords_found": [
+          "knowledge graph architectures",
+          "neo4j",
+          "temporal knowledge graphs"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 7189
+      }
+    },
+    {
+      "question": "What was the big improvement in my RAG system's F1 score?",
+      "retrieval": {
+        "retrieved_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "a612d64b-c8a5-45d2-aee0-58e512397976"
+        ],
+        "retrieved_titles": [
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Rerank Comparison & Velora Thoughts \ud83e\udd14",
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Budget Change Performance Hope \ud83e\udd1e"
+        ],
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 814,
+        "similarities": [
+          0.639,
+          0.598,
+          0.569,
+          0.564,
+          0.563
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 11, 2026, the big improvement in your RAG system was your retrieval F1 score jumping from **0.369 to 0.782**.",
+        "keywords_found": [
+          "retrieval f1",
+          "0.369 to 0.782"
+        ],
+        "keywords_missing": [
+          "eval harness"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2851
+      }
+    },
+    {
+      "question": "What was the auth issue I debugged?",
+      "retrieval": {
+        "retrieved_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663"
+        ],
+        "retrieved_titles": [
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 466,
+        "similarities": [
+          0.638,
+          0.566,
+          0.557,
+          0.545,
+          0.544
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entry from May 12, 2026, the auth issue you debugged turned out to be a **stale token**. You described it as a \"weird auth issue\" that you spent the morning resolving.",
+        "keywords_found": [
+          "auth issue",
+          "stale token"
+        ],
+        "keywords_missing": [
+          "classic"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2796
+      }
+    },
+    {
+      "question": "How did I use MindGraph for my May retrospective?",
+      "retrieval": {
+        "retrieved_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "retrieved_titles": [
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Rainy Day Blues & Small Wins \ud83c\udf27\ufe0f",
+          "Provider Renewal Review Meeting \ud83e\udd1d"
+        ],
+        "expected_entry_id": "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+        "category": "topic",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 530,
+        "similarities": [
+          0.737,
+          0.675,
+          0.617,
+          0.606,
+          0.599
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you used MindGraph as a tool to overcome writer's block during your May retrospective. \n\nOn May 31, you noted that after staring at a blank document for twenty minutes, ...",
+        "keywords_found": [
+          "mindgraph",
+          "may",
+          "retrospective"
+        ],
+        "keywords_missing": [
+          "read through the entries"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3622
+      }
+    },
+    {
+      "question": "When did I feel like I was procrastinating?",
+      "retrieval": {
+        "retrieved_ids": [
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "retrieved_titles": [
+          "Knowledge Graph Rabbit Hole \ud83e\udde0",
+          "Simplico & Deadlines \u23f3",
+          "Rainy Day Blues & Small Wins \ud83c\udf27\ufe0f",
+          "Cafe Chai Over Slack \u2615",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f"
+        ],
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "category": "emotional",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 775,
+        "similarities": [
+          0.635,
+          0.609,
+          0.607,
+          0.592,
+          0.585
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you felt like you were procrastinating on a few specific occasions:\n\n*   **May 11, 2026:** You spent an entire afternoon in a \"rabbit hole\" researching knowledge graph a...",
+        "keywords_found": [
+          "rabbit hole",
+          "deep research",
+          "sophisticated procrastination"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 6502
+      }
+    },
+    {
+      "question": "What was a moment of peace I had recently?",
+      "retrieval": {
+        "retrieved_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "758e7dcb-e882-4d48-853c-026a5e3104a8"
+        ],
+        "retrieved_titles": [
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80",
+          "Late Night Clarity & Progress \ud83d\udca1"
+        ],
+        "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+        "category": "emotional",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 756,
+        "similarities": [
+          0.618,
+          0.614,
+          0.609,
+          0.599,
+          0.59
+        ]
+      },
+      "answer": {
+        "answer": "You\u2019ve had a few moments of peace and quiet reflection recently, particularly on May 11th and 12th:\n\n*   **Sitting with chai (May 12):** After a quiet morning of debugging, you took a break around noo...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "read a bit of rumi",
+          "helped",
+          "couldn't focus"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5119
+      }
+    },
+    {
+      "question": "When did I feel more optimistic at night?",
+      "retrieval": {
+        "retrieved_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "retrieved_titles": [
+          "Late Night Clarity & Progress \ud83d\udca1",
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80"
+        ],
+        "expected_entry_id": "758e7dcb-e882-4d48-853c-026a5e3104a8",
+        "category": "emotional",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 734,
+        "similarities": [
+          0.699,
+          0.632,
+          0.592,
+          0.582,
+          0.567
+        ]
+      },
+      "answer": {
+        "answer": "You felt more optimistic at night on **May 11, 2026** (Entry 1). \n\nIn that entry, written near midnight, you noted that the quiet of late nights makes thinking easier. After working on test cases and ...",
+        "keywords_found": [
+          "late nights",
+          "thinking easier",
+          "night version of me",
+          "more optimistic"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3682
+      }
+    },
+    {
+      "question": "What did my niece's drawing make me feel?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20",
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "1715dd23-4850-4559-b173-e33a4cd85763"
+        ],
+        "retrieved_titles": [
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "A Lesson in Seriousness \ud83c\udf1f",
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f"
+        ],
+        "expected_entry_id": "a71921c4-5bde-46ff-9b95-f8cddc466413",
+        "category": "emotional",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 472,
+        "similarities": [
+          0.729,
+          0.665,
+          0.564,
+          0.555,
+          0.551
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, your niece\u2019s drawings evoked a few different emotions:\n\n*   **Amusement and Sadness:** When she showed you a drawing of your family where you were holding a \"laptop made...",
+        "keywords_found": [
+          "niece",
+          "drawing",
+          "a bit sad"
+        ],
+        "keywords_missing": [
+          "made me laugh"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3278
+      }
+    },
+    {
+      "question": "When did I feel spread too thin?",
+      "retrieval": {
+        "retrieved_ids": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "retrieved_titles": [
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "Debugging and Existential Musings \ud83e\udd14",
+          "Cafe Chai Over Slack \u2615",
+          "Simplico & Deadlines \u23f3",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "category": "emotional",
+        "hit": true,
+        "rank": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 435,
+        "similarities": [
+          0.608,
+          0.592,
+          0.59,
+          0.543,
+          0.541
+        ]
+      },
+      "answer": {
+        "answer": "Based on your journal entries, you expressed feeling spread too thin (or reflected on the possibility) on several occasions in May 2026:\n\n*   **May 12, 2026:** You explicitly wondered if you were spre...",
+        "keywords_found": [
+          "mindgraph",
+          "consulting pipeline"
+        ],
+        "keywords_missing": [
+          "spreading myself too thin",
+          "no clear answer"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 4622
+      }
+    },
+    {
+      "question": "What was a small win that I needed to remember?",
+      "retrieval": {
+        "retrieved_ids": [
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "retrieved_titles": [
+          "Rainy Day Blues & Small Wins \ud83c\udf27\ufe0f",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Rainy Morning Reflections & Production Push \ud83d\ude80",
+          "May Retrospective & Amma's Birthday \ud83d\uddd3\ufe0f",
+          "Cafe Chai Over Slack \u2615"
+        ],
+        "expected_entry_id": "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+        "category": "emotional",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 541,
+        "similarities": [
+          0.657,
+          0.643,
+          0.631,
+          0.612,
+          0.607
+        ]
+      },
+      "answer": {
+        "answer": "Based on your entries from May 2026, there are a few specific \"small wins\" you noted that you wanted to keep in mind:\n\n*   **The MindGraph Dashboard (May 8):** After a day of feeling unproductive and ...",
+        "keywords_found": [
+          "small wins still count",
+          "mindgraph dashboard"
+        ],
+        "keywords_missing": [
+          "felt good"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 5887
+      }
+    },
+    {
+      "question": "What were my thoughts on the new GPT-5 model?",
+      "retrieval": {
+        "retrieved_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "retrieved_titles": [
+          "Breakthrough RAG Results \ud83d\ude80",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Cafe Chai Over Slack \u2615",
+          "Simplico Freelance Network Opportunity \ud83d\ude80"
+        ],
+        "expected_entry_id": null,
+        "category": "hard_null",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 637,
+        "similarities": [
+          0.575,
+          0.561,
+          0.548,
+          0.542,
+          0.542
+        ]
+      },
+      "answer": {
+        "answer": "I don't know. Based on your journal entries, there is no mention of the GPT-5 model. Your recent notes focus on RAG evaluation results, a freelance network project using Gemini and LangGraph, and vari...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2912
+      }
+    },
+    {
+      "question": "How did my trip to Mumbai go?",
+      "retrieval": {
+        "retrieved_ids": [
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "retrieved_titles": [
+          "Cafe Chai Over Slack \u2615",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f",
+          "Navigating Chaos with Priya \ud83c\udf72",
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Twenties Reflections with Priya \ud83e\udd14"
+        ],
+        "expected_entry_id": null,
+        "category": "hard_null",
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "retrieval_time_ms": 476,
+        "similarities": [
+          0.585,
+          0.572,
+          0.556,
+          0.556,
+          0.552
+        ]
+      },
+      "answer": {
+        "answer": "I don't know. Based on your journal entries, there is no mention of a trip to Mumbai. The entries focus on your time in Bangalore, including visits to Indiranagar and Cubbon Park, and conversations wi...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2316
+      }
+    },
+    {
+      "question": "What did I think of the book 'Klara and the Sun'?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "retrieved_titles": [
+          "Niece's Star Drawing & Proposal Call \ud83c\udf1f",
+          "Twenties Reflections with Priya \ud83e\udd14",
+          "Pigeon Man's Nod and Quiet Reflection \ud83d\udd4a\ufe0f",
+          "Pharmacy Visit & RAG Reading \ud83e\udde0",
+          "Cafe Chai Over Slack \u2615"
+        ],
+        "expected_entry_id": null,
+        "category": "hard_null",
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 507,
+        "similarities": [
+          0.521,
+          0.514,
+          0.511,
+          0.498,
+          0.497
+        ]
+      },
+      "answer": {
+        "answer": "I don't know. None of the provided journal entries mention the book \"Klara and the Sun.\"",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 2078
+      }
+    },
+    {
+      "question": "What did he want to lock in by next Friday?",
+      "retrieval": {
+        "retrieved_ids": [
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "retrieved_titles": [
+          "Simplico & Deadlines \u23f3",
+          "Provider Renewal Review Meeting \ud83e\udd1d",
+          "Code Push & Urgent Tasks \ud83d\ude80",
+          "Debugging Success & Future Ideas \ud83d\ude80",
+          "Simplico Freelance Network Opportunity \ud83d\ude80"
+        ],
+        "expected_entry_id": "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+        "category": "hard_pronoun",
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "retrieval_time_ms": 540,
+        "similarities": [
+          0.657,
+          0.609,
+          0.604,
+          0.581,
+          0.577
+        ]
+      },
+      "answer": {
+        "answer": "Based on your entry from May 8, 2026, **Manuel** wanted to lock in the **Q3 deliverables** for the Simplico revenue-share structure by next Friday (May 15, 2026).",
+        "keywords_found": [
+          "manuel"
+        ],
+        "keywords_missing": [
+          "lock the q3 deliverables",
+          "2026-05-15"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0,
+        "generation_time_ms": 3939
+      }
+    }
+  ]
+}
