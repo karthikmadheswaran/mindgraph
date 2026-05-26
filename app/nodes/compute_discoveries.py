@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from app.db import supabase
-from app.embeddings import get_embedding
 from app.state import JournalState
 
 logger = logging.getLogger(__name__)
@@ -72,12 +71,10 @@ def _pattern_recurrence(user_id: str, categories: list, entry_id: str) -> Option
 
 
 async def _echo_from_past(
-    user_id: str, text: str, entry_id: str, entity_names: list
+    user_id: str, embedding: list | None, entry_id: str, entity_names: list
 ) -> Optional[dict]:
-    try:
-        embedding = await get_embedding(text)
-    except Exception as exc:
-        logger.warning("echo_from_past: embedding failed: %s", exc)
+    if not embedding:
+        logger.info("echo_from_past: no embedding in state, skipping")
         return None
 
     try:
@@ -280,7 +277,7 @@ async def compute_discoveries(state: JournalState) -> dict:
     entity_names = [
         e.get("name", "") for e in core_entities if isinstance(e, dict) and e.get("name")
     ]
-    text = state.get("cleaned_text") or state.get("raw_text", "")
+    embedding = state.get("entry_embedding")
     has_deadline = bool(state.get("deadline"))
 
     discoveries: list[dict] = []
@@ -295,7 +292,7 @@ async def compute_discoveries(state: JournalState) -> dict:
         logger.warning("pattern_recurrence failed: %s", exc)
 
     try:
-        d = await _echo_from_past(user_id, text, entry_id, entity_names)
+        d = await _echo_from_past(user_id, embedding, entry_id, entity_names)
         if d:
             discoveries.append(d)
     except Exception as exc:

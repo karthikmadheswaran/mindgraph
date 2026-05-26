@@ -82,6 +82,7 @@ class JournalState(TypedDict):
     relations: Annotated[list, keep_latest]
     discoveries: Annotated[list, keep_latest]
     dispatch_payload: Annotated[Optional[dict], keep_latest]
+    entry_embedding: Annotated[Optional[list], keep_latest]
 
 
 

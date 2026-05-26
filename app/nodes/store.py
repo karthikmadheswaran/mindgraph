@@ -85,7 +85,7 @@ def is_duplicate_constraint_error(exc: Exception) -> bool:
 
 
 async def store_entry(state: JournalState) -> dict:
-    embedding = await get_embedding(state.get("cleaned_text", state["raw_text"]))
+    embedding = state.get("entry_embedding") or await get_embedding(state.get("cleaned_text", state["raw_text"]))
     data = {
         "raw_text": state["raw_text"],
         "cleaned_text": state.get("cleaned_text", ""),
@@ -97,8 +97,7 @@ async def store_entry(state: JournalState) -> dict:
 
     entry_id = state.get("entry_id")
     if entry_id:
-        data["status"] = "completed"
-        data["pipeline_stage"] = None
+        # Keep status="processing" — assemble_dispatch sets "completed" after writing dispatch_payload
         supabase.table("entries").update(data).eq("id", entry_id).execute()
         return {"id": entry_id}
 

@@ -1,8 +1,13 @@
 # app/nodes/normalize.py
+import logging
+
+from app.embeddings import get_embedding
 from app.llm import extract_text, flash as model
 from app.state import JournalState
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_user_timezone(user_timezone: str):
@@ -128,4 +133,10 @@ async def normalize(state: JournalState) -> dict:
     response = await model.ainvoke(prompt)
     cleaned = extract_text(response)
 
-    return {"cleaned_text": cleaned}
+    embedding = None
+    try:
+        embedding = await get_embedding(cleaned)
+    except Exception as exc:
+        logger.warning("normalize: embedding failed: %s", exc)
+
+    return {"cleaned_text": cleaned, "entry_embedding": embedding}
