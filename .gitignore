@@ -12,4 +12,29 @@ Ui inspirations/
 .cursor/
 .antigravity/
 
+# Eval output files (regenerable)
 generation_evaluation_results.json
+/rag_evaluation_results.json
+evals/eval_emotional_loop_results.json
+evals/results/_run_log_*.txt
+
+# Local one-off / scratch (often contain hardcoded secrets — keep local)
+scripts/fetch_notion_*.py
+test_store_node.py
+
+# Local Claude session backups + offline reference cache
+claude_backup/
+.offline_reference/
+
+# Frontend test artifacts and stray root lockfile
+mindgraph-frontend/test_output.txt
+/package-lock.json
+
+# docs/ — keep markdown roadmap/strategy notes versioned, ignore binary assets
+docs/Mindgraph.zip
+docs/Mindgraph_extracted/
+docs/PitchDeck/
+docs/screenshots/
+docs/Claude Design/
+docs/*.pdf
+docs/*.jpg
