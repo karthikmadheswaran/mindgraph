@@ -20,7 +20,9 @@ evals/results/_run_log_*.txt
 
 # Local one-off / scratch (often contain hardcoded secrets — keep local)
 scripts/fetch_notion_*.py
+scripts/fetch_specific_notion_page.py
 test_store_node.py
+evals/sample_low_confidence_response.py
 
 # Local Claude session backups + offline reference cache
 claude_backup/
