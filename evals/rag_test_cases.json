@@ -2,6 +2,10 @@
   "test_user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
   "generated_with": "gemini-2.5-pro",
   "entry_count": 31,
+  "total_cases": 46,
+  "hard_null_count": 15,
+  "generated_at": "2026-05-27T07:38:18.228583+00:00",
+  "hard_null_expansion_note": "hard_null expansion 27/05/2026: added 12 cases across 5 negative-space subcategories (places_not_visited, people_not_mentioned, events_not_attended, topics_never_discussed, time_periods_no_entries) to enable distribution-calibrated threshold tuning.",
   "cases": [
     {
       "question": "What did I do last week?",
@@ -348,6 +352,90 @@
         "2026-05-15"
       ],
       "category": "hard_pronoun"
+    },
+    {
+      "question": "What were my impressions of the street food in Delhi?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "places_not_visited"
+    },
+    {
+      "question": "Remind me about the hike I took in the Swiss Alps.",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "places_not_visited"
+    },
+    {
+      "question": "How was the coffee at the Blue Tokai in Koramangala?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "places_not_visited"
+    },
+    {
+      "question": "What was the feedback from Aditi on the project proposal?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "people_not_mentioned"
+    },
+    {
+      "question": "Did I write down Suresh's contact number anywhere?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "people_not_mentioned"
+    },
+    {
+      "question": "What did I think about Vivek's new startup idea he mentioned over dinner?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "people_not_mentioned"
+    },
+    {
+      "question": "What were the key takeaways from the Google I/O keynote this year?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "events_not_attended"
+    },
+    {
+      "question": "How did my cousin Rohan's wedding in Chennai go?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "events_not_attended"
+    },
+    {
+      "question": "What are my notes on learning to play the guitar?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "topics_never_discussed"
+    },
+    {
+      "question": "What did I think of the movie 'Dune: Part Two'?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "topics_never_discussed"
+    },
+    {
+      "question": "Summarize my journal entries from April 2026.",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "time_periods_no_entries"
+    },
+    {
+      "question": "What did I do for New Year's Eve 2025?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "time_periods_no_entries"
     }
   ]
 }
