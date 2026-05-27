@@ -2,9 +2,9 @@
   "test_user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
   "generated_with": "gemini-2.5-pro",
   "entry_count": 31,
-  "total_cases": 46,
-  "hard_null_count": 15,
-  "generated_at": "2026-05-27T07:38:18.228583+00:00",
+  "total_cases": 50,
+  "hard_null_count": 16,
+  "generated_at": "2026-05-27T13:16:28.943445+00:00",
   "hard_null_expansion_note": "hard_null expansion 27/05/2026: added 12 cases across 5 negative-space subcategories (places_not_visited, people_not_mentioned, events_not_attended, topics_never_discussed, time_periods_no_entries) to enable distribution-calibrated threshold tuning.",
   "cases": [
     {
@@ -436,6 +436,48 @@
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "time_periods_no_entries"
+    },
+    {
+      "question": "What did I write on the morning of May 11th?",
+      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "expected_keywords": [
+        "listening to the rain",
+        "filter coffee",
+        "dispatch feature"
+      ],
+      "category": "temporal",
+      "subcategory": "morning_of_specific_day"
+    },
+    {
+      "question": "What was I doing on the afternoon of May 12?",
+      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_keywords": [
+        "debugging",
+        "auth issue",
+        "stale token",
+        "chai"
+      ],
+      "category": "temporal",
+      "subcategory": "afternoon_of_same_day"
+    },
+    {
+      "question": "What was I writing late last night?",
+      "expected_entry_id": null,
+      "expected_keywords": [],
+      "category": "hard_null",
+      "subcategory": "night_query_wraps_midnight"
+    },
+    {
+      "question": "What happened on May 11?",
+      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "expected_keywords": [
+        "listening to the rain",
+        "filter coffee",
+        "dispatch feature"
+      ],
+      "category": "temporal",
+      "subcategory": "general_date_no_time_of_day"
     }
-  ]
+  ],
+  "layer2_timeofday_note": "Layer 2 expansion 27/05/2026: added 4 cases (1 morning, 1 afternoon, 1 night-wrap hard_null, 1 general no-time-of-day) to verify time_of_day filtering and the LIMIT/ASC fix for narrow single-day ranges. Afternoon substituted for brief's evening because the test user has no entries in UTC evening hours (17-21); proper user-timezone plumbing tracked as Layer 3 work."
 }

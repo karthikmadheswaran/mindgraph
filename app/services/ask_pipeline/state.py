@@ -1,6 +1,22 @@
-from typing import Annotated, Optional, TypedDict
+from typing import Annotated, Literal, Optional, TypedDict
 
 from app.state import keep_latest
+
+# Canonical time_of_day labels accepted on TimeRange. Hours are user-local
+# (or UTC when the user's timezone is unknown — see temporal_retrieval.py).
+TimeOfDay = Literal["morning", "afternoon", "evening", "night"]
+
+
+class TimeRange(TypedDict, total=False):
+    """Shape of the optional `time_range` field on AskState.
+
+    The query_understanding_agent emits this from the user's question. All
+    fields optional — a routing decision may omit `time_range` entirely, OR
+    supply a date range without a `time_of_day` modifier.
+    """
+    start: str           # ISO date YYYY-MM-DD (inclusive)
+    end: str             # ISO date YYYY-MM-DD (inclusive — coerced to exclusive)
+    time_of_day: Optional[TimeOfDay]  # explicit time-of-day modifier, if any
 
 
 class AskState(TypedDict):

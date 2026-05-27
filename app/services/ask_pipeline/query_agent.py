@@ -96,9 +96,18 @@ def _parse_agent_json(raw: str) -> dict:
     if not isinstance(entities, list):
         entities = []
 
+    time_range = data.get("time_range")
+    # Validate time_of_day if the agent emitted one. Any non-canonical value
+    # (typo, hallucinated label) is silently dropped so the date-range still
+    # works without a stray filter destroying recall.
+    if isinstance(time_range, dict):
+        tod = time_range.get("time_of_day")
+        if tod is not None and tod not in ("morning", "afternoon", "evening", "night"):
+            time_range = {**time_range, "time_of_day": None}
+
     return {
         "query_types": query_types,
-        "time_range": data.get("time_range"),
+        "time_range": time_range,
         "entities_mentioned": entities,
         "dashboard_context_needed": bool(data.get("dashboard_context_needed", False)),
     }
@@ -118,7 +127,11 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         "Schema:\n"
         "{\n"
         "  \"query_types\": [\"temporal\" | \"semantic\" | \"recent\" | \"dashboard\" | \"keyword\"],\n"
-        "  \"time_range\": {\"start\": \"YYYY-MM-DD\", \"end\": \"YYYY-MM-DD\"} | null,\n"
+        "  \"time_range\": {\n"
+        "    \"start\": \"YYYY-MM-DD\",            // inclusive\n"
+        "    \"end\": \"YYYY-MM-DD\",              // inclusive\n"
+        "    \"time_of_day\": \"morning\" | \"afternoon\" | \"evening\" | \"night\" | null\n"
+        "  } | null,\n"
         "  \"entities_mentioned\": [{\"name\": \"...\", \"type\": \"...\"}],\n"
         "  \"dashboard_context_needed\": true | false\n"
         "}\n\n"
@@ -131,6 +144,21 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         "- Use \"keyword\" when asking about a specific named entity or term\n"
         "- For entity disambiguation: use the known entities list to resolve ambiguous names\n"
         "- Always include today's date in your temporal reasoning\n\n"
+        "Time-of-day rules:\n"
+        "- Set time_range.time_of_day ONLY when the user EXPLICITLY references a time of day:\n"
+        "    \"morning of May 11th\"           → time_of_day=\"morning\"\n"
+        "    \"what did I write last night\"   → time_of_day=\"night\"\n"
+        "    \"evening reflections\"           → time_of_day=\"evening\"\n"
+        "    \"this afternoon\"                → time_of_day=\"afternoon\"\n"
+        "- LEAVE time_of_day NULL for general date queries (no explicit time-of-day word):\n"
+        "    \"what happened on May 11\"        → time_of_day=null\n"
+        "    \"anything from last week\"        → time_of_day=null\n"
+        "    \"my entries from yesterday\"      → time_of_day=null\n"
+        "- DO NOT infer time_of_day from question TOPIC. \"morning routine\", \"good morning\",\n"
+        "  \"night owl\" are about the topic, not about when the entry was written\n"
+        "  → time_of_day=null\n"
+        "- Canonical labels only: \"morning\" | \"afternoon\" | \"evening\" | \"night\". Anything\n"
+        "  else (\"dawn\", \"midday\", \"late night\") → pick the nearest canonical label.\n\n"
         f"User question: {question.strip()}\n"
     )
 
