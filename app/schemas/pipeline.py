@@ -9,7 +9,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from app.state import ClassifierType, EntityType
+from app.state import ClassifierType, EntityType, RelationType
 
 
 class ClassifierResult(BaseModel):
@@ -41,6 +41,24 @@ class EntityList(BaseModel):
     doesn't reliably support top-level list output, so the list is wrapped in
     an object."""
     entities: list[ExtractedEntity] = Field(default_factory=list, max_length=50)
+
+
+class ExtractedRelation(BaseModel):
+    """A single semantic relation between two entities. Types and relation are
+    enum-constrained; direction validity and entity-membership are enforced as
+    Python post-processing in the node, not by this schema."""
+    source: str
+    source_type: EntityType
+    target: str
+    target_type: EntityType
+    relation: RelationType
+
+
+class RelationList(BaseModel):
+    """Schema for the extract_relations node output. List wrapped in an object
+    because Gemini's json_schema mode doesn't reliably emit a top-level list.
+    Capped at 5 to match the node's max-relations rule."""
+    relations: list[ExtractedRelation] = Field(default_factory=list, max_length=5)
 
 
 class TimeRange(BaseModel):

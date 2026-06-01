@@ -1,12 +1,20 @@
 import json
 from typing import get_args
 
-from app.llm import extract_text, flash as model
+from app.llm import flash as model
+from app.schemas.pipeline import RelationList
 from app.state import EntityType, JournalState, RelationEdge, RelationType
 
 ENTITY_TYPES = set(get_args(EntityType))
 RELATION_TYPES = tuple(get_args(RelationType))
 RELATION_TYPES_STR = ", ".join(RELATION_TYPES)
+
+# Structured output: Gemini enforces the RelationList shape (source/target types
+# and relation are enum-constrained) via response_json_schema. Domain rules the
+# schema CAN'T express — direction validity, entity-membership, self-relation
+# rejection, works_with canonicalization, max-5 dedup — stay as Python
+# post-processing in validate_relations(). method="json_schema" is explicit.
+structured_model = model.with_structured_output(RelationList, method="json_schema")
 
 
 def normalize_text(value: str) -> str:
@@ -46,7 +54,7 @@ Critical rules:
 - "I used Claude to build MindGraph." -> MindGraph(project) built_with Claude(tool) or I(person) uses Claude(tool) only if both entities are present.
 - "Met Sachin at Inspiral office." -> Sachin(person) located_at Inspiral office(place).
 - Use only entity names and types from the provided list.
-- Return [] if no clear semantic relationship exists.
+- Return {{"relations": []}} if no clear semantic relationship exists.
 - Never create self-relations.
 - Maximum 5 relations.
 - If the relation is ambiguous, drop it.
@@ -54,9 +62,9 @@ Critical rules:
 Entities in this entry:
 {entity_list}
 
-Return STRICT JSON only. No explanation.
+Return all relations under a "relations" key.
 Format:
-[
+{{"relations": [
   {{
     "source": "entity_name",
     "source_type": "entity_type",
@@ -64,7 +72,7 @@ Format:
     "target_type": "entity_type",
     "relation": "relation_type"
   }}
-]
+]}}
 
 Journal Entry:
 {text}
@@ -138,29 +146,18 @@ def canonicalize_relations(relations: list[RelationEdge]) -> list[RelationEdge]:
     return list(deduped.values())
 
 
-def parse_relations(raw: str, entities: list[dict]) -> list[RelationEdge]:
-    content = raw.strip()
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
-    if content.endswith("```"):
-        content = content[:-3]
-    content = content.strip()
-
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        return []
-
-    if not isinstance(data, list):
-        return []
-
+def validate_relations(items: list[dict], entities: list[dict]) -> list[RelationEdge]:
+    """Apply the domain rules that the response schema cannot express: entity
+    membership, type sanity, self-relation rejection, direction validity, and
+    works_with canonicalization + dedup (capped at 5). Shared by the live
+    structured-output path and parse_relations()."""
     entity_lookup = {
         make_entity_key(entity["name"], entity["type"]): entity
         for entity in entities
     }
 
     valid: list[RelationEdge] = []
-    for item in data:
+    for item in items:
         if not isinstance(item, dict):
             continue
 
@@ -211,14 +208,36 @@ def parse_relations(raw: str, entities: list[dict]) -> list[RelationEdge]:
     return canonicalize_relations(valid[:5])
 
 
+def parse_relations(raw: str, entities: list[dict]) -> list[RelationEdge]:
+    """Thin JSON wrapper around validate_relations, retained for the relation
+    unit tests that feed raw model-style JSON. The live path no longer parses
+    JSON — Gemini returns typed objects via structured output."""
+    content = raw.strip()
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
+    if content.endswith("```"):
+        content = content[:-3]
+    content = content.strip()
+
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(data, list):
+        return []
+
+    return validate_relations(data, entities)
+
+
 async def run_relation_extraction(text: str, entities: list[dict]) -> list[RelationEdge]:
     if len(entities) < 2:
         return []
 
     prompt = build_relations_prompt(text, entities)
-    response = await model.ainvoke(prompt)
-    content = extract_text(response)
-    return parse_relations(content, entities)
+    result = await structured_model.ainvoke(prompt)
+    items = [relation.model_dump() for relation in result.relations]
+    return validate_relations(items, entities)
 
 
 async def extract_relations(state: JournalState) -> dict:
