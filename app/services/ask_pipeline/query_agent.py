@@ -1,15 +1,20 @@
-import json
 import logging
-import re
 from datetime import datetime, timezone
 
 from app.db import supabase
-from app.llm import extract_text, flash
+from app.llm import flash
+from app.schemas.pipeline import RoutingDecision
 from app.services.ask_pipeline.date_format import format_entry_date, today_str
 from app.services.ask_pipeline.state import AskState
 from app.services.observability import langfuse_config
 
 logger = logging.getLogger(__name__)
+
+# Structured output: Gemini enforces the RoutingDecision shape (query_types and
+# time_of_day are enum-constrained, time_range/entities are typed) via
+# response_json_schema, so the agent no longer hand-parses JSON, strips code
+# fences, or validates time_of_day. method="json_schema" is explicit.
+_structured_flash = flash.with_structured_output(RoutingDecision, method="json_schema")
 
 _DEFAULT_FALLBACK = {
     "query_types": ["semantic"],
@@ -70,49 +75,6 @@ def _format_recent_summaries(entries: list[dict], now: datetime) -> str:
     return "\n".join(lines)
 
 
-def _strip_code_fence(text: str) -> str:
-    text = text.strip()
-    text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    return text
-
-
-def _parse_agent_json(raw: str) -> dict:
-    cleaned = _strip_code_fence(raw)
-    try:
-        data = json.loads(cleaned)
-    except json.JSONDecodeError:
-        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if not match:
-            raise
-        data = json.loads(match.group(0))
-    if not isinstance(data, dict):
-        raise ValueError("agent JSON must be an object")
-
-    query_types = data.get("query_types") or []
-    if not isinstance(query_types, list) or not query_types:
-        query_types = ["semantic"]
-
-    entities = data.get("entities_mentioned") or []
-    if not isinstance(entities, list):
-        entities = []
-
-    time_range = data.get("time_range")
-    # Validate time_of_day if the agent emitted one. Any non-canonical value
-    # (typo, hallucinated label) is silently dropped so the date-range still
-    # works without a stray filter destroying recall.
-    if isinstance(time_range, dict):
-        tod = time_range.get("time_of_day")
-        if tod is not None and tod not in ("morning", "afternoon", "evening", "night"):
-            time_range = {**time_range, "time_of_day": None}
-
-    return {
-        "query_types": query_types,
-        "time_range": time_range,
-        "entities_mentioned": entities,
-        "dashboard_context_needed": bool(data.get("dashboard_context_needed", False)),
-    }
-
-
 def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> str:
     return (
         "You are a query routing agent for a personal journal app.\n\n"
@@ -122,19 +84,12 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         f"{entity_list}\n\n"
         "Recent entries (last 3):\n"
         f"{recent}\n\n"
-        "Output ONLY raw valid JSON. No markdown. No code fences. No backticks. "
-        "No explanation. Start your response with { and end with }.\n"
-        "Schema:\n"
-        "{\n"
-        "  \"query_types\": [\"temporal\" | \"semantic\" | \"recent\" | \"dashboard\" | \"keyword\"],\n"
-        "  \"time_range\": {\n"
-        "    \"start\": \"YYYY-MM-DD\",            // inclusive\n"
-        "    \"end\": \"YYYY-MM-DD\",              // inclusive\n"
-        "    \"time_of_day\": \"morning\" | \"afternoon\" | \"evening\" | \"night\" | null\n"
-        "  } | null,\n"
-        "  \"entities_mentioned\": [{\"name\": \"...\", \"type\": \"...\"}],\n"
-        "  \"dashboard_context_needed\": true | false\n"
-        "}\n\n"
+        "Produce a routing decision with these fields:\n"
+        "- query_types: array of \"temporal\" | \"semantic\" | \"recent\" | \"dashboard\" | \"keyword\"\n"
+        "- time_range: {start: \"YYYY-MM-DD\" (inclusive), end: \"YYYY-MM-DD\" (inclusive), "
+        "time_of_day: \"morning\" | \"afternoon\" | \"evening\" | \"night\" | null} or null\n"
+        "- entities_mentioned: array of {name, type}\n"
+        "- dashboard_context_needed: true | false\n\n"
         "Rules:\n"
         "- query_types is an array — a question can be multiple types simultaneously\n"
         "- Use \"temporal\" when the question references a time period (month name, \"recently\", \"last week\", \"latest\", \"this month\")\n"
@@ -178,10 +133,20 @@ async def query_understanding_agent(state: AskState) -> dict:
         recent=_format_recent_summaries(recent_entries, now),
     )
 
+    # Keep a try/except around the API call as a safety net: on an API failure
+    # (or any rare schema-validation error) fall back to default routing rather
+    # than 500-ing the Ask request. Structured output removes the JSON-parse
+    # failure mode the old fallback mainly guarded against.
     try:
-        response = await flash.ainvoke(prompt, config=langfuse_config())
-        raw = extract_text(response)
-        parsed = _parse_agent_json(raw)
+        result = await _structured_flash.ainvoke(prompt, config=langfuse_config())
+        parsed = {
+            "query_types": result.query_types,
+            "time_range": result.time_range.model_dump() if result.time_range else None,
+            "entities_mentioned": [
+                {"name": e.name, "type": e.type} for e in result.entities_mentioned
+            ],
+            "dashboard_context_needed": result.dashboard_context_needed,
+        }
     except Exception as exc:
         logger.warning(
             "query_understanding_agent fell back to default routing: %s",

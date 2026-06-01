@@ -5,6 +5,8 @@ These are the response schemas handed to Gemini via
 FastAPI request/response models in this package's __init__ — these describe LLM
 output shape, not HTTP payloads.
 """
+from typing import Literal, Optional
+
 from pydantic import BaseModel, Field
 
 from app.state import ClassifierType, EntityType
@@ -39,3 +41,26 @@ class EntityList(BaseModel):
     doesn't reliably support top-level list output, so the list is wrapped in
     an object."""
     entities: list[ExtractedEntity] = Field(default_factory=list, max_length=50)
+
+
+class TimeRange(BaseModel):
+    """Inclusive date range with an optional explicit time-of-day modifier."""
+    start: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    end: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    time_of_day: Optional[Literal["morning", "afternoon", "evening", "night"]] = None
+
+
+class EntityRef(BaseModel):
+    """A known entity the question refers to, used for disambiguation."""
+    name: str
+    type: EntityType
+
+
+class RoutingDecision(BaseModel):
+    """Schema for the query_understanding_agent (Ask routing) output."""
+    query_types: list[
+        Literal["temporal", "semantic", "recent", "dashboard", "keyword"]
+    ] = Field(min_length=1)
+    time_range: Optional[TimeRange] = None
+    entities_mentioned: list[EntityRef] = Field(default_factory=list)
+    dashboard_context_needed: bool = False
