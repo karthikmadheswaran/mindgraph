@@ -1,8 +1,12 @@
-from app.llm import extract_text, flash as model
+from app.llm import flash as model
 from app.state import JournalState
+from app.schemas.pipeline import TitleSummary
 import re
-import json
 
+# Structured output: Gemini returns the TitleSummary shape (auto_title + summary)
+# via response_json_schema, so the node no longer hand-parses JSON or strips code
+# fences. method="json_schema" is explicit.
+structured_model = model.with_structured_output(TitleSummary, method="json_schema")
 
 
 def build_auto_title_summary_prompt(text: str) -> str:
@@ -40,58 +44,18 @@ Requirements:
 - Write the summary in first-person ("I") when the journal entry is written in first-person.
 - Do not rewrite the summary in second-person ("you").
 
-Output Rules:
-- Return STRICT JSON only.
-- No markdown, no code fences, no explanation, no extra text.
-- Use exactly these keys: "auto_title", "summary"
-
-Fallback for empty or unclear input:
-{{"auto_title":"Untitled Entry 📝","summary":""}}
-
-Expected JSON format:
-{{
-  "auto_title": "string",
-  "summary": "string"
-}}
+- For empty or unclear input, use the title "Untitled Entry 📝" and an empty summary.
 
 Example:
 Journal Entry:
 I felt really tired today but finally finished the API integration. I was stressed in the morning, but relieved by evening.
 
-Output:
-{{"auto_title":"API Progress Relief ✅","summary":"I felt stressed and tired early in the day, but finishing the API integration left me relieved by the evening."}}
+auto_title: "API Progress Relief ✅"
+summary: "I felt stressed and tired early in the day, but finishing the API integration left me relieved by the evening."
 
 Journal Entry:
 {text}
 """
-
-def parse_JSON(raw: str) -> tuple[str, str]:
-    # Remove markdown fences if present
-    raw = raw.strip()
-    if raw.startswith("```"):
-        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.IGNORECASE)
-        raw = re.sub(r"\s*```$", "", raw)
-
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return "Untitled Entry", ""
-
-    if not isinstance(data, dict):
-        return "Untitled Entry", ""
-
-    auto_title = data.get("auto_title", "")
-    summary = data.get("summary", "")
-
-    if not isinstance(auto_title, str):
-        auto_title = ""
-    if not isinstance(summary, str):
-        summary = ""
-
-    auto_title = auto_title.strip() or "Untitled Entry"
-    summary = summary.strip()
-
-    return auto_title, summary
 
 
 async def title_summary(state: JournalState) -> dict:
@@ -105,13 +69,9 @@ async def title_summary(state: JournalState) -> dict:
 
     prompt = build_auto_title_summary_prompt(text)
 
-    response = await model.ainvoke(prompt)
+    result = await structured_model.ainvoke(prompt)
 
-    content = extract_text(response)
-
-    auto_title,summary = parse_JSON(content)
+    auto_title = result.auto_title.strip() or "Untitled Entry"
+    summary = result.summary.strip()
 
     return {"auto_title": auto_title, "summary": summary}
-
-
-

@@ -19,3 +19,10 @@ class ClassifierResult(BaseModel):
         min_length=1,
         max_length=4,
     )
+
+
+class TitleSummary(BaseModel):
+    """Schema for the title_summary node output. A concise emoji title plus a
+    short first-person summary."""
+    auto_title: str = Field(min_length=1, max_length=80)
+    summary: str = Field(default="", max_length=400)
