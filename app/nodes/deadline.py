@@ -1,12 +1,17 @@
 from app.state import JournalState, DeadlineNode
 from datetime import datetime
-import re
-import json
 from zoneinfo import ZoneInfo
 
-from app.llm import extract_text, flash as model
+from app.llm import flash as model
+from app.schemas.pipeline import DeadlineList
 
 USE_SEMANTIC_VALIDATOR = False
+
+# Structured output: Gemini enforces the DeadlineList shape, including the ISO
+# due_at format via the schema's regex pattern. The strptime datetime coercion,
+# the (disabled) bad-phrase semantic validator, and dedup_deadlines all stay as
+# Python post-processing in the node. method="json_schema" is explicit.
+structured_model = model.with_structured_output(DeadlineList, method="json_schema")
 
 
 def resolve_reference_date(user_timezone: str) -> str:
@@ -127,10 +132,8 @@ Do NOT extract examples like:
   -> This is ONE event, extract it only once.
 
 Output Rules:
-- Return STRICT JSON only.
-- No markdown, no code fences, no explanation.
-- Return a JSON array.
-- If no deadlines exist, return [].
+- Return all deadlines under a "deadlines" key.
+- If no deadlines exist, return {{"deadlines": []}}.
 - Use exactly these keys for each item: "description", "due_at", "raw_text"
 - "description" = short description of what the deadline is for
 - "due_at" = date in YYYY-MM-DD format, or datetime in YYYY-MM-DDTHH:MM format if a specific time is mentioned. Use YYYY-MM-DD when no time is mentioned.
@@ -140,10 +143,10 @@ Output Rules:
 - Do not include extra fields.
 
 Format:
-[
+{{"deadlines": [
   {{"description": "submit visa documents", "due_at": "2026-04-10", "raw_text": "by Friday"}},
   {{"description": "meeting with Manuel", "due_at": "2026-04-09T19:30", "raw_text": "meeting at 19:30 today"}}
-]
+]}}
 """.strip()
 
 
@@ -179,46 +182,22 @@ def is_valid_deadline_candidate(
     return True
 
 
-def parse_deadlines(
-    raw: str,
+def validate_deadlines(
+    items: list[dict],
     raw_source_text: str,
     cleaned_source_text: str,
 ) -> list[DeadlineNode]:
-    raw = raw.strip()
-
-    if raw.startswith("```"):
-        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.IGNORECASE)
-        raw = re.sub(r"\s*```$", "", raw)
-
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        return []
-
-    if not isinstance(data, list):
-        return []
-
+    """Apply the post-processing the response schema can't express: the
+    (disabled) bad-phrase semantic validator and strptime datetime coercion.
+    The schema already guarantees the ISO due_at format and required keys."""
     valid: list[DeadlineNode] = []
 
-    for item in data:
-        if not isinstance(item, dict):
-            continue
-
-        description = item.get("description")
-        due_at = item.get("due_at")
-        extracted_raw_text = item.get("raw_text")
-
-        if not all(isinstance(x, str) for x in [description, due_at, extracted_raw_text]):
-            continue
-
-        description = description.strip()
-        due_at = due_at.strip()
-        extracted_raw_text = extracted_raw_text.strip()
+    for item in items:
+        description = (item.get("description") or "").strip()
+        due_at = (item.get("due_at") or "").strip()
+        extracted_raw_text = (item.get("raw_text") or "").strip()
 
         if not description:
-            continue
-
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?", due_at):
             continue
 
         if USE_SEMANTIC_VALIDATOR and not is_valid_deadline_candidate(
@@ -256,11 +235,11 @@ async def extract_deadlines(state: JournalState) -> dict:
     raw_text = state["raw_text"]
 
     prompt = build_deadline_prompt(text, raw_text, state.get("user_timezone", "UTC"))
-    response = await model.ainvoke(prompt)
-    content = extract_text(response)
+    result = await structured_model.ainvoke(prompt)
+    items = [deadline.model_dump() for deadline in result.deadlines]
 
-    deadlines = parse_deadlines(
-        content,
+    deadlines = validate_deadlines(
+        items,
         raw_source_text=raw_text,
         cleaned_source_text=text,
     )

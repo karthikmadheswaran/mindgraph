@@ -61,6 +61,20 @@ class RelationList(BaseModel):
     relations: list[ExtractedRelation] = Field(default_factory=list, max_length=5)
 
 
+class ExtractedDeadline(BaseModel):
+    """A single deadline. due_at is ISO date or datetime; strptime coercion to a
+    real datetime and dedup happen as Python post-processing in the node."""
+    description: str = Field(min_length=1)
+    due_at: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?$")
+    raw_text: str
+
+
+class DeadlineList(BaseModel):
+    """Schema for the deadline node output. List wrapped in an object because
+    Gemini's json_schema mode doesn't reliably emit a top-level list."""
+    deadlines: list[ExtractedDeadline] = Field(default_factory=list)
+
+
 class TimeRange(BaseModel):
     """Inclusive date range with an optional explicit time-of-day modifier."""
     start: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")

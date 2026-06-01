@@ -3,19 +3,17 @@ from datetime import datetime
 
 import app.nodes.deadline as deadline_module
 from app.nodes.deadline import build_deadline_prompt, dedup_deadlines, extract_deadlines
+from app.schemas.pipeline import DeadlineList, ExtractedDeadline
 
 
-class FakeResponse:
-    def __init__(self, content: str):
-        self.content = content
+class FakeStructuredModel:
+    """Stands in for the with_structured_output runnable: returns a typed
+    DeadlineList directly (no JSON), matching the live node's contract."""
+    def __init__(self, result: DeadlineList):
+        self.result = result
 
-
-class FakeModel:
-    def __init__(self, content: str):
-        self.content = content
-
-    async def ainvoke(self, prompt: str):
-        return FakeResponse(self.content)
+    async def ainvoke(self, prompt: str, **kwargs):
+        return self.result
 
 
 def make_deadline(description: str, due_at: datetime, raw_text: str) -> dict:
@@ -47,14 +45,22 @@ async def run_tests() -> None:
     ]
     same_day_result = dedup_deadlines(same_day_distinct)
 
-    original_model = deadline_module.model
-    deadline_module.model = FakeModel(
-        """
-        [
-          {"description": "meeting with Manuel", "due_at": "2026-04-09", "raw_text": "meeting tomorrow"},
-          {"description": "meeting with Manuel", "due_at": "2026-04-09", "raw_text": "scheduled for tomorrow at 19:30"}
-        ]
-        """.strip()
+    original_model = deadline_module.structured_model
+    deadline_module.structured_model = FakeStructuredModel(
+        DeadlineList(
+            deadlines=[
+                ExtractedDeadline(
+                    description="meeting with Manuel",
+                    due_at="2026-04-09",
+                    raw_text="meeting tomorrow",
+                ),
+                ExtractedDeadline(
+                    description="meeting with Manuel",
+                    due_at="2026-04-09",
+                    raw_text="scheduled for tomorrow at 19:30",
+                ),
+            ]
+        )
     )
 
     try:
@@ -77,9 +83,9 @@ async def run_tests() -> None:
         }
         extraction_result = await extract_deadlines(state)
     finally:
-        deadline_module.model = original_model
+        deadline_module.structured_model = original_model
 
-    prompt = build_deadline_prompt("Meeting on 2026-04-09.", "Meeting tomorrow.")
+    prompt = build_deadline_prompt("Meeting on 2026-04-09.", "Meeting tomorrow.", "UTC")
 
     checks = {
         "exact_duplicates_collapsed_to_one": len(exact_result) == 1,
