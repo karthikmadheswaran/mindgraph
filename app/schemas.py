@@ -32,6 +32,7 @@ class ProjectStatusUpdateRequest(BaseModel):
 class SendMessageRequest(BaseModel):
     content: str
     mode: Literal["ask", "journal"]
+    browser_timezone: Optional[str] = None
 
 
 class MessageResponse(BaseModel):
@@ -55,6 +56,10 @@ class ExtractionEditRequest(BaseModel):
     original_value: Optional[str] = None
     edited_value: str
     edit_type: Literal["correction", "deletion", "addition"]
+
+
+class TimezoneUpdateRequest(BaseModel):
+    timezone: str
 
 
 class EntriesQueryParams(BaseModel):

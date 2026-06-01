@@ -177,6 +177,7 @@ def _initial_state(question: str) -> dict:
         "user_id": USER_ID,
         "conversation_history": "",
         "long_term_memory": "",
+        "user_timezone": os.environ.get("RAG_EVAL_USER_TZ", "Asia/Kolkata"),
         "query_types": [],
         "time_range": None,
         "entities_mentioned": [],

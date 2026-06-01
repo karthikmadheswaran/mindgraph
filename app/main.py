@@ -5,7 +5,7 @@ from typing import Optional
 
 import sentry_sdk
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, Query, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse
 from sentry_sdk.integrations.fastapi import FastApiIntegration
@@ -25,6 +25,7 @@ from app.schemas import (
     MessagesResponse,
     ProjectStatusUpdateRequest,
     SendMessageRequest,
+    TimezoneUpdateRequest,
 )
 from app.services import (
     ask_service,
@@ -160,12 +161,13 @@ async def ask_question(
     question: str,
     background_tasks: BackgroundTasks,
     request: Request,
+    browser_timezone: Optional[str] = Query(default=None),
     user_id: str = Depends(get_current_user),
     _rl: None = Depends(ask_rate_limit),
 ):
     tier = await tier_service.get_user_tier(user_id)
     await check_cost_cap(user_id, tier)
-    answer = await ask_service.ask(question, user_id)
+    answer = await ask_service.ask(question, user_id, browser_timezone=browser_timezone)
     background_tasks.add_task(ask_service.compact_old_messages, user_id)
     return {"answer": answer}
 
@@ -187,7 +189,9 @@ async def send_conversation_message(
     user_id: str = Depends(get_current_user),
 ):
     if request.mode == "ask":
-        return await conversation.send_ask_message(user_id, request.content)
+        return await conversation.send_ask_message(
+            user_id, request.content, browser_timezone=request.browser_timezone,
+        )
     return await conversation.send_journal_message(
         user_id,
         request.content,
@@ -388,3 +392,22 @@ async def get_dashboard_stats(
     user_id: str = Depends(get_current_user),
 ):
     return await entry_service.get_dashboard_stats(user_id, user_tz or "UTC")
+
+
+@app.get("/users/me/timezone")
+async def get_user_timezone(user_id: str = Depends(get_current_user)):
+    from app.db import get_user_timezone as _get_tz
+    tz = await _get_tz(user_id)
+    return {"timezone": tz}
+
+
+@app.patch("/users/me/timezone")
+async def update_user_timezone(
+    body: TimezoneUpdateRequest,
+    user_id: str = Depends(get_current_user),
+):
+    from app.db import is_valid_iana_tz, set_user_timezone
+    if not is_valid_iana_tz(body.timezone):
+        raise HTTPException(status_code=422, detail=f"Invalid IANA timezone: {body.timezone}")
+    await set_user_timezone(user_id, body.timezone)
+    return {"timezone": body.timezone}

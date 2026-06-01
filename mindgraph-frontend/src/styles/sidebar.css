@@ -186,6 +186,27 @@
   color: var(--accent-warm);
 }
 
+.sidebar-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-settings-btn {
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.sidebar-settings-btn:hover {
+  color: var(--text-primary);
+}
+
 .mobile-tabs {
   display: none;
 }

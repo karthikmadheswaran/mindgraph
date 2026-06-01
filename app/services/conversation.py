@@ -67,7 +67,7 @@ async def get_messages(
     return [_normalize_message(row) for row in (result.data or [])]
 
 
-async def send_ask_message(user_id: str, content: str) -> dict:
+async def send_ask_message(user_id: str, content: str, browser_timezone: str | None = None) -> dict:
     content = _validate_content(content)
     user_message = _insert_message(user_id, "user", content)
 
@@ -76,6 +76,7 @@ async def send_ask_message(user_id: str, content: str) -> dict:
             content,
             user_id,
             exclude_message_id=user_message["id"],
+            browser_timezone=browser_timezone,
         )
         assistant_message = _insert_message(user_id, "assistant", answer)
     except Exception as exc:

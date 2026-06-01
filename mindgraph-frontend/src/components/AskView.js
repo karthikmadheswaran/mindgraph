@@ -752,7 +752,8 @@ export default function AskView({ isActive }) {
   const sendAskFallback = useCallback(
     async (content, tempUserId, typingId) => {
       const headers = await authHeaders();
-      const res = await fetch(`${API}/ask?question=${encodeURIComponent(content)}`, {
+      const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      const res = await fetch(`${API}/ask?question=${encodeURIComponent(content)}&browser_timezone=${encodeURIComponent(browserTimezone)}`, {
         method: "POST",
         headers,
       });
@@ -790,10 +791,11 @@ export default function AskView({ isActive }) {
 
       try {
         const headers = await authHeaders();
+        const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
         const res = await fetch(`${API}/conversations/messages`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ content, mode: "ask" }),
+          body: JSON.stringify({ content, mode: "ask", browser_timezone: browserTimezone }),
         });
 
         if (!res.ok) throw new Error(`Conversation ask failed: ${res.status}`);

@@ -483,10 +483,19 @@ async def get_memory(user_id: str) -> dict:
     }
 
 
+async def resolve_user_timezone(user_id: str, browser_tz: str | None) -> str:
+    from app.db import get_user_timezone, is_valid_iana_tz
+    if browser_tz and is_valid_iana_tz(browser_tz):
+        return browser_tz
+    stored = await get_user_timezone(user_id)
+    return stored or "UTC"
+
+
 async def generate_answer(
     question: str,
     user_id: str,
     exclude_message_id: str | None = None,
+    browser_timezone: str | None = None,
 ) -> str:
     from app.services.ask_pipeline import AskState, ask_pipeline
 
@@ -532,11 +541,14 @@ async def generate_answer(
         )
         conversation_history = ""
 
+    user_tz = await resolve_user_timezone(user_id, browser_timezone)
+
     initial_state: AskState = {
         "question": question,
         "user_id": user_id,
         "conversation_history": conversation_history,
         "long_term_memory": user_memory,
+        "user_timezone": user_tz,
         "query_types": [],
         "time_range": None,
         "entities_mentioned": [],
@@ -615,8 +627,8 @@ async def new_session(user_id: str) -> dict:
     return {"status": "ok", "message": "Session cleared"}
 
 
-async def ask(question: str, user_id: str) -> str:
-    answer = await generate_answer(question, user_id)
+async def ask(question: str, user_id: str, browser_timezone: str | None = None) -> str:
+    answer = await generate_answer(question, user_id, browser_timezone=browser_timezone)
     supabase.table("ask_messages").insert(
         [
             {

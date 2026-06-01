@@ -509,6 +509,8 @@ async def create_entry_async(
     background_tasks: BackgroundTasks,
     user_id: str,
 ) -> dict:
+    from app.db import maybe_update_user_timezone
+    await maybe_update_user_timezone(user_id, entry.user_timezone)
     return await enqueue_entry_processing(entry, background_tasks, user_id)
 
 

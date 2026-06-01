@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 import dateparser
 
@@ -32,12 +33,8 @@ _MONTH_PATTERN = re.compile(
 _RECENT_SIGNALS = ("latest", "most recent", "newest", "recent")
 
 # Canonical time-of-day hour ranges. Half-open intervals [start, end).
-# Hours are user-local; "night" wraps midnight (21:00 → next day 05:00).
-# NOTE: AskState does not currently carry user_timezone (see TODO in
-# `temporal_retrieval` below). When the user's timezone is unknown, these
-# ranges are applied against the entry's UTC hour. For users in IST that
-# means a 5.5h shift — a known imprecision tracked as Layer 3 work
-# (referenced-date indexing) in the Status Hub roadmap.
+# Hours are user-local.
+# "night" wraps midnight (21:00 → next day 05:00).
 TIME_OF_DAY_RANGES: dict[str, tuple[int, int]] = {
     "morning":   (5, 12),
     "afternoon": (12, 17),
@@ -84,11 +81,94 @@ def _hour_in_range(hour: int, time_of_day: str) -> bool:
     return hour >= start_hour or hour < end_hour
 
 
+def _hour_distance(fractional_hour: float, start_hour: int, end_hour: int) -> float:
+    """Minimum circular distance from fractional_hour to the [start, end) window."""
+    if start_hour < end_hour:
+        if start_hour <= fractional_hour < end_hour:
+            return 0.0
+        dist_to_start = min(
+            abs(fractional_hour - start_hour),
+            24.0 - abs(fractional_hour - start_hour),
+        )
+        dist_to_end = min(
+            abs(fractional_hour - end_hour),
+            24.0 - abs(fractional_hour - end_hour),
+        )
+        return min(dist_to_start, dist_to_end)
+    # Wrap-around window (night = 21:00 → 05:00).
+    if fractional_hour >= start_hour or fractional_hour < end_hour:
+        return 0.0
+    dist_to_start = min(
+        abs(fractional_hour - start_hour),
+        24.0 - abs(fractional_hour - start_hour),
+    )
+    dist_to_end = min(
+        abs(fractional_hour - end_hour),
+        24.0 - abs(fractional_hour - end_hour),
+    )
+    return min(dist_to_start, dist_to_end)
+
+
+def _time_of_day_boost(entry_dt_local: datetime, tod_label: Optional[str]) -> float:
+    if not tod_label:
+        return 1.0
+    span = TIME_OF_DAY_RANGES.get(tod_label)
+    if span is None:
+        return 1.0
+    start_h, end_h = span
+    h = entry_dt_local.hour + entry_dt_local.minute / 60.0
+    if _hour_in_range(entry_dt_local.hour, tod_label):
+        return 1.0
+    distance = _hour_distance(h, start_h, end_h)
+    if distance < 1.0:
+        return 0.7
+    if distance < 2.0:
+        return 0.4
+    return 0.1
+
+
 def _parse_iso_created_at(value: str) -> Optional[datetime]:
     try:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except Exception:
         return None
+
+
+def _localize_to_user_tz(dt_utc: datetime, user_tz: str) -> datetime:
+    """Convert a UTC-aware datetime to the user's local timezone."""
+    try:
+        zi = ZoneInfo(user_tz)
+    except Exception:
+        zi = ZoneInfo("UTC")
+    return dt_utc.astimezone(zi)
+
+
+def _user_day_to_utc_bounds(date_iso: str, user_tz: str) -> tuple[str, str]:
+    """Convert a user-local date string (YYYY-MM-DD) to UTC start/end bounds.
+
+    When the user says "May 11", they mean May 11 in their timezone.
+    For IST (UTC+5:30), that's UTC May 10 18:30 → UTC May 11 18:30.
+    """
+    try:
+        zi = ZoneInfo(user_tz)
+    except Exception:
+        zi = ZoneInfo("UTC")
+
+    parsed = datetime.fromisoformat(date_iso.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    parsed_utc = parsed.astimezone(timezone.utc)
+
+    # If this was already a midnight-in-UTC value from detect_and_parse_time_range,
+    # interpret it as midnight in the USER's timezone instead.
+    if parsed_utc.hour == 0 and parsed_utc.minute == 0:
+        local_midnight = datetime(
+            parsed_utc.year, parsed_utc.month, parsed_utc.day,
+            tzinfo=zi,
+        )
+        return _to_iso(local_midnight), _to_iso(local_midnight + timedelta(days=1))
+
+    return date_iso, date_iso
 
 
 def detect_and_parse_time_range(question: str, today: datetime) -> Optional[dict]:
@@ -191,11 +271,63 @@ def _is_narrow_range(start_iso: str, end_iso: str) -> bool:
     return (end_dt - start_dt) <= timedelta(hours=24)
 
 
+def _adjust_range_for_user_tz(time_range: dict, user_tz: str) -> dict:
+    """Convert date boundaries from UTC-midnight interpretation to user-tz-midnight.
+
+    detect_and_parse_time_range produces ranges like:
+      start = "2025-05-11T00:00:00+00:00"  (midnight UTC)
+      end   = "2025-05-12T00:00:00+00:00"
+
+    But the user in IST (UTC+5:30) means May 11 IST = UTC May 10 18:30 → May 11 18:30.
+    This function re-interprets those midnight-UTC boundaries as midnight-in-user-tz.
+    """
+    if user_tz == "UTC":
+        return time_range
+
+    try:
+        zi = ZoneInfo(user_tz)
+    except Exception:
+        return time_range
+
+    start_dt = _parse_iso_created_at(time_range["start"])
+    end_dt = _parse_iso_created_at(time_range["end"])
+    if start_dt is None or end_dt is None:
+        return time_range
+
+    start_utc = start_dt.astimezone(timezone.utc)
+    end_utc = end_dt.astimezone(timezone.utc)
+
+    # Only re-interpret if these look like midnight-UTC boundaries (from our
+    # detect_and_parse_time_range or _coerce_range). Non-midnight boundaries
+    # (e.g. from relative windows like "last 7 days" computed from now()) are
+    # already correct in UTC and should not be shifted.
+    if start_utc.hour == 0 and start_utc.minute == 0:
+        local_start = datetime(
+            start_utc.year, start_utc.month, start_utc.day,
+            tzinfo=zi,
+        )
+        adjusted_start = _to_iso(local_start)
+    else:
+        adjusted_start = time_range["start"]
+
+    if end_utc.hour == 0 and end_utc.minute == 0:
+        local_end = datetime(
+            end_utc.year, end_utc.month, end_utc.day,
+            tzinfo=zi,
+        )
+        adjusted_end = _to_iso(local_end)
+    else:
+        adjusted_end = time_range["end"]
+
+    return {"start": adjusted_start, "end": adjusted_end}
+
+
 async def temporal_retrieval(state: AskState) -> dict:
     if "temporal" not in (state.get("query_types") or []):
         return {}
 
     now = datetime.now(timezone.utc)
+    user_tz = state.get("user_timezone") or "UTC"
     state_time_range = state.get("time_range") or {}
     time_range = _coerce_range(state_time_range, now) or detect_and_parse_time_range(
         state["question"], now
@@ -203,6 +335,9 @@ async def temporal_retrieval(state: AskState) -> dict:
     if not time_range:
         logger.info("temporal_retrieval: no resolvable date range for query=%r", state["question"])
         return {"temporal_has_results": False}
+
+    # Adjust date-range boundaries from UTC-midnight to user-tz-midnight.
+    time_range = _adjust_range_for_user_tz(time_range, user_tz)
 
     # Pull `time_of_day` from the agent's time_range (if it set one). Only
     # canonical labels reach this point — query_agent._parse_agent_json drops
@@ -215,9 +350,7 @@ async def temporal_retrieval(state: AskState) -> dict:
 
     # LIMIT/ORDER strategy:
     # - Narrow single-day range: ASC + LIMIT 25 so morning entries surface
-    #   first and dense days (the test user wrote 13 entries on May 11) don't
-    #   cut off the earliest entry. If time_of_day is set we Python-filter
-    #   below; LIMIT 25 leaves enough headroom for the filter.
+    #   first and dense days don't cut off the earliest entry.
     # - Multi-day range: keep DESC (recent first) + LIMIT 10. If time_of_day
     #   is set on a multi-day range, bump to LIMIT 50 so the post-filter has
     #   enough candidates to work with.
@@ -229,11 +362,6 @@ async def temporal_retrieval(state: AskState) -> dict:
         query_limit = 50 if time_of_day else 10
         order_desc = True   # DESC: recent first
 
-    # TODO(Layer 2 timezone): AskState does not currently carry user_timezone,
-    # so EXTRACT(HOUR ...) is implicitly UTC. For users not in UTC the
-    # canonical "morning" window is offset from the user's perceived morning.
-    # See Layer 3 referenced-date indexing roadmap in Status Hub for the
-    # proper fix (which also subsumes content-vs-created_at mismatches).
     result = (
         supabase.table("entries")
         .select("id, auto_title, summary, raw_text, cleaned_text, created_at")
@@ -249,24 +377,25 @@ async def temporal_retrieval(state: AskState) -> dict:
 
     rows = result.data or []
 
-    # Apply time-of-day Python-filter if requested. We over-fetched above so
-    # this can produce a smaller-but-still-useful result without a second
-    # roundtrip. SQL-side EXTRACT(HOUR …) was considered and rejected: it
-    # requires PostgREST expression filters or a new RPC, neither of which
-    # earns its keep for a 25-row post-filter.
+    # Soft-ranking by time_of_day boost (replaces the old strict filter).
+    # All entries in the date range are fetched; those outside the time-of-day
+    # window get a lower boost but are NOT excluded.
     if time_of_day is not None:
-        filtered = []
+        scored = []
         for row in rows:
             dt = _parse_iso_created_at(row["created_at"])
             if dt is None:
                 continue
-            if _hour_in_range(dt.astimezone(timezone.utc).hour, time_of_day):
-                filtered.append(row)
-        rows = filtered
+            local_dt = _localize_to_user_tz(dt, user_tz)
+            boost = _time_of_day_boost(local_dt, time_of_day)
+            scored.append((boost, row))
+        # Stable sort by boost descending — within the same boost tier,
+        # the DB's created_at ordering (ASC for narrow, DESC for wide)
+        # is preserved by Python's stable sort.
+        scored.sort(key=lambda pair: -pair[0])
+        rows = [row for _boost, row in scored]
 
-    # Final cap — never return more than 10 narrow / 10 broad to keep prompt
-    # size predictable. The fetch-then-filter dance only widened the candidate
-    # pool; the user-visible result is still bounded.
+    # Final cap — never return more than 10 to keep prompt size predictable.
     rows = rows[:10]
 
     entries = []
@@ -283,12 +412,13 @@ async def temporal_retrieval(state: AskState) -> dict:
         )
 
     logger.info(
-        "temporal_retrieval: %d entries for range %s..%s time_of_day=%s narrow=%s",
+        "temporal_retrieval: %d entries for range %s..%s time_of_day=%s narrow=%s user_tz=%s",
         len(entries),
         time_range["start"],
         time_range["end"],
         time_of_day,
         is_narrow,
+        user_tz,
     )
     return {
         "temporal_entries": entries,

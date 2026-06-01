@@ -24,6 +24,7 @@ class AskState(TypedDict):
     user_id: str
     conversation_history: str
     long_term_memory: str
+    user_timezone: str
 
     query_types: Annotated[list, keep_latest]
     time_range: Annotated[Optional[dict], keep_latest]
