@@ -1,11 +1,17 @@
-from app.llm import extract_text, flash as model
-from app.state import CoreEntityNode, EntityType, JournalState
+from app.llm import flash as model
+from app.state import EntityType, JournalState
+from app.schemas.pipeline import EntityList
 from typing import get_args
-import json
 
 ENTITY_TYPES = get_args(EntityType)
 
 allowed_types_str = ", ".join(ENTITY_TYPES)
+
+# Structured output: Gemini enforces the EntityList shape (each item's type is
+# enum-constrained to EntityType) via response_json_schema, so the node no longer
+# hand-parses JSON or filters invalid types. method="json_schema" is explicit.
+structured_model = model.with_structured_output(EntityList, method="json_schema")
+
 
 def build_entity_prompt(text: str) -> str:
     return f"""
@@ -14,15 +20,13 @@ You are a strict entity extraction engine.
 Extract only concrete, meaningful named entities from the journal entry.
 Allowed types: {allowed_types_str}
 
-Return STRICT JSON only. No explanation.
+Return all entities under an "entities" key.
 Format:
-[
-  {{"name": "entity_name", "type": "entity_type"}}
-]
+{{"entities": [{{"name": "entity_name", "type": "entity_type"}}]}}
 
 Rules:
 - Use only these types: {allowed_types_str}
-- If no valid entities exist, return []
+- If no valid entities exist, return {{"entities": []}}
 - Do not include extra fields
 - Extract only entities that are specific and meaningful in context
 - Do not guess or infer entities that are not clearly mentioned
@@ -84,35 +88,6 @@ Journal Entry:
 {text}
 """
 
-def parse_entities(raw: str) -> list[CoreEntityNode]:
-    # Strip markdown code fences
-    content = raw.strip()
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1] if "\n" in content else content[3:]
-    if content.endswith("```"):
-        content = content[:-3]
-    content = content.strip()
-    
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        return []
-
-    if not isinstance(data, list):
-        return []
-
-    valid = []
-    for item in data:
-        if (
-            isinstance(item, dict)
-            and "name" in item
-            and "type" in item
-            and item["type"] in ENTITY_TYPES
-        ):
-            valid.append(item)
-
-    return valid
-
 
 async def extract_entities(state: JournalState) -> dict:
     #Use LLM to classify the journal entry into one of the core entity types
@@ -121,13 +96,8 @@ async def extract_entities(state: JournalState) -> dict:
 
     prompt = build_entity_prompt(text)
 
-    response = await model.ainvoke(prompt)
+    result = await structured_model.ainvoke(prompt)
 
-    content = extract_text(response)
-
-    entities = parse_entities(content)
+    entities = [{"name": e.name, "type": e.type} for e in result.entities]
 
     return {"core_entities": entities}
-
-
-

@@ -7,7 +7,7 @@ output shape, not HTTP payloads.
 """
 from pydantic import BaseModel, Field
 
-from app.state import ClassifierType
+from app.state import ClassifierType, EntityType
 
 
 class ClassifierResult(BaseModel):
@@ -26,3 +26,16 @@ class TitleSummary(BaseModel):
     short first-person summary."""
     auto_title: str = Field(min_length=1, max_length=80)
     summary: str = Field(default="", max_length=400)
+
+
+class ExtractedEntity(BaseModel):
+    """A single named entity extracted from a journal entry."""
+    name: str = Field(min_length=1, max_length=120)
+    type: EntityType
+
+
+class EntityList(BaseModel):
+    """Schema for the extract_entities node output. Gemini's json_schema mode
+    doesn't reliably support top-level list output, so the list is wrapped in
+    an object."""
+    entities: list[ExtractedEntity] = Field(default_factory=list, max_length=50)
