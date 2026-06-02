@@ -2,6 +2,18 @@ from typing import Annotated, Literal, Optional, TypedDict
 
 from app.state import keep_latest
 
+
+def take_last(existing, new):
+    """Overwrite reducer that preserves falsy values.
+
+    keep_latest treats new == False (and [], "", None) as "no update" and keeps
+    the existing value — fine for accumulator-style fields, but wrong for a
+    tri-state flag where False is a real, distinct outcome. question_entity_known
+    is True / False / None (None = check skipped), so dropping False would
+    silently collapse it back to the initial None.
+    """
+    return new
+
 # Canonical time_of_day labels accepted on TimeRange. Hours are user-local
 # (or UTC when the user's timezone is unknown — see temporal_retrieval.py).
 TimeOfDay = Literal["morning", "afternoon", "evening", "night"]
@@ -41,6 +53,12 @@ class AskState(TypedDict):
     temporal_has_results: Annotated[bool, keep_latest]
     dashboard_has_results: Annotated[bool, keep_latest]
     is_low_confidence: Annotated[bool, keep_latest]
+
+    # Vivek-class entity filtering (advisory mode). question_entity_known is
+    # None when the check didn't run (no high-signal entities in the question),
+    # True/False otherwise. Computed but NOT yet used to gate generation.
+    question_entity_known: Annotated[Optional[bool], take_last]
+    question_entity_check_details: Annotated[dict, take_last]
 
     assembled_context: Annotated[str, keep_latest]
     answer: Annotated[str, keep_latest]

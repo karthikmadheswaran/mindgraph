@@ -191,6 +191,8 @@ def _initial_state(question: str) -> dict:
         "temporal_has_results": False,
         "dashboard_has_results": False,
         "is_low_confidence": False,
+        "question_entity_known": None,
+        "question_entity_check_details": {},
         "assembled_context": "",
         "answer": "",
     }
@@ -338,6 +340,41 @@ def _score_case(case: dict, state: dict) -> dict:
     }
 
 
+def _entity_advisory(case: dict, state: dict) -> dict:
+    """Surface the advisory Vivek-class entity-check signal for verification.
+
+    The gate decision is NOT affected by this (advisory mode); we only mirror
+    what context_assembler computed/logged so the eval can confirm the 4 new
+    cases land on their expected outcomes.
+
+      question_entity_known: None -> "skipped", True -> "would_allow",
+                             False -> "would_refuse"
+    """
+    qek = state.get("question_entity_known")
+    ilc = bool(state.get("is_low_confidence"))
+    ilc_with_check = ilc or (qek is False)
+    would_have_changed_outcome = ilc_with_check != ilc
+
+    if qek is None:
+        predicted = "skipped"
+    elif qek:
+        predicted = "would_allow"
+    else:
+        predicted = "would_refuse"
+
+    expected = case.get("expected_entity_check")
+    return {
+        "question_entity_known": qek,
+        "predicted_entity_check": predicted,
+        "expected_entity_check": expected,
+        "matches_expected": (expected is None) or (predicted == expected),
+        "is_low_confidence_current": ilc,
+        "is_low_confidence_with_check": ilc_with_check,
+        "would_have_changed_outcome": would_have_changed_outcome,
+        "check_details": state.get("question_entity_check_details") or {},
+    }
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Per-case runner
 # ──────────────────────────────────────────────────────────────────────────────
@@ -350,6 +387,7 @@ async def _run_one(case: dict) -> dict:
     case_ms = (time.perf_counter() - case_start) * 1000.0
 
     scoring = _score_case(case, state)
+    entity_advisory = _entity_advisory(case, state)
 
     return {
         "question": case["question"],
@@ -368,6 +406,7 @@ async def _run_one(case: dict) -> dict:
         "union_rank": scoring["union_rank"],
         "is_low_confidence": scoring["is_low_confidence"],
         "rag_max_similarity": scoring["rag_max_similarity"],
+        "entity_advisory": entity_advisory,
         "latency": {
             "case_ms": round(case_ms, 1),
             "branch_ms": {k: round(v, 1) for k, v in _BRANCH_TIMINGS.items()},
@@ -654,6 +693,38 @@ def _print_report(summary: dict, baseline: dict, results: list[dict]) -> None:
         print("\nNo null leaks (hybrid_rag stayed empty for all hard_null cases).")
 
 
+def _print_entity_advisory_report(results: list[dict]) -> None:
+    """Verify the advisory Vivek-class entity check on the labelled cases."""
+    labelled = [r for r in results if r.get("entity_advisory", {}).get("expected_entity_check")]
+    print("\n" + "=" * 72)
+    print("VIVEK-CLASS ENTITY CHECK — ADVISORY MODE (gate NOT enforced)")
+    print("=" * 72)
+    if not labelled:
+        print("  (no cases carry expected_entity_check)")
+        return
+    print(
+        f"| {'question':<44} | {'expect':<12} | {'pred':<12} | {'ok':<3} | {'flip':<4} |"
+    )
+    print(f"| {'-'*44} | {'-'*12} | {'-'*12} | {'-'*3} | {'-'*4} |")
+    all_ok = True
+    for r in labelled:
+        adv = r["entity_advisory"]
+        q = r["question"]
+        q_disp = (q[:41] + "...") if len(q) > 44 else q
+        ok = adv["matches_expected"]
+        all_ok = all_ok and ok
+        print(
+            f"| {q_disp:<44} | {adv['expected_entity_check']:<12} | "
+            f"{adv['predicted_entity_check']:<12} | {('Y' if ok else 'N'):<3} | "
+            f"{('Y' if adv['would_have_changed_outcome'] else 'n'):<4} |"
+        )
+    print(
+        f"\n  → {'ALL labelled cases match expected entity-check outcome'.upper()}"
+        if all_ok
+        else "\n  → [MISMATCH] one or more labelled cases differ from expected"
+    )
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────────────────────────────────────
@@ -781,6 +852,7 @@ async def main(args: argparse.Namespace) -> None:
     summary = _aggregate(results, baseline)
 
     _print_report(summary, baseline, results)
+    _print_entity_advisory_report(results)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).isoformat().replace(":", "-")
