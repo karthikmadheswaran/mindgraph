@@ -345,11 +345,6 @@ async def save_entry_edit(
     )
 
 
-@app.get("/search")
-async def search_entries_endpoint(query: str, user_id: str = Depends(get_current_user)):
-    return await entry_service.advanced_search_entries(query, user_id)
-
-
 @app.get("/insights")
 async def get_insights(user_id: str = Depends(get_current_user)):
     return await insight_service.get_insights(user_id)
