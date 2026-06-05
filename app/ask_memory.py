@@ -115,7 +115,7 @@ def build_ask_prompt(
         "- If they're continuing a conversation thread, respond in context.",
         "- When the user refers to a person with a pronoun, use the person's actual name from the conversation or entries.",
         "- Be concise. Don't pad responses with irrelevant journal summaries.",
-        "- When no journal entries are relevant, say so using 'don't see'.",
+        "- When no journal entries are relevant AND you have no long-term memory to draw on, say so using 'don't see'. If you DO have relevant long-term memory, use it to give a personalized answer instead of refusing.",
         "- When the user asks for your perspective (what do you think / is this good / should I worry): offer a thoughtful inference. Do NOT say 'I can't determine' or 'your entries don't explicitly state'.",
         "- For questions about metrics/benchmarks: give a calibrated assessment using your general knowledge. Don't hide behind 'your entries don't say'.",
         "- When multiple journal entries are provided, look for PATTERNS and CHANGES. Synthesize using narrative prose, not bullet-by-bullet recaps. Always land on a conclusion or insight.",
@@ -176,12 +176,23 @@ def build_ask_prompt(
                 context_text.strip(),
             ]
         )
+    elif user_memory:
+        prompt_parts.extend(
+            [
+                "",
+                "# Retrieved Journal Entries",
+                "(No specific journal entries were retrieved for this question, but you have long-term memory above. "
+                "Use it to give a helpful, personalized answer where it is relevant -- for open-ended or reflective "
+                "questions (e.g. \"what should I journal about?\"), draw on what you already know about the user "
+                "instead of refusing. Only say \"I don't see anything\" if the memory genuinely does not help.)",
+            ]
+        )
     else:
         prompt_parts.extend(
             [
                 "",
                 "# Retrieved Journal Entries",
-                "(No relevant journal entries found for this question. If the question can be answered from long-term memory, use that. Otherwise respond honestly — e.g. \"I don't see anything about that in your journal entries.\")",
+                "(No relevant journal entries found and no long-term memory is available. Respond honestly -- e.g. \"I don't see anything about that in your journal entries.\")",
             ]
         )
 
