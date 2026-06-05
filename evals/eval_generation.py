@@ -360,10 +360,13 @@ TEST_CASES = [
             "Should engage with the 'why' question."
         ),
         "expected_keywords": [],
+        # "auto_title headings" removed: it is a single technical term the model
+        # legitimately references while explaining *why* (judge scored 5/5/5/5/5/5/5).
+        # The two phrases below are verbatim-restatement frames a genuine loop reuses;
+        # the broken_record / repetition / fact_regurgitation modes back them up.
         "forbidden_patterns": [
             "you replaced chat bubbles",
             "warm gray surface",
-            "auto_title headings",
         ],
         "expected_tone": "insightful_reflective",
         "failure_modes": ["fact_regurgitation", "opinion_refusal"],
@@ -426,11 +429,18 @@ TEST_CASES = [
             "Should address the shyness directly and helpfully."
         ),
         "expected_keywords": [],
+        # Narrowed from bare meta-words ("your journal", "your entries", "based on",
+        # "you mentioned") to the regurgitation FRAMES a genuine loop reuses. The bare
+        # words false-fire on self-aware acknowledgments ("I got stuck on what your
+        # journal said") and on grounded advice that legitimately references the facts
+        # ("Since Sahana sits opposite you..."). The frames below only appear when the
+        # model is summarizing instead of advising; Jaccard repetition + fact_regurgitation
+        # still catch wholesale restatement.
         "forbidden_patterns": [
-            "your journal",
-            "your entries",
-            "based on",
-            "you mentioned",
+            "from your journal",
+            "based on your entries",
+            "based on your journal",
+            "you mentioned feeling shy",
         ],
         "expected_tone": "direct_helpful",
         "failure_modes": ["broken_record", "repetition", "fact_regurgitation"],
@@ -467,11 +477,15 @@ TEST_CASES = [
             "The model must NOT treat 'yes' as uncertainty."
         ),
         "expected_keywords": [],
+        # "it's completely understandable" removed: it is generic empathy that
+        # false-fires when validating *past* distraction ("...understandable to get
+        # sidetracked"), which is not the failure this case targets. The remaining
+        # patterns still catch the real failures — re-asking the binary question or
+        # treating "yes" as uncertainty ("it's okay to feel uncertain").
         "forbidden_patterns": [
             "does one of those feel more pressing",
             "is there something else",
             "it's okay to feel uncertain",
-            "it's completely understandable",
             "does the retrieval bug feel",
         ],
         "expected_tone": "warm_forward_moving",
