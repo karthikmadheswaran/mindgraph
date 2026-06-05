@@ -5,40 +5,85 @@ RAG Evaluation for MindGraph Journal App
 Measures three things:
 1. Retrieval Accuracy - Did we find the right entries?
 2. Answer Quality - Did the LLM answer correctly without hallucinating?
-3. Latency - How fast is retrieval + generation?
+3. Latency - How fast is the live Ask pipeline?
 
-Usage: python rag_evaluation.py
+Usage: python evals/rag_evaluation.py
+
+────────────────────────────────────────────────────────────────────────────
+PRODUCTION ENTRY POINT (verified by reading the code on 2026-06-05, not assumed)
+────────────────────────────────────────────────────────────────────────────
+  POST /ask                       app/main.py:159        ask_question
+    -> ask_service.ask            app/services/ask_service.py:630
+      -> ask_service.generate_answer
+                                  app/services/ask_service.py:494
+        -> ask_pipeline.ainvoke(initial_state)
+                                  app/services/ask_service.py:570
+
+`ask_pipeline` is the compiled LangGraph DAG built in
+app/services/ask_pipeline/graph.py:
+
+    query_understanding_agent  ->  router (fan-out)  ->  4 parallel branches
+        [ temporal_retrieval, recent_summaries, hybrid_rag, dashboard_context ]
+    ->  context_assembler  ->  generation
+
+`ainvoke` returns the final AskState dict. The fields this eval scores against:
+  query_types          - router classification, e.g. ["temporal"]
+  temporal_entries     - entries from the date-range branch (temporal_retrieval)
+  rag_entries          - entries from hybrid_rag (BM25 + pgvector + Cohere rerank
+                         + recency decay)
+  recent_summaries     - always-on last-5 baseline (NOT counted as a retrieval
+                         hit, mirroring context_assembler's corroboration rule)
+  rag_max_similarity   - top cosine; the hybrid_rag confidence signal
+  temporal_has_results / dashboard_has_results - per-branch corroboration flags
+  is_low_confidence    - context_assembler's refusal gate (HIGH_CONFIDENCE_THRESHOLD
+                         corroborated by the temporal/dashboard branches). This is
+                         the exact decision behind the live "I don't see anything
+                         about that in your journal entries" refusal.
+  answer               - the production-generated answer (generation node, flash)
+
+Because this eval invokes that same compiled graph, every threshold
+(MIN_SIMILARITY, HIGH_CONFIDENCE_THRESHOLD), the deleted_at IS NULL / status =
+'completed' filters, recency decay, Cohere rerank, and the refusal gate are all
+applied by PRODUCTION code — none of it is re-implemented here. Temporal queries
+now flow through temporal_retrieval via the router instead of a direct
+match_entries vector search, closing the 26-May-style divergence where the
+harness scored a different path than production (the MIN_SIMILARITY gap).
 """
 
 import asyncio
-import time
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+
 from dotenv import load_dotenv
-from app.embeddings import get_embedding
-from app.nodes.store import supabase
-from app.services.ask_service import MIN_SIMILARITY
-from langchain_google_genai import ChatGoogleGenerativeAI
 
-load_dotenv()
-os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
+# Make the repo root importable when run as a script (python evals/rag_evaluation.py):
+# Python puts the script's own dir on sys.path, not the repo root, so `app` would
+# otherwise be unimportable.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-model = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", temperature=0.1)
+# Load env BEFORE importing any app.* module: app.llm constructs the Gemini
+# client at import time and reads GOOGLE_API_KEY. utf-8-sig tolerates the local
+# .env UTF-8 BOM (tracked separately as a P3 Known-Broken item) so the harness
+# runs locally; production reads the same vars from the Railway environment.
+load_dotenv(encoding="utf-8-sig")
+if not os.getenv("GOOGLE_API_KEY") and os.getenv("GEMINI_API_KEY"):
+    os.environ["GOOGLE_API_KEY"] = os.getenv("GEMINI_API_KEY")
+
+from app.services.ask_pipeline import AskState, ask_pipeline  # noqa: E402
+from app.services.ask_pipeline.context_assembler import (  # noqa: E402
+    EFFECTIVE_HIGH_CONFIDENCE,
+)
+from app.services.ask_service import (  # noqa: E402
+    HIGH_CONFIDENCE_THRESHOLD,
+    MIN_SIMILARITY,
+    resolve_user_timezone,
+)
 
 USER_ID = "97372247-26b1-42a1-9e54-76d6dfe55346"
-
-# Null-case correctness threshold: defaults to MIN_SIMILARITY in
-# app/services/ask_service.py (the live filter), overridable via env var for
-# threshold sweeps. If retrieval's top similarity is below this, the live system
-# would filter the result out, so a null-case is "correct" iff no row clears the
-# bar.
-_MIN_SIMILARITY_OVERRIDE = os.environ.get("RAG_EVAL_MIN_SIMILARITY")
-NULL_CASE_SIM_THRESHOLD = (
-    float(_MIN_SIMILARITY_OVERRIDE) if _MIN_SIMILARITY_OVERRIDE else MIN_SIMILARITY
-)
 
 # Test cases live in evals/rag_test_cases.json, generated against the current
 # test user's actual entries via evals/generate_rag_test_cases.py. Scoring keys
@@ -52,117 +97,145 @@ assert _payload["test_user_id"] == USER_ID, (
     f"configured for {USER_ID}. Regenerate with evals/generate_rag_test_cases.py."
 )
 
-# Old TEST_CASES (May 2025 era) live as a comment block at the very bottom of
-# this file under the heading "OLD TEST_CASES — preserved for revert". They
-# scored F1=0 across every case because none of the referenced entry titles
-# existed in any current production user, which is why we regenerated.
+
+def _build_initial_state(question: str, user_tz: str) -> AskState:
+    """Mirror app/services/ask_service.generate_answer's initial_state exactly.
+
+    conversation_history / long_term_memory are empty: each eval case is a cold,
+    single-turn question with no prior session, which is the cleanest signal for
+    retrieval and matches the first /ask in a fresh session. Every other field is
+    seeded identically to production so the graph nodes behave the same.
+    """
+    return {
+        "question": question,
+        "user_id": USER_ID,
+        "conversation_history": "",
+        "long_term_memory": "",
+        "user_timezone": user_tz,
+        "query_types": [],
+        "time_range": None,
+        "entities_mentioned": [],
+        "dashboard_context_needed": False,
+        "today_str": "",
+        "temporal_entries": [],
+        "recent_summaries": [],
+        "rag_entries": [],
+        "dashboard_context": {},
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": False,
+        "dashboard_has_results": False,
+        "is_low_confidence": False,
+        "assembled_context": "",
+        "answer": "",
+    }
 
 
-def extract_text_from_response(response):
-    content = response.content
-    if isinstance(content, list):
-        content = "".join(
-            block["text"] if isinstance(block, dict) else str(block)
-            for block in content
-        )
-    return content.strip()
+async def run_pipeline(question: str, user_tz: str) -> tuple[dict, int]:
+    """Invoke the live Ask pipeline (same graph /ask uses) for one question."""
+    state = _build_initial_state(question, user_tz)
+    start = time.time()
+    final_state = await ask_pipeline.ainvoke(state)
+    elapsed_ms = round((time.time() - start) * 1000)
+    return final_state, elapsed_ms
 
 
-async def evaluate_retrieval(
-    question: str,
+def _ids(entries: list | None) -> list[str]:
+    return [e.get("id", "") for e in (entries or []) if e.get("id")]
+
+
+def score_retrieval(
+    final_state: dict,
     expected_entry_id: str | None,
     category: str,
 ) -> dict:
-    """
-    Evaluate retrieval against a single expected entry ID.
+    """Score retrieval off the final AskState the live pipeline produced.
 
-    Non-null cases: hit iff expected_entry_id appears in top-K retrieved IDs.
-    Null cases (hard_null): hit iff the live system WOULDN'T return the top
-    match (top similarity < NULL_CASE_SIM_THRESHOLD).
+    Non-null cases: hit iff expected_entry_id appears in the query-driven
+    retrieval set (temporal_retrieval ∪ hybrid_rag). recent_summaries is excluded
+    from the hit set — it's the always-on last-5 baseline (the same reason
+    context_assembler excludes it from confidence corroboration), so a
+    coincidental recent entry cannot be scored as a retrieval hit.
+
+    Null cases (hard_null): hit iff the live refusal gate fires
+    (is_low_confidence). This is the SAME gate the /ask path uses to emit
+    "I don't see anything about that in your journal entries", replacing the old
+    vector-only `top_sim < MIN_SIMILARITY` heuristic with the real production
+    decision.
 
     Since each case has exactly one correct answer (or zero, for null cases),
-    precision == recall == F1 — all binary per case. The averaged F1 is
-    effectively the hit rate across the test set.
+    precision == recall == F1 per case; the averaged F1 is the hit rate.
     """
-    start = time.time()
+    query_types = final_state.get("query_types") or []
+    temporal_ids = _ids(final_state.get("temporal_entries"))
+    rag_ids = _ids(final_state.get("rag_entries"))
+    recent_ids = _ids(final_state.get("recent_summaries"))
+    retrieved_ids = list(dict.fromkeys(temporal_ids + rag_ids))
 
-    query_embedding = await get_embedding(question, task_type="RETRIEVAL_QUERY")
-
-    result = supabase.rpc("match_entries", {
-        "query_embedding": query_embedding,
-        "match_count": 5,
-        "filter_user_id": USER_ID
-    }).execute()
-
-    retrieval_time = time.time() - start
-    data = result.data or []
-
-    retrieved_ids = [r.get("id", "") for r in data]
-    retrieved_titles = [r.get("auto_title", "") for r in data]
-    similarities = [round(r.get("similarity", 0) or 0, 3) for r in data]
+    is_low_confidence = bool(final_state.get("is_low_confidence"))
+    routed_temporal = "temporal" in query_types
 
     if category == "hard_null":
-        top_sim = max(similarities) if similarities else 0.0
-        hit = top_sim < NULL_CASE_SIM_THRESHOLD
+        hit = is_low_confidence
         rank = 0
     else:
         hit = bool(expected_entry_id) and expected_entry_id in retrieved_ids
         rank = retrieved_ids.index(expected_entry_id) + 1 if hit else 0
 
     score = 1.0 if hit else 0.0
+    expected_in_temporal_branch = (
+        bool(expected_entry_id) and expected_entry_id in temporal_ids
+    )
 
     return {
-        "retrieved_ids": retrieved_ids,
-        "retrieved_titles": retrieved_titles,
-        "expected_entry_id": expected_entry_id,
         "category": category,
+        "query_types": query_types,
+        "routed_temporal": routed_temporal,
+        "retrieved_ids": retrieved_ids,
+        "temporal_entry_ids": temporal_ids,
+        "rag_entry_ids": rag_ids,
+        "recent_entry_ids": recent_ids,
+        "expected_entry_id": expected_entry_id,
+        "expected_in_temporal_branch": expected_in_temporal_branch,
+        "is_low_confidence": is_low_confidence,
+        "rag_max_similarity": round(float(final_state.get("rag_max_similarity") or 0.0), 3),
+        "temporal_has_results": bool(final_state.get("temporal_has_results")),
+        "dashboard_has_results": bool(final_state.get("dashboard_has_results")),
         "hit": hit,
         "rank": rank,
         "precision": score,
         "recall": score,
         "f1_score": score,
-        "retrieval_time_ms": round(retrieval_time * 1000),
-        "similarities": similarities,
     }
 
 
-async def evaluate_answer(question: str, retrieved_entries: list, expected_keywords: list[str], forbidden_keywords: list[str] | None = None) -> dict:
-    forbidden_keywords = forbidden_keywords or []
-    """Evaluate the quality of the generated answer"""
-    start = time.time()
-    
-    formatted_entries = []
-    for i, entry in enumerate(retrieved_entries, 1):
-        date = entry.get("created_at", "Unknown")
-        title = entry.get("auto_title", "Untitled")
-        formatted_entries.append(f"Entry {i} ({date}, {title}):\n{entry['cleaned_text']}")
-    
-    context = "\n\n---\n\n".join(formatted_entries)
-    
-    prompt = f"""You are an assistant for a personal journal app. A user has asked:
-    "{question}"
+def score_answer(
+    final_state: dict,
+    expected_keywords: list[str],
+    forbidden_keywords: list[str] | None = None,
+) -> dict:
+    """Score the PRODUCTION-generated answer (generation node output).
 
-    Relevant journal entries:
-    {context}
-    
-    Based on these entries, provide a helpful answer. If the entries don't contain relevant info, say "I don't know"."""
-    
-    response = await model.ainvoke(prompt)
-    answer = extract_text_from_response(response)
-    
-    generation_time = time.time() - start
-    
-    # Check expected keywords
+    No separate LLM call and no separate prompt — we read state["answer"], the
+    exact text /ask would return, so answer quality reflects production's prompt
+    (v13.x), model (flash), and the is_low_confidence refusal behavior.
+    """
+    forbidden_keywords = forbidden_keywords or []
+    answer = final_state.get("answer") or ""
     answer_lower = answer.lower()
+
     keywords_found = [kw for kw in expected_keywords if kw.lower() in answer_lower]
     keywords_missing = [kw for kw in expected_keywords if kw.lower() not in answer_lower]
-    
-    # Check forbidden keywords (hallucination)
     hallucinations = [kw for kw in forbidden_keywords if kw.lower() in answer_lower]
-    
-    keyword_score = len(keywords_found) / len(expected_keywords) if expected_keywords else 1.0
-    hallucination_score = 1.0 - (len(hallucinations) / len(forbidden_keywords)) if forbidden_keywords else 1.0
-    
+
+    keyword_score = (
+        len(keywords_found) / len(expected_keywords) if expected_keywords else 1.0
+    )
+    hallucination_score = (
+        1.0 - (len(hallucinations) / len(forbidden_keywords))
+        if forbidden_keywords
+        else 1.0
+    )
+
     return {
         "answer": answer[:200] + "..." if len(answer) > 200 else answer,
         "keywords_found": keywords_found,
@@ -170,77 +243,110 @@ async def evaluate_answer(question: str, retrieved_entries: list, expected_keywo
         "hallucinations": hallucinations,
         "keyword_score": round(keyword_score, 3),
         "hallucination_score": round(hallucination_score, 3),
-        "generation_time_ms": round(generation_time * 1000),
     }
 
 
 async def run_evaluation():
-    """Run full RAG evaluation"""
+    """Run full RAG evaluation through the live Ask pipeline."""
     print("=" * 70)
-    print("🧪 MindGraph RAG Evaluation")
+    print("🧪 MindGraph RAG Evaluation — via live Ask pipeline (ask_pipeline)")
     print("=" * 70)
-    print(f"Test cases: {len(TEST_CASES)}")
-    print(f"NULL_CASE_SIM_THRESHOLD: {NULL_CASE_SIM_THRESHOLD}")
+
+    # Resolve the test user's timezone exactly as /ask does for a request with
+    # no browser timezone — this matters for temporal date-range boundaries (IST).
+    user_tz = await resolve_user_timezone(USER_ID, None)
+
+    print(f"Test cases:               {len(TEST_CASES)}")
+    print(f"User timezone:            {user_tz}")
+    print(f"MIN_SIMILARITY:           {MIN_SIMILARITY}")
+    print(f"HIGH_CONFIDENCE_THRESHOLD:{HIGH_CONFIDENCE_THRESHOLD} "
+          f"(effective={EFFECTIVE_HIGH_CONFIDENCE})")
     print()
-    
+
     results = []
-    total_retrieval_time = 0
-    total_generation_time = 0
+    total_pipeline_time = 0
     total_f1 = 0
     total_keyword_score = 0
     total_hallucination_score = 0
-    
+
+    # Step 5 — temporal routing proof. We do NOT assume the router classified
+    # temporal cases correctly; we record it per case and surface failures.
+    routing_misclassified = []   # temporal case the router did NOT mark temporal
+    temporal_branch_misses = []  # routed temporal but expected entry not in branch
+
     for i, test in enumerate(TEST_CASES, 1):
         category = test.get("category", "uncategorised")
         print(f"─── Test {i}/{len(TEST_CASES)} [{category}]: {test['question']}")
 
-        # Step 1: Evaluate retrieval (entry_id based)
-        retrieval = await evaluate_retrieval(
-            test["question"],
+        final_state, elapsed_ms = await run_pipeline(test["question"], user_tz)
+
+        retrieval = score_retrieval(
+            final_state,
             test.get("expected_entry_id"),
             category,
         )
-
-        # Step 2: Get entries for answer generation
-        query_embedding = await get_embedding(test["question"], task_type="RETRIEVAL_QUERY")
-        entries_result = supabase.rpc("match_entries", {
-            "query_embedding": query_embedding,
-            "match_count": 5,
-            "filter_user_id": USER_ID
-        }).execute()
-
-        # Step 3: Evaluate answer
-        answer_eval = await evaluate_answer(
-            test["question"],
-            entries_result.data,
+        answer_eval = score_answer(
+            final_state,
             test.get("expected_keywords", []),
             test.get("forbidden_keywords"),
         )
 
-        # Print results
-        rank_str = f"rank={retrieval['rank']}" if retrieval['rank'] else "miss"
-        print(f"  Retrieval: hit={retrieval['hit']} ({rank_str}) | {retrieval['retrieval_time_ms']}ms")
-        print(f"  Retrieved: {[t[:30] for t in retrieval['retrieved_titles']]}")
-        print(f"  Answer:    Keywords={answer_eval['keyword_score']} | Hallucination={answer_eval['hallucination_score']} | {answer_eval['generation_time_ms']}ms")
+        rank_str = f"rank={retrieval['rank']}" if retrieval["rank"] else "miss"
+        print(
+            f"  Routing:   query_types={retrieval['query_types']} | "
+            f"low_conf={retrieval['is_low_confidence']} | "
+            f"rag_max_sim={retrieval['rag_max_similarity']}"
+        )
+        print(
+            f"  Retrieval: hit={retrieval['hit']} ({rank_str}) | "
+            f"temporal_branch={len(retrieval['temporal_entry_ids'])} entries, "
+            f"rag_branch={len(retrieval['rag_entry_ids'])} entries | {elapsed_ms}ms"
+        )
+        print(
+            f"  Answer:    Keywords={answer_eval['keyword_score']} | "
+            f"Hallucination={answer_eval['hallucination_score']}"
+        )
         if answer_eval["keywords_missing"]:
             print(f"  ⚠ Missing:  {answer_eval['keywords_missing']}")
         if answer_eval["hallucinations"]:
             print(f"  ❌ Hallucinated: {answer_eval['hallucinations']}")
+
+        # Step 5 — explicit assertion + proof line for every temporal case:
+        # prove the router classified it temporal AND sent it down the
+        # date-range branch (temporal_retrieval), not the vector path.
+        if category == "temporal":
+            print(
+                "  ↳ TEMPORAL ROUTING PROOF: "
+                f"routed_temporal={retrieval['routed_temporal']} "
+                f"temporal_branch_entries={len(retrieval['temporal_entry_ids'])} "
+                f"expected_in_temporal_branch={retrieval['expected_in_temporal_branch']}"
+            )
+            try:
+                assert retrieval["routed_temporal"], (
+                    "router did NOT classify a temporal case as temporal "
+                    f"(query_types={retrieval['query_types']})"
+                )
+            except AssertionError as exc:
+                routing_misclassified.append((test["question"], str(exc)))
+                print(f"  ‼ ROUTER MISCLASSIFICATION: {exc}")
+            if retrieval["routed_temporal"] and not retrieval["expected_in_temporal_branch"]:
+                temporal_branch_misses.append(test["question"])
         print()
-        
-        # Accumulate totals
-        total_retrieval_time += retrieval["retrieval_time_ms"]
-        total_generation_time += answer_eval["generation_time_ms"]
+
+        total_pipeline_time += elapsed_ms
         total_f1 += retrieval["f1_score"]
         total_keyword_score += answer_eval["keyword_score"]
         total_hallucination_score += answer_eval["hallucination_score"]
-        
-        results.append({
-            "question": test["question"],
-            "retrieval": retrieval,
-            "answer": answer_eval,
-        })
-    
+
+        results.append(
+            {
+                "question": test["question"],
+                "retrieval": retrieval,
+                "answer": answer_eval,
+                "pipeline_time_ms": elapsed_ms,
+            }
+        )
+
     # Summary
     n = len(TEST_CASES)
     print("=" * 70)
@@ -250,14 +356,11 @@ async def run_evaluation():
     print(f"  Avg Retrieval F1:         {round(total_f1 / n, 3)}")
     print(f"  Avg Keyword Score:        {round(total_keyword_score / n, 3)}")
     print(f"  Avg Hallucination Score:  {round(total_hallucination_score / n, 3)}")
-    print(f"  Avg Retrieval Latency:    {round(total_retrieval_time / n)}ms")
-    print(f"  Avg Generation Latency:   {round(total_generation_time / n)}ms")
-    print(f"  Total Evaluation Time:    {round((total_retrieval_time + total_generation_time) / 1000, 1)}s")
+    print(f"  Avg Pipeline Latency:     {round(total_pipeline_time / n)}ms")
+    print(f"  Total Evaluation Time:    {round(total_pipeline_time / 1000, 1)}s")
     print("=" * 70)
-    
-    # MRR (Mean Reciprocal Rank) over non-null cases.
-    # For each non-null case, RR = 1/rank if expected_entry_id is in top-K, else 0.
-    # Null cases (hard_null) are excluded from MRR since "rank" is undefined.
+
+    # MRR over non-null cases; per-category hit rate.
     mrr_total = 0.0
     mrr_n = 0
     pass_count = 0
@@ -275,7 +378,7 @@ async def run_evaluation():
             mrr_n += 1
     mrr = round(mrr_total / mrr_n, 3) if mrr_n else 0.0
     pass_rate = round(pass_count / n, 3) if n else 0.0
-    wall_clock_s = round((total_retrieval_time + total_generation_time) / 1000, 1)
+    wall_clock_s = round(total_pipeline_time / 1000, 1)
 
     print("\n  Hit rate by category:")
     for cat in sorted(category_stats):
@@ -283,18 +386,54 @@ async def run_evaluation():
         rate = round(cs["hits"] / cs["n"], 3) if cs["n"] else 0.0
         print(f"    {cat:14}: {cs['hits']}/{cs['n']} = {rate}")
 
+    temporal_stats = category_stats.get("temporal", {"n": 0, "hits": 0})
+    temporal_f1 = (
+        round(temporal_stats["hits"] / temporal_stats["n"], 3)
+        if temporal_stats["n"]
+        else 0.0
+    )
+
     print(f"  MRR:                      {mrr}")
     print(f"  Pass rate (F1>0):         {pass_rate}")
     print(f"  Wall-clock:               {wall_clock_s}s")
     print("=" * 70)
 
-    # Save results to JSON — repo root path kept for backwards-compat; also write
-    # a tagged copy under evals/results/ for the task_type backfill comparison.
+    # ── Step 5: TEMPORAL ROUTING REPORT ──────────────────────────────────────
+    # This is the whole point of the reroute: the harness must catch router
+    # misclassification, not assume correct routing.
+    temporal_cases = [r for r in results if r["retrieval"]["category"] == "temporal"]
+    routed_ok = sum(1 for r in temporal_cases if r["retrieval"]["routed_temporal"])
+    in_branch = sum(
+        1 for r in temporal_cases if r["retrieval"]["expected_in_temporal_branch"]
+    )
+    print("\n  TEMPORAL ROUTING REPORT (Step 5):")
+    print(f"    temporal cases:                 {len(temporal_cases)}")
+    print(f"    classified temporal by router:  {routed_ok}/{len(temporal_cases)}")
+    print(f"    expected entry surfaced by the temporal branch: "
+          f"{in_branch}/{len(temporal_cases)}")
+    print(f"    temporal F1 (real date-range branch): {temporal_f1}")
+    if routing_misclassified:
+        print("    ‼ ROUTER MISCLASSIFICATIONS:")
+        for q, why in routing_misclassified:
+            print(f"      - {q}  ({why})")
+    else:
+        print("    ✅ every temporal case was routed to temporal_retrieval")
+    if temporal_branch_misses:
+        print("    ⚠ temporal-branch misses (routed temporal, expected entry not in branch):")
+        for q in temporal_branch_misses:
+            print(f"      - {q}")
+    print("=" * 70)
+
     summary = {
         "test_cases": n,
         "user_id": USER_ID,
-        "null_case_sim_threshold": NULL_CASE_SIM_THRESHOLD,
+        "user_timezone": user_tz,
+        "entry_point": "ask_pipeline.ainvoke (live /ask path)",
+        "min_similarity": MIN_SIMILARITY,
+        "high_confidence_threshold": HIGH_CONFIDENCE_THRESHOLD,
+        "effective_high_confidence": EFFECTIVE_HIGH_CONFIDENCE,
         "avg_retrieval_f1": round(total_f1 / n, 3),
+        "temporal_f1": temporal_f1,
         "mrr": mrr,
         "mrr_scope": "non-null cases only",
         "pass_rate": pass_rate,
@@ -302,10 +441,16 @@ async def run_evaluation():
             cat: round(cs["hits"] / cs["n"], 3) if cs["n"] else 0.0
             for cat, cs in category_stats.items()
         },
+        "temporal_routing": {
+            "temporal_cases": len(temporal_cases),
+            "classified_temporal": routed_ok,
+            "expected_in_temporal_branch": in_branch,
+            "router_misclassified": [q for q, _ in routing_misclassified],
+            "temporal_branch_misses": temporal_branch_misses,
+        },
         "avg_keyword_score": round(total_keyword_score / n, 3),
         "avg_hallucination_score": round(total_hallucination_score / n, 3),
-        "avg_retrieval_latency_ms": round(total_retrieval_time / n),
-        "avg_generation_latency_ms": round(total_generation_time / n),
+        "avg_pipeline_latency_ms": round(total_pipeline_time / n),
         "wall_clock_seconds": wall_clock_s,
     }
     with open("rag_evaluation_results.json", "w") as f:
@@ -332,8 +477,8 @@ if __name__ == "__main__":
 # ─────────────────────────────────────────────────────────────────────────────
 # Replaced 2026-05-26. The previous test set referenced ~15 entry titles like
 # "Had coffee with Sneha" / "Quitting Job for New Ventures" that no longer
-# exist in any production user's DB (USER_ID e5e611e2-... only has 4 active
-# entries). Every case scored F1=0 so the eval was non-measuring.
+# exist in any current production user's DB (USER_ID e5e611e2-... only has 4
+# active entries). Every case scored F1=0 so the eval was non-measuring.
 #
 # Replaced with auto-generated cases grounded in test user
 # 97372247-26b1-42a1-9e54-76d6dfe55346 — see evals/generate_rag_test_cases.py

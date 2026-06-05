@@ -1,0 +1,2832 @@
+{
+  "summary": {
+    "test_cases": 52,
+    "user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
+    "user_timezone": "Asia/Kolkata",
+    "entry_point": "ask_pipeline.ainvoke (live /ask path)",
+    "min_similarity": 0.62,
+    "high_confidence_threshold": 0.64,
+    "effective_high_confidence": 0.64,
+    "avg_retrieval_f1": 0.827,
+    "temporal_f1": 0.818,
+    "mrr": 0.625,
+    "mrr_scope": "non-null cases only",
+    "pass_rate": 0.827,
+    "category_hit_rate": {
+      "temporal": 0.818,
+      "entity": 0.889,
+      "topic": 1.0,
+      "emotional": 0.833,
+      "hard_null": 0.688,
+      "hard_pronoun": 1.0
+    },
+    "temporal_routing": {
+      "temporal_cases": 11,
+      "classified_temporal": 11,
+      "expected_in_temporal_branch": 8,
+      "router_misclassified": [],
+      "temporal_branch_misses": [
+        "What did I do last week?",
+        "What was I doing about two weeks ago?",
+        "When did I meet with Naveen?"
+      ]
+    },
+    "avg_keyword_score": 0.679,
+    "avg_hallucination_score": 1.0,
+    "avg_pipeline_latency_ms": 7338,
+    "wall_clock_seconds": 381.6
+  },
+  "results": [
+    {
+      "question": "What did I do last week?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.662,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "Last week, you were busy with a code deployment and urgent tasks, including backfilling embeddings and responding to Anjali about a consulting brief. You also found yourself struggling with focus and ...",
+        "keywords_found": [
+          "anjali"
+        ],
+        "keywords_missing": [
+          "thinking_budget=0",
+          "backfill embeddings",
+          "databricks consulting brief"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.25,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 11271
+    },
+    {
+      "question": "What was on my mind on May 12th?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "758e7dcb-e882-4d48-853c-026a5e3104a8"
+        ],
+        "temporal_entry_ids": [
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "rag_entry_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.717,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "On May 12th, you were reflecting on how late nights made thinking easier, noting that your \"night version\" was more optimistic about the product's readiness than your daytime self. You also wrote thre...",
+        "keywords_found": [
+          "mindgraph",
+          "consulting pipeline"
+        ],
+        "keywords_missing": [
+          "stale token",
+          "spreading myself too thin"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 10774
+    },
+    {
+      "question": "When do I need to backfill the embeddings by?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "rag_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.707,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 7,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You need to backfill the embeddings by **Sunday, May 24, 2026**.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "backfill embeddings",
+          "task_type",
+          "2026-05-24",
+          "karthik"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4224
+    },
+    {
+      "question": "What happened on the morning of May 11th?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "temporal_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "On the morning of May 11th, you woke up early, around 5:43 am, without an alarm. You spent some time just listening to the rain and enjoying a filter coffee while sitting on the floor. You reflected o...",
+        "keywords_found": [
+          "listening to the rain",
+          "filter coffee",
+          "dispatch feature",
+          "production"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3690
+    },
+    {
+      "question": "What are my deadlines for the end of May?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "dashboard"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "temporal_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "rag_entry_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.684,
+        "temporal_has_results": true,
+        "dashboard_has_results": true,
+        "hit": true,
+        "rank": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Looking at your entries from last week, here are the deadlines you had for the end of May:\n\n*   **May 24, 2026:** Backfill embeddings with `task_type` and send the draft provider renewal summary to th...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "ship the embedding",
+          "task_type change",
+          "2026-05-29"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6710
+    },
+    {
+      "question": "What was I doing about two weeks ago?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "temporal_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976"
+        ],
+        "rag_entry_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.653,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "About two weeks ago, around Saturday, May 23rd, you were quite busy! You deployed a code change to main, needing to backfill embeddings by Sunday. You were also wrestling with landing page copy, findi...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "slow day",
+          "stale token",
+          "chai",
+          "spreading myself too thin"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 8153
+    },
+    {
+      "question": "When did I meet with Naveen?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.729,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You met with Naveen on Saturday, May 23, 2026.",
+        "keywords_found": [
+          "naveen"
+        ],
+        "keywords_missing": [
+          "2026-05-19",
+          "erode office",
+          "provider renewal summary"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.25,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6349
+    },
+    {
+      "question": "What was I doing last Saturday?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "temporal_entry_ids": [
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "rag_entry_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "dacad580-50b9-4fef-9673-24290db60441"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.667,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Last Saturday, May 23rd, you were quite busy! You pushed a code change to main, worked on backfilling embeddings, and needed to respond to Anjali about a consulting brief. You also struggled with focu...",
+        "keywords_found": [
+          "rumi"
+        ],
+        "keywords_missing": [
+          "felt off",
+          "rawtxt landing copy",
+          "rabbit holes"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.25,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6770
+    },
+    {
+      "question": "What's the latest with Manuel and Simplico?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "recent",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.715,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It looks like Manuel and Simplico have been a recurring topic for you lately. The latest entry from May 23rd mentions he wants you involved in the Simplico freelance network rollout, which is built on...",
+        "keywords_found": [
+          "manuel",
+          "simplico",
+          "freelance network rollout",
+          "langgraph"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4180
+    },
+    {
+      "question": "Who is working on the Simplico engineering side?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+          "5d61f5d5-11fe-4837-b12d-979c27303551"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.707,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Sachin and Rahul are working on the Simplico engineering side.",
+        "keywords_found": [
+          "sachin",
+          "rahul",
+          "engineering side"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 2650
+    },
+    {
+      "question": "What did Anjali need from me?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword",
+          "recent"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.643,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Anjali needed a response from you regarding a Databricks consulting brief. You were supposed to get back to her on that.",
+        "keywords_found": [
+          "anjali",
+          "response",
+          "databricks consulting brief"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4081
+    },
+    {
+      "question": "What was the outcome of my meeting with Naveen at the Erode office?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.72,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You met with Naveen to review the quarterly provider renewal summary. You agreed to send the draft to the council by May 24th and follow up with the Surrey County Council team on May 27th.",
+        "keywords_found": [
+          "naveen",
+          "send the draft",
+          "surrey county council"
+        ],
+        "keywords_missing": [
+          "erode office"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4151
+    },
+    {
+      "question": "What did Priya and I talk about regarding our twenties?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "39051669-328c-4603-95ce-5c32a3f0749b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.79,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You and Priya talked about the gap between your expectations for your twenties and the reality of them. You mentioned feeling like you were \"getting there\" in terms of happiness, which felt more hones...",
+        "keywords_found": [
+          "priya",
+          "twenties",
+          "getting there"
+        ],
+        "keywords_missing": [
+          "happy"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6695
+    },
+    {
+      "question": "What did Karthik flag as high-impact?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.706,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Karthik flagged the \"thinking_budget=0\" change as the highest-impact change.",
+        "keywords_found": [
+          "karthik",
+          "highest-impact change"
+        ],
+        "keywords_missing": [
+          "backfill embeddings",
+          "task_type"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.5,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 34226
+    },
+    {
+      "question": "What did I order from Meghana's?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "1715dd23-4850-4559-b173-e33a4cd85763",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.644,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You ordered biryani from Meghana's.",
+        "keywords_found": [
+          "biryani",
+          "meghana's"
+        ],
+        "keywords_missing": [
+          "the office"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 7474
+    },
+    {
+      "question": "What was the issue with Razorpay?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "c1288694-01ee-4ced-818b-78bdc7b9679a"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "c1288694-01ee-4ced-818b-78bdc7b9679a"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "c1288694-01ee-4ced-818b-78bdc7b9679a",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.667,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It looks like the Razorpay issue was that your merchant account review was still pending, and had been for three weeks as of Monday, May 11th. You mentioned you'd made peace with it and focused on bui...",
+        "keywords_found": [
+          "razorpay",
+          "merchant account review",
+          "pending"
+        ],
+        "keywords_missing": [
+          "third week"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3372
+    },
+    {
+      "question": "What were my thoughts on Cohere Rerank vs Voyage?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.815,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You found Voyage to be marginally better on F1 scores, but its latency was a significant drawback, leading you to stick with Cohere Rerank for now.",
+        "keywords_found": [
+          "cohere rerank",
+          "voyage",
+          "f1"
+        ],
+        "keywords_missing": [
+          "latency was rough"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3730
+    },
+    {
+      "question": "How did I debug the langfuse trace pipeline?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.723,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You debugged the langfuse trace pipeline using `claude code`. You mentioned getting the before/after diff script working end-to-end.",
+        "keywords_found": [
+          "langfuse trace pipeline",
+          "claude code",
+          "diff script working"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3331
+    },
+    {
+      "question": "Tell me about the tech stack for the Simplico network.",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.751,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "The Simplico network's tech stack includes Notion and Slack for general operations. For the agent workflows, they're building on LangGraph and Gemini.",
+        "keywords_found": [
+          "notion",
+          "slack",
+          "langgraph",
+          "gemini"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3808
+    },
+    {
+      "question": "What were my ideas for the next RAG iteration?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.701,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like you were really energized by the results of your eval harness! Your ideas for the next RAG iteration included:\n\n*   Self-healing RAG\n*   Implicit feedback signals\n*   Compaction tuning",
+        "keywords_found": [
+          "self-healing rag",
+          "implicit feedback signals",
+          "compaction tuning"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6890
+    },
+    {
+      "question": "What was I reading about knowledge graphs?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.74,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You were reading about knowledge graph architectures, specifically diving into Neo4j and then exploring a paper on temporal knowledge graphs from 2019. It sounds like you were really engrossed, even i...",
+        "keywords_found": [
+          "knowledge graph architectures",
+          "neo4j",
+          "temporal knowledge graphs"
+        ],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5072
+    },
+    {
+      "question": "What was the big improvement in my RAG system's F1 score?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.697,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It looks like there was a significant jump in your RAG system's F1 score, from 0.369 to 0.782. That's a really impressive improvement!",
+        "keywords_found": [
+          "0.369 to 0.782"
+        ],
+        "keywords_missing": [
+          "retrieval f1",
+          "eval harness"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 7277
+    },
+    {
+      "question": "What was the auth issue I debugged?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.668,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like you were debugging a stale token issue.",
+        "keywords_found": [
+          "stale token"
+        ],
+        "keywords_missing": [
+          "auth issue",
+          "classic"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6334
+    },
+    {
+      "question": "How did I use MindGraph for my May retrospective?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "temporal",
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ],
+        "temporal_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "rag_entry_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.755,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 11,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You used MindGraph for your May retrospective by reading through the entries you'd written that month. You noted that the product had shipped real features and the consulting pipeline had moved forwar...",
+        "keywords_found": [
+          "mindgraph",
+          "may",
+          "retrospective"
+        ],
+        "keywords_missing": [
+          "read through the entries"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5555
+    },
+    {
+      "question": "When did I feel like I was procrastinating?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.658,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like you're reflecting on moments where you felt you might be procrastinating. I see a couple of entries that touch on this:\n\nOn Friday, May 8, 2026, you mentioned feeling scattered and gett...",
+        "keywords_found": [
+          "deep research",
+          "sophisticated procrastination"
+        ],
+        "keywords_missing": [
+          "rabbit hole"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5978
+    },
+    {
+      "question": "What was a moment of peace I had recently?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "semantic",
+          "recent"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.664,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "It sounds like you found a moment of peace on Saturday, May 23rd, after struggling with focus and rewriting headlines for your landing copy. Reading Rumi in the evening brought you clarity.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "read a bit of rumi",
+          "helped",
+          "couldn't focus"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6530
+    },
+    {
+      "question": "When did I feel more optimistic at night?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "temporal",
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005"
+        ],
+        "temporal_entry_ids": [
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba",
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d",
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b"
+        ],
+        "rag_entry_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "758e7dcb-e882-4d48-853c-026a5e3104a8",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.737,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 11,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It seems like you've been feeling more optimistic at night, particularly on **Monday, May 11, 2026**, and **Tuesday, May 12, 2026**. You mentioned that the quiet of late nights made thinking easier an...",
+        "keywords_found": [
+          "late nights",
+          "thinking easier",
+          "more optimistic"
+        ],
+        "keywords_missing": [
+          "night version of me"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 8095
+    },
+    {
+      "question": "What did my niece's drawing make me feel?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "a71921c4-5bde-46ff-9b95-f8cddc466413",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.762,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like your niece's drawing brought up a mix of emotions for you. The entry mentions it made you laugh, likely from the sweet and imaginative depiction of your family, but then also a bit sad....",
+        "keywords_found": [
+          "niece",
+          "drawing",
+          "a bit sad"
+        ],
+        "keywords_missing": [
+          "made me laugh"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.75,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 7153
+    },
+    {
+      "question": "When did I feel spread too thin?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.676,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 2,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like you felt spread too thin around **Monday, May 11, 2026**, when you had a long call with Priya about it. You also mentioned feeling scattered on **Friday, May 8, 2026**, when you were pu...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "spreading myself too thin",
+          "mindgraph",
+          "consulting pipeline",
+          "no clear answer"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5658
+    },
+    {
+      "question": "What was a small win that I needed to remember?",
+      "retrieval": {
+        "category": "emotional",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+          "fdcff4c6-47d6-4b83-8bbc-db78eb469bba"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.697,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "It sounds like you needed to remember that even small accomplishments, like seeing the MindGraph discoveries telegram work on a real entry, count as wins.",
+        "keywords_found": [],
+        "keywords_missing": [
+          "small wins still count",
+          "mindgraph dashboard",
+          "felt good"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 8600
+    },
+    {
+      "question": "What were my thoughts on the new GPT-5 model?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about the GPT-5 model in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3514
+    },
+    {
+      "question": "How did my trip to Mumbai go?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.639,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about a trip to Mumbai in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4460
+    },
+    {
+      "question": "What did I think of the book 'Klara and the Sun'?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about the book 'Klara and the Sun' in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 2634
+    },
+    {
+      "question": "What did he want to lock in by next Friday?",
+      "retrieval": {
+        "category": "hard_pronoun",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.711,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "Manuel wanted to lock in the Q3 deliverables by next Friday, May 15, 2026.",
+        "keywords_found": [
+          "manuel"
+        ],
+        "keywords_missing": [
+          "lock the q3 deliverables",
+          "2026-05-15"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5058
+    },
+    {
+      "question": "What were my impressions of the street food in Delhi?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about your impressions of street food in Delhi in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4675
+    },
+    {
+      "question": "Remind me about the hike I took in the Swiss Alps.",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "keyword",
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "temporal_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "I don't see any journal entries about a hike in the Swiss Alps.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5134
+    },
+    {
+      "question": "How was the coffee at the Blue Tokai in Koramangala?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "c14c8f00-9161-4494-8e79-c4e737d9a08f",
+          "c9a29eb1-235e-4102-bd9c-4b98d59d4a2d"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.637,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about the coffee at Blue Tokai in Koramangala in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 7879
+    },
+    {
+      "question": "What was the feedback from Aditi on the project proposal?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "a71921c4-5bde-46ff-9b95-f8cddc466413",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.649,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "I don't see any journal entries that mention feedback from Aditi on the project proposal.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 4987
+    },
+    {
+      "question": "Did I write down Suresh's contact number anywhere?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.626,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see any mention of Suresh's contact number in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 8986
+    },
+    {
+      "question": "What did I think about Vivek's new startup idea he mentioned over dinner?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.664,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "I don't see any journal entries that mention Vivek or his startup idea.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6642
+    },
+    {
+      "question": "What were the key takeaways from the Google I/O keynote this year?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "temporal_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+          "a7482f12-4175-42e4-8547-1e7f50a87aee",
+          "a612d64b-c8a5-45d2-aee0-58e512397976",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "I don't see any journal entries or conversation history that mention Google I/O keynotes.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6965
+    },
+    {
+      "question": "How did my cousin Rohan's wedding in Chennai go?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "39051669-328c-4603-95ce-5c32a3f0749b",
+          "f84028bd-abe6-4747-a19a-4cd3f0b61c20"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.632,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about your cousin Rohan's wedding in Chennai in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 14842
+    },
+    {
+      "question": "What are my notes on learning to play the guitar?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about learning to play the guitar in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 13965
+    },
+    {
+      "question": "What did I think of the movie 'Dune: Part Two'?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about the movie 'Dune: Part Two' in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 5867
+    },
+    {
+      "question": "Summarize my journal entries from April 2026.",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see any journal entries from April 2026 in the provided information.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 3777
+    },
+    {
+      "question": "What did I do for New Year's Eve 2025?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "keyword"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "758e7dcb-e882-4d48-853c-026a5e3104a8",
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": true,
+        "rag_max_similarity": 0.638,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "I don't see anything about your New Year's Eve 2025 in your journal entries.",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 10236
+    },
+    {
+      "question": "What did I write on the morning of May 11th?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "temporal_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "On the morning of May 11th, you wrote about waking up early to the sound of rain, making filter coffee, and reflecting on how different your problems were compared to a year ago. You also mentioned pu...",
+        "keywords_found": [
+          "filter coffee",
+          "dispatch feature"
+        ],
+        "keywords_missing": [
+          "listening to the rain"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6528
+    },
+    {
+      "question": "What was I doing on the afternoon of May 12?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "temporal_entry_ids": [
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803",
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "b8d4c705-9079-4716-b04f-4bb0e3bbfe66"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "On the afternoon of May 12th, you were still at your laptop, finding that the quiet of late nights made thinking easier. You wrote three new eval test cases for the discovery node and reviewed the bac...",
+        "keywords_found": [],
+        "keywords_missing": [
+          "debugging",
+          "auth issue",
+          "stale token",
+          "chai"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 26095
+    },
+    {
+      "question": "What was I writing late last night?",
+      "retrieval": {
+        "category": "hard_null",
+        "query_types": [
+          "temporal",
+          "recent"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "af89ae17-e90c-46a7-af79-e65a8cfaa30f",
+          "3b1deb4e-6d82-483a-8af3-62afe669b005",
+          "d76a43f0-cfc8-4f40-9b81-2bf2940b5803"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": null,
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.747,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "You were writing late last night, and it sounds like the quiet of the late hours really helps you think. You mentioned writing three new eval test cases for the discovery node and reviewing the backfi...",
+        "keywords_found": [],
+        "keywords_missing": [],
+        "hallucinations": [],
+        "keyword_score": 1.0,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 9093
+    },
+    {
+      "question": "What happened on May 11?",
+      "retrieval": {
+        "category": "temporal",
+        "query_types": [
+          "temporal"
+        ],
+        "routed_temporal": true,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "temporal_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "1715dd23-4850-4559-b173-e33a4cd85763",
+          "dacad580-50b9-4fef-9673-24290db60441",
+          "5d61f5d5-11fe-4837-b12d-979c27303551",
+          "ed70d305-3158-4e75-938b-0a6a1f39c663",
+          "50ca4bda-c549-4b3f-b59d-37bf827dcab0",
+          "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+          "c1288694-01ee-4ced-818b-78bdc7b9679a",
+          "39051669-328c-4603-95ce-5c32a3f0749b"
+        ],
+        "rag_entry_ids": [],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+        "expected_in_temporal_branch": true,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.0,
+        "temporal_has_results": true,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "On May 11, 2026, you had a busy day filled with a mix of personal reflections and work. You woke up early to the sound of rain, finding comfort in a simple filter coffee and a moment on the floor. You...",
+        "keywords_found": [
+          "filter coffee",
+          "dispatch feature"
+        ],
+        "keywords_missing": [
+          "listening to the rain"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.667,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6519
+    },
+    {
+      "question": "What feedback did Manuel give me?",
+      "retrieval": {
+        "category": "entity",
+        "query_types": [
+          "keyword",
+          "semantic"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "4f360f92-c32e-46f5-ba4d-24bfe895dce8",
+          "54476a4f-bad1-4eed-a95a-19578b7d7a6f",
+          "a71921c4-5bde-46ff-9b95-f8cddc466413"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.671,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": false,
+        "rank": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
+      },
+      "answer": {
+        "answer": "Manuel replied to your proposal and wants to schedule a call for Monday at 3pm. You felt a moment of panic, but then realized the proposal was in better shape than you remembered and planned to spend ...",
+        "keywords_found": [
+          "manuel"
+        ],
+        "keywords_missing": [
+          "simplico",
+          "freelance network"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 8446
+    },
+    {
+      "question": "What did I brainstorm for the next iteration of my retrieval pipeline?",
+      "retrieval": {
+        "category": "topic",
+        "query_types": [
+          "semantic",
+          "keyword"
+        ],
+        "routed_temporal": false,
+        "retrieved_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "temporal_entry_ids": [],
+        "rag_entry_ids": [
+          "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9"
+        ],
+        "recent_entry_ids": [
+          "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+          "9745c338-181a-4252-857a-5f752392c3f9",
+          "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+          "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+          "06a4b025-7bf3-49ab-adc5-4e12836195ff"
+        ],
+        "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+        "expected_in_temporal_branch": false,
+        "is_low_confidence": false,
+        "rag_max_similarity": 0.755,
+        "temporal_has_results": false,
+        "dashboard_has_results": false,
+        "hit": true,
+        "rank": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0
+      },
+      "answer": {
+        "answer": "You brainstormed several key areas for the next iteration of your retrieval pipeline, including:\n\n*   **Self-healing RAG:** This suggests a focus on making the retrieval-augmented generation system mo...",
+        "keywords_found": [
+          "retrieval"
+        ],
+        "keywords_missing": [
+          "rag iteration",
+          "reranker"
+        ],
+        "hallucinations": [],
+        "keyword_score": 0.333,
+        "hallucination_score": 1.0
+      },
+      "pipeline_time_ms": 6508
+    }
+  ]
+}
