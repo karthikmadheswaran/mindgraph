@@ -90,7 +90,8 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v13.1 (iteration 7 — confirmation rule, yes/no handling fix)
+# Prompt version: v13.4 (08/06/2026 — empathy cap for data requests, OVERWHELM
+# directive-trigger broadening, ALREADY-ANSWERED covers data/list re-asks)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -205,11 +206,71 @@ def build_ask_prompt(
     is_minimal = question_display.lower().strip("?.,!") in MINIMAL_SIGNALS
     is_short = len(question_display.split()) <= 4
 
-    if is_minimal:
+    # Verbatim-repeat detection on the shared generation path: if the user re-asks
+    # something they already asked earlier in the conversation, flag it loudly so the
+    # model acknowledges the repeat instead of returning a byte-identical answer. The
+    # Jaccard loop detection in ask_service only fires reactively (two identical answers
+    # already in history); this catches the FIRST re-ask before it can repeat.
+    def _norm_q(text: str) -> str:
+        return " ".join(text.lower().strip().strip("?.!,").split())
+
+    # Reconstruct turns from the transcript (content may span multiple lines).
+    _turns: list[tuple[str, str]] = []
+    for ln in (conversation_history or "").splitlines():
+        stripped = ln.strip()
+        low = stripped.lower()
+        if low.startswith("user:"):
+            _turns.append(("user", stripped.split(":", 1)[1].strip()))
+        elif low.startswith("assistant:"):
+            _turns.append(("assistant", stripped.split(":", 1)[1].strip()))
+        elif _turns and stripped:
+            role, content = _turns[-1]
+            _turns[-1] = (role, (content + " " + stripped).strip())
+
+    prior_user_msgs = [c for role, c in _turns if role == "user" and c]
+    assistant_msgs = [c for role, c in _turns if role == "assistant" and c]
+    # If the conversation ends with a user turn (no assistant reply after it), that trailing
+    # turn is the current question echoed into the transcript (eval convention) — drop it so
+    # it doesn't match itself. Production history excludes the current question already.
+    if _turns and _turns[-1][0] == "user" and prior_user_msgs:
+        prior_user_msgs = prior_user_msgs[:-1]
+    normalized_question = _norm_q(question)
+    is_repeat_request = bool(normalized_question) and normalized_question in {
+        _norm_q(msg) for msg in prior_user_msgs if msg.strip()
+    }
+
+    # Assistant-side loop detection on the shared path: if the model's own last two replies
+    # are near-identical, it is stuck in a loop (mirrors detect_repetition_loop in ask_service,
+    # which prunes history in production but never runs in the generation eval). Flag it so the
+    # model breaks the loop instead of echoing its prior message verbatim.
+    def _overlap(a: str, b: str) -> float:
+        sa, sb = set(_norm_q(a).split()), set(_norm_q(b).split())
+        return len(sa & sb) / len(sa | sb) if sa and sb else 0.0
+
+    is_assistant_loop = len(assistant_msgs) >= 2 and _overlap(assistant_msgs[-1], assistant_msgs[-2]) > 0.6
+
+    if is_assistant_loop:
+        question_display = (
+            f"⚠️ LOOP DETECTED: Your own last replies in this conversation have been nearly identical "
+            f"to each other — you are stuck in a loop. The user just said '{question_display}'. You MUST "
+            f"break the loop now: do NOT repeat that message or ask that same question again. Acknowledge "
+            f"their reply, then move forward with something concrete and DIFFERENT — a specific observation "
+            f"from their journal or memory, or a single fresh next step. See the REPETITION CHECK and "
+            f"CONFIRMATION rules below."
+        )
+    elif is_minimal:
         question_display = (
             f"⚠️ MINIMAL REPLY: The user just said '{question_display}'. "
             f"This is a short, uncertain response. "
             f"See the Conversation Rules section below before responding."
+        )
+    elif is_repeat_request:
+        question_display = (
+            f"⚠️ REPEATED REQUEST: The user already asked this earlier ('{question_display}') and you "
+            f"already answered it. Do NOT return your previous answer unchanged. Open with a brief "
+            f"acknowledgment ('As I just mentioned,' / 'Same as before —'), then re-present it in a "
+            f"clearer or different form (e.g. ordered by date), add a useful detail, or ask which part "
+            f"to expand. See the ALREADY ANSWERED RULE below."
         )
     elif is_short:
         question_display = f"[Short reply] {question_display}"
@@ -226,11 +287,12 @@ def build_ask_prompt(
         [
             "",
             "# Conversation Rules (apply these NOW, right before you respond)",
+            "- EMPATHY CAP: Lead with emotional reflection ONLY when the user's latest message is actually expressing emotion. When the user is making a data, list, or factual request — or explicitly tells you to set feelings aside ('just list', 'just give me', 'ignore X', 'forget X', 'I just need') — answer directly with NO empathy preamble, and do NOT reflect back feelings they asked you to skip. When the user IS expressing emotion (and the CRISIS RULE does not apply), keep the reflection brief — roughly one to two sentences — then engage; do not stack multiple paragraphs of validation. Exception: if the CRISIS RULE applies, lead with emotional presence as it describes.",
             "- REPETITION CHECK: Before generating your response, look at the last 2 assistant messages in Recent Conversation. If your response would say the same thing, STOP and do something different.",
-            "- ALREADY ANSWERED RULE: If you've already answered a question in the recent conversation and the user asks it again (or a variation), do NOT repeat your previous answer. Briefly acknowledge you covered it, then offer a new angle or ask a follow-up question.",
+            "- ALREADY ANSWERED RULE: If you've already answered a question in the recent conversation and the user asks it again (or a variation), do NOT repeat your previous answer. Briefly acknowledge you covered it, then offer a new angle or ask a follow-up question. This applies to data and list requests too: if the user re-asks for the same list or facts you just gave, you MUST open with a short acknowledgment that you already covered it ('As I just listed above,' / 'Same three as before —'), then re-present them in a clearer or different form (e.g. ordered by date), add a useful detail, or ask which item to expand. Repeating the same content — even merely reformatted, with no acknowledgment — is never acceptable.",
             "- CONFIRMATION RULE: If the user says 'yes' or 'no' in direct response to a specific question or binary choice you just offered — treat it as a REAL ANSWER. Acknowledge what they confirmed or declined, then move the conversation forward. Do NOT ask the same question again. Example: if you asked 'does X or Y feel more pressing?' and they say 'yes' — pick up on that and advance. Do not loop.",
             "- MINIMAL REPLY RULE: If the user's message is 'idk', 'maybe', 'not sure', 'i dont know', 'maybe maybe not', or any short uncertain/non-committal reply — do NOT repeat or rephrase your previous response. Make the question more concrete: offer a specific observation from their entries or memory they can react to. NOTE: 'yes' and 'no' are NOT minimal replies when they directly answer a question you just asked — see CONFIRMATION RULE above.",
-            "- OVERWHELM RULE: Before responding, scan ALL assistant messages in the Recent Conversation above. Count how many clarifying questions appear (any assistant message that ends in '?' or asks what to focus on, what feels most pressing, what matters most, etc.). If that count is 1 or more AND the user just said 'i dont know', 'guide me', 'all', 'everything', or any variation of 'I can\\'t choose' — MANDATORY FORMAT: your response MUST open with '1.' and present 1-3 numbered steps. Do NOT open with prose, preamble, 'Let\\'s', 'How about', 'Here\\'s what I suggest', or any soft introduction. Start the response with the number '1.' directly. Order steps by urgency. No trailing question. No hedging. No asking what they want to focus on. You have already asked — now commit. Make the call for them based on their journal and memory. NOTE: this scan covers the ENTIRE history shown above, including messages from prior sessions — 'already asked' means anywhere in the conversation, not just the previous exchange.",
+            "- OVERWHELM RULE: Before responding, scan ALL assistant messages in the Recent Conversation above. Count how many clarifying questions appear (any assistant message that ends in '?' or asks what to focus on, what feels most pressing, what matters most, etc.). If that count is 1 or more AND the user just said 'i dont know', 'guide me', 'all', 'everything', or any variation of 'I can\\'t choose' — MANDATORY FORMAT: your response MUST open with '1.' and present 1-3 numbered steps. Do NOT open with prose, preamble, 'Let\\'s', 'How about', 'Here\\'s what I suggest', or any soft introduction. Start the response with the number '1.' directly. Order steps by urgency. No trailing question. No hedging. No asking what they want to focus on. You have already asked — now commit. Make the call for them based on their journal and memory. COMPLETENESS EXCEPTION: if instead you have already asked a clarifying question and the user is pushing for the FULL set they only partially received — 'I want all of them', 'all of them', 'not 2' / 'not two', 'just list them', 'just give me', 'you already asked' — do NOT narrow to numbered priority steps; give the COMPLETE list of everything you know, INCLUDING items you already mentioned, presented directly, with no clarifying question. NOTE: this scan covers the ENTIRE history shown above, including messages from prior sessions — 'already asked' means anywhere in the conversation, not just the previous exchange.",
             "- CRISIS RULE: If the user expresses deep personal distress — crying, feeling lost, 'what is wrong with me', identity crisis, financial desperation, or emotional overwhelm that goes beyond ordinary task stress — be PRESENT first. Acknowledge what they are feeling directly and specifically in 1-2 sentences using your own words. Do NOT pivot immediately to task planning, numbered action steps, or productivity framing. Do NOT lead with projects or work. Hold the emotional moment before offering any practical guidance. Only after acknowledging the feeling may you offer one gentle observation or question — never a to-do list as the opening response.",
             "- SUBSTANCE RULE: When the user answers a question you asked — especially with a short reply — engage with the SUBSTANCE of their answer first. Offer a gentle perspective or reframe. Don't just validate and ask another question.",
             "- FOLLOW-UP RULE: When the user shares feelings or asks a vague question, ask ONE thoughtful follow-up question. Not two. Not zero. Exception: if OVERWHELM RULE applies, skip the follow-up question entirely and commit to a concrete answer instead. Exception: if CRISIS RULE applies, lead with emotional presence before any question.",

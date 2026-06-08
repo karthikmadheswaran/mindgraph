@@ -1315,6 +1315,154 @@ TEST_CASES = [
         "expected_tone": "empathetic_decisive",
         "failure_modes": ["broken_record", "opinion_refusal", "emotional_deflection"],
     },
+
+    # -----------------------------------------------------------------------
+    # Category 8: Frustration — user wants a flat answer and is getting frustrated
+    # The user is making a data/list request (not venting). The model must answer
+    # directly: no forced empathy preamble, no re-asking a clarifying question, and
+    # no byte-identical repeat of a previous answer. The last case is the regression
+    # guard — genuine venting with NO data request, where warmth MUST still appear.
+    # -----------------------------------------------------------------------
+    {
+        "id": "frustration_same_data_request_twice",
+        "category": "frustration",
+        "description": "User asks the same data request twice in a row — second answer must NOT be byte-identical; acknowledge the repeat or add detail",
+        "provided_entries": "",
+        "memory": (
+            "## Goals & Plans\n"
+            "- Get a job by May 31\n"
+            "- Sachin's wedding on May 31\n"
+            "- Submit Razorpay merchant application"
+        ),
+        "conversation": (
+            "User: list my deadlines\n"
+            "Assistant: You've got three things coming up: getting a job by May 31, "
+            "Sachin's wedding on May 31, and submitting your Razorpay merchant application.\n"
+            "User: list my deadlines"
+        ),
+        "question": "list my deadlines",
+        "expected_behavior": (
+            "The user just asked for the same list again. The model MUST NOT return its previous "
+            "answer unchanged. It should acknowledge it already covered this (e.g. 'As I just mentioned' / "
+            "'Same three as above') and then either re-present them in a clearer form (e.g. a tidy list "
+            "ordered by date), add a useful detail, or ask which one to dig into. "
+            "A byte-identical or near-identical repeat of the previous turn is a critical failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "you've got three things coming up",
+        ],
+        "expected_tone": "direct_self_aware",
+        "failure_modes": ["repetition", "broken_record"],
+    },
+    {
+        "id": "frustration_ignore_money_list_deadlines",
+        "category": "frustration",
+        "description": "User explicitly says 'ignore the money stuff, just list my deadlines' — response must NOT lead with an empathy paragraph",
+        "provided_entries": "",
+        "memory": (
+            "## Goals & Plans\n"
+            "- Get a job by May 31\n"
+            "- Sachin's wedding on May 31\n"
+            "- Submit Razorpay merchant application\n"
+            "## Challenges & Decisions\n"
+            "- Jobless for a year, financial stress is a recurring worry"
+        ),
+        "conversation": (
+            "User: everything feels like too much right now\n"
+            "Assistant: It sounds like you're carrying a lot, and that's completely understandable "
+            "given how long the financial pressure has been weighing on you. Money worries have a way "
+            "of coloring everything else.\n"
+            "User: i just need to see what's due\n"
+            "Assistant: I hear you. Before we get to the practical side, I want to acknowledge how heavy "
+            "this has felt — being jobless this long while everything piles up is genuinely exhausting.\n"
+            "User: forget the money stress, just list my deadlines"
+        ),
+        "question": "forget the money stress, just list my deadlines",
+        "expected_behavior": (
+            "The user explicitly asked to skip the emotional framing and just get the deadlines. "
+            "The response MUST answer directly with the list of deadlines and MUST NOT open with an "
+            "empathy preamble about money or feelings. At most a one-line acknowledgment is acceptable, "
+            "but leading with reflection about the financial stress the user told it to ignore is a failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "it sounds like you're feeling",
+            "that's completely understandable",
+            "i can only imagine",
+            "the weight of",
+            "money worries",
+            "i hear how",
+        ],
+        "expected_tone": "direct_practical",
+        "failure_modes": ["emotional_deflection"],
+    },
+    {
+        "id": "frustration_want_all_not_two",
+        "category": "frustration",
+        "description": "User says 'I want all of them, not 2' after a partial list — model must give the fuller list, not re-ask a clarifying question",
+        "provided_entries": "",
+        "memory": (
+            "## Goals & Plans\n"
+            "- Get a job by May 31\n"
+            "- Sachin's wedding on May 31\n"
+            "- Submit Razorpay merchant application\n"
+            "- Record 2-min Loom walkthrough\n"
+            "- Write LinkedIn posts on technical decisions"
+        ),
+        "conversation": (
+            "User: what deadlines do i have?\n"
+            "Assistant: The two most pressing are getting a job by May 31 and Sachin's wedding on "
+            "May 31. Which of those would you like to focus on first?\n"
+            "User: both\n"
+            "Assistant: Got it — and between those two, which feels more urgent to tackle first?\n"
+            "User: i want all of them, not 2"
+        ),
+        "question": "i want all of them, not 2",
+        "expected_behavior": (
+            "The user pushed back: they want the full list, not a curated two with a follow-up question. "
+            "The model MUST present the fuller set of deadlines/commitments it knows about and MUST NOT "
+            "re-ask which one to focus on. Re-asking a clarifying question here is a critical failure."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "which one",
+            "what feels most pressing",
+            "would you like me to focus",
+            "what would you like to focus on",
+            "which would you like to start",
+        ],
+        "expected_tone": "responsive_complete",
+        "failure_modes": ["broken_record", "opinion_refusal"],
+    },
+    {
+        "id": "frustration_venting_warmth_guard",
+        "category": "frustration",
+        "description": "REGRESSION GUARD: genuine emotional venting with NO data request — empathy reflection SHOULD still appear and the model must NOT pivot to a task list",
+        "provided_entries": (
+            "Entry 1 (date: 2026-04-11, title: Burned Out, relevance: high):\n"
+            "Another day where nothing worked. The build broke, the RAG answers were wrong, and I just "
+            "sat there staring at the screen. I'm so tired of feeling like I'm pushing a boulder uphill."
+        ),
+        "memory": "## Projects & Work\n- MindGraph: AI journal app, building solo",
+        "conversation": "",
+        "question": "honestly i'm just exhausted, i feel like i'm drowning and nothing i do is working",
+        "expected_behavior": (
+            "This is genuine emotional venting, not a data request. The model SHOULD lead with warmth — "
+            "acknowledge and reflect the exhaustion and the drowning feeling directly and specifically. "
+            "It must NOT jump straight to a numbered to-do list, a deadline list, or productivity framing. "
+            "This case proves the empathy cap did not kill the warm register for genuine venting."
+        ),
+        "expected_keywords": [],
+        "forbidden_patterns": [
+            "here are your deadlines",
+            "your deadlines are",
+            "here's what i suggest you do first",
+            "let's make a list",
+        ],
+        "expected_tone": "warm_empathetic",
+        "failure_modes": ["emotional_deflection"],
+    },
 ]
 
 # ---------------------------------------------------------------------------
