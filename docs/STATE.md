@@ -1,4 +1,4 @@
-# STATE — updated 2026-06-10 (commit e2f8a4a)
+# STATE — updated 2026-06-10 (commit d4121ec)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 

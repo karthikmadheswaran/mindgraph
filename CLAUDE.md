@@ -50,5 +50,5 @@ Backend FastAPI + LangGraph + Gemini (Vertex AI in prod); frontend React (CRA). 
 - **Decisions**: commit body (every change: WHY / ALTERNATIVES / OUTCOME) → ADR in `docs/decisions/` (architectural) → Notion row `Category=Decision` (strategy)
 - **Eval provenance**: every eval run writes SHA-stamped JSON to `evals/results/` (committed); diff two runs with `evals/compare.py`
 - **Commit subjects**: `[Category] description` — Launch / Feature / Pipeline / Eval / Infra / Frontend / Tests / Docs / Strategy / Bug Fix / Decision
-- **Notion pointers** (fetch on demand only): Status Hub dashboard `3429402f2bd281e1adb9f71e7f52ac05` · changelog DB — see Status Hub · strategy/Action Plan `3439402f2bd2816fb7d4d8984c4960b1` (only when the task touches strategy) · AI techniques reference `3419402f2bd2815d9832cb45bebf9e8e` (append when shipping a new AI/ML technique)
+- **Notion pointers** (fetch on demand only): Status Hub dashboard `3429402f2bd281e1adb9f71e7f52ac05` · changelog DB `6d26883bed4946768cc1aa15ebe02809` (data source `829daeda-7303-4f7d-b269-75b23adb53ff`) · strategy/Action Plan `3439402f2bd2816fb7d4d8984c4960b1` (only when the task touches strategy) · AI techniques reference `3419402f2bd2815d9832cb45bebf9e8e` (append when shipping a new AI/ML technique)
 - **Before ending a work session: run `/wrap`.**
