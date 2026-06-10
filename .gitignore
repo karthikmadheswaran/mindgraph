@@ -19,8 +19,9 @@ __pycache__/
 node_modules/
 Ui inspirations/
 
-# Ignore AI IDE Workspace States
-.claude/
+# Ignore AI IDE Workspace States — but version skills (process-as-code, ADR-0001)
+.claude/*
+!.claude/skills/
 .gemini/
 .cursor/
 .antigravity/
