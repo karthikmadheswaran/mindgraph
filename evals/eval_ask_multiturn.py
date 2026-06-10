@@ -150,6 +150,48 @@ SCOPE_CAVEAT = (
 )
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Quota resilience (Vertex rate limits) — eval INFRASTRUCTURE ONLY. This does NOT
+# touch the system-under-test (generate_answer pipeline) or the judging logic. It
+# (a) memoizes embeddings by text so the 33 cases reuse the handful of distinct
+# fixture texts instead of re-embedding per case, and (b) retries 429 /
+# RESOURCE_EXHAUSTED with exponential backoff. Without this, a new Vertex project's
+# low default gemini-embedding quota fails most cases at the seed step.
+# ──────────────────────────────────────────────────────────────────────────────
+_EMBED_CACHE: dict[tuple[str, str], list[float]] = {}
+
+
+def _is_quota_err(exc: Exception) -> bool:
+    m = str(exc)
+    return "429" in m or "RESOURCE_EXHAUSTED" in m or "quota" in m.lower()
+
+
+async def _with_backoff(fn, *, what: str, attempts: int = 7, base: float = 6.0, cap: float = 90.0):
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return await fn()
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            if _is_quota_err(exc) and i < attempts - 1:
+                wait = min(cap, base * (2 ** i))
+                print(f"  [backoff] {what}: 429 quota — waiting {wait:.0f}s (attempt {i+1}/{attempts})", flush=True)
+                await asyncio.sleep(wait)
+                continue
+            raise
+    assert last is not None
+    raise last
+
+
+async def _embed_cached(text: str, task_type: str = EMBED_TASK) -> list[float]:
+    key = (text, task_type)
+    if key not in _EMBED_CACHE:
+        _EMBED_CACHE[key] = await _with_backoff(
+            lambda: get_embedding(text, task_type=task_type), what="embedding"
+        )
+    return _EMBED_CACHE[key]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # LLM judge
 # ──────────────────────────────────────────────────────────────────────────────
 MULTITURN_JUDGE_PROMPT = """You are evaluating ONE specific behavioral property of a personal-journal AI \
@@ -277,7 +319,7 @@ async def judge_case(scenario, persona: str, transcript: list[dict]) -> dict:
 
     last_err = ""
     for _attempt in range(3):
-        resp = await judge_model.ainvoke(prompt)
+        resp = await _with_backoff(lambda: judge_model.ainvoke(prompt), what="judge")
         raw = extract_text(resp)
         try:
             data = json.loads(_strip_fence(raw))
@@ -343,7 +385,7 @@ async def seed_user(user_id: str, fixtures, now: datetime) -> None:
     entry_ids: list[str] = []
     for entry in fixtures.entries:
         text = entry["text"]
-        embedding = await get_embedding(text, task_type=EMBED_TASK)
+        embedding = await _embed_cached(text, EMBED_TASK)
         created_at = now - timedelta(days=int(entry.get("days_ago", 0)))
         row = supabase.table("entries").insert(
             {
@@ -378,7 +420,7 @@ async def seed_user(user_id: str, fixtures, now: datetime) -> None:
     # Entities (people/projects) — embedded, mirroring app/entity_resolver insert shape.
     for ent in fixtures.entities:
         description = f"{ent['name']} ({ent['type']})"
-        embedding = await get_embedding(description, task_type=EMBED_TASK)
+        embedding = await _embed_cached(description, EMBED_TASK)
         supabase.table("entities").insert(
             {
                 "user_id": user_id,
@@ -400,7 +442,9 @@ async def run_turns(user_id: str, turns: tuple[str, ...], now: datetime) -> list
     for i, turn_text in enumerate(turns):
         # History is fetched inside generate_answer BEFORE we persist this turn,
         # so the current question is never in its own history — same as production.
-        answer = await generate_answer(turn_text, user_id)
+        answer = await _with_backoff(
+            lambda: generate_answer(turn_text, user_id), what=f"generation[t{i+1}]"
+        )
 
         # Persist with strictly-increasing created_at so the desc-order history
         # fetch + loop detector see a deterministic order (prod ties on now()).
