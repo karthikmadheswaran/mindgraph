@@ -8,11 +8,16 @@ load_dotenv()
 # Mirror app/llm.py's provider toggle. When USE_VERTEX is truthy, embeddings run
 # through Vertex AI (Google Cloud billing) using the SAME gemini-embedding-001 model
 # and 1536-dim output, so the vector space is unchanged. Default keeps the AI Studio
-# (API-key) path. Test users are seeded AND queried within one run, so the embeddings
-# only need to be internally consistent — no corpus re-embed is implied by the toggle.
+# (API-key) path.
 _USE_VERTEX = os.getenv("USE_VERTEX", "").strip().lower() in ("1", "true", "yes")
 
 if _USE_VERTEX:
+    # Materialize the service-account key into ADC before building the Vertex client
+    # (no-op locally; see app/gcp_credentials.py). Must run before genai.Client below.
+    from app.gcp_credentials import ensure_adc
+
+    ensure_adc()
+
     client = genai.Client(
         vertexai=True,
         project=os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT"),

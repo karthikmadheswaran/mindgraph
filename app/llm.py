@@ -5,17 +5,26 @@ from dotenv import load_dotenv
 
 load_dotenv(encoding="utf-8-sig")
 if os.getenv("GEMINI_API_KEY"):
-    # AI Studio path uses GOOGLE_API_KEY; only set when a key exists (Vertex needs none).
+    # AI Studio path uses GOOGLE_API_KEY. Only set when a key exists — Vertex needs
+    # none, and assigning None would crash at import in a Vertex-only deployment.
     os.environ.setdefault("GOOGLE_API_KEY", os.getenv("GEMINI_API_KEY"))
 
 # Provider toggle. When USE_VERTEX is truthy, all chat models run through Vertex AI
-# (billed via Google Cloud — e.g. trial credits), same Gemini models, no AI Studio
-# prepay involved. Default (unset) keeps the production AI Studio path unchanged.
-# Requires: langchain-google-vertexai, ADC/service-account auth, the Vertex AI API
-# enabled on VERTEX_PROJECT, and gemini-2.5-* available in VERTEX_LOCATION.
+# (billed via Google Cloud), same Gemini models — no AI Studio prepay involved.
+# Default (unset) keeps the AI Studio API-key path. Requires: langchain-google-vertexai,
+# auth (service-account via GOOGLE_CREDENTIALS_JSON in prod, or local gcloud ADC), the
+# Vertex AI API enabled on VERTEX_PROJECT, and gemini-2.5-* available in VERTEX_LOCATION.
 _USE_VERTEX = os.getenv("USE_VERTEX", "").strip().lower() in ("1", "true", "yes")
 
 if _USE_VERTEX:
+    # Materialize a service-account key (GOOGLE_CREDENTIALS_JSON) into ADC BEFORE the
+    # first ChatVertexAI is constructed — required on hosts without gcloud ADC (Railway).
+    # No-op locally, where it falls back to existing ADC. Import order matters: this
+    # MUST run before the client below, or the client builds with no credentials.
+    from app.gcp_credentials import ensure_adc
+
+    ensure_adc()
+
     from langchain_google_vertexai import ChatVertexAI
 
     _VERTEX_KW = dict(
@@ -24,8 +33,7 @@ if _USE_VERTEX:
         max_retries=2,
     )
     # NOTE: thinking_budget is a Gemini-Developer-API (AI Studio) kwarg and is NOT
-    # passed to ChatVertexAI here; flash-lite on Vertex uses its default thinking
-    # config. Documented as a minor generation-fidelity caveat in the eval header.
+    # passed to ChatVertexAI; flash-lite on Vertex uses its default thinking config.
     flash = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.1, **_VERTEX_KW)
     flash_creative = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.3, **_VERTEX_KW)
     pro = ChatVertexAI(model="gemini-2.5-pro", temperature=0.3, **_VERTEX_KW)

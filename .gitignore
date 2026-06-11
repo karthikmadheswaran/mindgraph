@@ -1,4 +1,17 @@
 .env
+
+# Google service-account keys — NEVER commit (this repo is public; a committed SA
+# key is a credential leak). Vertex creds live ONLY in the GOOGLE_CREDENTIALS_JSON
+# env var (Railway) and are materialized to an OS temp file at runtime — never a
+# file in the repo. These patterns are a defensive backstop for local key files.
+*service-account*.json
+*serviceaccount*.json
+*-sa.json
+gcp-credentials*.json
+google-credentials*.json
+application_default_credentials.json
+psychic-surf-*.json
+
 .config/
 __pycache__/
 *.pyc
@@ -6,8 +19,9 @@ __pycache__/
 node_modules/
 Ui inspirations/
 
-# Ignore AI IDE Workspace States
-.claude/
+# Ignore AI IDE Workspace States — but version skills (process-as-code, ADR-0001)
+.claude/*
+!.claude/skills/
 .gemini/
 .cursor/
 .antigravity/
