@@ -32,10 +32,19 @@ if _USE_VERTEX:
         location=os.getenv("VERTEX_LOCATION", "us-central1"),
         max_retries=2,
     )
-    # NOTE: thinking_budget is a Gemini-Developer-API (AI Studio) kwarg and is NOT
-    # passed to ChatVertexAI; flash-lite on Vertex uses its default thinking config.
-    flash = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.1, **_VERTEX_KW)
-    flash_creative = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.3, **_VERTEX_KW)
+    # thinking_budget=0 mirrors the AI Studio path (eval 23/05: 0 strictly dominates
+    # 512 and -1). An earlier note here claimed ChatVertexAI doesn't take the kwarg —
+    # stale: the installed langchain-google-vertexai supports it. Leaving Vertex on
+    # its default DYNAMIC thinking caused observed pathology (11/06): flash-lite spun
+    # ~350s on a routing prompt and returned ZERO output tokens, which downstream
+    # parses as None → silent fallback routing after a multi-minute hang.
+    flash = ChatVertexAI(
+        model="gemini-2.5-flash-lite", temperature=0.1, thinking_budget=0, **_VERTEX_KW
+    )
+    flash_creative = ChatVertexAI(
+        model="gemini-2.5-flash-lite", temperature=0.3, thinking_budget=0, **_VERTEX_KW
+    )
+    # pro keeps dynamic thinking — same as the AI Studio branch below.
     pro = ChatVertexAI(model="gemini-2.5-pro", temperature=0.3, **_VERTEX_KW)
 else:
     from langchain_google_genai import ChatGoogleGenerativeAI
