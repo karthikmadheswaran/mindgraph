@@ -123,8 +123,9 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v13.4 (08/06/2026 — empathy cap for data requests, OVERWHELM
-# directive-trigger broadening, ALREADY-ANSWERED covers data/list re-asks)
+# Prompt version: v13.5 (11/06/2026 — re-ask trigger rewired: semantic is_reask
+# flag from the query agent OR exact-match backstop; REPEATED REQUEST injection
+# made conditional so a false positive degrades to a normal answer)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -132,6 +133,7 @@ def build_ask_prompt(
     context_text: str = "",
     today_str: str = "",
     is_low_confidence: bool = False,
+    is_reask: bool = False,
 ) -> str:
     prompt_parts = []
     if today_str:
@@ -239,11 +241,13 @@ def build_ask_prompt(
     is_minimal = question_display.lower().strip("?.,!") in MINIMAL_SIGNALS
     is_short = len(question_display.split()) <= 4
 
-    # Verbatim-repeat detection on the shared generation path: if the user re-asks
-    # something they already asked earlier in the conversation, flag it loudly so the
-    # model acknowledges the repeat instead of returning a byte-identical answer. The
-    # Jaccard loop detection in ask_service only fires reactively (two identical answers
-    # already in history); this catches the FIRST re-ask before it can repeat.
+    # Re-ask detection on the shared generation path: catch the FIRST re-ask before
+    # the model can repeat itself (the Jaccard loop detection in ask_service only
+    # fires reactively, after two near-identical answers are already in history).
+    # Two triggers, OR-ed below: the pipeline's semantic is_reask flag (query agent
+    # reads the recent user turns — catches rephrased re-asks), and an exact-match
+    # backstop after normalization (zero-cost; eval paths that call build_ask_prompt
+    # directly bypass the pipeline and still need verbatim re-asks caught).
     def _norm_q(text: str) -> str:
         return " ".join(text.lower().strip().strip("?.!,").split())
 
@@ -254,9 +258,10 @@ def build_ask_prompt(
     prior_user_msgs = extract_prior_user_messages(conversation_history)
     assistant_msgs = [c for role, c in _turns if role == "assistant" and c]
     normalized_question = _norm_q(question)
-    is_repeat_request = bool(normalized_question) and normalized_question in {
+    is_exact_repeat = bool(normalized_question) and normalized_question in {
         _norm_q(msg) for msg in prior_user_msgs if msg.strip()
     }
+    is_repeat_request = is_reask or is_exact_repeat
 
     # Assistant-side loop detection on the shared path: if the model's own last two replies
     # are near-identical, it is stuck in a loop (mirrors detect_repetition_loop in ask_service,
@@ -284,12 +289,16 @@ def build_ask_prompt(
             f"See the Conversation Rules section below before responding."
         )
     elif is_repeat_request:
+        # Conditional framing on purpose: the semantic trigger can misfire, and a
+        # misfire on a genuine new question must degrade to a normal answer.
         question_display = (
-            f"⚠️ REPEATED REQUEST: The user already asked this earlier ('{question_display}') and you "
-            f"already answered it. Do NOT return your previous answer unchanged. Open with a brief "
-            f"acknowledgment ('As I just mentioned,' / 'Same as before —'), then re-present it in a "
-            f"clearer or different form (e.g. ordered by date), add a useful detail, or ask which part "
-            f"to expand. See the ALREADY ANSWERED RULE below."
+            f"⚠️ LIKELY REPEATED REQUEST: The user's message ('{question_display}') appears to "
+            f"re-ask something you already answered in this conversation. If this repeats an "
+            f"earlier question: do NOT return your previous answer unchanged — open with a brief "
+            f"acknowledgment ('As I just mentioned,' / 'Same as before —'), then re-present it in "
+            f"a clearer or different form (e.g. ordered by date), add a useful detail, or ask "
+            f"which part to expand (see the ALREADY ANSWERED RULE below). If it is actually a new "
+            f"question, ignore this warning and answer it normally."
         )
     elif is_short:
         question_display = f"[Short reply] {question_display}"
