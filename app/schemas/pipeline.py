@@ -96,3 +96,7 @@ class RoutingDecision(BaseModel):
     time_range: Optional[TimeRange] = None
     entities_mentioned: list[EntityRef] = Field(default_factory=list)
     dashboard_context_needed: bool = False
+    # True when the current question re-asks something already asked earlier in
+    # this conversation (rephrasings count). Defaults False so the field is safe
+    # on first turns and on any fallback path that never saw the history.
+    is_reask: bool = False

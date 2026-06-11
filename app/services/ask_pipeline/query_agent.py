@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timezone
 
+from app.ask_memory import extract_prior_user_messages
 from app.db import supabase
 from app.llm import flash
 from app.schemas.pipeline import RoutingDecision
@@ -21,7 +22,13 @@ _DEFAULT_FALLBACK = {
     "time_range": None,
     "entities_mentioned": [],
     "dashboard_context_needed": False,
+    "is_reask": False,
 }
+
+# How many prior USER turns the routing prompt sees for re-ask detection.
+# User side only — assistant replies would bloat the prompt without helping
+# the "did they already ask this" judgment.
+_REASK_HISTORY_TURNS = 5
 
 
 def _fetch_top_entities(user_id: str, limit: int = 50) -> list[dict]:
@@ -75,7 +82,20 @@ def _format_recent_summaries(entries: list[dict], now: datetime) -> str:
     return "\n".join(lines)
 
 
-def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> str:
+def _build_prompt(
+    question: str,
+    today: str,
+    entity_list: str,
+    recent: str,
+    prior_user_turns: list[str] | None = None,
+) -> str:
+    history_section = ""
+    if prior_user_turns:
+        numbered = "\n".join(f"{i}. {t}" for i, t in enumerate(prior_user_turns, 1))
+        history_section = (
+            "Earlier user messages in this conversation (oldest first; assistant replies omitted):\n"
+            f"{numbered}\n\n"
+        )
     return (
         "You are a query routing agent for a personal journal app.\n\n"
         "Given a user's question and their personal context, output a JSON routing decision.\n\n"
@@ -84,12 +104,14 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         f"{entity_list}\n\n"
         "Recent entries (last 3):\n"
         f"{recent}\n\n"
+        f"{history_section}"
         "Produce a routing decision with these fields:\n"
         "- query_types: array of \"temporal\" | \"semantic\" | \"recent\" | \"dashboard\" | \"keyword\"\n"
         "- time_range: {start: \"YYYY-MM-DD\" (inclusive), end: \"YYYY-MM-DD\" (inclusive), "
         "time_of_day: \"morning\" | \"afternoon\" | \"evening\" | \"night\" | null} or null\n"
         "- entities_mentioned: array of {name, type}\n"
-        "- dashboard_context_needed: true | false\n\n"
+        "- dashboard_context_needed: true | false\n"
+        "- is_reask: true | false\n\n"
         "Rules:\n"
         "- query_types is an array — a question can be multiple types simultaneously\n"
         "- Use \"temporal\" when the question references a time period (month name, \"recently\", \"last week\", \"latest\", \"this month\")\n"
@@ -114,6 +136,16 @@ def _build_prompt(question: str, today: str, entity_list: str, recent: str) -> s
         "  → time_of_day=null\n"
         "- Canonical labels only: \"morning\" | \"afternoon\" | \"evening\" | \"night\". Anything\n"
         "  else (\"dawn\", \"midday\", \"late night\") → pick the nearest canonical label.\n\n"
+        "Re-ask rules:\n"
+        "- Set is_reask=true when the current question asks for substantially the SAME information\n"
+        "  as an earlier user message in this conversation. This includes rephrasings, \"again\",\n"
+        "  \"one more time\", \"you already said that\", requests to simplify or repeat what was\n"
+        "  already given, and frustrated repeats.\n"
+        "- Set is_reask=false for genuine follow-ups that NARROW or EXTEND an earlier question —\n"
+        "  \"which of those is first?\", \"tell me more about that\", \"can you add X to that list?\"\n"
+        "  are follow-ups, NOT re-asks.\n"
+        "- Set is_reask=false for new topics.\n"
+        "- If no earlier user messages are listed above, is_reask MUST be false.\n\n"
         f"User question: {question.strip()}\n"
     )
 
@@ -125,12 +157,16 @@ async def query_understanding_agent(state: AskState) -> dict:
 
     entities = _fetch_top_entities(user_id, limit=50)
     recent_entries = _fetch_recent_entries(user_id, limit=3)
+    prior_user_turns = extract_prior_user_messages(
+        state.get("conversation_history") or ""
+    )[-_REASK_HISTORY_TURNS:]
 
     prompt = _build_prompt(
         question=state["question"],
         today=today,
         entity_list=_format_entity_list(entities),
         recent=_format_recent_summaries(recent_entries, now),
+        prior_user_turns=prior_user_turns,
     )
 
     # Keep a try/except around the API call as a safety net: on an API failure
@@ -146,6 +182,9 @@ async def query_understanding_agent(state: AskState) -> dict:
                 {"name": e.name, "type": e.type} for e in result.entities_mentioned
             ],
             "dashboard_context_needed": result.dashboard_context_needed,
+            # No prior user turns shown → the model never saw evidence of a
+            # re-ask; force false regardless of what it emitted.
+            "is_reask": bool(result.is_reask) if prior_user_turns else False,
         }
     except Exception as exc:
         logger.warning(

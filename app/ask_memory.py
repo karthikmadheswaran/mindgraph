@@ -11,6 +11,39 @@ MEMORY_SECTIONS = [
 ]
 
 
+def parse_conversation_turns(conversation_history: str) -> list[tuple[str, str]]:
+    """Reconstruct (role, content) turns from a formatted transcript
+    (format_conversation_messages output). Content may span multiple lines;
+    continuation lines are folded into the preceding turn."""
+    turns: list[tuple[str, str]] = []
+    for ln in (conversation_history or "").splitlines():
+        stripped = ln.strip()
+        low = stripped.lower()
+        if low.startswith("user:"):
+            turns.append(("user", stripped.split(":", 1)[1].strip()))
+        elif low.startswith("assistant:"):
+            turns.append(("assistant", stripped.split(":", 1)[1].strip()))
+        elif turns and stripped:
+            role, content = turns[-1]
+            turns[-1] = (role, (content + " " + stripped).strip())
+    return turns
+
+
+def extract_prior_user_messages(conversation_history: str) -> list[str]:
+    """User-side turns from a formatted transcript, oldest first.
+
+    If the conversation ends with a user turn (no assistant reply after it), that
+    trailing turn is the current question echoed into the transcript (eval
+    convention) — drop it so the current question never matches itself.
+    Production history excludes the current question already.
+    """
+    turns = parse_conversation_turns(conversation_history)
+    user_msgs = [c for role, c in turns if role == "user" and c]
+    if turns and turns[-1][0] == "user" and user_msgs:
+        user_msgs = user_msgs[:-1]
+    return user_msgs
+
+
 def format_conversation_messages(messages: list[dict]) -> str:
     formatted_messages = []
     for message in messages or []:
@@ -215,25 +248,11 @@ def build_ask_prompt(
         return " ".join(text.lower().strip().strip("?.!,").split())
 
     # Reconstruct turns from the transcript (content may span multiple lines).
-    _turns: list[tuple[str, str]] = []
-    for ln in (conversation_history or "").splitlines():
-        stripped = ln.strip()
-        low = stripped.lower()
-        if low.startswith("user:"):
-            _turns.append(("user", stripped.split(":", 1)[1].strip()))
-        elif low.startswith("assistant:"):
-            _turns.append(("assistant", stripped.split(":", 1)[1].strip()))
-        elif _turns and stripped:
-            role, content = _turns[-1]
-            _turns[-1] = (role, (content + " " + stripped).strip())
-
-    prior_user_msgs = [c for role, c in _turns if role == "user" and c]
+    # Trailing-user-turn handling (eval convention) lives in
+    # extract_prior_user_messages — the current question never matches itself.
+    _turns = parse_conversation_turns(conversation_history)
+    prior_user_msgs = extract_prior_user_messages(conversation_history)
     assistant_msgs = [c for role, c in _turns if role == "assistant" and c]
-    # If the conversation ends with a user turn (no assistant reply after it), that trailing
-    # turn is the current question echoed into the transcript (eval convention) — drop it so
-    # it doesn't match itself. Production history excludes the current question already.
-    if _turns and _turns[-1][0] == "user" and prior_user_msgs:
-        prior_user_msgs = prior_user_msgs[:-1]
     normalized_question = _norm_q(question)
     is_repeat_request = bool(normalized_question) and normalized_question in {
         _norm_q(msg) for msg in prior_user_msgs if msg.strip()
