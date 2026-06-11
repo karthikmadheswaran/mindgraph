@@ -52,10 +52,11 @@ future enhancement filed in Known Broken.
 
 USAGE
 -----
-    python -m evals.eval_ask_multiturn                 # full RED baseline (33 cases)
+    python -m evals.eval_ask_multiturn                 # full run (33 cases, concurrency 5)
     python -m evals.eval_ask_multiturn --limit 3       # first 3 cases (debug)
-    python -m evals.eval_ask_multiturn --scenario reask_loop
+    python -m evals.eval_ask_multiturn --category reask_loop   # one scenario subset (5 cases)
     python -m evals.eval_ask_multiturn --persona terse
+    python -m evals.eval_ask_multiturn --concurrency 3 # throttle (auto-shrinks to 3 on any 429)
     python -m evals.eval_ask_multiturn --verify-judge  # just probe the judge, exit
 """
 
@@ -69,6 +70,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 import traceback
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -112,9 +114,11 @@ if not os.getenv("GOOGLE_API_KEY") and os.getenv("GEMINI_API_KEY"):
 # ──────────────────────────────────────────────────────────────────────────────
 # Production imports (never redefined here).
 # ──────────────────────────────────────────────────────────────────────────────
+from langchain_core.callbacks import get_usage_metadata_callback  # noqa: E402
+
 from app.db import supabase                                  # noqa: E402
 from app.embeddings import get_embedding                     # noqa: E402
-from app.llm import extract_text, pro as judge_model         # noqa: E402
+from app.llm import extract_text, pro as _judge_default      # noqa: E402
 from app.services.ask_service import (                       # noqa: E402
     _word_overlap_ratio,        # production Jaccard — reused as the pre-check signal
     generate_answer,
@@ -131,6 +135,23 @@ HARNESS_NAME = "multiturn_ask_eval"
 RESULTS_DIR = _HERE / "results"
 JUDGE_MODEL_NAME = "gemini-2.5-pro"
 EMBED_TASK = "RETRIEVAL_DOCUMENT"
+
+# Judge endpoint (11/06): gemini-2.5-pro on us-central1 is hard-throttled on this
+# project (probe: 3/3 429 RESOURCE_EXHAUSTED; "global" serves fine). Judge is eval
+# INFRASTRUCTURE — same model, prompts, temperature as app.llm.pro; only the
+# serving location moves. Non-Vertex (AI Studio) path keeps the imported default.
+if os.getenv("USE_VERTEX", "").strip().lower() in ("1", "true", "yes"):
+    from langchain_google_vertexai import ChatVertexAI  # noqa: E402
+
+    judge_model = ChatVertexAI(
+        model=JUDGE_MODEL_NAME,
+        temperature=0.3,
+        project=os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT"),
+        location=os.getenv("JUDGE_VERTEX_LOCATION", "global"),
+        max_retries=2,
+    )
+else:
+    judge_model = _judge_default
 
 # The two notes that MUST travel into both the results header and the Notion item.
 FORMAL_REDUNDANCY_NOTE = (
@@ -159,6 +180,13 @@ SCOPE_CAVEAT = (
 # ──────────────────────────────────────────────────────────────────────────────
 _EMBED_CACHE: dict[tuple[str, str], list[float]] = {}
 
+# Concurrency control (Phase-1 speedup, 11/06): cases are independent
+# conversations, so they run under an asyncio.Semaphore. If ANY 429 is seen,
+# the runner permanently shrinks effective concurrency from the start value to
+# _SHRUNK_CONCURRENCY by hoarding extra permits (never released).
+_SHRUNK_CONCURRENCY = 3
+_quota_seen = False
+
 
 def _is_quota_err(exc: Exception) -> bool:
     m = str(exc)
@@ -166,6 +194,7 @@ def _is_quota_err(exc: Exception) -> bool:
 
 
 async def _with_backoff(fn, *, what: str, attempts: int = 7, base: float = 6.0, cap: float = 90.0):
+    global _quota_seen
     last: Exception | None = None
     for i in range(attempts):
         try:
@@ -173,6 +202,7 @@ async def _with_backoff(fn, *, what: str, attempts: int = 7, base: float = 6.0, 
         except Exception as exc:  # noqa: BLE001
             last = exc
             if _is_quota_err(exc) and i < attempts - 1:
+                _quota_seen = True
                 wait = min(cap, base * (2 ** i))
                 print(f"  [backoff] {what}: 429 quota — waiting {wait:.0f}s (attempt {i+1}/{attempts})", flush=True)
                 await asyncio.sleep(wait)
@@ -442,9 +472,15 @@ async def run_turns(user_id: str, turns: tuple[str, ...], now: datetime) -> list
     for i, turn_text in enumerate(turns):
         # History is fetched inside generate_answer BEFORE we persist this turn,
         # so the current question is never in its own history — same as production.
-        answer = await _with_backoff(
-            lambda: generate_answer(turn_text, user_id), what=f"generation[t{i+1}]"
-        )
+        # Timing + token capture live INSIDE the backoff fn so a 429 retry re-times
+        # and re-counts only the successful attempt (backoff sleeps excluded).
+        async def _timed(turn_text=turn_text):
+            t0 = time.perf_counter()
+            with get_usage_metadata_callback() as ucb:
+                ans = await generate_answer(turn_text, user_id)
+            return ans, time.perf_counter() - t0, dict(ucb.usage_metadata)
+
+        answer, gen_s, usage = await _with_backoff(_timed, what=f"generation[t{i+1}]")
 
         # Persist with strictly-increasing created_at so the desc-order history
         # fetch + loop detector see a deterministic order (prod ties on now()).
@@ -460,7 +496,24 @@ async def run_turns(user_id: str, turns: tuple[str, ...], now: datetime) -> list
         ).execute()
 
         transcript.append({"turn": i + 1, "role": "user", "content": turn_text})
-        transcript.append({"turn": i + 1, "role": "assistant", "content": answer})
+        transcript.append(
+            {
+                "turn": i + 1,
+                "role": "assistant",
+                "content": answer,
+                # End-to-end generate_answer latency (retrieval + all LLM nodes) and
+                # per-model token usage for THIS turn. Keyed by model name so an
+                # ASK_GENERATION_MODEL override separates cleanly from the 2.5 nodes.
+                "gen_s": round(gen_s, 3),
+                "usage_by_model": {
+                    m: {
+                        "input_tokens": u.get("input_tokens", 0),
+                        "output_tokens": u.get("output_tokens", 0),
+                    }
+                    for m, u in usage.items()
+                },
+            }
+        )
     return transcript
 
 
@@ -507,6 +560,65 @@ async def run_one(scenario, persona: str) -> dict:
 # ──────────────────────────────────────────────────────────────────────────────
 # Aggregation
 # ──────────────────────────────────────────────────────────────────────────────
+# USD per 1M tokens (input, output) for cost-per-conversation reporting.
+# Prefix-matched against the model keys langchain reports in usage_metadata.
+_PRICE_PER_1M: dict[str, tuple[float, float]] = {
+    "gemini-2.5-flash-lite": (0.10, 0.40),
+    "gemini-3.1-flash-lite": (0.25, 1.50),
+}
+
+
+def _pctl(sorted_vals: list[float], q: float) -> float | None:
+    """Linear-interpolated percentile over an ascending-sorted list."""
+    if not sorted_vals:
+        return None
+    k = (len(sorted_vals) - 1) * q / 100
+    f = int(k)
+    c = min(f + 1, len(sorted_vals) - 1)
+    return round(sorted_vals[f] + (sorted_vals[c] - sorted_vals[f]) * (k - f), 3)
+
+
+def _latency_token_stats(results: list[dict]) -> dict:
+    """Run-level latency percentiles + per-model token totals + cost/conversation,
+    pulled from the per-turn capture in run_turns."""
+    calls = [
+        t
+        for r in results
+        for t in r.get("transcript", [])
+        if t.get("role") == "assistant" and t.get("gen_s") is not None
+    ]
+    lat = sorted(t["gen_s"] for t in calls)
+    tokens: dict[str, dict[str, int]] = {}
+    for t in calls:
+        for m, u in (t.get("usage_by_model") or {}).items():
+            agg = tokens.setdefault(m, {"input_tokens": 0, "output_tokens": 0})
+            agg["input_tokens"] += u.get("input_tokens", 0)
+            agg["output_tokens"] += u.get("output_tokens", 0)
+
+    cost_total = 0.0
+    unpriced: list[str] = []
+    for m, u in tokens.items():
+        price = next((p for prefix, p in _PRICE_PER_1M.items() if prefix in m), None)
+        if price is None:
+            unpriced.append(m)
+            continue
+        cost_total += (u["input_tokens"] / 1e6) * price[0] + (u["output_tokens"] / 1e6) * price[1]
+    n_conv = sum(1 for r in results if r.get("transcript")) or 1
+    return {
+        "n_generation_calls": len(lat),
+        "latency_p50_s": _pctl(lat, 50),
+        "latency_p95_s": _pctl(lat, 95),
+        "latency_note": (
+            "End-to-end generate_answer per turn (retrieval + every LLM node), "
+            "successful attempt only — backoff sleeps excluded."
+        ),
+        "tokens_by_model": tokens,
+        "unpriced_models": unpriced,
+        "cost_total_usd": round(cost_total, 4),
+        "cost_per_conversation_usd": round(cost_total / n_conv, 4),
+    }
+
+
 def _formal_redundancy_watch(results: list[dict]) -> dict:
     """Does `formal` ever fail a case `verbose_polite` passed? If never, flag it a
     candidate for collapse (per-persona observation, not a fix)."""
@@ -612,27 +724,64 @@ async def main(args: argparse.Namespace) -> None:
         print("[judge] --verify-judge only; exiting before any case runs.")
         return
 
+    scenario_filter = args.category or args.scenario
     pairs = scenario_persona_pairs()
-    if args.scenario:
-        pairs = [(s, p) for (s, p) in pairs if s.id == args.scenario]
+    if scenario_filter:
+        pairs = [(s, p) for (s, p) in pairs if s.id == scenario_filter]
     if args.persona:
         pairs = [(s, p) for (s, p) in pairs if p == args.persona]
     if args.limit:
         pairs = pairs[: args.limit]
-    print(f"[run] {len(pairs)} (scenario x persona) cases\n")
+    print(f"[run] {len(pairs)} (scenario x persona) cases, concurrency={args.concurrency}\n")
 
-    results: list[dict] = []
-    for idx, (scenario, persona) in enumerate(pairs, 1):
-        print(f"[case {idx}/{len(pairs)}] {scenario.id} / {persona} ...", flush=True)
-        res = await run_one(scenario, persona)
+    # Conversations are independent (fresh isolated user per case); turns WITHIN
+    # a conversation stay strictly serial inside run_one/run_turns. The semaphore
+    # bounds concurrent cases; one 429 anywhere shrinks it for the rest of the run.
+    sem = asyncio.Semaphore(args.concurrency)
+    shrink_lock = asyncio.Lock()
+    shrunk = False
+    t_start = time.monotonic()
+
+    async def _run_bounded(idx: int, scenario, persona) -> dict:
+        nonlocal shrunk
+        if _quota_seen and not shrunk and args.concurrency > _SHRUNK_CONCURRENCY:
+            async with shrink_lock:
+                if not shrunk:
+                    shrunk = True
+                    for _ in range(args.concurrency - _SHRUNK_CONCURRENCY):
+                        await sem.acquire()  # hoarded permanently
+                    print(f"[concurrency] 429 seen — shrinking {args.concurrency} -> {_SHRUNK_CONCURRENCY}", flush=True)
+        async with sem:
+            print(f"[case {idx}/{len(pairs)}] {scenario.id} / {persona} ...", flush=True)
+            res = await run_one(scenario, persona)
+        label = f"{scenario.id}/{persona}"
         if res.get("passed") is None:
-            print(f"  -> ERROR: {res.get('error')}", flush=True)
+            print(f"  -> ERROR [{label}]: {res.get('error')}", flush=True)
         else:
-            print(f"  -> {'PASS' if res['passed'] else 'FAIL'}: {res['judge_reason'][:100]}", flush=True)
-        results.append(res)
+            print(f"  -> {'PASS' if res['passed'] else 'FAIL'} [{label}]: {res['judge_reason'][:100]}", flush=True)
+        return res
+
+    results = list(
+        await asyncio.gather(
+            *(_run_bounded(i, s, p) for i, (s, p) in enumerate(pairs, 1))
+        )
+    )
+    wall_clock_s = round(time.monotonic() - t_start, 1)
+    print(f"\n[wall-clock] {wall_clock_s}s for {len(pairs)} cases")
 
     summary = aggregate(results)
     _print_report(summary, results)
+
+    stats = _latency_token_stats(results)
+    print(
+        f"\n[latency] p50={stats['latency_p50_s']}s p95={stats['latency_p95_s']}s "
+        f"over {stats['n_generation_calls']} generation calls"
+    )
+    print(
+        f"[cost] total=${stats['cost_total_usd']} "
+        f"(${stats['cost_per_conversation_usd']}/conversation)"
+        + (f"  UNPRICED: {stats['unpriced_models']}" if stats["unpriced_models"] else "")
+    )
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     sha = _git_sha()
@@ -643,6 +792,17 @@ async def main(args: argparse.Namespace) -> None:
         "timestamp": timestamp,
         "harness": HARNESS_NAME,
         "judge_model": JUDGE_MODEL_NAME,
+        # Experiment provenance: which generation model/thinking this run used.
+        # Unset env = production default (flash, gemini-2.5-flash-lite budget 0).
+        "run_config": {
+            "ask_generation_model": os.getenv("ASK_GENERATION_MODEL", "")
+            or "gemini-2.5-flash-lite (flash default, thinking_budget=0)",
+            "ask_generation_thinking": os.getenv("ASK_GENERATION_THINKING", ""),
+            "concurrency": args.concurrency,
+            "wall_clock_s": wall_clock_s,
+            "category_filter": scenario_filter or None,
+        },
+        "latency_tokens": stats,
         "personas_provenance": PERSONA_META.get("provenance_note"),
         "notes": {
             "formal_redundancy_watch": FORMAL_REDUNDANCY_NOTE,
@@ -680,7 +840,15 @@ def _cli() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Multi-turn Ask eval (persona x scenario, property-judged).")
     p.add_argument("--limit", type=int, default=0, help="Run only the first N cases.")
     p.add_argument("--scenario", type=str, default="", help="Restrict to one scenario id.")
+    p.add_argument(
+        "--category", type=str, default="",
+        help="Run one scenario subset by id (e.g. reask_loop -> 5 cases). Alias of --scenario.",
+    )
     p.add_argument("--persona", type=str, default="", help="Restrict to one persona.")
+    p.add_argument(
+        "--concurrency", type=int, default=5,
+        help="Max concurrent conversations (auto-shrinks to 3 after any 429). Turns within a conversation stay serial.",
+    )
     p.add_argument("--verify-judge", action="store_true", help="Probe the judge model and exit.")
     return p.parse_args()
 
