@@ -1,0 +1,75 @@
+{
+  "commit_sha": "a913d0b08ccd8dc98b1ebf1bc949df424a49deac",
+  "timestamp": "2026-06-11T08-51-04.496799+00-00",
+  "harness": "reask_holdout",
+  "summary": {
+    "passed": 7,
+    "total": 8
+  },
+  "per_case": [
+    {
+      "id": "terse_reask",
+      "register": "terse",
+      "question": "what's due again?",
+      "expected": true,
+      "got": true,
+      "passed": true
+    },
+    {
+      "id": "apologetic_reask",
+      "register": "apologetic",
+      "question": "so sorry — I completely forgot what you just told me. could you run through what I have coming up one more time?",
+      "expected": true,
+      "got": true,
+      "passed": true
+    },
+    {
+      "id": "irritated_reask",
+      "register": "irritated",
+      "question": "you're not listening. tell me what i have due. one. more. time.",
+      "expected": true,
+      "got": true,
+      "passed": true
+    },
+    {
+      "id": "rambling_reask",
+      "register": "rambling",
+      "question": "ok so i got distracted by like five other things and now i genuinely cannot remember a single thing from that list you gave me, something about a wedding? idk, can you go over everything i have coming up?",
+      "expected": true,
+      "got": true,
+      "passed": true
+    },
+    {
+      "id": "indirect_reask",
+      "register": "indirect",
+      "question": "i keep losing track of what's on my plate. walk me through my upcoming deadlines.",
+      "expected": true,
+      "got": false,
+      "passed": false
+    },
+    {
+      "id": "followup_which_first",
+      "register": "follow-up (narrow)",
+      "question": "which one is due first?",
+      "expected": false,
+      "got": false,
+      "passed": true
+    },
+    {
+      "id": "followup_add_item",
+      "register": "follow-up (extend)",
+      "question": "can you add the dentist appointment to that list?",
+      "expected": false,
+      "got": false,
+      "passed": true
+    },
+    {
+      "id": "followup_why_late",
+      "register": "follow-up (probe)",
+      "question": "why is the Razorpay one late?",
+      "expected": false,
+      "got": false,
+      "passed": true
+    }
+  ]
+}
