@@ -1,0 +1,331 @@
+{
+  "commit_sha": "d4cde385044207d4a5ea5ee62e2543dd18ed564a",
+  "timestamp": "2026-06-11T12-42-09.152572+00-00",
+  "harness": "multiturn_ask_eval",
+  "judge_model": "none — agent batch judging (--no-judge)",
+  "run_config": {
+    "ask_generation_model": "gemini-3.1-flash-lite",
+    "ask_generation_thinking": "minimal",
+    "concurrency": 3,
+    "wall_clock_s": 57.4,
+    "category_filter": "reask_loop",
+    "no_judge": true
+  },
+  "latency_tokens": {
+    "n_generation_calls": 10,
+    "latency_p50_s": 8.505,
+    "latency_p95_s": 21.64,
+    "latency_note": "End-to-end generate_answer per turn (retrieval + every LLM node), successful attempt only — backoff sleeps excluded.",
+    "tokens_by_model": {
+      "gemini-2.5-flash-lite": {
+        "input_tokens": 13845,
+        "output_tokens": 463
+      },
+      "gemini-3.1-flash-lite": {
+        "input_tokens": 22949,
+        "output_tokens": 1224
+      }
+    },
+    "unpriced_models": [],
+    "cost_total_usd": 0.0091,
+    "cost_per_conversation_usd": 0.0018
+  },
+  "personas_provenance": "Authored by Claude, NOT Gemini 2.5 Pro: on 2026-06-09 the Gemini API returned 429 RESOURCE_EXHAUSTED on every key tried (paid keys = 'prepayment credits depleted'; free-tier key = gemini-2.5-pro quota limit 0). User approved Claude drafting, manually reviewed the 5 voices for distinctness, and approved freezing as-is. Do NOT regenerate.",
+  "notes": {
+    "formal_redundancy_watch": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix.",
+    "scope_caveat": "SCOPE — PHRASING-universality, NOT cross-user universality. All personas reference the same seeded world (Rishi, MindGraph UI, money stress) because they query ONE test user's data per case. This proves a fix generalizes across writing STYLES, not across users with different lives. Cross-user generalization (distinct seed fixtures per persona) is a separate future enhancement (see Known Broken)."
+  },
+  "summary": {
+    "passed": 0,
+    "total": 0
+  },
+  "breakdown": {
+    "per_persona": {},
+    "per_scenario": {},
+    "reask_loop_by_persona": {},
+    "errored": 5
+  },
+  "formal_redundancy_watch": {
+    "comparable_scenarios": 0,
+    "formal_unique_failures": [],
+    "candidate_for_collapse": false,
+    "note": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix."
+  },
+  "per_case": [
+    {
+      "scenario": "reask_loop",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.253,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "list my deadlines"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "The deadlines you noted in your entry from June 8th—getting a job, Sachin's wedding, and submitting the Razorpay merchant application—all passed on May 31, 2026. \n\nSince we are now in mid-June, how are you feeling about the status of these items now that those dates have elapsed?",
+          "gen_s": 23.046,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1341,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2126,
+              "output_tokens": 72
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "list my deadlines again"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those three items—getting a job, Sachin's wedding, and the Razorpay merchant application—all had a deadline of May 31, 2026. \n\nSince you are asking for the list again, here is the complete set of those past-due items:\n\n1. **Get a job:** Originally targeted for May 31.\n2. **Sachin's wedding:** Occurred on May 31.\n3. **Submit Razorpay merchant application:** Originally targeted for May 31.\n\nGiven that these dates have all passed, which of these feels like the most significant priority to address or resolve right now?",
+          "gen_s": 10.029,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1364,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2332,
+              "output_tokens": 141
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.3,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is important to note that the dates you have listed for these goals—May 31, 2026—have already passed. Based on your journal entry from June 8, these are the items you are currently tracking:\n\n*   **Get a job:** This was marked with a deadline of May 31.\n*   **Sachin's wedding:** This also took place on May 31.\n*   **Submit Razorpay merchant application:** This remains an outstanding task you identified as needing completion.\n\nSince these deadlines have technically elapsed, how are you feeling about the status of your job search and the Razorpay merchant application now that we are into June?",
+          "gen_s": 17.36,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1382,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2163,
+              "output_tokens": 142
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those dates have passed, but here is the status of your items again, organized by their current priority:\n\n1. **Submit Razorpay merchant application:** This is your only active, outstanding task.\n2. **Get a job:** This was a deadline for May 31; since that has passed, this is now an ongoing objective rather than a dated task.\n3. **Sachin's wedding:** This event has already occurred.\n\nSince the Razorpay application is the only item still requiring action, would you like to focus on getting that submitted today, or are you feeling like you need to reset your goals entirely given that the May deadlines have elapsed?",
+          "gen_s": 6.609,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1446,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2663,
+              "output_tokens": 141
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.289,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "The deadlines you noted in your entry from June 8th have all passed, as they were set for May 31, 2026:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** May 31, 2026",
+          "gen_s": 19.922,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1343,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2128,
+              "output_tokens": 90
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just listed, those three items were all dated May 31, 2026. Since that date has passed, here is the status of those tasks based on your most recent entry from June 8th:\n\n*   **Get a job:** Still pending.\n*   **Sachin's wedding:** This event has already occurred.\n*   **Submit Razorpay merchant application:** Still pending.\n\nSince you mentioned feeling the time pressure regarding these, which of the two remaining tasks feels like the most immediate priority to tackle today?",
+          "gen_s": 6.981,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1375,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2360,
+              "output_tokens": 114
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.188,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is worth noting that the dates you listed for these deadlines—May 31, 2026—have already passed. As of today, June 11, 2026, your outstanding items are:\n\n*   **Get a job**\n*   **Attend Sachin's wedding**\n*   **Submit Razorpay merchant application**\n\nSince these dates have passed, how are you feeling about the status of these items now?",
+          "gen_s": 6.003,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1347,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2128,
+              "output_tokens": 95
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, these items are technically overdue since they were tied to May 31. To help you clear the backlog, here is the status of those three tasks:\n\n1. **Submit Razorpay merchant application:** This is a discrete administrative task that you could likely complete in a single sitting.\n2. **Attend Sachin's wedding:** Since this date has passed, you may want to reach out to Sachin to send your well-wishes or catch up if you missed the event.\n3. **Get a job:** This is your most significant, ongoing objective that requires a long-term strategy rather than a simple submission.\n\nWhich of these feels like the most manageable starting point for you today?",
+          "gen_s": 4.036,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1376,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2366,
+              "output_tokens": 146
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.306,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i was just sitting here and my brain is kind of all over the place today, like i keep feeling like there's stuff i'm supposed to be doing and i can't remember half of it, anyway can you just list out my deadlines for me because i think i'm losing track of everything..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your journal entries, here are the items you have been tracking:\n\n*   **Get a job:** Deadline was May 31, 2026.\n*   **Sachin's wedding:** Date was May 31, 2026.\n*   **Submit Razorpay merchant application:** No specific date provided, but it remains on your list of outstanding tasks.\n\nSince today is June 11, 2026, both the job search and the wedding date have passed. Given that you are still feeling the pressure of these deadlines, which of these feels like the most immediate priority to address today?",
+          "gen_s": 12.017,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1404,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2185,
+              "output_tokens": 135
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "wait sorry i know you literally just did that but my eyes kind of glazed over and i wasn't really paying attention, anyway can you list my deadlines again? i swear i'll actually read them this time lol"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here are the items you've been tracking, organized by their status:\n\n*   **Past Deadlines (May 31, 2026):**\n    *   **Get a job:** This was your primary goal for the end of May.\n    *   **Sachin's wedding:** This event has now passed.\n*   **Outstanding Task:**\n    *   **Submit Razorpay merchant application:** This remains on your list without a specific deadline attached.\n\nSince the May 31st dates have passed, would you like to focus on the Razorpay merchant application today, or would you prefer to look at your job search strategy for the remainder of June?",
+          "gen_s": 4.952,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1467,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2498,
+              "output_tokens": 148
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
