@@ -1,0 +1,1146 @@
+{
+  "commit_sha": "85adc57ed56c9d0d7e8f65c0bccd07d7c434e1d1",
+  "timestamp": "2026-06-11T09-05-01.867514+00-00",
+  "harness": "multiturn_ask_eval",
+  "judge_model": "gemini-2.5-pro",
+  "personas_provenance": "Authored by Claude, NOT Gemini 2.5 Pro: on 2026-06-09 the Gemini API returned 429 RESOURCE_EXHAUSTED on every key tried (paid keys = 'prepayment credits depleted'; free-tier key = gemini-2.5-pro quota limit 0). User approved Claude drafting, manually reviewed the 5 voices for distinctness, and approved freezing as-is. Do NOT regenerate.",
+  "notes": {
+    "formal_redundancy_watch": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix.",
+    "scope_caveat": "SCOPE — PHRASING-universality, NOT cross-user universality. All personas reference the same seeded world (Rishi, MindGraph UI, money stress) because they query ONE test user's data per case. This proves a fix generalizes across writing STYLES, not across users with different lives. Cross-user generalization (distinct seed fixtures per persona) is a separate future enhancement (see Known Broken)."
+  },
+  "summary": {
+    "passed": 24,
+    "total": 33
+  },
+  "breakdown": {
+    "per_persona": {
+      "terse": {
+        "passed": 4,
+        "total": 6
+      },
+      "verbose_polite": {
+        "passed": 5,
+        "total": 7
+      },
+      "frustrated": {
+        "passed": 6,
+        "total": 7
+      },
+      "formal": {
+        "passed": 4,
+        "total": 6
+      },
+      "rambling": {
+        "passed": 5,
+        "total": 7
+      }
+    },
+    "per_scenario": {
+      "reask_loop": {
+        "passed": 3,
+        "total": 5
+      },
+      "ignore_x_give_y": {
+        "passed": 5,
+        "total": 5
+      },
+      "clarifier_commit": {
+        "passed": 2,
+        "total": 5
+      },
+      "want_all_not_subset": {
+        "passed": 2,
+        "total": 5
+      },
+      "topic_switch": {
+        "passed": 5,
+        "total": 5
+      },
+      "venting_guard": {
+        "passed": 3,
+        "total": 3
+      },
+      "legit_followup_guard": {
+        "passed": 4,
+        "total": 5
+      }
+    },
+    "reask_loop_by_persona": {
+      "terse": true,
+      "verbose_polite": false,
+      "frustrated": true,
+      "formal": false,
+      "rambling": true
+    },
+    "errored": 0
+  },
+  "formal_redundancy_watch": {
+    "comparable_scenarios": 6,
+    "formal_unique_failures": [
+      "want_all_not_subset"
+    ],
+    "candidate_for_collapse": false,
+    "note": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix."
+  },
+  "per_case": [
+    {
+      "scenario": "reask_loop",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant acknowledges the repetition with 'As I just mentioned' and then advances the conversation by asking a follow-up question, 'Is there a particular deadline you'd like to focus on or discuss further?', which is not a lazy repeat.",
+      "jaccard_overlap": 0.545,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "list my deadlines"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "list my deadlines again"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n\nIs there a particular deadline you'd like to focus on or discuss further?"
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "Although the assistant acknowledges the repetition with 'As I just mentioned,' it then proceeds to repeat the exact same list in the exact same format. It does not meaningfully advance the conversation by re-presenting the information, adding a new detail, or asking a follow-up question.",
+      "jaccard_overlap": 0.839,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling the pressure with a few things coming up! Based on your entries, here are the deadlines you currently have:\n\n*   **Job search:** May 31\n*   **Sachin's wedding:** May 31\n*   **Razorpay merchant application submission:** (No specific date mentioned, but implied to be before or around the other May 31st deadlines due to the \"time pressure\" you're feeling.)"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, you're feeling the time pressure with a few things coming up. Based on your entries, here are the deadlines you currently have:\n\n*   **Job search:** May 31\n*   **Sachin's wedding:** May 31\n*   **Razorpay merchant application submission:** (No specific date mentioned, but implied to be before or around the other May 31st deadlines due to the \"time pressure\" you're feeling.)"
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant acknowledges its previous answer ('As I just mentioned') and then meaningfully advances the conversation by asking which item the user would like to focus on, which is an explicit condition for a PASS.",
+      "jaccard_overlap": 0.545,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n\nIs there a particular deadline you'd like to focus on or discuss further?"
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant acknowledges the repetition with 'As I just mentioned,' but then fails to meaningfully advance the conversation. It proceeds to repeat the exact same list from the previous turn without re-presenting it in a new way, adding detail, or asking a clarifying question.",
+      "jaccard_overlap": 0.486,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It looks like you're feeling the time pressure with a few things coming up. Based on your entries, your current deadlines are:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, your current deadlines are:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant acknowledges the repetition ('As I just mentioned', 'again') and then meaningfully advances the conversation by adding a new question to help the user focus: 'Is there a particular item you'd like to focus on or discuss further?'",
+      "jaccard_overlap": 0.754,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i was just sitting here and my brain is kind of all over the place today, like i keep feeling like there's stuff i'm supposed to be doing and i can't remember half of it, anyway can you just list out my deadlines for me because i think i'm losing track of everything..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "I see you're feeling overwhelmed and like things are slipping through the cracks. Let's get those deadlines clear for you.\n\nBased on your entries, here are the things you've noted as due:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** This was also on May 31.\n*   **Submit Razorpay merchant application:** This is still pending."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "wait sorry i know you literally just did that but my eyes kind of glazed over and i wasn't really paying attention, anyway can you list my deadlines again? i swear i'll actually read them this time lol"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, you're feeling overwhelmed and like things are slipping through the cracks. Let's get those deadlines clear for you again.\n\nBased on your entries, here are the things you've noted as due:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** This was also on May 31.\n*   **Submit Razorpay merchant application:** This is still pending.\n\nIs there a particular item you'd like to focus on or discuss further?"
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads with a one-line acknowledgment ('As I just mentioned...') and then immediately provides the requested list of deadlines, without any preceding empathy or reflection on the user's feelings.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "everything's too much right now"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling really swamped right now, with a lot of things piling up. I see the deadlines for the job, Sachin's wedding, and the Razorpay application all converging, and it's completely understandable that you'd feel overwhelmed."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "forget the money stuff. just list my deadlines"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, the deadlines you're tracking are:\n\n*   **Job Application Deadline:** May 31\n*   **Sachin's Wedding:** May 31\n*   **Razorpay Merchant Application Submission:** Due date not specified, but implied to be soon.\n\nIt sounds like you're feeling the pressure of these converging dates."
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply begins with the one-line acknowledgment 'Here are your deadlines:' and then immediately provides the requested list, correctly avoiding any preamble about the feelings or money the user asked to set aside.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I hope you don't mind me sharing this, but honestly everything feels like an enormous amount to carry right now, and the financial worry in particular has been weighing on me terribly. I'm finding it all rather overwhelming, if I'm being honest."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're carrying a really heavy load right now, and it's completely understandable that the financial worries are adding to that overwhelm. It takes a lot to navigate all of that.\n\nI see you've been mapping out your deadlines, and the job search, Sachin's wedding, and the Razorpay application are all on your plate. Given how much is on your mind, what feels like the most pressing concern for you at this very moment?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Thank you so much for listening, truly, but if it's alright with you, could we please set the feelings and the money side of things aside for now? Would you simply give me the plain list of my deadlines? I'd be ever so grateful."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   **Job application deadline:** May 31\n*   **Sachin's wedding:** May 31\n*   **Razorpay merchant application submission:** Due date not specified, but needs to be done."
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads with a one-line acknowledgment ('As I just mentioned...') and then immediately provides the requested list of deadlines. It does not open with an empathy preamble about money or feelings.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "honestly everything is too much right now and the money stuff is crushing me. i'm so done with all of it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, it sounds like you're really feeling the weight of everything right now, and the financial stress is just making it all feel unbearable. It's completely understandable to feel done with it all when things pile up like this.\n\nI see you've been mapping out deadlines, and the job search, Sachin's wedding, and the Razorpay application are all on your mind. It's a lot to juggle, and the financial worry is a recurring theme that must be incredibly draining."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok enough about the money, i don't want to talk about feelings. just LIST my deadlines. that's it."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, the deadlines you're tracking are:\n\n*   **Job search:** Need to get a job by May 31.\n*   **Sachin's wedding:** Also on May 31.\n*   **Razorpay merchant application:** Still needs to be submitted.\n\nThese are all quite close together, and it's understandable why you're feeling the pressure."
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply begins directly with 'Here are your deadlines:' and immediately provides the list, correctly omitting any empathy or preamble about the user's feelings as instructed.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I must admit that the present circumstances feel quite overwhelming, and the ongoing financial pressure has become a considerable source of stress for me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling the weight of everything right now, with the financial stress adding to the pressure of those upcoming deadlines. It's completely understandable to feel overwhelmed when so many important things are converging.\n\nGiven that the job search deadline has passed and Sachin's wedding is also on the 31st, it seems like the Razorpay merchant application might be the most flexible item on your list. What are your thoughts on tackling that next?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Setting those concerns aside for the moment, please simply provide me with the list of my deadlines."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads directly with 'Here are your deadlines:' and immediately provides the list, correctly omitting any preamble about the money or feelings the user explicitly asked to drop.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i don't even know where to start honestly, everything's just piling up and the money situation has me up at night, like i keep doing the math over and over and it never works out and it's just sitting on my chest all the time, ugh, anyway i'm just feeling really swamped by all of it..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, it sounds like you're really feeling the weight of everything right now, and that financial stress is a heavy burden to carry. It's completely understandable to feel swamped when so many things are piling up.\n\nI see you've been mapping out what's due, and the job deadline, Sachin's wedding, and the Razorpay application are all on your mind. It's a lot to juggle, and it makes sense that the money situation is causing you sleepless nights."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok you know what, forget all the money and the feelings stuff, i don't want to spiral on that right now, like let's just not, can you literally just list my deadlines? that's all i need right now, just the plain list..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   **Job application deadline:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Razorpay merchant application submission:** No specific date mentioned, but it's something you still need to do."
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant commits to a concrete next step by stating that 'focusing on the Razorpay merchant application seems like the most immediate and actionable next step.' It makes a decision for the user as requested and does not re-ask which item to focus on.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "idk what to focus on"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a lot of pressure with multiple deadlines and important events looming. The job search, Sachin's wedding, and the Razorpay application all seem to be weighing on you.\n\nGiven that you're feeling overwhelmed and unsure where to focus, let's break it down. The most immediate deadline mentioned is getting a job by May 31st, which has already passed. Sachin's wedding was also on May 31st. The Razorpay merchant application is the remaining item from that list.\n\nConsidering the urgency and the fact that the job deadline has passed, perhaps focusing on the Razorpay application is the most actionable next step from that particular entry."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "idk. you decide"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Given that the job deadline has passed and Sachin's wedding was on the same day, focusing on the Razorpay merchant application seems like the most immediate and actionable next step."
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant's reply is a verbatim copy of its previous turn. It fails to commit to a next step and instead re-asks the exact same clarifying question it already asked: \"What feels most pressing to you *now*, as you look ahead?\"",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm terribly sorry to be so wishy-washy about this, but I genuinely don't know what I ought to be focusing on at the moment. It's all a bit of a blur, I'm afraid."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling really overwhelmed right now, with a lot of things pulling your attention in different directions. It's completely understandable that it feels like a blur when so much is pressing.\n\nLooking at your journal, it seems like the most immediate deadline you've noted is getting a job by May 31st. That, along with Sachin's wedding and the Razorpay application, were all marked as due on the same day. Given that today is June 11th, the job deadline has passed, but the feeling of time pressure from that period might still be lingering.\n\nWhat feels most pressing to you *now*, as you look ahead?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I do apologize, I still can't quite make up my mind, so would you mind awfully just deciding for me and guiding me on where to begin? I'd really value you simply making the call for me."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, it sounds like you're feeling really overwhelmed right now, with a lot of things pulling your attention in different directions. It's completely understandable that it feels like a blur when so much is pressing.\n\nLooking at your journal, it seems like the most immediate deadline you've noted is getting a job by May 31st. That, along with Sachin's wedding and the Razorpay application, were all marked as due on the same day. Given that today is June 11th, the job deadline has passed, but the feeling of time pressure from that period might still be lingering.\n\nWhat feels most pressing to you *now*, as you look ahead?"
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant fails because it does not commit to a concrete next step and instead re-asks the same clarifying question from the previous turn ('what feels like the most immediate next step for you now?'), putting the user in a loop.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ugh i don't even know what to focus on anymore."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling really swamped right now, with so many things demanding your attention. It's completely understandable to feel lost when deadlines and personal events are all converging.\n\nLooking at your entries, it seems like the pressure points are:\n*   Getting a job (which had a deadline of May 31st)\n*   Sachin's wedding (also on May 31st)\n*   Submitting the Razorpay merchant application\n\nGiven that today is June 11th, the May 31st deadlines have passed. How are you feeling about those now, and what feels like the most immediate next step for you?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i don't know, that's the whole point. YOU tell me. just pick something already."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, the May 31st deadlines for getting a job and Sachin's wedding have passed. The Razorpay merchant application is also still pending. Given that these are all behind us, what feels like the most immediate next step for you now?"
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant commits to a concrete next step by advising the user to 'focus on finding a job first' and then address other projects, directly fulfilling the user's request to make a determination on their behalf.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I am uncertain as to what I should be focusing on at this time."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a lot of pressure with multiple deadlines and important events converging. The entry from Monday mentions needing to get a job by May 31st, Sachin's wedding also on May 31st, and submitting the Razorpay merchant application. Given that today is June 11th, those deadlines have passed, which might be contributing to the feeling of uncertainty.\n\nConsidering your long-term goals and current situation, it seems like the most pressing priorities would be:\n\n1.  **Securing income:** This is crucial given your year-long job search and the associated financial stress.\n2.  **Addressing the Razorpay merchant application:** If this is a step towards generating income or a critical business requirement, it needs attention.\n3.  **Sachin's wedding:** While a personal event, it was a significant deadline. If it has passed, you can reflect on how that went and if there are any lingering tasks.\n\nHow do you feel about these priorities now that the May 31st deadlines have passed?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I am unable to decide. Please make the determination on my behalf and advise me where I should begin."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Given the urgency of securing income and the fact that the May 31st deadlines have passed, I would advise you to focus on finding a job first. This addresses the most significant source of stress and aligns with your long-term goal of stability. Once that is in place, you can then dedicate your energy to the Razorpay merchant application and other projects."
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant fails to commit to a next step and instead repeats its previous turn's suggestion almost verbatim, including re-asking the exact same clarifying question ('Does that resonate at all?') that the user was trying to bypass.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i honestly don't know what i should even be focusing on, like there's a hundred things and they all feel important and also somehow none of them feel important, anyway my head's just a mess about it i guess..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling really swamped right now, with so many things pulling at your attention and none of them feeling clear or manageable. That's a tough place to be.\n\nFrom what you've shared, it seems like there are a few key areas that are pressing:\n\n1.  **Job Search:** You mentioned needing to get a job by May 31st, and today is June 11th, 2026. This is a pretty immediate deadline that's passed, which likely adds to the pressure.\n2.  **Sachin's Wedding:** This was also on May 31st.\n3.  **Razorpay Merchant Application:** This is another task that needed to be submitted.\n\nGiven that the job deadline has passed, and you're feeling this overwhelm, perhaps focusing on what needs immediate attention to stabilize things, like income, might be a good starting point. Does that resonate at all?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "see that's the thing though, i really can't pick, like every single time i try i just freeze up, so honestly can you just decide for me and tell me where to start? like just make the call, i'll go with whatever you say..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, it sounds like you're feeling really swamped right now, with so many things pulling at your attention and none of them feeling clear or manageable. That's a tough place to be.\n\nGiven that the job deadline has passed, and you're feeling this overwhelm, focusing on what needs immediate attention to stabilize things, like income, might be a good starting point. Does that resonate at all?"
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant failed to provide a fuller list as requested by the user ('i want all of them'), and instead just repeated the exact same list from the previous turn.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "what deadlines do i have"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling the weight of a lot right now. You've got a few key things on your plate:\n\n*   Getting a job (which was a deadline of May 31st)\n*   Sachin's wedding (also on May 31st)\n*   Submitting the Razorpay merchant application\n*   Recording a 2-minute Loom walkthrough of MindGraph\n*   Writing LinkedIn posts about technical decisions"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i want all of them. not 2"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, you have a few key things on your plate:\n\n*   Getting a job (which was a deadline of May 31st)\n*   Sachin's wedding (also on May 31st)\n*   Submitting the Razorpay merchant application\n*   Recording a 2-minute Loom walkthrough of MindGraph\n*   Writing LinkedIn posts about technical decisions"
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant provided the list it believes to be complete, directly answering the user's request for the 'full picture' without narrowing the scope or asking a clarifying question.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm so sorry to bother you, but when you get a chance, could you gently remind me what deadlines and commitments I have on my plate at the moment? Thank you kindly."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a bit swamped with everything on your plate right now. I can certainly help you get a clearer picture of your commitments.\n\nBased on your recent entry, here's what you've listed:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit the Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made\n\nIt's understandable to feel like it's a lot when you lay it all out like that."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Oh, thank you, though I'm so sorry, I didn't mean just a couple of them. If it's not too much trouble, could you please give me all of them, the complete list, rather than only those two? I'd really appreciate seeing the full picture."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here's the complete list of your current commitments:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit the Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made\n\nIt's completely understandable to want to see the full picture when you're feeling like there's a lot on your plate."
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply in turn 2 presents the full list of commitments it knows about, directly repeating the list from turn 1 without narrowing it or asking a clarifying question.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "what deadlines do i have. just tell me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Here are the deadlines you've listed:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "no, ALL of them. not two. i want the whole list, stop cutting it down."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here are all the deadlines you've listed:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made\n\nIt's definitely a lot to keep track of."
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant did not provide a fuller or more complete list as requested by the user. Instead, it repeated the exact same list from the previous turn, failing to address the user's explicit request for the complete set of items.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide an overview of my outstanding deadlines and commitments."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling the weight of a lot right now, trying to juggle everything you owe yourself and others.\n\nBased on your entries, here's a rundown of what's on your plate:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This also took place on May 31st.\n*   **Razorpay merchant application:** This still needs to be submitted.\n*   **MindGraph Loom walkthrough:** You need to record a 2-minute video.\n*   **LinkedIn posts:** You plan to write a few posts about your technical decisions."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I require the complete list, not merely two items. Please provide all of them."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, it sounds like you're feeling the weight of a lot right now, trying to juggle everything you owe yourself and others.\n\nBased on your entries, here's a rundown of what's on your plate:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This also took place on May 31st.\n*   **Razorpay merchant application:** This still needs to be submitted.\n*   **MindGraph Loom walkthrough:** You need to record a 2-minute video.\n*   **LinkedIn posts:** You plan to write a few posts about your technical decisions."
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": false,
+      "judge_reason": "The assistant's reply is an exact copy of its previous answer and does not provide the 'fuller/complete list' the user explicitly requested in turn 2.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i've kind of lost the thread on what i actually have due, like there's the wedding thing and some app stuff and i don't even know what else, anyway what deadlines do i actually have right now...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a bit swamped and unsure of what's on your plate right now. Let's get that sorted out.\n\nBased on your entries, here are the deadlines you have:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This was also on May 31st.\n*   **Submit Razorpay merchant application:** No specific date is mentioned, but it's listed among things you owe.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date is mentioned, but it's listed among things you owe.\n*   **Write LinkedIn posts on technical decisions:** No specific date is mentioned, but it's listed among things you owe.\n\nIt seems like the job and wedding deadlines have passed, but the other items are still outstanding."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "no wait that's not what i meant, i don't want like the top two or whatever, like give me ALL of them, the whole list, everything you know about, not just a couple, because i KNOW there's more than that..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, it sounds like you're feeling a bit swamped and unsure of what's on your plate right now. Let's get that sorted out.\n\nBased on your entries, here are the deadlines you have:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This was also on May 31st.\n*   **Submit Razorpay merchant application:** No specific date is mentioned, but it's listed among things you owe.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date is mentioned, but it's listed among things you owe.\n*   **Write LinkedIn posts on technical decisions:** No specific date is mentioned, but it's listed among things you owe.\n\nIt seems like the job and wedding deadlines have passed, but the other items are still outstanding."
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply focuses entirely on the new topic, Rishi, and does not mention or reference the previous topic of the UI redesign, successfully following the user's explicit topic change.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "how's the ui redesign going"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're in the thick of it with the MindGraph UI redesign, and it's understandable to feel a bit stuck when you're making changes but not quite hitting the mark. You've been iterating on the UI, moving from chat bubbles to a warm gray surface and restructuring journal cards with auto_title headings and entity chips. It's a lot of tweaking, and it's tough when you're not sure what's not working."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "never mind. tell me about rishi"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, especially given your shared history running that Tamil crypto community. It's clear from your entry that catching up with him was a highlight, and it's interesting that he's hinting at a potential collaboration again."
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant explicitly acknowledges and accepts the topic change (\"It's no problem at all to switch gears\") and then devotes the rest of its response entirely to the new topic of Rishi, completely dropping the previous UI context.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I do hope this is okay to ask, but I was just wondering how you feel the MindGraph UI redesign has been coming along recently? Thank you for indulging me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a bit stuck with the MindGraph UI redesign, which is completely understandable when you're deep in the creative process. It's tough when you're making changes and not quite hitting the mark you're aiming for.\n\nFrom what you wrote yesterday, it seems like you've made some significant shifts: moving away from chat bubbles to a warm gray surface, and restructuring the journal cards with auto_title headings and entity chips. It's a lot of iteration, and it's natural to feel a bit uncertain about the direction when you're in the thick of it. Perhaps taking a short break from it, or even just stepping back to look at it with fresh eyes, might help you pinpoint what feels off."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Actually, on second thought, please never mind the UI for now, and I'm so sorry to switch on you so abruptly, but would you mind telling me a little about Rishi instead? Thank you so much."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Oh, absolutely! It's no problem at all to switch gears. I'm happy to tell you about Rishi.\n\nFrom what you've written, Rishi sounds like a really special person. You described him as your \"old crypto friend\" and mentioned that you two used to run a Tamil crypto community together, with him handling the meetups and you managing the content. It's clear you have a lot of warmth for him, calling him \"lovely\" and \"genuinely one of the warmest people I know.\" It sounds like your recent catch-up was a very positive experience, and it's wonderful that he's hinting at a potential collaboration again."
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant successfully drops the UI topic and pivots cleanly to answering about Rishi, fulfilling the user's direct request. The response focuses entirely on Rishi and does not drag the previous UI redesign context back into the conversation.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "how's the ui redesign going. is it actually getting anywhere?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling stuck with the MindGraph UI redesign, which is completely understandable when you're deep in the process. You've made some significant changes, like moving away from chat bubbles to a warm gray surface and restructuring the journal cards with auto_title headings and entity chips. It's tough when you're putting in the work but not quite hitting that feeling of satisfaction.\n\nFrom what you've written, it seems like the core issue is that you're not sure *what* you don't like, even though you're actively making changes. That can be a really frustrating place to be."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ugh forget the ui, never mind that. just tell me about rishi."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, especially given your shared history running the Tamil crypto community. It's completely understandable that you'd want to shift focus to him when you're feeling stuck on something else.\n\nIt seems like you two have a great dynamic, with him handling the meetups and you running the content. And it's interesting that he's hinting at a potential collaboration again – that must bring back some good memories and perhaps spark some new ideas."
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply is entirely focused on the new topic, Rishi, and makes no mention of the UI redesign from the previous turn. It successfully drops the old context as requested by the user.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Could you give me an update on the progress of the MindGraph UI redesign?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling a bit stuck with the MindGraph UI redesign, especially after putting in a lot of effort yesterday. It's completely understandable to feel that way when you're deep in the process and things aren't clicking yet.\n\nFrom your entry yesterday, it seems like you've made some significant changes: you've moved away from chat bubbles to a warm gray surface for replies, and you've restructured the journal cards with auto_title headings and entity chips. The frustration comes from the feeling that despite these changes, you're still not quite satisfied and aren't sure what's not working."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Please disregard the UI matter for now. Instead, kindly tell me about Rishi."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi sounds like a really special person. It's wonderful that you have a friend like him, someone you shared a significant part of your past with, like running that Tamil crypto community. It's clear from your entry that you deeply value his warmth and the connection you share. It's also interesting that he's hinting at a potential collaboration again – that must bring back some good memories and perhaps spark some new ideas for you both."
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": true,
+      "judge_reason": "The assistant's reply successfully drops the UI topic, acknowledging the user's desire to 'shift gears' and then focusing entirely on the new topic of Rishi without mentioning the UI again.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "so the ui redesign, i've been going back and forth on it like a million times and i genuinely can't tell if it's better or worse at this point, anyway how do you think the whole mindgraph ui redesign thing is actually going...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're really in the thick of it with this MindGraph UI redesign, and it's completely understandable to feel that way when you're deep in the creative process. It's like trying to see the forest for the trees sometimes, isn't it?\n\nFrom what I've gathered, you've been making some significant changes: moving away from chat bubbles to a warm gray surface, and restructuring journal cards with auto_title headings and entity chips. These sound like thoughtful adjustments aimed at improving clarity and flow. The fact that you're iterating and refining suggests a strong commitment to getting it right, even if it feels a bit like a maze right now. It's a sign of dedication to making MindGraph the best it can be."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ugh you know what, never mind the ui, i don't even want to think about it anymore, like completely different thing, can you tell me about rishi instead? i was just thinking about him for some reason..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It's completely understandable to want to shift gears and think about Rishi. He sounds like a really special person in your life.\n\nFrom what I've gathered, Rishi is your crypto friend, and you two have a history of collaborating. You mentioned you used to run a Tamil crypto community together, with him handling the meetups and you managing the content. It seems like he's someone you deeply admire, describing him as \"lovely\" and \"genuinely one of the warmest people I know.\" You recently reconnected and had a good conversation about the future of crypto, even hinting at a potential collaboration again. It sounds like a connection you value a lot."
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "verbose_polite",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads with warmth and directly reflects the user's stated feelings of carrying a 'heavy weight' and 'drowning' without pivoting to a to-do list or productivity framing.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm so sorry to unload on you like this, but I'm honestly just completely exhausted, and I feel like I'm drowning. No matter what I do, nothing seems to be working at all. I just really needed to say it out loud to someone, I think."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, it sounds like you're carrying such a heavy weight right now. Feeling like you're drowning and nothing is working is incredibly disheartening, and it's completely understandable that you'd need to voice that. I'm here to listen."
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "frustrated",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads with warmth, directly reflecting the user's stated feelings of being overwhelmed and exhausted with phrases like 'in the thick of it' and 'pushing a boulder uphill'. It does not pivot to a to-do list or productivity framing, instead holding the emotional moment as required.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i'm just exhausted, ok? i feel like i'm drowning and NOTHING i do works. i'm so sick of this."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, it sounds like you're really in the thick of it right now, feeling completely overwhelmed and like nothing is going right. That feeling of pushing a boulder uphill and getting nowhere is so draining.\n\nI see you're feeling burned out today, and the build breaking and RAG answers being wrong are really getting to you. It's completely understandable to feel sick of it when things just aren't working."
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "rambling",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply leads with warmth and empathy, directly acknowledging the user's feelings by stating 'it sounds like you're carrying such a heavy weight right now' and reflecting the user's 'drowning' and 'bone-tired' feelings. It does not pivot to a to-do list or productivity framing.",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i'm just so tired, like bone tired, everything i touch lately just breaks or goes wrong and i feel like i'm drowning honestly, like i keep paddling and paddling and nothing i do actually works and i don't even know why i'm telling you this, i just feel like i'm sinking..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, it sounds like you're carrying such a heavy weight right now. That feeling of pushing a boulder uphill, only to have it roll back down, is incredibly draining. It's completely understandable that you'd feel bone-tired and like you're drowning when things just aren't working.\n\nI see in your journal entry from today that the build broke and the RAG answers were wrong, and it sounds like that was the tipping point for feeling this way. It's tough when the very tools you're working with seem to be failing you."
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": false,
+      "judge_reason": "The assistant's reply is a lazy, verbatim repeat of its previous answer, adding no new details, perspective, or follow-up questions about Rishi. It fails to extend the conversation beyond what was already stated.",
+      "jaccard_overlap": 0.909,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "who's rishi"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is your crypto friend, and you two used to run a Tamil crypto community together. You recall him handling the meetups while you managed the content. You described him as one of the warmest people you know."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "tell me more"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, Rishi is your crypto friend, and you two used to run a Tamil crypto community together. You recall him handling the meetups while you managed the content. You described him as one of the warmest people you know."
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply successfully extends the context from turn 1 by adding new, qualitative details. It introduces the user's personal feelings about Rishi, describing him as having a 'warmth and genuine nature' and being 'one of the warmest people you know,' which were not mentioned in the first, more factual response.",
+      "jaccard_overlap": 0.146,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm sorry to ask, but would you mind reminding me who Rishi is? I'd be so grateful for just a little context. Thank you!"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is your crypto friend, and you two have a history of collaborating. You used to run a Tamil crypto community together, with him handling the meetups and you managing the content. It sounds like you recently reconnected and had a really positive catch-up, where he even hinted at the possibility of working together again."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Oh, that's lovely, thank you. Would you mind telling me a bit more about him, if there's anything else you can share? I'd really enjoy hearing more."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi sounds like a truly wonderful person. It's clear from your entries that you deeply value his warmth and genuine nature. Beyond his role in your past crypto community, he's someone you consider one of the warmest people you know, and your recent catch-up with him was clearly a highlight, leaving you feeling optimistic about potential future collaborations."
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The probe reply extends the conversation by introducing new, specific details from the journal ('hinted he might want to collaborate again') and then asks a reflective follow-up question to add depth, rather than just repeating the facts from turn 1.",
+      "jaccard_overlap": 0.135,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "who's rishi again?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is your crypto friend, and you two used to run a Tamil crypto community together. He handled the meetups, and you managed the content. You recently met up with him on Sunday, June 7th, and it sounds like you had a really warm and productive catch-up."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok and? come on, tell me more than that."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It sounds like you're looking for more of the feeling and substance of that catch-up with Rishi. You mentioned it was a \"warm and productive\" meeting, and that he \"hinted he might want to collaborate again.\" What about that interaction felt most significant to you? Was it the shared history, the potential for future projects, or something else entirely?"
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply extends the previous turn by adding a new, specific detail from the user's journal (the direct quote 'genuinely one of the warmest people I know') and offers a new perspective by interpreting the facts in relational terms ('strong foundation for your friendship').",
+      "jaccard_overlap": 0.25,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Could you tell me who Rishi is?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is your crypto friend, and you have a history of running a Tamil crypto community together. You recall him handling the meetups while you managed the content. He's described as a very warm person, and you recently met up with him to discuss potential new projects in the crypto space."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Please elaborate further; I would like additional detail about him."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, and that you're even considering collaborating on new projects. It seems like your shared history in the Tamil crypto community, with him handling the meetups and you the content, laid a strong foundation for your friendship. He's clearly someone you trust and admire, given your description of him as \"genuinely one of the warmest people I know.\""
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": true,
+      "judge_reason": "The assistant's reply builds on the previous turn by adding a new perspective (framing Rishi as a 'significant person') and extending the conversation with a new, clarifying question to help the user explore further.",
+      "jaccard_overlap": 0.186,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok random but who's rishi again, like i feel like i should remember but my memory's shot lately, anyway remind me who he is...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Oh, I can definitely remind you about Rishi! He's your crypto friend, and you two actually ran a Tamil crypto community together in the past. You handled the content side of things, while he organized the meetups. You mentioned he's one of the warmest people you know. You recently met up with him on Sunday, June 7th, and it sounds like it was a really positive catch-up where you discussed potential collaborations."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "oh right, him, yeah, ok tell me more about him though, like i feel like there's a whole story there and i kind of want to hear the rest of it..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It sounds like you're curious to delve deeper into your connection with Rishi! From what you've shared, he's a really significant person in your life, especially from your time building that Tamil crypto community together. You remember him as being incredibly warm, and it seems like your recent catch-up reinforced that, even sparking ideas for future collaborations. Is there a particular aspect of your shared history or his personality that you're hoping to explore more?"
+        }
+      ]
+    }
+  ]
+}
