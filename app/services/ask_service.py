@@ -533,13 +533,16 @@ async def generate_answer(
         if memory_result.data:
             user_memory = memory_result.data[0].get("memory_text", "")
 
+    # Observability signal only (Langfuse): the old remedy here blanked
+    # conversation_history, which removed the model's only evidence that it had
+    # already answered — regenerating the same answer. The remedy now lives in
+    # the re-ask injection path (is_reask flag → build_ask_prompt, v13.5).
     if detect_repetition_loop(history_messages):
         logger.warning(
-            "Repetition loop detected for user %s — pruning conversation "
-            "history from prompt. Generating from memory only.",
+            "Repetition loop detected for user %s — leaving history intact; "
+            "the re-ask injection path handles the remedy.",
             user_id,
         )
-        conversation_history = ""
 
     user_tz = await resolve_user_timezone(user_id, browser_timezone)
 
