@@ -181,11 +181,17 @@ SCOPE_CAVEAT = (
 _EMBED_CACHE: dict[tuple[str, str], list[float]] = {}
 
 # Concurrency control (Phase-1 speedup, 11/06): cases are independent
-# conversations, so they run under an asyncio.Semaphore. If ANY 429 is seen,
-# the runner permanently shrinks effective concurrency from the start value to
-# _SHRUNK_CONCURRENCY by hoarding extra permits (never released).
+# conversations, run by a fixed worker pool. If ANY 429 is seen, workers above
+# _SHRUNK_CONCURRENCY retire at their next case pull, permanently shrinking
+# effective concurrency for the rest of the run.
 _SHRUNK_CONCURRENCY = 3
 _quota_seen = False
+
+# The judge (gemini-2.5-pro, global endpoint) is the contended resource: at case
+# concurrency 5 it produced 64 backoff events and errored 5 cases (11/06).
+# Generation dominates case wall-time, so judge calls queue behind their own
+# narrow gate instead of running one per in-flight case.
+_JUDGE_SEM = asyncio.Semaphore(int(os.getenv("JUDGE_CONCURRENCY", "1")))
 
 
 def _is_quota_err(exc: Exception) -> bool:
@@ -357,7 +363,8 @@ async def judge_case(scenario, persona: str, transcript: list[dict]) -> dict:
 
     last_err = ""
     for _attempt in range(3):
-        resp = await _with_backoff(lambda: judge_model.ainvoke(prompt), what="judge")
+        async with _JUDGE_SEM:
+            resp = await _with_backoff(lambda: judge_model.ainvoke(prompt), what="judge")
         raw = extract_text(resp)
         try:
             data = json.loads(_strip_fence(raw))
@@ -743,37 +750,55 @@ async def main(args: argparse.Namespace) -> None:
     print(f"[run] {len(pairs)} (scenario x persona) cases, concurrency={args.concurrency}\n")
 
     # Conversations are independent (fresh isolated user per case); turns WITHIN
-    # a conversation stay strictly serial inside run_one/run_turns. The semaphore
-    # bounds concurrent cases; one 429 anywhere shrinks it for the rest of the run.
-    sem = asyncio.Semaphore(args.concurrency)
-    shrink_lock = asyncio.Lock()
-    shrunk = False
+    # a conversation stay strictly serial inside run_one/run_turns. A fixed pool
+    # of workers pulls cases off a queue; after ANY 429 anywhere, workers above
+    # _SHRUNK_CONCURRENCY retire at their next pull. (A gather+semaphore design
+    # checked the quota flag only at task START — every task starts before the
+    # first 429 can arrive, so it never shrank; observed 11/06 at concurrency 5.)
     t_start = time.monotonic()
+    queue: asyncio.Queue = asyncio.Queue()
+    for item in enumerate(pairs, 1):
+        queue.put_nowait(item)
+    results_by_idx: dict[int, dict] = {}
 
-    async def _run_bounded(idx: int, scenario, persona) -> dict:
-        nonlocal shrunk
-        if _quota_seen and not shrunk and args.concurrency > _SHRUNK_CONCURRENCY:
-            async with shrink_lock:
-                if not shrunk:
-                    shrunk = True
-                    for _ in range(args.concurrency - _SHRUNK_CONCURRENCY):
-                        await sem.acquire()  # hoarded permanently
-                    print(f"[concurrency] 429 seen — shrinking {args.concurrency} -> {_SHRUNK_CONCURRENCY}", flush=True)
-        async with sem:
-            print(f"[case {idx}/{len(pairs)}] {scenario.id} / {persona} ...", flush=True)
-            res = await run_one(scenario, persona)
+    def _report(scenario, persona, res: dict) -> None:
         label = f"{scenario.id}/{persona}"
         if res.get("passed") is None:
             print(f"  -> ERROR [{label}]: {res.get('error')}", flush=True)
         else:
             print(f"  -> {'PASS' if res['passed'] else 'FAIL'} [{label}]: {res['judge_reason'][:100]}", flush=True)
-        return res
 
-    results = list(
-        await asyncio.gather(
-            *(_run_bounded(i, s, p) for i, (s, p) in enumerate(pairs, 1))
-        )
-    )
+    async def _worker(wid: int) -> None:
+        while True:
+            if _quota_seen and wid > _SHRUNK_CONCURRENCY:
+                print(f"[concurrency] 429 seen — worker {wid} retiring "
+                      f"(effective <= {_SHRUNK_CONCURRENCY})", flush=True)
+                return
+            try:
+                idx, (scenario, persona) = queue.get_nowait()
+            except asyncio.QueueEmpty:
+                return
+            print(f"[case {idx}/{len(pairs)}] {scenario.id} / {persona} ...", flush=True)
+            res = await run_one(scenario, persona)
+            _report(scenario, persona, res)
+            results_by_idx[idx] = res
+
+    await asyncio.gather(*(_worker(i + 1) for i in range(max(1, args.concurrency))))
+
+    # Salvage pass: a 429 that outlives backoff errors the CASE, not the run.
+    # Errored cases re-run once, serially, after the herd is gone — a 25-minute
+    # run must not be spoiled by a transient quota trough.
+    errored_idx = [i for i, r in sorted(results_by_idx.items()) if r.get("passed") is None]
+    if errored_idx:
+        print(f"\n[salvage] re-running {len(errored_idx)} errored case(s) serially ...", flush=True)
+        for idx in errored_idx:
+            scenario, persona = pairs[idx - 1]
+            print(f"[salvage {idx}/{len(pairs)}] {scenario.id} / {persona} ...", flush=True)
+            res = await run_one(scenario, persona)
+            _report(scenario, persona, res)
+            results_by_idx[idx] = res
+
+    results = [results_by_idx[i] for i in sorted(results_by_idx)]
     wall_clock_s = round(time.monotonic() - t_start, 1)
     print(f"\n[wall-clock] {wall_clock_s}s for {len(pairs)} cases")
 
