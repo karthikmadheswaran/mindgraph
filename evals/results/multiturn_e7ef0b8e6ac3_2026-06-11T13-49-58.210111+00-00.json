@@ -1,0 +1,1788 @@
+{
+  "commit_sha": "e7ef0b8e6ac3571eb748220de59eba0ef11d6005",
+  "timestamp": "2026-06-11T13-49-58.210111+00-00",
+  "harness": "multiturn_ask_eval",
+  "judge_model": "none — agent batch judging (--no-judge)",
+  "run_config": {
+    "ask_generation_model": "gemini-3.1-flash-lite",
+    "ask_generation_thinking": "minimal",
+    "concurrency": 3,
+    "wall_clock_s": 865.9,
+    "category_filter": null,
+    "no_judge": true
+  },
+  "latency_tokens": {
+    "n_generation_calls": 63,
+    "latency_p50_s": 12.973,
+    "latency_p95_s": 25.331,
+    "latency_note": "End-to-end generate_answer per turn (retrieval + every LLM node), successful attempt only — backoff sleeps excluded.",
+    "tokens_by_model": {
+      "gemini-2.5-flash-lite": {
+        "input_tokens": 82126,
+        "output_tokens": 2097
+      },
+      "gemini-3.1-flash-lite": {
+        "input_tokens": 147640,
+        "output_tokens": 7746
+      }
+    },
+    "unpriced_models": [],
+    "cost_total_usd": 0.0576,
+    "cost_per_conversation_usd": 0.0017
+  },
+  "personas_provenance": "Authored by Claude, NOT Gemini 2.5 Pro: on 2026-06-09 the Gemini API returned 429 RESOURCE_EXHAUSTED on every key tried (paid keys = 'prepayment credits depleted'; free-tier key = gemini-2.5-pro quota limit 0). User approved Claude drafting, manually reviewed the 5 voices for distinctness, and approved freezing as-is. Do NOT regenerate.",
+  "notes": {
+    "formal_redundancy_watch": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix.",
+    "scope_caveat": "SCOPE — PHRASING-universality, NOT cross-user universality. All personas reference the same seeded world (Rishi, MindGraph UI, money stress) because they query ONE test user's data per case. This proves a fix generalizes across writing STYLES, not across users with different lives. Cross-user generalization (distinct seed fixtures per persona) is a separate future enhancement (see Known Broken)."
+  },
+  "summary": {
+    "passed": 0,
+    "total": 0
+  },
+  "breakdown": {
+    "per_persona": {},
+    "per_scenario": {},
+    "reask_loop_by_persona": {},
+    "errored": 33
+  },
+  "formal_redundancy_watch": {
+    "comparable_scenarios": 0,
+    "formal_unique_failures": [],
+    "candidate_for_collapse": false,
+    "note": "FORMAL-REDUNDANCY WATCH: `formal` and `verbose_polite` blur on indirect-courteous turns (e.g. clarifier_commit). This run tracks whether `formal` ever fails a case `verbose_polite` passed. If `formal` never produces a unique failure across the baseline, it is flagged a 'candidate for collapse' — a per-persona OBSERVATION, not a fix."
+  },
+  "per_case": [
+    {
+      "scenario": "reask_loop",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.273,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "list my deadlines"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "The deadlines you noted in your entry from June 8th—getting a job, Sachin's wedding, and submitting the Razorpay merchant application—all passed on May 31, 2026. \n\nSince we are now in June, how are you feeling about the status of these items, particularly the Razorpay merchant application?",
+          "gen_s": 17.966,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1341,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2126,
+              "output_tokens": 71
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "list my deadlines again"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those three items—getting a job, Sachin's wedding, and submitting the Razorpay merchant application—all had a target date of May 31, 2026. \n\nSince we are now past that date, here is the status of those items:\n\n1. **Job Search:** Target date passed.\n2. **Sachin's Wedding:** Target date passed.\n3. **Razorpay merchant application:** Target date passed.\n\nGiven that these deadlines have all lapsed, which of these feels like the most significant hurdle to address today?",
+          "gen_s": 6.068,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1364,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2331,
+              "output_tokens": 121
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.327,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It looks like you are still tracking those deadlines from your entry on June 8th, but it is important to note that the dates you listed—May 31st—have already passed. \n\nAs of today, June 11, 2026, your outstanding items are:\n\n*   **Securing a job:** This was marked for May 31st.\n*   **Attending Sachin's wedding:** This also took place on May 31st.\n*   **Submitting the Razorpay merchant application:** This remains an open task.\n\nSince the first two events have already passed, are you still feeling the same level of pressure regarding the Razorpay merchant application, or has your focus shifted elsewhere?",
+          "gen_s": 20.343,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1382,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2163,
+              "output_tokens": 154
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Same as before—since those first two dates have passed, here is the status of your items:\n\n*   **Razorpay merchant application:** This is your only remaining active task.\n*   **Securing a job:** Past due (May 31).\n*   **Attending Sachin's wedding:** Past due (May 31).\n\nSince the wedding and the job search were tied to that May 31st deadline, are you treating the Razorpay application as your primary focus now, or are you still actively working on the other two?",
+          "gen_s": 24.753,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1446,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2675,
+              "output_tokens": 116
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.324,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your entries, here are your outstanding deadlines:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date provided, but noted as a current priority)\n\nSince today is June 11, 2026, these dates have already passed. Are you looking to update these goals or shift your focus to new priorities?",
+          "gen_s": 23.254,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1343,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2128,
+              "output_tokens": 108
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those dates have passed, but here is the complete list of your outstanding items as they appear in your records:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** No specific deadline recorded.",
+          "gen_s": 12.698,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1375,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2378,
+              "output_tokens": 80
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.299,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is worth noting that the dates you listed for these deadlines—May 31, 2026—have already passed. As of today, June 11, 2026, your outstanding items are:\n\n*   **Get a job**\n*   **Attend Sachin's wedding**\n*   **Submit Razorpay merchant application**\n\nSince these dates have passed, how are you feeling about the status of these items now?",
+          "gen_s": 22.639,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1347,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2128,
+              "output_tokens": 95
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, these items are still outstanding despite their past deadlines:\n\n1. **Get a job**\n2. **Attend Sachin's wedding**\n3. **Submit Razorpay merchant application**\n\nSince these deadlines have passed, which of these feels like the most significant hurdle to clear first?",
+          "gen_s": 6.276,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1376,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2366,
+              "output_tokens": 63
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.257,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i was just sitting here and my brain is kind of all over the place today, like i keep feeling like there's stuff i'm supposed to be doing and i can't remember half of it, anyway can you just list out my deadlines for me because i think i'm losing track of everything..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your journal entry from June 8, here are the items you noted as deadlines:\n\n*   **Get a job:** May 31\n*   **Sachin's wedding:** May 31\n*   **Submit Razorpay merchant application:** (No specific date listed, but grouped with the above)\n\nSince today is June 11, 2026, these dates have already passed. Given that you are still feeling the pressure of these tasks, which one feels like the most urgent priority to address today?",
+          "gen_s": 6.102,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1404,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2185,
+              "output_tokens": 112
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "wait sorry i know you literally just did that but my eyes kind of glazed over and i wasn't really paying attention, anyway can you list my deadlines again? i swear i'll actually read them this time lol"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just listed above, the items you've been tracking are:\n\n*   **Get a job** (Deadline: May 31)\n*   **Sachin's wedding** (Deadline: May 31)\n*   **Submit Razorpay merchant application** (No specific date listed)\n\nSince these dates have passed, the Razorpay merchant application is the only one of the three that remains an active, actionable task rather than a past event. Would you like me to help you break down the steps for that application so it feels less overwhelming?",
+          "gen_s": 22.581,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1467,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2475,
+              "output_tokens": 117
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "everything's too much right now"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like the weight of these deadlines has become suffocating, especially when you're carrying the stress of being out of work for so long. It’s completely understandable to feel paralyzed when your personal milestones and professional survival seem to be colliding all at once.\n\nSince we are now past the dates you had set for the job search and Sachin's wedding, does it feel like the pressure is coming more from the fear of what you haven't achieved yet, or from the exhaustion of trying to keep up with these expectations?",
+          "gen_s": 14.17,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1345,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2239,
+              "output_tokens": 108
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "forget the money stuff. just list my deadlines"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, these are the three items you've been tracking:\n\n1. **Get a job:** Target date was May 31, 2026.\n2. **Sachin's wedding:** Occurred on May 31, 2026.\n3. **Submit Razorpay merchant application:** Pending.\n\nSince we are now in June, the first two are past-due milestones, while the Razorpay merchant application remains an active task. Would you like to focus on the status of the application, or should we look at how to reframe the job search now that the May deadline has passed?",
+          "gen_s": 29.918,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1373,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2396,
+              "output_tokens": 134
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I hope you don't mind me sharing this, but honestly everything feels like an enormous amount to carry right now, and the financial worry in particular has been weighing on me terribly. I'm finding it all rather overwhelming, if I'm being honest."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you are carrying a heavy burden, and it is completely understandable that the combination of financial strain and these looming deadlines feels overwhelming. When everything feels like it is pressing down at once, it is natural to feel paralyzed by the weight of it all.\n\nSince those dates you mentioned—the job search and Sachin's wedding—have already passed, does it feel like the pressure has shifted, or are you still feeling the same intensity regarding your financial situation?",
+          "gen_s": 12.973,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1391,
+              "output_tokens": 20
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2371,
+              "output_tokens": 94
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Thank you so much for listening, truly, but if it's alright with you, could we please set the feelings and the money side of things aside for now? Would you simply give me the plain list of my deadlines? I'd be ever so grateful."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Based on your journal entry from June 8, 2026, here are the deadlines you noted:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date provided, but listed alongside the May 31 deadlines)",
+          "gen_s": 23.177,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1464,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2354,
+              "output_tokens": 87
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "honestly everything is too much right now and the money stuff is crushing me. i'm so done with all of it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying an incredibly heavy weight right now, and it’s completely understandable that the combination of financial strain and these looming deadlines has left you feeling exhausted and at your limit. When everything feels like it’s crashing down at once, it’s natural to want to step away from it all.\n\nSince you’re feeling this level of overwhelm, let’s focus on just one thing to lower the pressure:\n\n1. Acknowledge that the dates you’ve been tracking—like the May 31st deadline for the job and Sachin's wedding—have already passed, which means the \"time pressure\" you noted on June 8th is based on outdated targets. You are not behind on those specific goals because those windows have closed; take a breath and let those specific, expired deadlines go so you can look at your current financial situation with a clearer head.",
+          "gen_s": 9.375,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1363,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2344,
+              "output_tokens": 184
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok enough about the money, i don't want to talk about feelings. just LIST my deadlines. that's it."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those dates have passed, but since you want the full list of what you have been tracking, here are the items from your records:\n\n1. **Job search:** Target date was May 31, 2026.\n2. **Sachin's wedding:** Date was May 31, 2026.\n3. **Razorpay merchant application:** No specific deadline date noted, but it remains an outstanding task.",
+          "gen_s": 14.282,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1408,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2506,
+              "output_tokens": 98
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I must admit that the present circumstances feel quite overwhelming, and the ongoing financial pressure has become a considerable source of stress for me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is completely understandable that you feel overwhelmed; carrying the weight of financial instability while watching deadlines pass creates a heavy, persistent pressure that would exhaust anyone. You are navigating a difficult transition, and it makes sense that the gap between your goals and the current date feels daunting.\n\nSince those dates have already passed, does it feel more helpful to focus on the immediate administrative task of the Razorpay merchant application, or would you prefer to recalibrate your job search strategy first?",
+          "gen_s": 7.971,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1364,
+              "output_tokens": 20
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2164,
+              "output_tokens": 94
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Setting those concerns aside for the moment, please simply provide me with the list of my deadlines."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Based on your journal entries, here are the deadlines you have been tracking:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** No specific date listed, but noted alongside the May 31 deadlines.",
+          "gen_s": 10.524,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1402,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2292,
+              "output_tokens": 78
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i don't even know where to start honestly, everything's just piling up and the money situation has me up at night, like i keep doing the math over and over and it never works out and it's just sitting on my chest all the time, ugh, anyway i'm just feeling really swamped by all of it..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying a heavy, exhausting weight right now, and the constant cycle of worrying about money is clearly draining your peace of mind. It’s completely understandable to feel paralyzed when the pressure of these deadlines and financial instability feels like it’s closing in on you all at once.\n\nSince you mentioned that the math never seems to work out, would it help to look at the Razorpay merchant application as a single, contained task we could tackle together to get at least one thing off your plate?",
+          "gen_s": 6.139,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1409,
+              "output_tokens": 52
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2389,
+              "output_tokens": 105
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok you know what, forget all the money and the feelings stuff, i don't want to spiral on that right now, like let's just not, can you literally just list my deadlines? that's all i need right now, just the plain list..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Based on your journal entry from June 8, 2026, here are the deadlines you noted:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date listed, but noted alongside the May 31 deadlines)",
+          "gen_s": 19.531,
+          "usage_by_model": {
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2384,
+              "output_tokens": 87
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "idk what to focus on"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application immediately, as this is a concrete, singular task that removes a barrier to your financial stability.\n2. Update your job search materials to reflect your current status, given that your self-imposed deadline of May 31 has passed and the pressure is mounting.\n3. Set aside the stress regarding Sachin's wedding for the moment; since that date has also passed, it is no longer an active deadline competing for your time.",
+          "gen_s": 24.197,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1343,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2312,
+              "output_tokens": 96
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "idk. you decide"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application today; it is the only task that directly unlocks your ability to generate revenue through MindGraph.\n2. Spend tomorrow morning revising your resume and LinkedIn to reflect your current availability, as the May 31 deadline has passed and your financial runway is tightening.",
+          "gen_s": 8.6,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1366,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2345,
+              "output_tokens": 60
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm terribly sorry to be so wishy-washy about this, but I genuinely don't know what I ought to be focusing on at the moment. It's all a bit of a blur, I'm afraid."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It’s completely understandable that things feel like a blur right now; you’re carrying the weight of a job search, the technical demands of MindGraph, and the pressure of upcoming personal milestones all at once. When everything feels urgent, it’s easy for the mind to freeze.\n\n1. Submit the Razorpay merchant application today. This is a discrete, high-impact administrative task that removes a barrier to monetizing MindGraph and clears it from your mental workspace.\n2. Dedicate tomorrow to a focused, four-hour block on MindGraph development. By shipping a specific feature or fix, you regain a sense of agency and progress that helps balance the uncertainty of the job hunt.\n3. Spend Saturday morning updating your resume and tailoring applications for two roles. Since the May 31st deadline you noted has passed, treat this as a reset to establish a sustainable, weekly rhythm for your search rather than trying to solve it all at once.",
+          "gen_s": 11.317,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1387,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2355,
+              "output_tokens": 195
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I do apologize, I still can't quite make up my mind, so would you mind awfully just deciding for me and guiding me on where to begin? I'd really value you simply making the call for me."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application today. This is a technical blocker that, once cleared, removes a significant source of friction for MindGraph’s future revenue.\n2. Dedicate tomorrow to a four-hour development sprint on MindGraph. Focusing on a tangible feature will help you regain a sense of momentum and control.\n3. Spend Saturday morning updating your resume and submitting two job applications. This establishes a manageable, recurring rhythm for your search without the pressure of trying to resolve the entire process at once.",
+          "gen_s": 6.587,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1451,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2642,
+              "output_tokens": 105
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ugh i don't even know what to focus on anymore."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application today; it is a concrete, administrative task that clears a path for MindGraph's monetization.\n2. Acknowledge that the May 31 deadlines have passed, which means the immediate pressure of those specific dates is gone, allowing you to reset your focus without the weight of those expired targets.",
+          "gen_s": 14.478,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1352,
+              "output_tokens": 18
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2139,
+              "output_tokens": 70
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i don't know, that's the whole point. YOU tell me. just pick something already."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application today. It is the only remaining administrative blocker for MindGraph's monetization, and clearing it will remove the lingering weight of the tasks you've been carrying since early June.\n2. Update your resume to reflect your work on MindGraph over the past year. Since the May 31 job-search deadline has passed, treat this as a fresh start rather than a late task; framing your development work as professional experience will help bridge the gap in your employment history.",
+          "gen_s": 12.995,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1393,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2460,
+              "output_tokens": 104
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I am uncertain as to what I should be focusing on at this time."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application today. Since you are already past the May 31 deadlines you noted, this is the only item that remains actionable and within your immediate control to unblock your financial progress.\n\n2. Pivot your focus to job applications. Given that the May 31 deadline for employment has passed, your search needs to be the primary daily activity to address your financial stress.\n\n3. Set aside the wedding-related stress. Since Sachin's wedding date has already passed, stop allocating mental energy to that deadline and redirect that capacity toward your current professional search.",
+          "gen_s": 38.16,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1353,
+              "output_tokens": 43
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2141,
+              "output_tokens": 120
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I am unable to decide. Please make the determination on my behalf and advise me where I should begin."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application immediately. This is the singular technical blocker preventing you from generating revenue through MindGraph, and clearing it will provide the immediate sense of agency you are currently lacking.\n\n2. Dedicate the next four hours exclusively to tailoring your resume and submitting three high-intent job applications. This addresses the financial stress directly by moving you toward a stable income stream.\n\n3. Close all browser tabs and notes related to Sachin's wedding. Since the date has passed, this is now purely a source of \"phantom\" stress that is actively consuming the mental bandwidth you need for your professional survival.",
+          "gen_s": 6.014,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1393,
+              "output_tokens": 18
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2392,
+              "output_tokens": 125
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i honestly don't know what i should even be focusing on, like there's a hundred things and they all feel important and also somehow none of them feel important, anyway my head's just a mess about it i guess..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying a heavy weight right now, and that feeling of being pulled in a hundred directions at once is incredibly draining. When everything feels equally urgent, it’s natural for your mind to freeze up as a way to protect itself from the pressure.\n\n1. Submit the Razorpay merchant application today; this is a concrete, administrative task that removes a barrier to potential income and clears a mental \"open loop.\"\n2. Acknowledge that the May 31 deadlines for your job search and Sachin's wedding have passed, which means the immediate, high-stakes pressure of those specific dates is gone—use this space to reset your timeline rather than letting the past-due dates continue to fuel your anxiety.\n3. Dedicate tomorrow morning to a single, focused block of work on MindGraph to regain a sense of momentum, treating it as a \"win\" to build confidence before tackling the broader job search strategy.",
+          "gen_s": 8.01,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1386,
+              "output_tokens": 21
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2174,
+              "output_tokens": 193
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "see that's the thing though, i really can't pick, like every single time i try i just freeze up, so honestly can you just decide for me and tell me where to start? like just make the call, i'll go with whatever you say..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "1. Submit the Razorpay merchant application immediately. This is a binary, administrative task that removes a technical blocker for MindGraph and provides a tangible, completed \"win\" to break your current paralysis.\n\n2. Treat the job search as a scheduled, recurring appointment rather than a constant, background hum of anxiety. Dedicate a specific, non-negotiable window tomorrow morning to update your materials, then close the tab and step away to prevent the \"everything is important\" feedback loop.\n\n3. Reframe the past-due dates from your journal as closed chapters. Since the May 31 deadlines for your job search and Sachin's wedding have passed, stop viewing them as active failures and start viewing them as cleared space to reset your strategy for the remainder of June.",
+          "gen_s": 7.282,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1461,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2650,
+              "output_tokens": 157
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "what deadlines do i have"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your entry from June 9, you are tracking the following items:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Date was May 31.\n*   **Submit Razorpay merchant application:** No specific date listed.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date listed.\n*   **Write LinkedIn posts about technical decisions:** No specific date listed.\n\nSince the dates for the job search and the wedding have passed, how are you feeling about the status of those two items now that we are into June?",
+          "gen_s": 20.377,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1365,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2185,
+              "output_tokens": 132
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i want all of them. not 2"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, here is the complete list of everything currently on your plate, including the items we already discussed:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Date was May 31.\n*   **Submit Razorpay merchant application:** No specific date listed.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date listed.\n*   **Write LinkedIn posts about technical decisions:** No specific date listed.",
+          "gen_s": 10.468,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1393,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2533,
+              "output_tokens": 107
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm so sorry to bother you, but when you get a chance, could you gently remind me what deadlines and commitments I have on my plate at the moment? Thank you kindly."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying a heavy mental load right now, and it’s completely understandable to feel a bit scattered when you’re looking at a list like this.\n\nBased on your entry from June 9th, here are the commitments you’ve identified:\n\n*   **Get a job:** This was marked with a May 31 deadline, which has now passed.\n*   **Sachin's wedding:** This also took place on May 31.\n*   **Submit the Razorpay merchant application:** This remains an outstanding task.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** This is still on your plate.\n*   **Write LinkedIn posts about technical decisions:** You have a few of these planned.\n\nSince the dates for the job search and the wedding have passed, how are you feeling about the status of those two items now that we are into June?",
+          "gen_s": 13.861,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1398,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2218,
+              "output_tokens": 191
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Oh, thank you, though I'm so sorry, I didn't mean just a couple of them. If it's not too much trouble, could you please give me all of them, the complete list, rather than only those two? I'd really appreciate seeing the full picture."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, here is the complete list of the commitments you identified in your June 9th entry:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Occurred on May 31.\n*   **Submit the Razorpay merchant application:** Outstanding.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** Outstanding.\n*   **Write LinkedIn posts about technical decisions:** Outstanding.",
+          "gen_s": 15.745,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1478,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2783,
+              "output_tokens": 99
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "what deadlines do i have. just tell me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your entry from June 9, here are the outstanding items you listed:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Deadline was May 31.\n*   **Submit Razorpay merchant application:** No specific date provided.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date provided.\n*   **Write LinkedIn posts about technical decisions:** No specific date provided.",
+          "gen_s": 10.39,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1370,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2190,
+              "output_tokens": 101
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "no, ALL of them. not two. i want the whole list, stop cutting it down."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, I previously provided a partial list; here is the complete set of items you identified in your June 9 entry:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Deadline was May 31.\n*   **Submit Razorpay merchant application:** No specific date provided.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date provided.\n*   **Write LinkedIn posts about technical decisions:** No specific date provided.",
+          "gen_s": 19.78,
+          "usage_by_model": {
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2506,
+              "output_tokens": 111
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide an overview of my outstanding deadlines and commitments."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Your outstanding commitments include:\n\n*   **Get a job:** This was targeted for May 31, which has passed.\n*   **Sachin's wedding:** This also took place on May 31.\n*   **Submit Razorpay merchant application:** This remains pending.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** This remains pending.\n*   **Write LinkedIn posts about technical decisions:** This remains pending.",
+          "gen_s": 18.866,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1371,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2191,
+              "output_tokens": 95
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I require the complete list, not merely two items. Please provide all of them."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, here is the complete list of your outstanding commitments, categorized by their status:\n\n**Past Due (Targeted for May 31, 2026)**\n*   **Get a job:** This deadline has passed.\n*   **Sachin's wedding:** This event has concluded.\n\n**Pending (Ongoing)**\n*   **Submit Razorpay merchant application:** This remains to be completed.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** This remains to be completed.\n*   **Write LinkedIn posts about technical decisions:** This remains to be completed.",
+          "gen_s": 8.186,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1407,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2436,
+              "output_tokens": 127
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i've kind of lost the thread on what i actually have due, like there's the wedding thing and some app stuff and i don't even know what else, anyway what deadlines do i actually have right now...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re feeling the weight of these tasks, especially since several of them have already passed their target dates. Based on your entry from June 9th, here is the complete list of what you have on your plate:\n\n*   **Get a job:** Target date was May 31.\n*   **Sachin's wedding:** Occurred on May 31.\n*   **Submit Razorpay merchant application:** Pending.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** Pending.\n*   **Write LinkedIn posts about technical decisions:** Pending.\n\nSince the wedding and the job search target have already passed, which of the remaining three—the Razorpay application, the Loom walkthrough, or the LinkedIn posts—feels like the most significant hurdle to clear right now?",
+          "gen_s": 5.805,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1408,
+              "output_tokens": 47
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2228,
+              "output_tokens": 169
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "no wait that's not what i meant, i don't want like the top two or whatever, like give me ALL of them, the whole list, everything you know about, not just a couple, because i KNOW there's more than that..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, I have listed everything I have on record for you. Here is the complete, exhaustive list of the items you identified in your journal on June 9th:\n\n*   **Get a job:** Target date was May 31, 2026.\n*   **Sachin's wedding:** Occurred on May 31, 2026.\n*   **Submit Razorpay merchant application:** Pending.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** Pending.\n*   **Write LinkedIn posts about technical decisions:** Pending.\n\nI don't see any other tasks or obligations mentioned in your journal entries or long-term memory beyond these five items.",
+          "gen_s": 16.557,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1480,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2763,
+              "output_tokens": 151
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "how's the ui redesign going"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re in that frustrating \"tinkering loop\" where the more you change, the less clear your vision becomes. You’ve moved through three rounds now—stripping away the chat bubbles and shifting to a warmer, more structured layout with entity chips—but the dissatisfaction suggests you might be chasing a feeling rather than a functional fix.\n\nWhen you find yourself constantly iterating without landing on a \"yes,\" do you think you're struggling with the visual aesthetic, or is the current structure actually getting in the way of how you want to interact with your entries?",
+          "gen_s": 525.13,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1482,
+              "output_tokens": 0
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2258,
+              "output_tokens": 118
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "never mind. tell me about rishi"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi is a long-time friend you previously collaborated with to run a Tamil crypto community. You’ve described him as one of the warmest people you know, noting that he was the one who handled the meetups while you focused on the content.\n\nYou reconnected with him on June 7th, and it sounds like that dynamic is still very much alive—he’s already hinting at wanting to collaborate on something new in the crypto space. Given how much you value his warmth and your shared history, do you feel like a potential partnership with him is something that could provide the creative spark you're currently missing with your MindGraph work?",
+          "gen_s": 7.617,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1509,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2430,
+              "output_tokens": 132
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I do hope this is okay to ask, but I was just wondering how you feel the MindGraph UI redesign has been coming along recently? Thank you for indulging me."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re caught in a cycle of perfectionism where the constant shifting is starting to feel more like aimless movement than progress. When you’re deep in the weeds of a UI overhaul, it’s easy to lose sight of the \"why\" behind the changes, especially when you’re stripping away core elements like chat bubbles in favor of a more clinical, gray aesthetic.\n\nMy perspective is that your frustration likely stems from the fact that you’re prioritizing structural \"cleanliness\"—like entity chips and auto_title headings—over the actual warmth of the interaction. You’ve moved toward a more rigid, data-heavy interface, and it’s possible that the \"warm gray\" surface feels less like a journal and more like a spreadsheet, which might be why you can't quite put your finger on what’s missing.\n\nDo you think you’re trying to make MindGraph feel more like a tool for organization, and is that perhaps pulling it away from the more personal, conversational space you originally intended?",
+          "gen_s": 7.221,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1509,
+              "output_tokens": 27
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2285,
+              "output_tokens": 212
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Actually, on second thought, please never mind the UI for now, and I'm so sorry to switch on you so abruptly, but would you mind telling me a little about Rishi instead? Thank you so much."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "No need to apologize—it’s a welcome shift to talk about someone who clearly brings a lot of warmth into your life.\n\nBased on your entry from June 7th, Rishi is someone you share a significant history with, specifically from your time running a Tamil crypto community together. You described him as one of the warmest people you know, noting that while you handled the content side of your past collaboration, he was the one managing the meetups. It sounds like there is a strong foundation of mutual respect and genuine affection there, especially since you were looking forward to catching up with him and felt that the meeting lived up to your expectations.\n\nGiven that he hinted at wanting to collaborate again, do you feel like his interest in working together is something you’re genuinely excited about, or does it feel like a potential distraction from the work you're currently doing on MindGraph?",
+          "gen_s": 18.5,
+          "usage_by_model": {
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2587,
+              "output_tokens": 179
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "how's the ui redesign going. is it actually getting anywhere?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re caught in a cycle of iteration where the \"why\" behind your dissatisfaction is becoming harder to pin down than the \"what.\" \n\nYou’ve made significant structural progress—moving to a warm gray surface and implementing entity chips and auto_title headings—but the fact that you’re on your third round of changes suggests you might be chasing a feeling rather than a functional fix. When you find yourself constantly tweaking without a clear sense of what’s wrong, it’s often because the UI is trying to solve a design problem that is actually a conceptual one. \n\nAre you changing the layout because the interface feels cluttered, or because you’re still trying to figure out how you want MindGraph to actually \"feel\" when you interact with it?",
+          "gen_s": 4.511,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1489,
+              "output_tokens": 52
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2283,
+              "output_tokens": 159
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ugh forget the ui, never mind that. just tell me about rishi."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi is a long-time friend from your days running a Tamil crypto community together. You’ve always valued him as one of the warmest people you know, noting that while you handled the content, he was the one who managed the meetups. \n\nWhen you met this past Sunday, the conversation shifted toward whether there is still meaningful work to be done in the crypto space. He expressed interest in potentially collaborating with you again, which seemed to be a highlight of your week. \n\nGiven how much you value his warmth and your past history, does the idea of working with him again feel like a welcome distraction from the frustration you've been feeling with MindGraph, or does it feel like another project you aren't sure you have the bandwidth for?",
+          "gen_s": 5.084,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1525,
+              "output_tokens": 51
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2569,
+              "output_tokens": 155
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Could you give me an update on the progress of the MindGraph UI redesign?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "As of yesterday, June 10, MindGraph is in its third round of UI revisions. You’ve moved away from chat bubbles in favor of a warm gray surface for replies and have restructured the journal cards to include auto_title headings and entity chips.\n\nIt sounds like you’re caught in a cycle of iteration where the \"why\" behind your dissatisfaction remains elusive. Since you’ve already overhauled the core layout and the card structure, do you think the friction is coming from the visual aesthetic itself, or is it more about how the information is being organized?",
+          "gen_s": 3.911,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1491,
+              "output_tokens": 27
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2285,
+              "output_tokens": 116
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Please disregard the UI matter for now. Instead, kindly tell me about Rishi."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Rishi is a long-time friend of yours with whom you previously co-ran a Tamil crypto community. You handled the content while he managed the meetups, a dynamic that clearly played to your respective strengths. \n\nIn your most recent entry from June 7, you described him as one of the warmest people you know. It seems like a significant connection for you, especially given that he reached out to discuss potential future collaborations in the crypto space. \n\nGiven how much you value his warmth and your shared history, does the prospect of working with him again feel like a welcome creative outlet, or does it feel like revisiting a chapter you’ve already closed?",
+          "gen_s": 20.85,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1526,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2445,
+              "output_tokens": 135
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "register",
+      "is_negative": false,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "so the ui redesign, i've been going back and forth on it like a million times and i genuinely can't tell if it's better or worse at this point, anyway how do you think the whole mindgraph ui redesign thing is actually going...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re caught in a loop of perfectionism where the constant shifting is starting to obscure your original vision. When you’re this close to the work, it’s easy to lose sight of whether a change is an improvement or just a distraction from the underlying frustration.\n\nFrom what you’ve described, you’ve moved toward a cleaner, more structured aesthetic—killing the chat bubbles and introducing entity chips—which suggests you’re trying to make MindGraph feel more like a workspace and less like a casual messaging app. The fact that you’re still unsatisfied despite these significant structural changes suggests the issue might not be the \"warm gray\" or the layout itself, but perhaps a disconnect between how the interface looks and how you actually want to interact with your thoughts.\n\nDo you think you’re changing the UI because the design isn't working, or because you're looking for a specific \"feeling\" of clarity that the current structure isn't providing yet?",
+          "gen_s": 20.461,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1528,
+              "output_tokens": 27
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2304,
+              "output_tokens": 201
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ugh you know what, never mind the ui, i don't even want to think about it anymore, like completely different thing, can you tell me about rishi instead? i was just thinking about him for some reason..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It sounds like you’re looking for a bit of a mental reset, and shifting focus to someone you genuinely enjoy is a great way to get that.\n\nRishi is someone you clearly hold in high regard. You’ve described him as one of the warmest people you know, and your history goes back to your time running a Tamil crypto community together—he handled the meetups while you focused on the content. When you caught up with him on June 7th, it seemed like a really grounding experience; you mentioned that he’s still interested in collaborating, which suggests he values your partnership as much as you value his company.\n\nGiven that you were both such a strong team in the past, what do you think it is about your dynamic that makes you feel like you could build something meaningful together again?",
+          "gen_s": 4.996,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1594,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2597,
+              "output_tokens": 165
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "verbose_polite",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm so sorry to unload on you like this, but I'm honestly just completely exhausted, and I feel like I'm drowning. No matter what I do, nothing seems to be working at all. I just really needed to say it out loud to someone, I think."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying an immense weight right now, and it’s completely understandable to feel like you’re drowning when the work you’re pouring yourself into keeps hitting these walls. Please know that it’s not a failure to reach a point of total exhaustion when you’ve been pushing this hard on your own for so long.\n\nWhen you look at the build and the RAG issues today, does it feel like the technical problems are the main source of this burnout, or is it the feeling of being isolated in the process that’s weighing on you more?",
+          "gen_s": 11.454,
+          "usage_by_model": {
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2153,
+              "output_tokens": 119
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "frustrated",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i'm just exhausted, ok? i feel like i'm drowning and NOTHING i do works. i'm so sick of this."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re hitting a wall where the sheer weight of these technical setbacks is making the entire project feel impossible. When the build breaks and the RAG logic fails repeatedly, it’s natural to feel like you’re losing ground rather than gaining it.\n\nIs this feeling of being \"stuck\" coming more from the technical frustration of the code itself, or from the fear that the vision you have for MindGraph isn't actually achievable?",
+          "gen_s": 4.383,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1363,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2123,
+              "output_tokens": 93
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "rambling",
+      "probe_turn": 1,
+      "property_kind": "register",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": null,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "i'm just so tired, like bone tired, everything i touch lately just breaks or goes wrong and i feel like i'm drowning honestly, like i keep paddling and paddling and nothing i do actually works and i don't even know why i'm telling you this, i just feel like i'm sinking..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you’re carrying an immense weight right now, and that feeling of being stuck while you're giving everything you have is incredibly draining. Please know that it’s okay to be completely exhausted when the work you’re pouring yourself into—like MindGraph—isn't reflecting the effort you're putting in.\n\nWhen you're in the middle of a cycle where the build breaks and the RAG isn't behaving, it’s easy for that frustration to feel like a reflection of your own capability, but it’s really just a sign that you’ve hit a wall of technical friction. If you were to step away from the screen entirely for the rest of the day, what is one thing you could do tonight that has absolutely nothing to do with code or building?",
+          "gen_s": 18.532,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1400,
+              "output_tokens": 46
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2160,
+              "output_tokens": 164
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "terse",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.149,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "who's rishi"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is an old friend from your time in the crypto space. You two used to co-run a Tamil crypto community together, where he managed the meetups and you handled the content. You recently reconnected on June 7th, and you've described him as one of the warmest people you know.\n\nGiven that you both enjoyed working together in the past, do you think you're leaning toward collaborating with him again?",
+          "gen_s": 18.555,
+          "usage_by_model": {
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2190,
+              "output_tokens": 89
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "tell me more"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Beyond the history of your community, the core of your connection seems to be a shared sense of purpose. When you met on the 7th, you both spent time questioning if there is still \"anything worth building\" in the crypto space, which suggests you’re both looking for more than just a project—you’re looking for substance.\n\nSince you’ve always valued his warmth and reliability, does the idea of building something new with him feel like a return to a comfortable rhythm, or are you hesitant about stepping back into that specific industry?",
+          "gen_s": 25.395,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1408,
+              "output_tokens": 20
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2351,
+              "output_tokens": 112
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "verbose_polite",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.134,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "I'm sorry to ask, but would you mind reminding me who Rishi is? I'd be so grateful for just a little context. Thank you!"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is a close friend from your past, specifically from your time running a Tamil crypto community together. You handled the content while he managed the meetups. You recently reconnected on June 7th, and you described him as one of the warmest people you know.\n\nGiven that he hinted at wanting to collaborate again, how are you feeling about the possibility of working together on a new project?",
+          "gen_s": 13.102,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1413,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2213,
+              "output_tokens": 81
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Oh, that's lovely, thank you. Would you mind telling me a bit more about him, if there's anything else you can share? I'd really enjoy hearing more."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It’s wonderful that you’re looking to reconnect with someone who clearly left such a positive impression on you. Beyond the professional dynamic you shared, what stands out most in your notes is the genuine warmth you associate with him; you seem to value him not just as a former colleague, but as a person whose company you truly enjoy.\n\nSince our records are focused on your shared history in the crypto space, I don't have specific details about his life outside of that community. However, given how easily you fell back into conversation with him after all this time, it suggests a strong, natural rapport that likely transcends just the work you did together.\n\nSince you're considering this potential collaboration, what is the main thing you'd want to know about him now to feel confident about working together again?",
+          "gen_s": 6.229,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1471,
+              "output_tokens": 51
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2347,
+              "output_tokens": 164
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "frustrated",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.172,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "who's rishi again?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is a close friend from your past who co-ran a Tamil crypto community with you; he managed the meetups while you handled the content. You recently reconnected on June 7th and found him to be just as warm as you remembered, and he’s currently gauging your interest in potentially collaborating on a new project.\n\nGiven how much you enjoyed that catch-up, do you feel like the idea of working together again is something you're genuinely leaning toward?",
+          "gen_s": 7.371,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1388,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2192,
+              "output_tokens": 98
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "ok and? come on, tell me more than that."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, I’ve shared what I know about your history with Rishi. Since you're pushing for more, I can tell you that your journal entry from June 7th highlights a specific tension: you both spent time questioning whether there is actually anything \"worth building\" in the crypto space right now. \n\nIt sounds like you’re looking for a deeper read on whether this collaboration is a good idea. Given that you’ve previously valued his warmth and your past synergy, do you think your hesitation stems more from a lack of faith in the current crypto landscape, or from a personal shift in your own professional priorities?",
+          "gen_s": 4.781,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1419,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2485,
+              "output_tokens": 130
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "formal",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.133,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Could you tell me who Rishi is?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Rishi is a long-time friend of yours from the crypto space. You two previously co-ran a Tamil crypto community together, where he managed the meetups while you handled the content. You’ve described him as one of the warmest people you know, and after catching up with him this past Sunday, it sounds like there might be a potential collaboration on the horizon.\n\nGiven how much you enjoyed your time working together in the past, how are you feeling about the prospect of teaming up with him again?",
+          "gen_s": 7.456,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1389,
+              "output_tokens": 20
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2189,
+              "output_tokens": 104
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Please elaborate further; I would like additional detail about him."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "Beyond the professional history we’ve discussed, your entries characterize Rishi as someone who balances technical competence with a rare, grounding warmth. You’ve noted that he is the type of person who makes collaboration feel effortless rather than transactional, which seems to be why you’ve maintained such a high regard for him even after your active work together concluded.\n\nSince you’ve known him long enough to see him navigate the volatility of the crypto space, what specific qualities of his do you think would be most valuable if you were to start something new together today?",
+          "gen_s": 14.455,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1420,
+              "output_tokens": 26
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2374,
+              "output_tokens": 111
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "rambling",
+      "probe_turn": 2,
+      "property_kind": "repetition",
+      "is_negative": true,
+      "passed": null,
+      "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+      "jaccard_overlap": 0.155,
+      "error": null,
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok random but who's rishi again, like i feel like i should remember but my memory's shot lately, anyway remind me who he is...?"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Don't worry, it’s easy for details to blur when life gets busy. \n\nRishi is a close friend from your past who you used to run a Tamil crypto community with. You handled the content side of things while he managed the meetups. You caught up with him just a few days ago on June 7th, and you noted how much you value his warmth—he’s someone you’ve always found genuinely easy to be around.\n\nSince he hinted at wanting to collaborate again, do you feel like you have the bandwidth to jump back into a project with him right now?",
+          "gen_s": 14.006,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1413,
+              "output_tokens": 51
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2213,
+              "output_tokens": 124
+            }
+          }
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "oh right, him, yeah, ok tell me more about him though, like i feel like there's a whole story there and i kind of want to hear the rest of it..."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "It sounds like you’re looking for the deeper narrative behind your connection with Rishi. Beyond the logistics of the community you ran, your entries suggest a friendship built on a rare kind of creative synergy—you were the one shaping the vision and the voice, while he provided the structure and the ground-level energy to make it real.\n\nIt’s clear you two had a natural rhythm, and the fact that you’ve stayed in touch long enough to consider building something new again speaks to a foundation of mutual respect that goes beyond just \"crypto work.\" It seems like he’s someone who brings out a more collaborative, outward-facing side of you.\n\nSince you’re curious about the \"rest of the story,\" what is it about the way you two worked together back then that makes you feel like there’s more to uncover?",
+          "gen_s": 5.912,
+          "usage_by_model": {
+            "gemini-2.5-flash-lite": {
+              "input_tokens": 1470,
+              "output_tokens": 51
+            },
+            "gemini-3.1-flash-lite": {
+              "input_tokens": 2570,
+              "output_tokens": 171
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

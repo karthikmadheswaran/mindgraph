@@ -1,0 +1,50 @@
+{
+  "audit_01": {
+    "orig_case_id": "case_018",
+    "stratum": "B_full"
+  },
+  "audit_02": {
+    "orig_case_id": "case_042",
+    "stratum": "B_fail"
+  },
+  "audit_03": {
+    "orig_case_id": "case_011",
+    "stratum": "C_gamed"
+  },
+  "audit_04": {
+    "orig_case_id": "case_019",
+    "stratum": "A_cosmetic"
+  },
+  "audit_05": {
+    "orig_case_id": "case_001",
+    "stratum": "A_cosmetic"
+  },
+  "audit_06": {
+    "orig_case_id": "case_026",
+    "stratum": "C_gamed"
+  },
+  "audit_07": {
+    "orig_case_id": "case_025",
+    "stratum": "B_full"
+  },
+  "audit_08": {
+    "orig_case_id": "case_027",
+    "stratum": "B_full"
+  },
+  "audit_09": {
+    "orig_case_id": "case_043",
+    "stratum": "B_fail"
+  },
+  "audit_10": {
+    "orig_case_id": "case_006",
+    "stratum": "B_full"
+  },
+  "audit_11": {
+    "orig_case_id": "case_041",
+    "stratum": "C_gamed"
+  },
+  "audit_12": {
+    "orig_case_id": "case_033",
+    "stratum": "A_cosmetic"
+  }
+}
