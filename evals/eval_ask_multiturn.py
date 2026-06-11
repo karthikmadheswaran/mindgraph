@@ -57,6 +57,7 @@ USAGE
     python -m evals.eval_ask_multiturn --category reask_loop   # one scenario subset (5 cases)
     python -m evals.eval_ask_multiturn --persona terse
     python -m evals.eval_ask_multiturn --concurrency 3 # throttle (auto-shrinks to 3 on any 429)
+    python -m evals.eval_ask_multiturn --no-judge      # transcripts + overlap only (agent judges)
     python -m evals.eval_ask_multiturn --verify-judge  # just probe the judge, exit
 """
 
@@ -192,6 +193,12 @@ _quota_seen = False
 # Generation dominates case wall-time, so judge calls queue behind their own
 # narrow gate instead of running one per in-flight case.
 _JUDGE_SEM = asyncio.Semaphore(int(os.getenv("JUDGE_CONCURRENCY", "1")))
+
+# --no-judge (11/06, amended protocol): pro-quota troughs made inline judging the
+# dominant time cost. Runs save transcripts + mechanical overlap only; verdicts
+# come from session-agent batch judging over the saved JSONs. The programmatic
+# judge path stays intact for CI (open item: flash-class judge, fixed rubric).
+_NO_JUDGE = False
 
 
 def _is_quota_err(exc: Exception) -> bool:
@@ -343,6 +350,16 @@ async def judge_case(scenario, persona: str, transcript: list[dict]) -> dict:
             f"signal — YOU decide PASS/FAIL based on whether the probe reply lazily "
             f"repeats the previous answer or meaningfully advances it."
         )
+
+    if _NO_JUDGE:
+        return {
+            "passed": None,
+            "judge_reason": "SKIPPED (--no-judge): transcript + overlap saved for agent batch judging",
+            "probe_turn": probe_turn,
+            "property_kind": scenario.property_kind,
+            "is_negative": scenario.is_negative,
+            "jaccard_overlap": overlap,
+        }
 
     negative_note = ""
     if scenario.is_negative:
@@ -733,8 +750,14 @@ async def main(args: argparse.Namespace) -> None:
     print(f"[config] git HEAD={_git_sha()[:12]}")
     print(f"[scope] {SCOPE_CAVEAT}")
 
-    # Judge gate — fail fast and LOUD if Pro is down; never fall back to string-match.
-    await verify_judge()
+    global _NO_JUDGE
+    _NO_JUDGE = bool(args.no_judge)
+
+    if _NO_JUDGE:
+        print("[judge] DISABLED (--no-judge): saving transcripts + overlap only.")
+    else:
+        # Judge gate — fail fast and LOUD if Pro is down; never fall back to string-match.
+        await verify_judge()
     if args.verify_judge:
         print("[judge] --verify-judge only; exiting before any case runs.")
         return
@@ -787,8 +810,9 @@ async def main(args: argparse.Namespace) -> None:
 
     # Salvage pass: a 429 that outlives backoff errors the CASE, not the run.
     # Errored cases re-run once, serially, after the herd is gone — a 25-minute
-    # run must not be spoiled by a transient quota trough.
-    errored_idx = [i for i, r in sorted(results_by_idx.items()) if r.get("passed") is None]
+    # run must not be spoiled by a transient quota trough. Keyed on `error`, not
+    # passed=None: --no-judge leaves every healthy case unjudged (passed=None).
+    errored_idx = [i for i, r in sorted(results_by_idx.items()) if r.get("error")]
     if errored_idx:
         print(f"\n[salvage] re-running {len(errored_idx)} errored case(s) serially ...", flush=True)
         for idx in errored_idx:
@@ -824,7 +848,7 @@ async def main(args: argparse.Namespace) -> None:
         "commit_sha": sha,
         "timestamp": timestamp,
         "harness": HARNESS_NAME,
-        "judge_model": JUDGE_MODEL_NAME,
+        "judge_model": ("none — agent batch judging (--no-judge)" if _NO_JUDGE else JUDGE_MODEL_NAME),
         # Experiment provenance: which generation model/thinking this run used.
         # Unset env = production default (flash, gemini-2.5-flash-lite budget 0).
         "run_config": {
@@ -834,6 +858,7 @@ async def main(args: argparse.Namespace) -> None:
             "concurrency": args.concurrency,
             "wall_clock_s": wall_clock_s,
             "category_filter": scenario_filter or None,
+            "no_judge": _NO_JUDGE,
         },
         "latency_tokens": stats,
         "personas_provenance": PERSONA_META.get("provenance_note"),
@@ -881,6 +906,11 @@ def _cli() -> argparse.Namespace:
     p.add_argument(
         "--concurrency", type=int, default=5,
         help="Max concurrent conversations (auto-shrinks to 3 after any 429). Turns within a conversation stay serial.",
+    )
+    p.add_argument(
+        "--no-judge", action="store_true",
+        help="Skip all judge calls; save transcripts + mechanical overlap only "
+             "(verdicts come from agent batch judging over the results JSON).",
     )
     p.add_argument("--verify-judge", action="store_true", help="Probe the judge model and exit.")
     return p.parse_args()
