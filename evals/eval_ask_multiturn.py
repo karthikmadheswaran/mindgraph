@@ -294,9 +294,17 @@ def _strip_fence(text: str) -> str:
 
 
 async def verify_judge() -> None:
-    """One cheap Gemini-Pro call. Raise SystemExit on 429/quota — NEVER fall back."""
+    """One cheap Gemini-Pro call. Raise SystemExit on 429/quota — NEVER fall back.
+
+    Probe goes through _with_backoff (11/06): the global Vertex endpoint throws
+    TRANSIENT 429s that real judge calls already absorb; the gate exists to catch a
+    judge that is DOWN, not one that is briefly throttled. Persistent quota
+    exhaustion still exhausts the backoff and stops the run."""
     try:
-        resp = await judge_model.ainvoke("Reply with exactly the word: ok")
+        resp = await _with_backoff(
+            lambda: judge_model.ainvoke("Reply with exactly the word: ok"),
+            what="judge-probe",
+        )
         text = extract_text(resp).lower()
         print(f"[judge] {JUDGE_MODEL_NAME} reachable -> {text[:40]!r}")
     except Exception as exc:
