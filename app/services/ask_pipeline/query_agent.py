@@ -200,4 +200,5 @@ async def query_understanding_agent(state: AskState) -> dict:
         "time_range": parsed["time_range"],
         "entities_mentioned": parsed["entities_mentioned"],
         "dashboard_context_needed": parsed["dashboard_context_needed"],
+        "is_reask": parsed["is_reask"],
     }

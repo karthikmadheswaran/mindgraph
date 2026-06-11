@@ -60,5 +60,10 @@ class AskState(TypedDict):
     question_entity_known: Annotated[Optional[bool], take_last]
     question_entity_check_details: Annotated[dict, take_last]
 
+    # Semantic re-ask flag from query_understanding_agent: the current question
+    # re-asks something already asked in this conversation (rephrasings count).
+    # take_last because False is a real outcome, not "no update".
+    is_reask: Annotated[bool, take_last]
+
     assembled_context: Annotated[str, keep_latest]
     answer: Annotated[str, keep_latest]

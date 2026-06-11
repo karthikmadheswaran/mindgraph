@@ -562,6 +562,7 @@ async def generate_answer(
         "temporal_has_results": False,
         "dashboard_has_results": False,
         "is_low_confidence": False,
+        "is_reask": False,
         "assembled_context": "",
         "answer": "",
     }
