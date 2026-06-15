@@ -9,7 +9,7 @@ from app.services.tier_service import tier_service
 
 # (limit, window_str) per endpoint per tier
 LIMITS: dict[str, dict[str, tuple[int, str]]] = {
-    "free": {"entries": (5, "7d"), "asks": (20, "1d")},
+    "free": {"entries": (5, "7d"), "asks": (30, "1d")},
     "pro": {"entries": (100, "1d"), "asks": (200, "1d")},
 }
 IP_LIMIT = 30
