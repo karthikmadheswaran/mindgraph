@@ -1,5 +1,5 @@
 from app.ask_memory import build_ask_prompt
-from app.llm import extract_text, flash
+from app.llm import ask_generation, extract_text
 from app.services.ask_pipeline.state import AskState
 from app.services.observability import langfuse_config
 
@@ -12,6 +12,9 @@ async def generation(state: AskState) -> dict:
         context_text=state.get("assembled_context") or "",
         today_str=state.get("today_str") or "",
         is_low_confidence=bool(state.get("is_low_confidence")),
+        is_reask=bool(state.get("is_reask")),
     )
-    response = await flash.ainvoke(prompt, config=langfuse_config())
+    # ask_generation == flash unless ASK_GENERATION_MODEL/_THINKING env vars
+    # override it (model experiments swap the model here, never the prompt).
+    response = await ask_generation.ainvoke(prompt, config=langfuse_config())
     return {"answer": extract_text(response)}

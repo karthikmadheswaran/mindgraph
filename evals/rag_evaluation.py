@@ -125,6 +125,7 @@ def _build_initial_state(question: str, user_tz: str) -> AskState:
         "temporal_has_results": False,
         "dashboard_has_results": False,
         "is_low_confidence": False,
+        "is_reask": False,
         "assembled_context": "",
         "answer": "",
     }

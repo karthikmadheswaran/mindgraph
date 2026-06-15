@@ -1,0 +1,667 @@
+{
+  "commit_sha": "e7ef0b8e6ac3571eb748220de59eba0ef11d6005",
+  "timestamp": "2026-06-11T13-55-25.268973+00-00",
+  "judge": "session-agent batch, SAME fixed per-scenario rubric for both runs (inline Gemini-2.5-pro down)",
+  "B_run": "multiturn_e7ef0b8e6ac3_2026-06-11T13-49-58.210111+00-00.json",
+  "baseline_run": "multiturn_85adc57ed56c_2026-06-11T09-05-01.867514+00-00.json",
+  "B_config": "gemini-3.1-flash-lite / thinking=minimal / Vertex (generation node only)",
+  "baseline_config": "gemini-2.5-flash-lite / thinking_budget=0 (prod default, AI-Studio generation)",
+  "provider_caveat": "B generated on Vertex (prod match); baseline transcripts were AI-Studio. Same model weights per provider; judge identical -> 2nd-order.",
+  "totals": {
+    "baseline_agent": "24/33",
+    "B_agent": "32/33",
+    "delta": 8,
+    "baseline_orig_pro_total": 24
+  },
+  "noise_band": "~+/-4 cases (runner-validation 20/33 vs 24/33 baseline, commit b08fda2)",
+  "per_scenario": [
+    {
+      "scenario": "reask_loop",
+      "baseline_agent": "0/5",
+      "B_agent": "4/5",
+      "delta": 4,
+      "baseline_orig_pro": 3
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "baseline_agent": "5/5",
+      "B_agent": "5/5",
+      "delta": 0,
+      "baseline_orig_pro": 5
+    },
+    {
+      "scenario": "clarifier_commit",
+      "baseline_agent": "2/5",
+      "B_agent": "5/5",
+      "delta": 3,
+      "baseline_orig_pro": 2
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "baseline_agent": "5/5",
+      "B_agent": "5/5",
+      "delta": 0,
+      "baseline_orig_pro": 2
+    },
+    {
+      "scenario": "topic_switch",
+      "baseline_agent": "5/5",
+      "B_agent": "5/5",
+      "delta": 0,
+      "baseline_orig_pro": 5
+    },
+    {
+      "scenario": "venting_guard",
+      "baseline_agent": "3/3",
+      "B_agent": "3/3",
+      "delta": 0,
+      "baseline_orig_pro": 3
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "baseline_agent": "4/5",
+      "B_agent": "5/5",
+      "delta": 1,
+      "baseline_orig_pro": 4
+    }
+  ],
+  "verdict": "B clears the noise rules: +8 total under the consistent rubric, gains concentrated on the targeted failure modes (reask_loop, clarifier_commit), ZERO regressions, negatives hold.",
+  "B_per_case": [
+    {
+      "scenario": "reask_loop",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "ack + meaningfully advanced (restructured / reordered / new differentiating detail or prioritization pivot)",
+      "note": "",
+      "jaccard_overlap": 0.273,
+      "probe_answer": "As I just mentioned, those three items—getting a job, Sachin's wedding, and submitting the Razorpay merchant application—all had a target date of May 31, 2026. \n\nSince we are now past that date, here is the status of those items:\n\n1. **Job Search:** Target date passed.\n2. **Sachin's Wedding:** Target date passed.\n3. **Razorpay merchant application:** Target date passed.\n\nGiven that these deadlines have all lapsed, which of these feels like the most significant hurdle to address today?"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "ack + meaningfully advanced (restructured / reordered / new differentiating detail or prioritization pivot)",
+      "note": "",
+      "jaccard_overlap": 0.327,
+      "probe_answer": "Same as before—since those first two dates have passed, here is the status of your items:\n\n*   **Razorpay merchant application:** This is your only remaining active task.\n*   **Securing a job:** Past due (May 31).\n*   **Attending Sachin's wedding:** Past due (May 31).\n\nSince the wedding and the job search were tied to that May 31st deadline, are you treating the Razorpay application as your primary focus now, or are you still actively working on the other two?"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "frustrated",
+      "passed": false,
+      "rationale": "ack but near-verbatim re-list, no restructure/advance = cosmetic_ack_redump",
+      "note": "the one residual B redump",
+      "jaccard_overlap": 0.324,
+      "probe_answer": "As I just mentioned, those dates have passed, but here is the complete list of your outstanding items as they appear in your records:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** No specific deadline recorded."
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "ack + meaningfully advanced (restructured / reordered / new differentiating detail or prioritization pivot)",
+      "note": "borderline: bullets->numbered + 'which to clear first' prioritization pivot",
+      "jaccard_overlap": 0.299,
+      "probe_answer": "As I just mentioned, these items are still outstanding despite their past deadlines:\n\n1. **Get a job**\n2. **Attend Sachin's wedding**\n3. **Submit Razorpay merchant application**\n\nSince these deadlines have passed, which of these feels like the most significant hurdle to clear first?"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "ack + meaningfully advanced (restructured / reordered / new differentiating detail or prioritization pivot)",
+      "note": "",
+      "jaccard_overlap": 0.257,
+      "probe_answer": "As I just listed above, the items you've been tracking are:\n\n*   **Get a job** (Deadline: May 31)\n*   **Sachin's wedding** (Deadline: May 31)\n*   **Submit Razorpay merchant application** (No specific date listed)\n\nSince these dates have passed, the Razorpay merchant application is the only one of the three that remains an active, actionable task rather than a past event. Would you like me to help you break down the steps for that application so it feels less overwhelming?"
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, these are the three items you've been tracking:\n\n1. **Get a job:** Target date was May 31, 2026.\n2. **Sachin's wedding:** Occurred on May 31, 2026.\n3. **Submit Razorpay merchant application:** Pending.\n\nSince we are now in June, the first two are past-due milestones, while the Razorpay merchant application remains an active task. Would you like to focus on the status of the application, or should we look at how to reframe the job search now that the May deadline has passed?"
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Based on your journal entry from June 8, 2026, here are the deadlines you noted:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date provided, but listed alongside the May 31 deadlines)"
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, those dates have passed, but since you want the full list of what you have been tracking, here are the items from your records:\n\n1. **Job search:** Target date was May 31, 2026.\n2. **Sachin's wedding:** Date was May 31, 2026.\n3. **Razorpay merchant application:** No specific deadline date noted, but it remains an outstanding task."
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Based on your journal entries, here are the deadlines you have been tracking:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** No specific date listed, but noted alongside the May 31 deadlines."
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Based on your journal entry from June 8, 2026, here are the deadlines you noted:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date listed, but noted alongside the May 31 deadlines)"
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "1. Submit the Razorpay merchant application today; it is the only task that directly unlocks your ability to generate revenue through MindGraph.\n2. Spend tomorrow morning revising your resume and LinkedIn to reflect your current availability, as the May 31 deadline has passed and your financial runway is tightening."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "1. Submit the Razorpay merchant application today. This is a technical blocker that, once cleared, removes a significant source of friction for MindGraph’s future revenue.\n2. Dedicate tomorrow to a four-hour development sprint on MindGraph. Focusing on a tangible feature will help you regain a sense of momentum and control.\n3. Spend Saturday morning updating your resume and submitting two job applications. This establishes a manageable, recurring rhythm for your search without the pressure of trying to resolve the entire process at once."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "1. Submit the Razorpay merchant application today. It is the only remaining administrative blocker for MindGraph's monetization, and clearing it will remove the lingering weight of the tasks you've been carrying since early June.\n2. Update your resume to reflect your work on MindGraph over the past year. Since the May 31 job-search deadline has passed, treat this as a fresh start rather than a late task; framing your development work as professional experience will help bridge the gap in your employment history."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "1. Submit the Razorpay merchant application immediately. This is the singular technical blocker preventing you from generating revenue through MindGraph, and clearing it will provide the immediate sense of agency you are currently lacking.\n\n2. Dedicate the next four hours exclusively to tailoring your resume and submitting three high-intent job applications. This addresses the financial stress directly by moving you toward a stable income stream.\n\n3. Close all browser tabs and notes related to Sachin's wedding. Since the date has passed, this is now purely a source of \"phantom\" stress that is actively consuming the mental bandwidth you need for your professional survival."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "1. Submit the Razorpay merchant application immediately. This is a binary, administrative task that removes a technical blocker for MindGraph and provides a tangible, completed \"win\" to break your current paralysis.\n\n2. Treat the job search as a scheduled, recurring appointment rather than a constant, background hum of anxiety. Dedicate a specific, non-negotiable window tomorrow morning to update your materials, then close the tab and step away to prevent the \"everything is important\" feedback loop.\n\n3. Reframe the past-due dates from your journal as closed chapters. Since the May 31 deadlines for your job search and Sachin's wedding have passed, stop viewing them as active failures and start viewing them as cleared space to reset your strategy for the remainder of June."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I mentioned, here is the complete list of everything currently on your plate, including the items we already discussed:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Date was May 31.\n*   **Submit Razorpay merchant application:** No specific date listed.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date listed.\n*   **Write LinkedIn posts about technical decisions:** No specific date listed."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I mentioned, here is the complete list of the commitments you identified in your June 9th entry:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Occurred on May 31.\n*   **Submit the Razorpay merchant application:** Outstanding.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** Outstanding.\n*   **Write LinkedIn posts about technical decisions:** Outstanding."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I mentioned, I previously provided a partial list; here is the complete set of items you identified in your June 9 entry:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** Deadline was May 31.\n*   **Submit Razorpay merchant application:** No specific date provided.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date provided.\n*   **Write LinkedIn posts about technical decisions:** No specific date provided."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "categorized Past-Due / Pending",
+      "jaccard_overlap": null,
+      "probe_answer": "As I mentioned, here is the complete list of your outstanding commitments, categorized by their status:\n\n**Past Due (Targeted for May 31, 2026)**\n*   **Get a job:** This deadline has passed.\n*   **Sachin's wedding:** This event has concluded.\n\n**Pending (Ongoing)**\n*   **Submit Razorpay merchant application:** This remains to be completed.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** This remains to be completed.\n*   **Write LinkedIn posts about technical decisions:** This remains to be completed."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "explicitly states no other items exist",
+      "jaccard_overlap": null,
+      "probe_answer": "As I mentioned, I have listed everything I have on record for you. Here is the complete, exhaustive list of the items you identified in your journal on June 9th:\n\n*   **Get a job:** Target date was May 31, 2026.\n*   **Sachin's wedding:** Occurred on May 31, 2026.\n*   **Submit Razorpay merchant application:** Pending.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** Pending.\n*   **Write LinkedIn posts about technical decisions:** Pending.\n\nI don't see any other tasks or obligations mentioned in your journal entries or long-term memory beyond these five items."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi is a long-time friend you previously collaborated with to run a Tamil crypto community. You’ve described him as one of the warmest people you know, noting that he was the one who handled the meetups while you focused on the content.\n\nYou reconnected with him on June 7th, and it sounds like that dynamic is still very much alive—he’s already hinting at wanting to collaborate on something new in the crypto space. Given how much you value his warmth and your shared history, do you feel like a potential partnership with him is something that could provide the creative spark you're currently missing with your MindGraph work?"
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "No need to apologize—it’s a welcome shift to talk about someone who clearly brings a lot of warmth into your life.\n\nBased on your entry from June 7th, Rishi is someone you share a significant history with, specifically from your time running a Tamil crypto community together. You described him as one of the warmest people you know, noting that while you handled the content side of your past collaboration, he was the one managing the meetups. It sounds like there is a strong foundation of mutual respect and genuine affection there, especially since you were looking forward to catching up with him and felt that the meeting lived up to your expectations.\n\nGiven that he hinted at wanting to collaborate again, do you feel like his interest in working together is something you’re genuinely excited about, or does it feel like a potential distraction from the work you're currently doing on MindGraph?"
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi is a long-time friend from your days running a Tamil crypto community together. You’ve always valued him as one of the warmest people you know, noting that while you handled the content, he was the one who managed the meetups. \n\nWhen you met this past Sunday, the conversation shifted toward whether there is still meaningful work to be done in the crypto space. He expressed interest in potentially collaborating with you again, which seemed to be a highlight of your week. \n\nGiven how much you value his warmth and your past history, does the idea of working with him again feel like a welcome distraction from the frustration you've been feeling with MindGraph, or does it feel like another project you aren't sure you have the bandwidth for?"
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi is a long-time friend of yours with whom you previously co-ran a Tamil crypto community. You handled the content while he managed the meetups, a dynamic that clearly played to your respective strengths. \n\nIn your most recent entry from June 7, you described him as one of the warmest people you know. It seems like a significant connection for you, especially given that he reached out to discuss potential future collaborations in the crypto space. \n\nGiven how much you value his warmth and your shared history, does the prospect of working with him again feel like a welcome creative outlet, or does it feel like revisiting a chapter you’ve already closed?"
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "It sounds like you’re looking for a bit of a mental reset, and shifting focus to someone you genuinely enjoy is a great way to get that.\n\nRishi is someone you clearly hold in high regard. You’ve described him as one of the warmest people you know, and your history goes back to your time running a Tamil crypto community together—he handled the meetups while you focused on the content. When you caught up with him on June 7th, it seemed like a really grounding experience; you mentioned that he’s still interested in collaborating, which suggests he values your partnership as much as you value his company.\n\nGiven that you were both such a strong team in the past, what do you think it is about your dynamic that makes you feel like you could build something meaningful together again?"
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "It sounds like you’re carrying an immense weight right now, and it’s completely understandable to feel like you’re drowning when the work you’re pouring yourself into keeps hitting these walls. Please know that it’s not a failure to reach a point of total exhaustion when you’ve been pushing this hard on your own for so long.\n\nWhen you look at the build and the RAG issues today, does it feel like the technical problems are the main source of this burnout, or is it the feeling of being isolated in the process that’s weighing on you more?"
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "It sounds like you’re hitting a wall where the sheer weight of these technical setbacks is making the entire project feel impossible. When the build breaks and the RAG logic fails repeatedly, it’s natural to feel like you’re losing ground rather than gaining it.\n\nIs this feeling of being \"stuck\" coming more from the technical frustration of the code itself, or from the fear that the vision you have for MindGraph isn't actually achievable?"
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "It sounds like you’re carrying an immense weight right now, and that feeling of being stuck while you're giving everything you have is incredibly draining. Please know that it’s okay to be completely exhausted when the work you’re pouring yourself into—like MindGraph—isn't reflecting the effort you're putting in.\n\nWhen you're in the middle of a cycle where the build breaks and the RAG isn't behaving, it’s easy for that frustration to feel like a reflection of your own capability, but it’s really just a sign that you’ve hit a wall of technical friction. If you were to step away from the screen entirely for the rest of the day, what is one thing you could do tonight that has absolutely nothing to do with code or building?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.149,
+      "probe_answer": "Beyond the history of your community, the core of your connection seems to be a shared sense of purpose. When you met on the 7th, you both spent time questioning if there is still \"anything worth building\" in the crypto space, which suggests you’re both looking for more than just a project—you’re looking for substance.\n\nSince you’ve always valued his warmth and reliability, does the idea of building something new with him feel like a return to a comfortable rhythm, or are you hesitant about stepping back into that specific industry?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.134,
+      "probe_answer": "It’s wonderful that you’re looking to reconnect with someone who clearly left such a positive impression on you. Beyond the professional dynamic you shared, what stands out most in your notes is the genuine warmth you associate with him; you seem to value him not just as a former colleague, but as a person whose company you truly enjoy.\n\nSince our records are focused on your shared history in the crypto space, I don't have specific details about his life outside of that community. However, given how easily you fell back into conversation with him after all this time, it suggests a strong, natural rapport that likely transcends just the work you did together.\n\nSince you're considering this potential collaboration, what is the main thing you'd want to know about him now to feel confident about working together again?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.172,
+      "probe_answer": "As I just mentioned, I’ve shared what I know about your history with Rishi. Since you're pushing for more, I can tell you that your journal entry from June 7th highlights a specific tension: you both spent time questioning whether there is actually anything \"worth building\" in the crypto space right now. \n\nIt sounds like you’re looking for a deeper read on whether this collaboration is a good idea. Given that you’ve previously valued his warmth and your past synergy, do you think your hesitation stems more from a lack of faith in the current crypto landscape, or from a personal shift in your own professional priorities?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.133,
+      "probe_answer": "Beyond the professional history we’ve discussed, your entries characterize Rishi as someone who balances technical competence with a rare, grounding warmth. You’ve noted that he is the type of person who makes collaboration feel effortless rather than transactional, which seems to be why you’ve maintained such a high regard for him even after your active work together concluded.\n\nSince you’ve known him long enough to see him navigate the volatility of the crypto space, what specific qualities of his do you think would be most valuable if you were to start something new together today?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.155,
+      "probe_answer": "It sounds like you’re looking for the deeper narrative behind your connection with Rishi. Beyond the logistics of the community you ran, your entries suggest a friendship built on a rare kind of creative synergy—you were the one shaping the vision and the voice, while he provided the structure and the ground-level energy to make it real.\n\nIt’s clear you two had a natural rhythm, and the fact that you’ve stayed in touch long enough to consider building something new again speaks to a foundation of mutual respect that goes beyond just \"crypto work.\" It seems like he’s someone who brings out a more collaborative, outward-facing side of you.\n\nSince you’re curious about the \"rest of the story,\" what is it about the way you two worked together back then that makes you feel like there’s more to uncover?"
+    }
+  ],
+  "baseline_per_case": [
+    {
+      "scenario": "reask_loop",
+      "persona": "terse",
+      "passed": false,
+      "rationale": "ack + verbatim/near-verbatim list; trailing engagement Q does NOT count as advance = cosmetic_ack_redump",
+      "note": "ov 0.545",
+      "jaccard_overlap": 0.545,
+      "probe_answer": "As I just mentioned, here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n\nIs there a particular deadline you'd like to focus on or discuss further?"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "verbose_polite",
+      "passed": false,
+      "rationale": "ack + verbatim/near-verbatim list; trailing engagement Q does NOT count as advance = cosmetic_ack_redump",
+      "note": "ov 0.839, verbatim",
+      "jaccard_overlap": 0.839,
+      "probe_answer": "As I just mentioned, you're feeling the time pressure with a few things coming up. Based on your entries, here are the deadlines you currently have:\n\n*   **Job search:** May 31\n*   **Sachin's wedding:** May 31\n*   **Razorpay merchant application submission:** (No specific date mentioned, but implied to be before or around the other May 31st deadlines due to the \"time pressure\" you're feeling.)"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "frustrated",
+      "passed": false,
+      "rationale": "ack + verbatim/near-verbatim list; trailing engagement Q does NOT count as advance = cosmetic_ack_redump",
+      "note": "ov 0.545",
+      "jaccard_overlap": 0.545,
+      "probe_answer": "As I just mentioned, here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n\nIs there a particular deadline you'd like to focus on or discuss further?"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "formal",
+      "passed": false,
+      "rationale": "ack + verbatim/near-verbatim list; trailing engagement Q does NOT count as advance = cosmetic_ack_redump",
+      "note": "ov 0.486, verbatim",
+      "jaccard_overlap": 0.486,
+      "probe_answer": "As I just mentioned, your current deadlines are:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+    },
+    {
+      "scenario": "reask_loop",
+      "persona": "rambling",
+      "passed": false,
+      "rationale": "ack + verbatim/near-verbatim list; trailing engagement Q does NOT count as advance = cosmetic_ack_redump",
+      "note": "ov 0.754",
+      "jaccard_overlap": 0.754,
+      "probe_answer": "As I just mentioned, you're feeling overwhelmed and like things are slipping through the cracks. Let's get those deadlines clear for you again.\n\nBased on your entries, here are the things you've noted as due:\n\n*   **Get a job:** Deadline was May 31.\n*   **Sachin's wedding:** This was also on May 31.\n*   **Submit Razorpay merchant application:** This is still pending.\n\nIs there a particular item you'd like to focus on or discuss further?"
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "minor empathy tail, still leads with list",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, the deadlines you're tracking are:\n\n*   **Job Application Deadline:** May 31\n*   **Sachin's Wedding:** May 31\n*   **Razorpay Merchant Application Submission:** Due date not specified, but implied to be soon.\n\nIt sounds like you're feeling the pressure of these converging dates."
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Here are your deadlines:\n\n*   **Job application deadline:** May 31\n*   **Sachin's wedding:** May 31\n*   **Razorpay merchant application submission:** Due date not specified, but needs to be done."
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "minor empathy tail, still leads with list",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, the deadlines you're tracking are:\n\n*   **Job search:** Need to get a job by May 31.\n*   **Sachin's wedding:** Also on May 31.\n*   **Razorpay merchant application:** Still needs to be submitted.\n\nThese are all quite close together, and it's understandable why you're feeling the pressure."
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+    },
+    {
+      "scenario": "ignore_x_give_y",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "leads with the deadlines list, <=1-line ack; no empathy/money preamble after the user said drop it",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Here are your deadlines:\n\n*   **Job application deadline:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Razorpay merchant application submission:** No specific date mentioned, but it's something you still need to do."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "commits to Razorpay as the single next step",
+      "jaccard_overlap": null,
+      "probe_answer": "Given that the job deadline has passed and Sachin's wedding was on the same day, focusing on the Razorpay merchant application seems like the most immediate and actionable next step."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "verbose_polite",
+      "passed": false,
+      "rationale": "re-asks the clarifier / hedges ('what feels most pressing?' / 'does that resonate?') = loop, no commit",
+      "note": "re-asks 'what feels most pressing now?'",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, it sounds like you're feeling really overwhelmed right now, with a lot of things pulling your attention in different directions. It's completely understandable that it feels like a blur when so much is pressing.\n\nLooking at your journal, it seems like the most immediate deadline you've noted is getting a job by May 31st. That, along with Sachin's wedding and the Razorpay application, were all marked as due on the same day. Given that today is June 11th, the job deadline has passed, but the feeling of time pressure from that period might still be lingering.\n\nWhat feels most pressing to you *now*, as you look ahead?"
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "frustrated",
+      "passed": false,
+      "rationale": "re-asks the clarifier / hedges ('what feels most pressing?' / 'does that resonate?') = loop, no commit",
+      "note": "re-asks 'most immediate next step?'",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, the May 31st deadlines for getting a job and Sachin's wedding have passed. The Razorpay merchant application is also still pending. Given that these are all behind us, what feels like the most immediate next step for you now?"
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "commits to concrete ordered next step(s); no re-ask/loop",
+      "note": "commits: job first, then Razorpay",
+      "jaccard_overlap": null,
+      "probe_answer": "Given the urgency of securing income and the fact that the May 31st deadlines have passed, I would advise you to focus on finding a job first. This addresses the most significant source of stress and aligns with your long-term goal of stability. Once that is in place, you can then dedicate your energy to the Razorpay merchant application and other projects."
+    },
+    {
+      "scenario": "clarifier_commit",
+      "persona": "rambling",
+      "passed": false,
+      "rationale": "re-asks the clarifier / hedges ('what feels most pressing?' / 'does that resonate?') = loop, no commit",
+      "note": "hedges 'might be a good starting point. Does that resonate?'",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, it sounds like you're feeling really swamped right now, with so many things pulling at your attention and none of them feeling clear or manageable. That's a tough place to be.\n\nGiven that the job deadline has passed, and you're feeling this overwhelm, focusing on what needs immediate attention to stabilize things, like income, might be a good starting point. Does that resonate at all?"
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "Pro scored FALSE — judge-noise; full 5 listed",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, you have a few key things on your plate:\n\n*   Getting a job (which was a deadline of May 31st)\n*   Sachin's wedding (also on May 31st)\n*   Submitting the Razorpay merchant application\n*   Recording a 2-minute Loom walkthrough of MindGraph\n*   Writing LinkedIn posts about technical decisions"
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, here's the complete list of your current commitments:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit the Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made\n\nIt's completely understandable to want to see the full picture when you're feeling like there's a lot on your plate."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, here are all the deadlines you've listed:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n*   Record a 2-minute Loom walkthrough of MindGraph\n*   Write a few LinkedIn posts about the technical decisions you've made\n\nIt's definitely a lot to keep track of."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "Pro scored FALSE — judge-noise; full 5 listed",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, it sounds like you're feeling the weight of a lot right now, trying to juggle everything you owe yourself and others.\n\nBased on your entries, here's a rundown of what's on your plate:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This also took place on May 31st.\n*   **Razorpay merchant application:** This still needs to be submitted.\n*   **MindGraph Loom walkthrough:** You need to record a 2-minute video.\n*   **LinkedIn posts:** You plan to write a few posts about your technical decisions."
+    },
+    {
+      "scenario": "want_all_not_subset",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "presents the full 5-item set; no narrowing or re-ask",
+      "note": "Pro scored FALSE — judge-noise; full 5 listed",
+      "jaccard_overlap": null,
+      "probe_answer": "As I just mentioned, it sounds like you're feeling a bit swamped and unsure of what's on your plate right now. Let's get that sorted out.\n\nBased on your entries, here are the deadlines you have:\n\n*   **Get a job:** The deadline was May 31st.\n*   **Sachin's wedding:** This was also on May 31st.\n*   **Submit Razorpay merchant application:** No specific date is mentioned, but it's listed among things you owe.\n*   **Record a 2-minute Loom walkthrough of MindGraph:** No specific date is mentioned, but it's listed among things you owe.\n*   **Write LinkedIn posts on technical decisions:** No specific date is mentioned, but it's listed among things you owe.\n\nIt seems like the job and wedding deadlines have passed, but the other items are still outstanding."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "terse",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, especially given your shared history running that Tamil crypto community. It's clear from your entry that catching up with him was a highlight, and it's interesting that he's hinting at a potential collaboration again."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Oh, absolutely! It's no problem at all to switch gears. I'm happy to tell you about Rishi.\n\nFrom what you've written, Rishi sounds like a really special person. You described him as your \"old crypto friend\" and mentioned that you two used to run a Tamil crypto community together, with him handling the meetups and you managing the content. It's clear you have a lot of warmth for him, calling him \"lovely\" and \"genuinely one of the warmest people I know.\" It sounds like your recent catch-up was a very positive experience, and it's wonderful that he's hinting at a potential collaboration again."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, especially given your shared history running the Tamil crypto community. It's completely understandable that you'd want to shift focus to him when you're feeling stuck on something else.\n\nIt seems like you two have a great dynamic, with him handling the meetups and you running the content. And it's interesting that he's hinting at a potential collaboration again – that must bring back some good memories and perhaps spark some new ideas."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Rishi sounds like a really special person. It's wonderful that you have a friend like him, someone you shared a significant part of your past with, like running that Tamil crypto community. It's clear from your entry that you deeply value his warmth and the connection you share. It's also interesting that he's hinting at a potential collaboration again – that must bring back some good memories and perhaps spark some new ideas for you both."
+    },
+    {
+      "scenario": "topic_switch",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "answers about Rishi, drops the UI topic cleanly",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "It's completely understandable to want to shift gears and think about Rishi. He sounds like a really special person in your life.\n\nFrom what I've gathered, Rishi is your crypto friend, and you two have a history of collaborating. You mentioned you used to run a Tamil crypto community together, with him handling the meetups and you managing the content. It seems like he's someone you deeply admire, describing him as \"lovely\" and \"genuinely one of the warmest people I know.\" You recently reconnected and had a good conversation about the future of crypto, even hinting at a potential collaboration again. It sounds like a connection you value a lot."
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Oh, it sounds like you're carrying such a heavy weight right now. Feeling like you're drowning and nothing is working is incredibly disheartening, and it's completely understandable that you'd need to voice that. I'm here to listen."
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Oh, it sounds like you're really in the thick of it right now, feeling completely overwhelmed and like nothing is going right. That feeling of pushing a boulder uphill and getting nowhere is so draining.\n\nI see you're feeling burned out today, and the build breaking and RAG answers being wrong are really getting to you. It's completely understandable to feel sick of it when things just aren't working."
+    },
+    {
+      "scenario": "venting_guard",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "leads with warmth/empathy, no to-do/deadline pivot (correct for the negative guard)",
+      "note": "",
+      "jaccard_overlap": null,
+      "probe_answer": "Oh, it sounds like you're carrying such a heavy weight right now. That feeling of pushing a boulder uphill, only to have it roll back down, is incredibly draining. It's completely understandable that you'd feel bone-tired and like you're drowning when things just aren't working.\n\nI see in your journal entry from today that the build broke and the RAG answers were wrong, and it sounds like that was the tipping point for feeling this way. It's tough when the very tools you're working with seem to be failing you."
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "terse",
+      "passed": false,
+      "rationale": "near-verbatim repeat, adds nothing new = lazy redump (negative guard fails only on laziness)",
+      "note": "ov 0.909, verbatim repeat",
+      "jaccard_overlap": 0.909,
+      "probe_answer": "As I just mentioned, Rishi is your crypto friend, and you two used to run a Tamil crypto community together. You recall him handling the meetups while you managed the content. You described him as one of the warmest people you know."
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "verbose_polite",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.146,
+      "probe_answer": "Rishi sounds like a truly wonderful person. It's clear from your entries that you deeply value his warmth and genuine nature. Beyond his role in your past crypto community, he's someone you consider one of the warmest people you know, and your recent catch-up with him was clearly a highlight, leaving you feeling optimistic about potential future collaborations."
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "frustrated",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.135,
+      "probe_answer": "It sounds like you're looking for more of the feeling and substance of that catch-up with Rishi. You mentioned it was a \"warm and productive\" meeting, and that he \"hinted he might want to collaborate again.\" What about that interaction felt most significant to you? Was it the shared history, the potential for future projects, or something else entirely?"
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "formal",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.25,
+      "probe_answer": "Rishi sounds like a really special person in your life. It's wonderful that you have such a warm connection with him, and that you're even considering collaborating on new projects. It seems like your shared history in the Tamil crypto community, with him handling the meetups and you the content, laid a strong foundation for your friendship. He's clearly someone you trust and admire, given your description of him as \"genuinely one of the warmest people I know.\""
+    },
+    {
+      "scenario": "legit_followup_guard",
+      "persona": "rambling",
+      "passed": true,
+      "rationale": "extends with new depth/framing (correct overlap for the negative guard)",
+      "note": "",
+      "jaccard_overlap": 0.186,
+      "probe_answer": "It sounds like you're curious to delve deeper into your connection with Rishi! From what you've shared, he's a really significant person in your life, especially from your time building that Tamil crypto community together. You remember him as being incredibly warm, and it seems like your recent catch-up reinforced that, even sparking ideas for future collaborations. Is there a particular aspect of your shared history or his personality that you're hoping to explore more?"
+    }
+  ]
+}

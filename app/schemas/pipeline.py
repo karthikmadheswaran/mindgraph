@@ -93,6 +93,20 @@ class RoutingDecision(BaseModel):
     query_types: list[
         Literal["temporal", "semantic", "recent", "dashboard", "keyword"]
     ] = Field(min_length=1)
+    # Declared early so json_schema-constrained decoding decides it while the
+    # question/history comparison is still fresh; the description rides into the
+    # response schema Gemini sees. Defaults False so the field is safe on first
+    # turns and on any fallback path that never saw the history.
+    is_reask: bool = Field(
+        default=False,
+        description=(
+            "True when the current question requests substantially the same "
+            "information as ANY earlier user message in this conversation — "
+            "rephrasings count, no 'again' marker needed. False when it narrows, "
+            "extends, or probes the earlier answer, and false when there are no "
+            "earlier user messages."
+        ),
+    )
     time_range: Optional[TimeRange] = None
     entities_mentioned: list[EntityRef] = Field(default_factory=list)
     dashboard_context_needed: bool = False

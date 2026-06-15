@@ -11,6 +11,39 @@ MEMORY_SECTIONS = [
 ]
 
 
+def parse_conversation_turns(conversation_history: str) -> list[tuple[str, str]]:
+    """Reconstruct (role, content) turns from a formatted transcript
+    (format_conversation_messages output). Content may span multiple lines;
+    continuation lines are folded into the preceding turn."""
+    turns: list[tuple[str, str]] = []
+    for ln in (conversation_history or "").splitlines():
+        stripped = ln.strip()
+        low = stripped.lower()
+        if low.startswith("user:"):
+            turns.append(("user", stripped.split(":", 1)[1].strip()))
+        elif low.startswith("assistant:"):
+            turns.append(("assistant", stripped.split(":", 1)[1].strip()))
+        elif turns and stripped:
+            role, content = turns[-1]
+            turns[-1] = (role, (content + " " + stripped).strip())
+    return turns
+
+
+def extract_prior_user_messages(conversation_history: str) -> list[str]:
+    """User-side turns from a formatted transcript, oldest first.
+
+    If the conversation ends with a user turn (no assistant reply after it), that
+    trailing turn is the current question echoed into the transcript (eval
+    convention) — drop it so the current question never matches itself.
+    Production history excludes the current question already.
+    """
+    turns = parse_conversation_turns(conversation_history)
+    user_msgs = [c for role, c in turns if role == "user" and c]
+    if turns and turns[-1][0] == "user" and user_msgs:
+        user_msgs = user_msgs[:-1]
+    return user_msgs
+
+
 def format_conversation_messages(messages: list[dict]) -> str:
     formatted_messages = []
     for message in messages or []:
@@ -90,8 +123,9 @@ def build_compaction_prompt(existing_memory: str, conversation_text: str) -> str
     return "\n".join(prompt_parts)
 
 
-# Prompt version: v13.4 (08/06/2026 — empathy cap for data requests, OVERWHELM
-# directive-trigger broadening, ALREADY-ANSWERED covers data/list re-asks)
+# Prompt version: v13.5 (11/06/2026 — re-ask trigger rewired: semantic is_reask
+# flag from the query agent OR exact-match backstop; REPEATED REQUEST injection
+# made conditional so a false positive degrades to a normal answer)
 def build_ask_prompt(
     question: str,
     user_memory: str = "",
@@ -99,6 +133,7 @@ def build_ask_prompt(
     context_text: str = "",
     today_str: str = "",
     is_low_confidence: bool = False,
+    is_reask: bool = False,
 ) -> str:
     prompt_parts = []
     if today_str:
@@ -206,38 +241,27 @@ def build_ask_prompt(
     is_minimal = question_display.lower().strip("?.,!") in MINIMAL_SIGNALS
     is_short = len(question_display.split()) <= 4
 
-    # Verbatim-repeat detection on the shared generation path: if the user re-asks
-    # something they already asked earlier in the conversation, flag it loudly so the
-    # model acknowledges the repeat instead of returning a byte-identical answer. The
-    # Jaccard loop detection in ask_service only fires reactively (two identical answers
-    # already in history); this catches the FIRST re-ask before it can repeat.
+    # Re-ask detection on the shared generation path: catch the FIRST re-ask before
+    # the model can repeat itself (the Jaccard loop detection in ask_service only
+    # fires reactively, after two near-identical answers are already in history).
+    # Two triggers, OR-ed below: the pipeline's semantic is_reask flag (query agent
+    # reads the recent user turns — catches rephrased re-asks), and an exact-match
+    # backstop after normalization (zero-cost; eval paths that call build_ask_prompt
+    # directly bypass the pipeline and still need verbatim re-asks caught).
     def _norm_q(text: str) -> str:
         return " ".join(text.lower().strip().strip("?.!,").split())
 
     # Reconstruct turns from the transcript (content may span multiple lines).
-    _turns: list[tuple[str, str]] = []
-    for ln in (conversation_history or "").splitlines():
-        stripped = ln.strip()
-        low = stripped.lower()
-        if low.startswith("user:"):
-            _turns.append(("user", stripped.split(":", 1)[1].strip()))
-        elif low.startswith("assistant:"):
-            _turns.append(("assistant", stripped.split(":", 1)[1].strip()))
-        elif _turns and stripped:
-            role, content = _turns[-1]
-            _turns[-1] = (role, (content + " " + stripped).strip())
-
-    prior_user_msgs = [c for role, c in _turns if role == "user" and c]
+    # Trailing-user-turn handling (eval convention) lives in
+    # extract_prior_user_messages — the current question never matches itself.
+    _turns = parse_conversation_turns(conversation_history)
+    prior_user_msgs = extract_prior_user_messages(conversation_history)
     assistant_msgs = [c for role, c in _turns if role == "assistant" and c]
-    # If the conversation ends with a user turn (no assistant reply after it), that trailing
-    # turn is the current question echoed into the transcript (eval convention) — drop it so
-    # it doesn't match itself. Production history excludes the current question already.
-    if _turns and _turns[-1][0] == "user" and prior_user_msgs:
-        prior_user_msgs = prior_user_msgs[:-1]
     normalized_question = _norm_q(question)
-    is_repeat_request = bool(normalized_question) and normalized_question in {
+    is_exact_repeat = bool(normalized_question) and normalized_question in {
         _norm_q(msg) for msg in prior_user_msgs if msg.strip()
     }
+    is_repeat_request = is_reask or is_exact_repeat
 
     # Assistant-side loop detection on the shared path: if the model's own last two replies
     # are near-identical, it is stuck in a loop (mirrors detect_repetition_loop in ask_service,
@@ -265,12 +289,16 @@ def build_ask_prompt(
             f"See the Conversation Rules section below before responding."
         )
     elif is_repeat_request:
+        # Conditional framing on purpose: the semantic trigger can misfire, and a
+        # misfire on a genuine new question must degrade to a normal answer.
         question_display = (
-            f"⚠️ REPEATED REQUEST: The user already asked this earlier ('{question_display}') and you "
-            f"already answered it. Do NOT return your previous answer unchanged. Open with a brief "
-            f"acknowledgment ('As I just mentioned,' / 'Same as before —'), then re-present it in a "
-            f"clearer or different form (e.g. ordered by date), add a useful detail, or ask which part "
-            f"to expand. See the ALREADY ANSWERED RULE below."
+            f"⚠️ LIKELY REPEATED REQUEST: The user's message ('{question_display}') appears to "
+            f"re-ask something you already answered in this conversation. If this repeats an "
+            f"earlier question: do NOT return your previous answer unchanged — open with a brief "
+            f"acknowledgment ('As I just mentioned,' / 'Same as before —'), then re-present it in "
+            f"a clearer or different form (e.g. ordered by date), add a useful detail, or ask "
+            f"which part to expand (see the ALREADY ANSWERED RULE below). If it is actually a new "
+            f"question, ignore this warning and answer it normally."
         )
     elif is_short:
         question_display = f"[Short reply] {question_display}"

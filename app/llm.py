@@ -32,10 +32,19 @@ if _USE_VERTEX:
         location=os.getenv("VERTEX_LOCATION", "us-central1"),
         max_retries=2,
     )
-    # NOTE: thinking_budget is a Gemini-Developer-API (AI Studio) kwarg and is NOT
-    # passed to ChatVertexAI; flash-lite on Vertex uses its default thinking config.
-    flash = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.1, **_VERTEX_KW)
-    flash_creative = ChatVertexAI(model="gemini-2.5-flash-lite", temperature=0.3, **_VERTEX_KW)
+    # thinking_budget=0 mirrors the AI Studio path (eval 23/05: 0 strictly dominates
+    # 512 and -1). An earlier note here claimed ChatVertexAI doesn't take the kwarg —
+    # stale: the installed langchain-google-vertexai supports it. Leaving Vertex on
+    # its default DYNAMIC thinking caused observed pathology (11/06): flash-lite spun
+    # ~350s on a routing prompt and returned ZERO output tokens, which downstream
+    # parses as None → silent fallback routing after a multi-minute hang.
+    flash = ChatVertexAI(
+        model="gemini-2.5-flash-lite", temperature=0.1, thinking_budget=0, **_VERTEX_KW
+    )
+    flash_creative = ChatVertexAI(
+        model="gemini-2.5-flash-lite", temperature=0.3, thinking_budget=0, **_VERTEX_KW
+    )
+    # pro keeps dynamic thinking — same as the AI Studio branch below.
     pro = ChatVertexAI(model="gemini-2.5-pro", temperature=0.3, **_VERTEX_KW)
 else:
     from langchain_google_genai import ChatGoogleGenerativeAI
@@ -62,6 +71,74 @@ else:
     # detection, forgotten projects). Dynamic thinking left ON — these tasks benefit from
     # the model considering long-term journal context before producing a single line of output.
     pro = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.3)
+
+
+# ── Model-family-aware construction ─────────────────────────────────────────
+# Gemini 2.5.x takes thinking_budget (int; 0 disables thinking — eval-proven,
+# see 422df32 and the 23/05 A/B/C eval). Gemini 3.x REJECTS thinking_budget and
+# takes thinking_level ("minimal" | "low" | "medium" | "high"); there is no
+# zero level — "minimal" is the floor. Verified 11/06 against installed SDKs:
+# langchain-google-vertexai 3.2.4 (latest available) has NO thinking_level
+# field and the aiplatform proto lacks it too, so 3.x models route through
+# ChatGoogleGenerativeAI (langchain-google-genai 4.2.1 / google-genai 2.8.0),
+# which exposes thinking_level and reaches Vertex via vertexai=True.
+_GEMINI3_LEVELS = ("minimal", "low", "medium", "high")
+
+
+def _is_gemini3(model: str) -> bool:
+    return model.strip().lower().startswith("gemini-3")
+
+
+def build_chat_model(model: str, temperature: float = 0.1, thinking: str = ""):
+    """Family-aware chat-model constructor honoring the USE_VERTEX toggle.
+
+    `thinking`: for 2.5.x an int-like budget string (default "0"); for 3.x a
+    thinking_level name (default "minimal"). Raises on a value the family
+    doesn't accept instead of silently sending the wrong parameter.
+    """
+    if _is_gemini3(model):
+        level = (thinking or "minimal").strip().lower()
+        if level not in _GEMINI3_LEVELS:
+            raise ValueError(
+                f"Gemini 3.x model {model!r} takes thinking_level "
+                f"{_GEMINI3_LEVELS}, got {thinking!r} (no zero level exists)"
+            )
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        kw = dict(model=model, temperature=temperature, thinking_level=level)
+        if _USE_VERTEX:
+            kw.update(
+                vertexai=True,
+                project=os.getenv("VERTEX_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT"),
+                # Gemini 3.x publisher models are not in regional endpoints —
+                # us-central1 404s (verified 11/06); they serve from "global".
+                location=os.getenv("VERTEX_LOCATION_GEMINI3", "global"),
+            )
+        return ChatGoogleGenerativeAI(**kw)
+
+    budget = int(thinking) if str(thinking).strip() else 0
+    if _USE_VERTEX:
+        return ChatVertexAI(
+            model=model, temperature=temperature, thinking_budget=budget, **_VERTEX_KW
+        )
+    from langchain_google_genai import ChatGoogleGenerativeAI
+
+    return ChatGoogleGenerativeAI(
+        model=model, temperature=temperature, thinking_budget=budget
+    )
+
+
+# Per-node override hook (model experiments): the Ask generation node consumes
+# `ask_generation` instead of `flash`, so a model swap is pure config — no
+# prompt or node code changes. Unset env → identical to flash (same object).
+_ASK_GEN_MODEL = os.getenv("ASK_GENERATION_MODEL", "").strip()
+_ASK_GEN_THINKING = os.getenv("ASK_GENERATION_THINKING", "").strip()
+
+ask_generation = (
+    build_chat_model(_ASK_GEN_MODEL, temperature=0.1, thinking=_ASK_GEN_THINKING)
+    if _ASK_GEN_MODEL
+    else flash
+)
 
 
 def extract_text(response) -> str:

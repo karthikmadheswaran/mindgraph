@@ -1,0 +1,305 @@
+{
+  "seed": 20260612,
+  "cases": [
+    {
+      "case_id": "audit_01",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "ok so i was just sitting here and my brain is kind of all over the place today, like i keep feeling like there's stuff i'm supposed to be doing and i can't remember half of it, anyway can you just list out my deadlines for me because i think i'm losing track of everything..."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your journal entries, here are the items you have been tracking:\n\n*   **Get a job:** Deadline was May 31, 2026.\n*   **Sachin's wedding:** Date was May 31, 2026.\n*   **Submit Razorpay merchant application:** No specific date provided, but it remains on your list of outstanding tasks.\n\nSince today is June 11, 2026, both the job search and the wedding date have passed. Given that you are still feeling the pressure of these deadlines, which of these feels like the most immediate priority to address today?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "wait sorry i know you literally just did that but my eyes kind of glazed over and i wasn't really paying attention, anyway can you list my deadlines again? i swear i'll actually read them this time lol"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, here are the items you've been tracking, organized by their status:\n\n*   **Past Deadlines (May 31, 2026):**\n    *   **Get a job:** This was your primary goal for the end of May.\n    *   **Sachin's wedding:** This event has now passed.\n*   **Outstanding Task:**\n    *   **Submit Razorpay merchant application:** This remains on your list without a specific deadline attached.\n\nSince the May 31st dates have passed, would you like to focus on the Razorpay merchant application today, or would you prefer to look at your job search strategy for the remainder of June?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_02",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is worth noting that the dates you have listed for these goals—May 31, 2026—have already passed. \n\nYour current outstanding items are:\n*   **Get a job**\n*   **Attend Sachin's wedding**\n*   **Submit Razorpay merchant application**\n\nSince these deadlines have technically lapsed, which of these feels like the most urgent priority for you to tackle today?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just listed above, your outstanding items are:\n\n*   **Get a job**\n*   **Attend Sachin's wedding**\n*   **Submit Razorpay merchant application**\n\nSince these deadlines have all passed, it seems like you are carrying the weight of these items simultaneously. Given that you mentioned feeling the \"time pressure\" in your entry from June 8th, which of these feels like the most significant hurdle to clear before you can move forward with the others?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_03",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your journal entry from June 8th, you listed these three items:\n\n*   **Get a job:** May 31\n*   **Sachin's wedding:** May 31\n*   **Submit Razorpay merchant application:** May 31\n\nSince today is June 11, 2026, these dates have all passed. Are you still working toward these, or have the timelines shifted?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, these dates have already passed. Here is the complete list of the deadlines you noted in your journal from June 8th, all of which were set for May 31, 2026:\n\n*   **Get a job**\n*   **Sachin's wedding**\n*   **Submit Razorpay merchant application**"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_04",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Here are your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "I apologize if my previous response was unclear. I did list your deadlines:\n\n*   Get a job by May 31\n*   Sachin's wedding on May 31\n*   Submit Razorpay merchant application\n\nThese are the same deadlines that were in your journal entry from Monday, June 8th. Is there a specific deadline you'd like to focus on, or perhaps a different way you'd like them presented?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_05",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It sounds like you're feeling the pressure with a few things coming up! Based on your entries, here are the deadlines you have:\n\n*   **Job Search:** Need to get a job by May 31.\n*   **Sachin's Wedding:** Also on May 31.\n*   **Razorpay Merchant Application:** Still needs to be submitted."
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just listed, the deadlines you have coming up are:\n\n*   **Job Search:** Need to get a job by May 31.\n*   **Sachin's Wedding:** Also on May 31.\n*   **Razorpay Merchant Application:** Still needs to be submitted."
+        }
+      ]
+    },
+    {
+      "case_id": "audit_06",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "- Get a job (Deadline: May 31, 2026)\n- Sachin's wedding (Date: May 31, 2026)\n- Submit Razorpay merchant application (Deadline: May 31, 2026)"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "I hear your frustration, and I apologize if my previous response felt dismissive. As I listed before, here are the items you tracked:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** May 31, 2026\n\nSince today is June 11, all of these dates have passed. It sounds like you were feeling significant time pressure back on June 8th—are you still feeling the weight of these, or have you managed to move past them?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_07",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Hi there, I'm so sorry to trouble you, but when you have a moment, would you mind kindly listing out the deadlines I currently have coming up? Thank you so much, I really do appreciate it."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is important to note that the dates you have listed for these goals—May 31, 2026—have already passed. Based on your journal entry from June 8, these are the items you are currently tracking:\n\n*   **Get a job:** This was marked with a deadline of May 31.\n*   **Sachin's wedding:** This also took place on May 31.\n*   **Submit Razorpay merchant application:** This remains an outstanding task you identified as needing completion.\n\nSince these deadlines have passed, how are you feeling about the status of your job search and the Razorpay merchant application now that we are into June?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "I'm terribly sorry to ask again, and I know you only just told me, but would you be so kind as to list out my upcoming deadlines for me once more? Thank you ever so much for your patience."
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those dates have passed, but here is the status of your items organized by their current priority:\n\n1. **Submit Razorpay merchant application:** This is your only remaining active task, as it is the only one without a completed status.\n2. **Get a job:** This was a goal for May 31; since that date has passed, this is now an overdue objective.\n3. **Sachin's wedding:** This event occurred on May 31 and is now complete.\n\nSince the Razorpay merchant application is the only item still requiring action, would you like to focus on getting that submitted today?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_08",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "list my deadlines"
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "The deadlines you noted in your entry from June 8th—getting a job, Sachin's wedding, and submitting the Razorpay merchant application—all passed on May 31, 2026. \n\nSince we are now in mid-June, how are you feeling about the status of these items now that those dates have elapsed?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "list my deadlines again"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I mentioned, those three items—getting a job, Sachin's wedding, and the Razorpay merchant application—all had a deadline of May 31, 2026.\n\nSince you are asking for the list again, here is the full set of those past-due items:\n\n1. **Get a job:** Originally targeted for May 31.\n2. **Sachin's wedding:** Occurred on May 31.\n3. **Submit Razorpay merchant application:** Originally targeted for May 31.\n\nGiven that these dates have passed, which of these feels like it is currently causing you the most friction in your day-to-day life?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_09",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "Based on your entries, here are your outstanding deadlines:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific date provided, but noted as a current priority)\n\nSince today is June 11, 2026, these dates have already passed. Are you looking to update these goals or shift your focus to new priorities?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, those dates have passed, but here is the complete list of your outstanding items as they appear in your records:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** (No specific deadline noted)"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_10",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "It is worth noting that the dates you listed for these deadlines—May 31, 2026—have already passed. As of today, June 11, 2026, your outstanding items are:\n\n*   **Get a job**\n*   **Attend Sachin's wedding**\n*   **Submit Razorpay merchant application**\n\nSince these dates have passed, how are you feeling about the status of these items now?"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, these items are technically overdue since they were tied to May 31. To help you clear the backlog, here is the status of those three tasks:\n\n1. **Submit Razorpay merchant application:** This is a discrete administrative task that you could likely complete in a single sitting.\n2. **Attend Sachin's wedding:** Since the date has passed, you may want to reach out to Sachin to offer your well wishes or explain your absence if you haven't already.\n3. **Get a job:** This is your most significant, ongoing objective that requires a long-term strategy rather than a simple submission.\n\nWhich of these feels like the most manageable starting point for you today?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_11",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "just list my deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "According to your entry from June 8, these were the deadlines you noted:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** May 31, 2026"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "i SAID list my deadlines. are you even reading this?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "I hear your frustration, and I apologize for the repetition. To be clear, these are the three deadlines you recorded in your June 8 entry. Since today is June 11, 2026, all of these dates have passed:\n\n*   **Get a job:** May 31, 2026\n*   **Sachin's wedding:** May 31, 2026\n*   **Submit Razorpay merchant application:** May 31, 2026\n\nGiven that these dates are now in the past, would you like to discuss the status of these items or set new targets?"
+        }
+      ]
+    },
+    {
+      "case_id": "audit_12",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "user",
+          "content": "Please provide a list of my current deadlines."
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": "You've got a few things on your plate right now, it sounds like! Based on your entry from Monday, June 8th, your current deadlines are:\n\n*   Get a job (by May 31st)\n*   Sachin's wedding (on May 31st)\n*   Submit Razorpay merchant application"
+        },
+        {
+          "turn": 2,
+          "role": "user",
+          "content": "Could you please list my current deadlines once more?"
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": "As I just mentioned, your current deadlines are:\n\n*   Get a job (by May 31st)\n*   Sachin's wedding (on May 31st)\n*   Submit Razorpay merchant application\n\nThese all seem to have passed already, given today's date. Is there anything specific you'd like to focus on regarding these, or perhaps something new that's come up?"
+        }
+      ]
+    }
+  ]
+}

@@ -1,21 +1,23 @@
-# STATE — updated 2026-06-10 (commit d4121ec)
+# STATE — updated 2026-06-11 (commit 7852402)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
 ## Now (≤3)
 1. **Vertex AI prod migration just landed** (37fab70 + e2f8a4a; IAM 403 on `mindgraph-vertex` SA fixed 10/06 by granting `roles/aiplatform.user`). Watch prod stability for a few days.
-2. **Multi-turn Ask eval — RED baseline complete** (24/33; commit 228c1e5 on `eval/multiturn-ask-harness`, unmerged). Key finding: reask_loop 0/5 — the v13.4 loop fix does not generalize across writing styles.
+2. **3.1-flash-lite (B) accepted — merge pending (11/06, `eval/multiturn-ask-harness`).** B (3.1-flash-lite, thinking_level=minimal, generation node only): reask transforms 13/15, judge mean 4.47 (0.03 under the 4.5 bar), overlap 0.286 vs A 0.487; C (low) fails (3.2). **External concordance audit** (gemini-3.1-pro-preview, 12 blind stratified cases, new seed) = **12/12 pass/fail agreement → external concordance confirmed (12/12)**. **clarifier_commit pre-check 15/15 PASS.** **Full 33-case run (Vertex) vs re-judged 85adc57 baseline, SAME fixed rubric: 32/33 vs 24/33 (+8); reask_loop 0→4/5, clarifier_commit 2→5/5, zero regressions, negatives hold → clears the ±4 noise band.** (Re-judging both neutralized the original Pro confounds: baseline reask 3/5 was trailing-Q luck → 0/5; want_all 2/5 was judge-noise → 5/5.) **Remaining: merge** (config swap depends on cfaca4c family-aware routing — Next-2). **Cost:** generation node $0.0008→$0.0018/conv measured (~2.25×); Batch API (−50%) for eval/offline; context caching ($0.025/M) a post-launch offset for the static prompt prefix. Results: `fullgrid_compare_B_vs_85adc57_*`, `concordance_audit_e7ef0b8e6ac3_*`, `clarifier_precheck_judged_*`, `blindjudge_reask_ABC_*`.
 
 ## Next (ordered)
-1. Fix the reask-loop redump: re-ask detector is exact-match (misses rephrased re-asks); ALREADY-ANSWERED only prepends an acknowledgment without transforming the re-presentation. Validate GREEN via the multi-turn harness, then merge `eval/multiturn-ask-harness`.
-2. Route "list my deadlines"-class Ask queries through structured `/deadlines` data instead of journal prose (P1 — `retrieve_relevant_entries` never queries the deadlines table; confirmed via code read 08/06).
-3. Fix `detect_repetition_loop`: watches wrong signal (compares last two assistant messages, real case is new-answer-vs-previous on re-ask) and its remedy (blanking history) regenerates the same answer. Detect re-asks on the user side; inject an instruction instead of blanking.
-4. Codebase Review 2026-06-05 critical findings (Notion page `3769402f…`): paid-tier rate-limit/cost-cap key mismatch (`pro` vs `paid`); `/conversations/messages` bypasses rate limits and cost caps; sequential-blocking "parallel" retrieval.
-5. Edit + archive flows (entries/deadlines/projects from dashboard) — longstanding queued milestone.
+1. **Merge B** — all gates cleared (audit 12/12, clarifier pre-check 15/15, full grid 32/33 / +8 vs re-judged baseline). The prod swap is `ASK_GENERATION_MODEL=gemini-3.1-flash-lite` + `ASK_GENERATION_THINKING=minimal` (Railway env), which **requires cfaca4c family-aware routing + 422df32 on main first (Next-2)**. Sequence: land Next-2 cherry-picks → set Railway env → watch prod. (Merge scope/push not yet executed — awaiting go-ahead.)
+2. Cherry-pick/merge to main regardless of experiment outcome: 422df32 (Vertex thinking_budget=0 enforcement) + family-aware `build_chat_model`/per-node override in `app/llm.py` (cfaca4c) — both affect prod.
+3. Route "list my deadlines"-class Ask queries through structured `/deadlines` data instead of journal prose (P1 — `retrieve_relevant_entries` never queries the deadlines table; confirmed via code read 08/06).
+4. Fix `detect_repetition_loop`: watches wrong signal (compares last two assistant messages, real case is new-answer-vs-previous on re-ask) and its remedy (blanking history) regenerates the same answer. Detect re-asks on the user side; inject an instruction instead of blanking.
+5. Codebase Review 2026-06-05 critical findings (Notion page `3769402f…`): paid-tier rate-limit/cost-cap key mismatch (`pro` vs `paid`); `/conversations/messages` bypasses rate limits and cost caps; sequential-blocking "parallel" retrieval.
+6. Edit + archive flows (entries/deadlines/projects from dashboard) — longstanding queued milestone.
 
 ## Known broken / degraded (open only)
 - **Critical (from 05/06 codebase review):** paid-tier rate-limit key mismatch `pro`/`paid`; `/conversations/messages` bypasses limits/caps.
-- reask_loop 0/5 across personas — v13.4 doesn't generalize (10/06 eval RED).
+- reask_loop: 2.5-flash-lite ignores the v13.4 transform clause — blind re-judge under the fixed rubric scores it 2/15 (earlier ~3/5 pro-judge scores were trailing-question luck, not partial compliance).
+- Multi-turn eval judge: gemini-2.5-pro inline judging dropped 11/06 (quota troughs; us-central1 hard-throttled, global/us-east4 intermittent) — session-agent blind batch judging used for the experiment. CI still needs a programmatic judge (candidate: flash-class judge with the fixed rubric; harness `--no-judge` flag exists).
 - Ask answers deadline-list queries from prose, not the deadlines table (P1).
 - `detect_repetition_loop` wrong signal + counterproductive remedy (P1).
 - Read-after-write lag on `ask_messages` can defeat loop detection under rapid back-to-back sends (P2; not hit at human pace).

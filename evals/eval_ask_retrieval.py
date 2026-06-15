@@ -191,6 +191,7 @@ def _initial_state(question: str) -> dict:
         "temporal_has_results": False,
         "dashboard_has_results": False,
         "is_low_confidence": False,
+        "is_reask": False,
         "question_entity_known": None,
         "question_entity_check_details": {},
         "assembled_context": "",
