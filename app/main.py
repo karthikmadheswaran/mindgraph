@@ -186,12 +186,23 @@ async def get_conversation_messages(
 async def send_conversation_message(
     request: SendMessageRequest,
     background_tasks: BackgroundTasks,
+    http_request: Request,
     user_id: str = Depends(get_current_user),
 ):
+    # Dependencies can't branch on request-body mode, so meter inside the
+    # handler. http_request is the real Starlette Request (FastAPI injects it
+    # by type), which the IP guard inside ask_rate_limit/entry_rate_limit needs.
+    tier = await tier_service.get_user_tier(user_id)
+
     if request.mode == "ask":
+        await ask_rate_limit(http_request, user_id)
+        await check_cost_cap(user_id, tier)
         return await conversation.send_ask_message(
             user_id, request.content, browser_timezone=request.browser_timezone,
         )
+
+    await entry_rate_limit(http_request, user_id)
+    await check_cost_cap(user_id, tier)
     return await conversation.send_journal_message(
         user_id,
         request.content,

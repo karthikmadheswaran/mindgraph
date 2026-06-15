@@ -79,6 +79,12 @@ async def send_ask_message(user_id: str, content: str, browser_timezone: str | N
             browser_timezone=browser_timezone,
         )
         assistant_message = _insert_message(user_id, "assistant", answer)
+        # This path calls generate_answer directly, bypassing ask_service.ask()
+        # — the only other place record_cost runs. Without this, ask-mode here
+        # is invisible to daily_llm_costs and the cost cap counts nothing.
+        from app.services.cost_cap import record_cost
+
+        await record_cost(user_id, "ask")
     except Exception as exc:
         logger.error("Ask conversation message failed: %s", exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate answer") from exc
