@@ -182,16 +182,45 @@ async def get_conversation_messages(
     return {"messages": messages, "has_more": len(messages) == limit}
 
 
+def _meter_conversation_routes() -> bool:
+    """Kill switch for the conversation-route guards (STATE Critical #2 fix).
+
+    Default ON. Set METER_CONVERSATION_ROUTES=0 to disable in seconds via a
+    Railway env change (no redeploy/revert) if metering misfires on this live
+    path — the route then behaves exactly as it did before metering was added.
+    """
+    return os.getenv("METER_CONVERSATION_ROUTES", "1").strip().lower() not in {
+        "0",
+        "false",
+        "off",
+        "no",
+    }
+
+
 @app.post("/conversations/messages", response_model=MessagesResponse)
 async def send_conversation_message(
     request: SendMessageRequest,
     background_tasks: BackgroundTasks,
+    http_request: Request,
     user_id: str = Depends(get_current_user),
 ):
+    # Dependencies can't branch on request-body mode, so meter inside the
+    # handler. http_request is the real Starlette Request (FastAPI injects it
+    # by type), which the IP guard inside ask_rate_limit/entry_rate_limit needs.
+    metering_on = _meter_conversation_routes()
+    tier = await tier_service.get_user_tier(user_id) if metering_on else None
+
     if request.mode == "ask":
+        if metering_on:
+            await ask_rate_limit(http_request, user_id)
+            await check_cost_cap(user_id, tier)
         return await conversation.send_ask_message(
             user_id, request.content, browser_timezone=request.browser_timezone,
         )
+
+    if metering_on:
+        await entry_rate_limit(http_request, user_id)
+        await check_cost_cap(user_id, tier)
     return await conversation.send_journal_message(
         user_id,
         request.content,

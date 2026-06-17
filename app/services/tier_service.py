@@ -6,6 +6,15 @@ from app.db import supabase
 logger = logging.getLogger(__name__)
 TIER_TTL = 3600  # seconds
 
+# DB stores the billing-friendly "paid"; internal limit tables (rate_limit.py,
+# cost_cap.py) key on "pro". Normalize at read time so a paying user resolves
+# to pro limits instead of falling through to free. See STATE Critical #1.
+_TIER_ALIASES = {"paid": "pro"}
+
+
+def _canonical(tier: str) -> str:
+    return _TIER_ALIASES.get(tier, tier)
+
 
 class TierService:
     def __init__(self):
@@ -37,7 +46,7 @@ class TierService:
             try:
                 cached = await redis.get(cache_key)
                 if cached:
-                    return cached if isinstance(cached, str) else cached.decode()
+                    return _canonical(cached if isinstance(cached, str) else cached.decode())
             except Exception as e:
                 logger.warning("Redis tier get failed for %s: %s", user_id, e)
 
@@ -57,7 +66,7 @@ class TierService:
             except Exception as e:
                 logger.warning("Redis tier set failed for %s: %s", user_id, e)
 
-        return tier
+        return _canonical(tier)
 
     async def invalidate(self, user_id: str) -> None:
         redis = self._redis_client()
