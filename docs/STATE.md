@@ -15,6 +15,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 
 ## Known broken / degraded (open only)
 - **Deferred metering follow-up (P2):** `POST /entries` + `/entries/stream` are unmetered (no rate limit, no cost cap) but have **no frontend caller** — direct-API surface only. Mirror `/entries/async`: add `entry_rate_limit` + `check_cost_cap`. **Trigger: close before any public/ungated API exposure.** (Carved out of the 15/06 metering PR.)
+  - Cost cap meters on flat $0.0008 estimate, not measured cost; under-counts expensive calls; revisit with real per-call cost if abuse appears.
 - **CI needs a programmatic re-ask judge with the fixed rubric** (P1): inline gemini-2.5-pro judging dropped 11/06 (quota troughs) and the session-agent batch judging used for the B experiment is non-reproducible. Candidate: flash-class judge + fixed rubric; harness `--no-judge` flag exists.
 - Ask answers deadline-list queries from prose, not the deadlines table (P1).
 - Read-after-write lag on `ask_messages` can defeat loop detection under rapid back-to-back sends (P2; not hit at human pace).
