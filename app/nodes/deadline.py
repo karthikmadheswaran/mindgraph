@@ -104,7 +104,7 @@ def build_deadline_prompt(text: str, raw_text: str, user_timezone: str) -> str:
     return f"""
 You are a strict deadline extraction engine.
 
-Extract only concrete deadlines or scheduled commitments.
+A deadline is a FUTURE or still-pending obligation the writer MUST STILL act on — a task, payment, submission, meeting, appointment, or event that has not happened yet. Most journal text is past-tense narration of things that ALREADY happened; those are NOT deadlines, no matter how many dates they contain. When unsure, do NOT extract.
 
 Reference Date:
 {reference_date}
@@ -116,7 +116,10 @@ Raw Input:
 {raw_text}
 
 Rules:
-- Extract only if there is a clear time reference.
+- TENSE GATE — apply FIRST to every candidate: include an item ONLY if it is something the writer STILL has to do (future or not-yet-done). If the sentence narrates something that ALREADY HAPPENED — past-tense verbs describing what someone did or how they felt (drank, cooked, went, met, woke, rested, played, was, felt, submitted, cleaned, "that's why I came") — it is a completed action or reflection: DROP it, even when it carries a resolved date.
+- A merely OVERDUE task still to be done ("submit X by [a past date]", "pay the bill by [a past date]") is NOT a completed action — it IS a valid deadline; extract it. The test is completed-vs-pending, not whether the date is in the past.
+- Urges, plans, and habits that were not turned into a concrete commitment are NOT deadlines: "I had an urge to play games", "I planned to go to the cafe on weekends", "I wanted to rest". Habitual/recurring phrases ("on weekends", "every Sunday") are not dated commitments. Judge tense from the writer's own verbs in the Raw Input, not from any date the Cleaned Input attached to a past sentence.
+- A COMPLETED obligation is DONE, not a deadline, even though it uses a task verb: "I submitted the form", "I paid the bill", "I sent the email", "I renewed it" (past tense, already done) -> DROP. Only a not-yet-done obligation counts ("submit the form", "need to pay the bill", "have to renew it").
 - The time reference must be tied to a real task, obligation, meeting, payment, submission, appointment, or event.
 - Do not extract hopes, vague future thoughts, reflections, metadata dates, or project/status phrases.
 - Do not invent deadlines that are not in the text.
@@ -128,10 +131,17 @@ Do NOT extract examples like:
 - hope for a better day
 - entry date
 - project progress
+- "drank and cook on that day" / "I drank and 2026-06-13 I felt like a hangover"
+  -> completed past activities, NOT deadlines.
+- "went to the gaming cafe on Sunday" / "rotting until 4pm" / "came to a meeting, that's why I came"
+  -> past events already happened, NOT deadlines.
+- "on 2026-04-03 I felt more hopeful about life"
+  -> past reflection with a date, NOT a deadline.
 - [{{"description": "meeting with X", "due_at": "2026-04-09", "raw_text": "meeting tomorrow"}}, {{"description": "meeting with X", "due_at": "2026-04-09", "raw_text": "scheduled for tomorrow"}}]
   -> This is ONE event, extract it only once.
 
 Output Rules:
+- FINAL CHECK before returning: re-read each item's sentence — if it describes something that already happened, remove it. A purely past/reflective entry must return {{"deadlines": []}}.
 - Return all deadlines under a "deadlines" key.
 - If no deadlines exist, return {{"deadlines": []}}.
 - Use exactly these keys for each item: "description", "due_at", "raw_text"
