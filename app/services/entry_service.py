@@ -19,6 +19,19 @@ logger = logging.getLogger(__name__)
 
 workflow = build_graph()
 
+# Exclude dedup "orphan" rows from dashboard surfaces. A near-duplicate entry is
+# left status=completed with empty cleaned_text + dispatch_payload.pipeline_version
+# = "duplicate" (see app/nodes/dedup.py); those would otherwise render as blank
+# cards and inflate entry counts. The is.null clause is REQUIRED to keep in-flight
+# / pre-dispatch rows (null dispatch_payload) visible — verified read-only against
+# prod: it preserves all 93 null-payload rows + 124 normal completed, drops only
+# the 9 duplicate orphans. DISPLAY-only; the orphan row itself is untouched (the
+# populate-from-matched-entry behavior is the logged next dedup item).
+_EXCLUDE_DUPLICATE_ORPHANS = (
+    "dispatch_payload->>pipeline_version.is.null,"
+    "dispatch_payload->>pipeline_version.neq.duplicate"
+)
+
 
 def build_entry_state(
     entry: EntryRequest,
@@ -341,6 +354,7 @@ async def list_entries(
         )
         .eq("user_id", user_id)
         .is_("deleted_at", "null")
+        .or_(_EXCLUDE_DUPLICATE_ORPHANS)
         .order("created_at", desc=True)
     )
 
@@ -775,6 +789,7 @@ async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
         .eq("user_id", user_id)
         .eq("status", "completed")
         .is_("deleted_at", "null")
+        .or_(_EXCLUDE_DUPLICATE_ORPHANS)
         .execute()
     )
     total_entries = total_resp.count or 0
@@ -785,6 +800,7 @@ async def get_dashboard_stats(user_id: str, user_timezone: str = "UTC") -> dict:
         .eq("user_id", user_id)
         .eq("status", "completed")
         .is_("deleted_at", "null")
+        .or_(_EXCLUDE_DUPLICATE_ORPHANS)
         .gte("created_at", week_start_utc.isoformat())
         .execute()
     )
