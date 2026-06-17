@@ -7,6 +7,27 @@ from app.embeddings import get_embedding
 
 logger = logging.getLogger(__name__)
 
+# Cosine-similarity cutoff for treating a new entry as a near-duplicate of the
+# closest existing entry. Crossing it routes the graph to END (dedup_router),
+# so the entry is NEVER stored/extracted — a false positive silently swallows a
+# real entry (empty cleaned_text/title/entities). Calibrated against real data
+# (evals/dedup_threshold_calibration.py): across one user's 59 distinct journal
+# entries the MAX distinct-pair cosine was 0.8904 (p99 0.8523) — journal prose in
+# a consistent voice clusters tightly — while true accidental re-submits embed
+# ~identically (~0.97-1.0). The original 0.85 sat *inside* the distinct-pair band
+# (a real, unrelated entry pair scored 0.8596 and was wrongly dropped). 0.92
+# clears the observed distinct-pair max with margin while still catching real
+# re-submits.
+DEDUP_SIMILARITY_THRESHOLD = 0.92
+
+
+def is_duplicate_similarity(similarity: float) -> bool:
+    """True when the nearest existing entry is similar enough to treat the
+    incoming entry as a near-duplicate. Pure + side-effect free so the threshold
+    is unit-testable without embeddings (tests/test_dedup.py)."""
+    return similarity > DEDUP_SIMILARITY_THRESHOLD
+
+
 async def dedup(state: JournalState) -> dict:
     text = state.get("cleaned_text", state["raw_text"])
 
@@ -25,7 +46,7 @@ async def dedup(state: JournalState) -> dict:
         similarity = match["similarity"]
         logger.info("Dedup: closest match '%s' (sim=%.3f)", match["auto_title"], similarity)
 
-        if similarity > 0.85:
+        if is_duplicate_similarity(similarity):
             logger.info("Duplicate detected; skipping pipeline")
             entry_id = state.get("entry_id")
             duplicate_of = match["id"]
