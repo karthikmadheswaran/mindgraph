@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event";
 import Dashboard from "./Dashboard";
 import { authHeaders } from "../utils/auth";
+import { daysSinceLastMention } from "../utils/dateHelpers";
 import {
   clearDashboardSnapshotCache,
   getCachedDashboardSnapshot,
@@ -547,5 +548,79 @@ describe("Dashboard data and actions", () => {
     ).length;
 
     expect(deadlineFetchCount).toBe(2);
+  });
+
+  test("Active Projects and the Noticed insight show the SAME days-quiet for one entity", async () => {
+    // Consolidation lock: both staleness surfaces, one entity, one number, and
+    // it must equal the canonical accessor. RED before Part B (card reads
+    // status_changed_at -> a large number; insight reads the frozen
+    // days_since_mention=32); GREEN after (both route through daysSinceLastMention).
+    const lastMentioned = "2026-05-15T11:57:47Z";
+    const projectWithMention = {
+      id: "project-1",
+      name: "Mindgraph",
+      status: "active",
+      mention_count: 29,
+      running_summary: "Main product work",
+      last_mentioned_at: lastMentioned,
+      status_changed_at: "2026-04-09T13:24:00Z", // activation date — the wrong, stale source
+    };
+    const forgottenInsight = {
+      insight_type: "forgotten_projects",
+      content: JSON.stringify({
+        stale: [
+          {
+            name: "mindgraph",
+            type: "project",
+            mention_count: 29,
+            days_since_mention: 32, // frozen, baked-at-regen value
+            last_mentioned: "2026-05-15",
+            context: "",
+          },
+        ],
+        active: [],
+        stale_count: 1,
+        active_count: 0,
+      }),
+    };
+
+    // Self-contained handler: satisfies every snapshot URL so nothing throws
+    // and the project actually renders. (The shared createFetchHandler is not
+    // used here because its /deadlines mock URL predates the snapshot's
+    // ",missed" variant — a pre-existing, unrelated test drift.)
+    global.fetch.mockImplementation((input) => {
+      const url = typeof input === "string" ? input : input.url;
+      if (url.includes("/insights/patterns")) return jsonResponse({ data: {} });
+      if (url.includes("/insights/tagline")) return jsonResponse({});
+      if (url.endsWith("/insights")) return jsonResponse({ insights: [forgottenInsight] });
+      if (url.includes("/deadlines")) return jsonResponse({ deadlines: [] });
+      if (url.includes("/projects")) return jsonResponse({ projects: [projectWithMention] });
+      if (url.includes("/stats/dashboard")) return jsonResponse({});
+      if (url.endsWith("/progress")) return jsonResponse({ deadlines: [], projects: [] });
+      if (url.endsWith("/entities")) return jsonResponse({ entities: [] });
+      if (url.endsWith("/entity-relations")) return jsonResponse({ relations: [] });
+      if (url.endsWith("/entries")) return jsonResponse({ entries: [] });
+      return jsonResponse({});
+    });
+
+    const { container } = render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    // Wait for the project card (surface #1) and the Noticed insight kicker
+    // (surface #2, fetched async) to both render their "days quiet" numbers.
+    await screen.findByText("Mindgraph");
+    await waitFor(() => {
+      const kicker = container.querySelector(".dthread-kicker");
+      if (!kicker || !/QUIET FOR \d+ DAYS/.test(kicker.textContent)) {
+        throw new Error("Noticed insight not rendered yet");
+      }
+    });
+
+    const projMeta = container.querySelector(".proj-meta").textContent; // "Stalled · N days quiet"
+    const kicker = container.querySelector(".dthread-kicker").textContent; // "... QUIET FOR N DAYS"
+    const projN = Number(/(\d+)\s*days quiet/i.exec(projMeta)[1]);
+    const insightN = Number(/QUIET FOR (\d+) DAYS/.exec(kicker)[1]);
+
+    expect(projN).toBe(insightN);
+    expect(projN).toBe(daysSinceLastMention(lastMentioned));
   });
 });

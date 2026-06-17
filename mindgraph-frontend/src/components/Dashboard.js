@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API, authHeaders } from "../utils/auth";
-import { deadlineLabel, deadlineSortValue } from "../utils/dateHelpers";
+import { daysSinceLastMention, deadlineLabel, deadlineSortValue } from "../utils/dateHelpers";
 import {
   getCachedDashboardSnapshot,
   loadDashboardSnapshot,
@@ -104,16 +104,19 @@ const formatEntryDate = (dateStr) => {
 const DAY_FULL = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
 
 function getProjectMeta(project) {
-  if (!project.status_changed_at) {
+  // "Days quiet" = days since the project was last MENTIONED, via the single
+  // canonical accessor (daysSinceLastMention) over last_mentioned_at — which the
+  // DB trigger mirrors from entities.last_seen_at. Previously this diffed
+  // status_changed_at (the activation date, frozen by the sync trigger), so it
+  // never tracked mentions and disagreed with the Noticed insight.
+  const days = daysSinceLastMention(project.last_mentioned_at);
+  if (days === null) {
     return { state: "warm", meta: "No recent activity" };
   }
-  const days = Math.floor(
-    (Date.now() - new Date(project.status_changed_at).getTime()) / 86400000
-  );
-  if (days === 0) return { state: "active", meta: "Active · moved today" };
-  if (days === 1) return { state: "active", meta: "Active · moved yesterday" };
+  if (days === 0) return { state: "active", meta: "Active · mentioned today" };
+  if (days === 1) return { state: "active", meta: "Active · mentioned yesterday" };
   if (days <= 3) return { state: "active", meta: `Active · ${days} days ago` };
-  if (days <= 7) return { state: "warm", meta: "Slow · once a week" };
+  if (days <= 7) return { state: "warm", meta: "Slow · this week" };
   return { state: "warm", meta: `Stalled · ${days} days quiet` };
 }
 
@@ -1406,8 +1409,13 @@ function Dashboard({ isActive, userId }) {
 
         if (item) {
           const typeLabel = TYPE_LABELS[item.type] || "PATTERN";
-          const dateTag = `QUIET FOR ${item.days_since_mention} DAYS`;
-          const cardText = `${item.name} hasn't come up in ${item.days_since_mention} days. ${item.context || ""}`.trim();
+          // Compute days-quiet at READ time from the canonical last-mention date
+          // (same accessor as the Active Projects card), NOT the frozen
+          // days_since_mention baked into the stored insight JSON — which goes
+          // silently stale whenever the insight regen fails to run.
+          const daysQuiet = daysSinceLastMention(item.last_mentioned);
+          const dateTag = `QUIET FOR ${daysQuiet} DAYS`;
+          const cardText = `${item.name} hasn't come up in ${daysQuiet} days. ${item.context || ""}`.trim();
           setNoticedInsight({
             category: typeLabel,
             dateTag,
