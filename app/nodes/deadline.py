@@ -63,6 +63,19 @@ def _is_narrated_past_action(text: str) -> bool:
 def drop_past_event_deadlines(
     deadlines: list[DeadlineNode], reference_date: date
 ) -> list[DeadlineNode]:
+    """Drop deadlines that are completed past-tense narration, not obligations.
+
+    Scope: keys on ENGLISH past-tense morphology (-ed / irregular pasts). A
+    precision filter for past-tense narration, NOT a universal past/future
+    classifier. BLIND to: (1) present-tense narration of past events
+    ("go to the arcade"), (2) non-English / transliterated entries, (3) bare
+    noun+date phrases. FAILS SAFE — when it can't classify, the deadline passes
+    through; it never drops a real obligation. Universal coverage requires the
+    model-based (thinking-budget) approach — TRIGGER: warranted when real
+    present-tense or non-English traffic makes the residual leak rate climb. Do
+    NOT try to extend this guard with more language rules — it is fundamentally
+    English-morphology-bound.
+    """
     kept: list[DeadlineNode] = []
     for deadline in deadlines:
         due_at = deadline["due_at"]
