@@ -13,13 +13,19 @@ Fixtures (anti-overfit — boundary, not one phrasing):
   (c) future-only commitment -> extracted (guards against over-correction)
   (d) a second, differently-phrased pure-past entry incl. a completed
       "submitted" action -> []  (the completed-obligation trap)
+  (e) an OVERDUE open obligation ("was due last Friday and I still haven't
+      sent it") -> extracted  (mandatory over-correction trap)
+  (f) bare imperative obligations with absolute PAST dates (a missed dentist
+      appointment + bill) -> extracted  (second over-correction guard)
 
 Assertions are count/phrase-based (not exact-date) so they don't rot the way the
 date-pinned tests/test_deadline.py fixtures did.
 
-NOTE on reliability: gemini-2.5-flash-lite with thinking_budget=0 does not
-deterministically hit 4/4 on these boundary cases (~1 case may flake per run).
-The prompt fix is a large net reduction; reliable-zero is a logged follow-up.
+RELIABLE-ZERO: the prompt tense-gate alone (PR #8) left ~5/5 runs leaking >=1
+past event with flash-lite (thinking_budget=0). A deterministic past-narration
+guard (app/nodes/deadline.py:drop_past_event_deadlines) closes it: measured pure-
+past leak 5/5 -> 0/5 over N=5, with (c)/(e)/(f) obligations preserved 5/5 and no
+added cost/latency (it is a post-extraction filter).
 
 Run (uses whatever app.llm is configured — set USE_VERTEX=1 locally since the
 AI Studio key is depleted; prod is Vertex anyway):
@@ -112,6 +118,27 @@ FIXTURES = [
         ),
         "rule": "zero",
     },
+    {
+        # MANDATORY over-correction trap: a past-dated OPEN obligation. The
+        # reliable-zero guard must KEEP this (it is overdue, not completed).
+        "name": "e_overdue_obligation",
+        "raw_text": "ugh the visa application form was due last friday and i still havent sent it. i really need to get it done.",
+        "cleaned_text": "Ugh, the visa application form was due on 2026-06-12 and I still haven't sent it. I really need to get it done.",
+        "rule": "must_extract",
+        "future_markers": ["visa", "form", "submit", "application", "sent"],
+        "min_count": 1,
+    },
+    {
+        # Second over-correction guard: bare imperative obligations with absolute
+        # PAST dates (a missed appointment + bill). No completed-action signal, so
+        # the guard must KEEP them — dropping them would lose real (missed) deadlines.
+        "name": "f_missed_bare_obligations",
+        "raw_text": "dentist appointment on june 10, and pay the electricity bill on june 12.",
+        "cleaned_text": "Dentist appointment on 2026-06-10, and pay the electricity bill on 2026-06-12.",
+        "rule": "must_extract",
+        "future_markers": ["dentist", "appointment", "electricity", "bill", "pay"],
+        "min_count": 1,
+    },
 ]
 
 
@@ -149,6 +176,13 @@ async def run():
             )
             passed = has_future and not leaked
             why = "expect the future meeting extracted (no over-correction)"
+        elif fx["rule"] == "must_extract":
+            has_target = any(
+                any(m in (d["description"] + " " + d["raw_text"]).lower() for m in fx["future_markers"])
+                for d in dls
+            )
+            passed = has_target and not leaked and len(dls) >= fx.get("min_count", 1)
+            why = "expect the overdue/missed obligation extracted (guard must NOT over-correct)"
         else:
             passed = False
             why = "unknown rule"
