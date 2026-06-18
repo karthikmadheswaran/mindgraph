@@ -53,7 +53,7 @@ SYNTH_RAW = (
     "sunday i kept rotting till evening then went to the arcade. monday i still couldnt get ready, the room was a "
     "mess and laundry wasnt done, so i stayed in bed till 4pm. yesterday again i rotted till evening and went back to "
     "the arcade because of some restless itch. today i finally felt a bit better, woke up early, went for a walk by "
-    "the lake, didnt smoke, had some energy. thats how the last week went, drifting away and coming back again."
+    "the lake, didnt smoke, had some energy. that was pretty much my whole week."
 )
 SYNTH_CLEANED = (
     "I haven't written here in a while. On 2026-06-16 I skipped work and just felt low in my room, scrolling reels "
@@ -62,8 +62,8 @@ SYNTH_CLEANED = (
     "rotting the whole day. On 2026-06-14 I kept rotting till evening then went to the arcade. On 2026-06-15 I still "
     "couldn't get ready, the room was a mess and laundry wasn't done, so I stayed in bed till 4pm. On 2026-06-16 "
     "again I rotted till evening and went back to the arcade because of some restless itch. Today I finally felt a "
-    "bit better, woke up early, went for a walk by the lake, didn't smoke, had some energy. That's how the last week "
-    "went, drifting away and coming back again."
+    "bit better, woke up early, went for a walk by the lake, didn't smoke, had some energy. That was pretty much my "
+    "whole week."
 )
 
 BASE = {
