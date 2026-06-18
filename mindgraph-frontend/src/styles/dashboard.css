@@ -580,6 +580,16 @@
   background: rgba(250, 245, 234, 0.7);
   color: #1a1612;
 }
+.dl-chip--danger {
+  background: transparent;
+  border-color: rgba(184, 74, 45, 0.35);
+  color: #b84a2d;
+}
+.dl-chip--danger:hover {
+  background: rgba(184, 74, 45, 0.08);
+  border-color: rgba(184, 74, 45, 0.55);
+  color: #9a3a22;
+}
 
 .dl-title {
   font-family: "Newsreader", Georgia, serif;

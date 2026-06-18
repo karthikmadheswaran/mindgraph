@@ -623,4 +623,60 @@ describe("Dashboard data and actions", () => {
     expect(projN).toBe(insightN);
     expect(projN).toBe(daysSinceLastMention(lastMentioned));
   });
+
+  test("deadline action menu Delete removes the row optimistically, offers undo, and does not hard-delete during the window", async () => {
+    const deleteSpy = jest.fn(() =>
+      jsonResponse({ success: true, id: pendingDeadline.id })
+    );
+
+    // Self-contained, loosely-matched fetch mock. The shared createFetchHandler
+    // pins /deadlines to "?status=pending,snoozed", which predates the snapshot's
+    // ",missed" variant (the pre-existing test drift documented in STATE.md) and
+    // would otherwise stop the row from rendering here. Match by substring so the
+    // snapshot loads and the deadline appears.
+    global.fetch.mockImplementation((input, options = {}) => {
+      const url = typeof input === "string" ? input : input.url;
+      const method = options.method || "GET";
+      if (url.includes("/deadlines/") && method === "DELETE") {
+        return deleteSpy(input, options);
+      }
+      if (url.includes("/deadlines")) return jsonResponse({ deadlines: [pendingDeadline] });
+      if (url.includes("/projects")) return jsonResponse({ projects: [] });
+      if (url.endsWith("/progress")) return jsonResponse({ deadlines: [], projects: [] });
+      if (url.endsWith("/entities")) return jsonResponse({ entities: [] });
+      if (url.endsWith("/entity-relations")) return jsonResponse({ relations: [] });
+      if (url.includes("/insights/patterns")) return jsonResponse({ data: {} });
+      if (url.includes("/insights/tagline")) return jsonResponse({});
+      if (url.endsWith("/insights")) return jsonResponse({ insights: [] });
+      if (url.includes("/stats/dashboard")) return jsonResponse({});
+      if (url.endsWith("/entries")) return jsonResponse({ entries: [] });
+      return jsonResponse({});
+    });
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+
+    // Open the ⋯ action menu, then click the new Delete item. Reaching the
+    // Delete button at all proves it lives in renderDeadlineRow's menu.
+    fireEvent.click(screen.getByLabelText(/actions for finish report/i));
+    fireEvent.click(screen.getByLabelText(/delete finish report/i));
+
+    // scheduleDelete("deadline", …) ran: optimistic removal + undo toast, and
+    // the destructive hard delete is deferred behind the 5s window.
+    expect(screen.queryByText("Finish report")).not.toBeInTheDocument();
+    expect(await screen.findByText("Deadline deleted.")).toBeInTheDocument();
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    // Undo is the only safety net (hard row delete, no deleted_at): it restores
+    // the row and the DELETE never fires.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /undo deadline delete for finish report/i,
+      })
+    );
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+    expect(deleteSpy).not.toHaveBeenCalled();
+  });
 });

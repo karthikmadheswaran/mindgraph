@@ -1572,6 +1572,17 @@ function Dashboard({ isActive, userId }) {
             >
               Change date
             </button>
+            <button
+              type="button"
+              className="dl-chip dl-chip--danger"
+              aria-label={`Delete ${deadline.description}`}
+              onClick={() => {
+                setOpenDeadlineMenuId(null);
+                scheduleDelete("deadline", deadline);
+              }}
+            >
+              Delete
+            </button>
           </div>
         )}
       </div>
