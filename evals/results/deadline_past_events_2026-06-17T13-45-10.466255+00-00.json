@@ -1,0 +1,68 @@
+{
+ "metadata": {
+  "ran_at": "2026-06-17T13-45-10.466255+00-00",
+  "git_commit": "bc8f83a490f058a59e6ab0240b4d4282acff76e6",
+  "harness": "deadline_past_events"
+ },
+ "summary": {
+  "fixtures": 4,
+  "passed": 3,
+  "failed": 1,
+  "all_green": false,
+  "provider": "vertex"
+ },
+ "results": [
+  {
+   "case_id": "a_rambling_pure_past_reflection",
+   "passed": true,
+   "rule": "expect 0 deadlines (pure past narration)",
+   "n_deadlines": 0,
+   "past_event_leak": [],
+   "deadlines": []
+  },
+  {
+   "case_id": "b_mixed_past_plus_one_future",
+   "passed": true,
+   "rule": "expect exactly the future commitment, no past events",
+   "n_deadlines": 1,
+   "past_event_leak": [],
+   "deadlines": [
+    {
+     "description": "submit the visa application form",
+     "due_at": "2026-06-19",
+     "raw_text": "by Friday"
+    }
+   ]
+  },
+  {
+   "case_id": "c_future_only_commitment",
+   "passed": true,
+   "rule": "expect the future meeting extracted (no over-correction)",
+   "n_deadlines": 1,
+   "past_event_leak": [],
+   "deadlines": [
+    {
+     "description": "Meeting with the design team",
+     "due_at": "2026-06-18",
+     "raw_text": "Meeting with the design team on 2026-06-18 at 15:00 to review the launch"
+    }
+   ]
+  },
+  {
+   "case_id": "d_pure_past_variant_with_completed_submit",
+   "passed": false,
+   "rule": "expect 0 deadlines (pure past narration)",
+   "n_deadlines": 1,
+   "past_event_leak": [
+    "tax return"
+   ],
+   "deadlines": [
+    {
+     "description": "tax return",
+     "due_at": "2026-06-09",
+     "raw_text": "On 2026-06-09 I submitted my tax return"
+    }
+   ]
+  }
+ ]
+}
