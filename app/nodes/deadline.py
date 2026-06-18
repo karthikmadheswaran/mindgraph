@@ -1,5 +1,6 @@
+import re
 from app.state import JournalState, DeadlineNode
-from datetime import datetime
+from datetime import datetime, date
 from zoneinfo import ZoneInfo
 
 from app.llm import flash as model
@@ -21,6 +22,57 @@ def resolve_reference_date(user_timezone: str) -> str:
         timezone = ZoneInfo("UTC")
 
     return datetime.now(timezone).strftime("%Y-%m-%d")
+
+
+# ---------------------------------------------------------------------------
+# Past-event guard (deterministic "reliable-zero" backstop behind the prompt)
+# ---------------------------------------------------------------------------
+# The tense-gate prompt is a soft instruction; flash-lite (thinking_budget=0)
+# still intermittently extracts past NARRATED actions ("I submitted my tax
+# return", "went to the gym") as deadlines. This guard drops a deadline only when
+# ALL of: (1) it is strictly past-dated vs the reference date, (2) it carries a
+# completed past-action signal (irregular past verb or an -ed word), and (3) it
+# has NO open-obligation cue. So overdue-but-open obligations ("still haven't
+# sent it", "due ... by") and bare imperative obligations ("pay the bill on
+# <date>", "dentist appointment on <date>") are KEPT — they lack a completed
+# signal — and the guard does not over-correct on real (missed) deadlines.
+# Measured (Vertex, N=5): pure-past leak 5/5 -> 0/5; overdue/future/missed-
+# obligation/mixed fixtures all preserved 5/5. (evals/deadline_past_events_eval.py)
+_OPEN_OBLIGATION_MARKERS = (
+    "need to", "needs to", "have to", "has to", "must ", "haven't", "havent",
+    "hasn't", "hasnt", "still ", "yet ", "due", "overdue", "pending",
+    "to do", "to-do", " by ",
+)
+_IRREGULAR_PAST = (
+    "went", "drank", "ate", "came", "woke", "felt", "did", "had", "was", "were",
+    "got", "took", "made", "met", "rested", "played", "cooked", "sent", "skipped",
+    "drove", "slept", "spent", "saw", "ran",
+)
+_IRREGULAR_PAST_RE = re.compile(r"\b(?:" + "|".join(_IRREGULAR_PAST) + r")\b")
+_REGULAR_PAST_RE = re.compile(r"\b\w+ed\b")
+
+
+def _has_open_obligation(text: str) -> bool:
+    return any(marker in text for marker in _OPEN_OBLIGATION_MARKERS)
+
+
+def _is_narrated_past_action(text: str) -> bool:
+    return bool(_IRREGULAR_PAST_RE.search(text) or _REGULAR_PAST_RE.search(text))
+
+
+def drop_past_event_deadlines(
+    deadlines: list[DeadlineNode], reference_date: date
+) -> list[DeadlineNode]:
+    kept: list[DeadlineNode] = []
+    for deadline in deadlines:
+        due_at = deadline["due_at"]
+        due_date = due_at.date() if isinstance(due_at, datetime) else due_at
+        text = f"{deadline['description']} {deadline['raw_text']}".lower()
+        is_past = isinstance(due_date, date) and due_date < reference_date
+        if is_past and not _has_open_obligation(text) and _is_narrated_past_action(text):
+            continue
+        kept.append(deadline)
+    return kept
 
 
 def normalize_deadline_description(description: str) -> str:
@@ -254,5 +306,10 @@ async def extract_deadlines(state: JournalState) -> dict:
         cleaned_source_text=text,
     )
     deadlines = dedup_deadlines(deadlines)
+
+    reference_date = datetime.strptime(
+        resolve_reference_date(state.get("user_timezone", "UTC")), "%Y-%m-%d"
+    ).date()
+    deadlines = drop_past_event_deadlines(deadlines, reference_date)
 
     return {"deadline": deadlines}
