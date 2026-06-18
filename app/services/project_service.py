@@ -69,6 +69,7 @@ def clear_deadline_project_links(project_id: str) -> None:
             supabase.table("deadlines")
             .update({"project_id": None})
             .eq("project_id", project_id)
+            .is_("deleted_at", "null")
             .execute()
         )
     except Exception as exc:
@@ -183,6 +184,7 @@ async def get_progress(user_id: str) -> dict:
         .select("id, description, due_date, status, status_changed_at")
         .eq("user_id", user_id)
         .in_("status", ["done", "missed"])
+        .is_("deleted_at", "null")
         .order("status_changed_at", desc=True)
         .execute()
     )

@@ -45,6 +45,7 @@ def fetch_deadlines(user_id: str) -> list:
         .select("id, description, due_date, status, source_entry_id")
         .eq("user_id", user_id)
         .eq("status", "pending")
+        .is_("deleted_at", "null")
         .order("due_date", desc=False)
         .execute()
     )
