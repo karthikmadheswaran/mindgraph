@@ -679,4 +679,71 @@ describe("Dashboard data and actions", () => {
     expect(await screen.findByText("Finish report")).toBeInTheDocument();
     expect(deleteSpy).not.toHaveBeenCalled();
   });
+
+  test("multi-delete: deleting A then B within 5s removes both, each independently undoable, and fires the correct DELETE id", async () => {
+    jest.useFakeTimers();
+    const deleteA = jest.fn(() => jsonResponse({ success: true, id: "d-A" }));
+    const deleteB = jest.fn(() => jsonResponse({ success: true, id: "d-B" }));
+    const A = { id: "d-A", description: "Finish report", due_date: "2030-04-10T00:00:00Z", status: "pending" };
+    const B = { id: "d-B", description: "Send invoice", due_date: "2030-04-12T00:00:00Z", status: "pending" };
+
+    global.fetch.mockImplementation((input, options = {}) => {
+      const url = typeof input === "string" ? input : input.url;
+      const method = options.method || "GET";
+      if (url.includes("/deadlines/d-A") && method === "DELETE") return deleteA();
+      if (url.includes("/deadlines/d-B") && method === "DELETE") return deleteB();
+      if (url.includes("/deadlines")) return jsonResponse({ deadlines: [A, B] });
+      if (url.includes("/projects")) return jsonResponse({ projects: [] });
+      if (url.endsWith("/progress")) return jsonResponse({ deadlines: [], projects: [] });
+      if (url.endsWith("/entities")) return jsonResponse({ entities: [] });
+      if (url.endsWith("/entity-relations")) return jsonResponse({ relations: [] });
+      if (url.includes("/insights/patterns")) return jsonResponse({ data: {} });
+      if (url.includes("/insights/tagline")) return jsonResponse({});
+      if (url.endsWith("/insights")) return jsonResponse({ insights: [] });
+      if (url.includes("/stats/dashboard")) return jsonResponse({});
+      if (url.endsWith("/entries")) return jsonResponse({ entries: [] });
+      return jsonResponse({});
+    });
+
+    render(<Dashboard isActive userId={TEST_USER_ID} />);
+
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+    expect(screen.getByText("Send invoice")).toBeInTheDocument();
+
+    // Delete A, then delete B WHILE A is still within its 5s window. Under the
+    // old single pending-delete slot the 2nd delete was silently dropped; now
+    // each gets its own pending state + toast.
+    fireEvent.click(screen.getByLabelText(/actions for finish report/i));
+    fireEvent.click(screen.getByLabelText(/delete finish report/i));
+    fireEvent.click(screen.getByLabelText(/actions for send invoice/i));
+    fireEvent.click(screen.getByLabelText(/delete send invoice/i));
+
+    // Both rows gone; both DELETEs still deferred behind their windows.
+    expect(screen.queryByText("Finish report")).not.toBeInTheDocument();
+    expect(screen.queryByText("Send invoice")).not.toBeInTheDocument();
+    expect(deleteA).not.toHaveBeenCalled();
+    expect(deleteB).not.toHaveBeenCalled();
+
+    // Two independent, stacked undo toasts — one per deadline.
+    expect(
+      screen.getByRole("button", { name: /undo deadline delete for finish report/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /undo deadline delete for send invoice/i })
+    ).toBeInTheDocument();
+
+    // Undo A only: A comes back, B stays pending-deleted, A's DELETE never fires.
+    fireEvent.click(
+      screen.getByRole("button", { name: /undo deadline delete for finish report/i })
+    );
+    expect(await screen.findByText("Finish report")).toBeInTheDocument();
+    expect(screen.queryByText("Send invoice")).not.toBeInTheDocument();
+
+    // Let B's window elapse: only B's DELETE fires, with the correct id.
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+    await waitFor(() => expect(deleteB).toHaveBeenCalledTimes(1));
+    expect(deleteA).not.toHaveBeenCalled();
+  });
 });
