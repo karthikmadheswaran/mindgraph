@@ -1,6 +1,9 @@
 .toast {
   position: fixed;
-  bottom: 32px;
+  /* Stacked toasts: each sits one slot (60px) above the previous so
+     concurrent deletes/snooze/errors don't overlap. --toast-offset defaults
+     to 0 for single-toast consumers (InputView, MyProgress). */
+  bottom: calc(32px + var(--toast-offset, 0) * 60px);
   left: 50%;
   padding: 12px 20px;
   border-radius: var(--radius-pill);
@@ -61,7 +64,7 @@
 
 @media (max-width: 768px) {
   .toast {
-    bottom: 80px;
+    bottom: calc(80px + var(--toast-offset, 0) * 60px);
     min-width: calc(100vw - 24px);
     padding: 12px 16px;
   }
