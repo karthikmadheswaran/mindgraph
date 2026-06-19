@@ -1,0 +1,197 @@
+{
+ "metadata": {
+  "ran_at": "2026-06-19T15-41-29.742552+00-00",
+  "git_commit": "4ea06e32b5b7d6d256818f6eaec3cb84fb24fdfd",
+  "harness": "intention_threshold_calibration"
+ },
+ "summary": {
+  "n_should_merge": 12,
+  "n_should_split": 12,
+  "merge_pair_cosine": {
+   "max": 0.9621,
+   "min": 0.8228,
+   "median": 0.9308
+  },
+  "split_pair_cosine": {
+   "max": 0.8227,
+   "min": 0.6804,
+   "median": 0.7499
+  },
+  "split_max": 0.8227,
+  "sweep": [
+   {
+    "threshold": 0.8,
+    "false_merges": 1,
+    "false_splits": 0,
+    "merges_kept": 12
+   },
+   {
+    "threshold": 0.82,
+    "false_merges": 1,
+    "false_splits": 0,
+    "merges_kept": 12
+   },
+   {
+    "threshold": 0.84,
+    "false_merges": 0,
+    "false_splits": 1,
+    "merges_kept": 11
+   },
+   {
+    "threshold": 0.86,
+    "false_merges": 0,
+    "false_splits": 1,
+    "merges_kept": 11
+   },
+   {
+    "threshold": 0.88,
+    "false_merges": 0,
+    "false_splits": 1,
+    "merges_kept": 11
+   },
+   {
+    "threshold": 0.9,
+    "false_merges": 0,
+    "false_splits": 1,
+    "merges_kept": 11
+   },
+   {
+    "threshold": 0.92,
+    "false_merges": 0,
+    "false_splits": 3,
+    "merges_kept": 9
+   },
+   {
+    "threshold": 0.94,
+    "false_merges": 0,
+    "false_splits": 8,
+    "merges_kept": 4
+   }
+  ],
+  "recommended_threshold": 0.84,
+  "bias": "split (recommended = lowest threshold with zero false merges)",
+  "provider": "vertex"
+ },
+ "results": [
+  {
+   "case_id": "merge::want to hit the gym|need to get back to the gym",
+   "kind": "should_merge",
+   "cosine": 0.9243
+  },
+  {
+   "case_id": "merge::learn spanish|start learning spanish",
+   "kind": "should_merge",
+   "cosine": 0.9521
+  },
+  {
+   "case_id": "merge::call mom more|want to call my mother more often",
+   "kind": "should_merge",
+   "cosine": 0.9338
+  },
+  {
+   "case_id": "merge::save money|get better at saving money",
+   "kind": "should_merge",
+   "cosine": 0.9173
+  },
+  {
+   "case_id": "merge::start writing again|get back into writing",
+   "kind": "should_merge",
+   "cosine": 0.9621
+  },
+  {
+   "case_id": "merge::learn piano|want to play the piano",
+   "kind": "should_merge",
+   "cosine": 0.9308
+  },
+  {
+   "case_id": "merge::read more|want to read more books",
+   "kind": "should_merge",
+   "cosine": 0.8228
+  },
+  {
+   "case_id": "merge::get fit|get back in shape",
+   "kind": "should_merge",
+   "cosine": 0.9291
+  },
+  {
+   "case_id": "merge::meditate regularly|start a meditation habit",
+   "kind": "should_merge",
+   "cosine": 0.9167
+  },
+  {
+   "case_id": "merge::cut back on caffeine|drink less coffee",
+   "kind": "should_merge",
+   "cosine": 0.9491
+  },
+  {
+   "case_id": "merge::walk more|go for more walks",
+   "kind": "should_merge",
+   "cosine": 0.9558
+  },
+  {
+   "case_id": "merge::learn to cook|get better at cooking",
+   "kind": "should_merge",
+   "cosine": 0.939
+  },
+  {
+   "case_id": "split::learn spanish|learn guitar",
+   "kind": "should_split",
+   "cosine": 0.8227
+  },
+  {
+   "case_id": "split::get back to the gym|eat healthier",
+   "kind": "should_split",
+   "cosine": 0.7499
+  },
+  {
+   "case_id": "split::save money|call mom more",
+   "kind": "should_split",
+   "cosine": 0.7289
+  },
+  {
+   "case_id": "split::learn piano|learn spanish",
+   "kind": "should_split",
+   "cosine": 0.7928
+  },
+  {
+   "case_id": "split::start writing again|declutter the garage",
+   "kind": "should_split",
+   "cosine": 0.7276
+  },
+  {
+   "case_id": "split::walk more|cut back on caffeine",
+   "kind": "should_split",
+   "cosine": 0.7588
+  },
+  {
+   "case_id": "split::read more books|save money",
+   "kind": "should_split",
+   "cosine": 0.769
+  },
+  {
+   "case_id": "split::learn to cook|get back to the gym",
+   "kind": "should_split",
+   "cosine": 0.6905
+  },
+  {
+   "case_id": "split::start therapy|learn spanish",
+   "kind": "should_split",
+   "cosine": 0.6915
+  },
+  {
+   "case_id": "split::call mom more|learn guitar",
+   "kind": "should_split",
+   "cosine": 0.6804
+  },
+  {
+   "case_id": "split::meditate regularly|save money",
+   "kind": "should_split",
+   "cosine": 0.7612
+  },
+  {
+   "case_id": "split::get fit|learn piano",
+   "kind": "should_split",
+   "cosine": 0.7591
+  }
+ ]
+}
