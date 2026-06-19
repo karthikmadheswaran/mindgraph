@@ -81,9 +81,15 @@ class ExtractedIntention(BaseModel):
     is the clean canonical phrase ("get back to the gym"); `raw_text` is the
     exact source phrase, kept so the deterministic precision backstop can judge
     tense/subject/date on the original words (normalization strips that signal).
-    Normalization + per-entry dedup happen as Python post-processing in the node."""
-    text: str = Field(min_length=1, max_length=120)
-    raw_text: str = Field(default="", max_length=300)
+    Normalization + per-entry dedup happen as Python post-processing in the node.
+
+    No length cap here ON PURPOSE: a tight max_length made pydantic raise a
+    ValidationError on a too-long extraction, crashing the WHOLE entry's
+    extraction (real entries hit it). Length is enforced softly in the node's
+    backstop instead (an over-long "intention" is an echoed sentence -> dropped),
+    so one bad item never sinks the good ones."""
+    text: str = Field(min_length=1)
+    raw_text: str = Field(default="")
 
 
 class IntentionList(BaseModel):

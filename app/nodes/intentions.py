@@ -121,11 +121,71 @@ def _is_disqualified(probe: str) -> bool:
     return "should" in probe  # bare 'should' venting, unless rescued above
 
 
+# A canonical intention is a SHORT verb phrase. A long `text` means the model
+# echoed a sentence instead of canonicalizing — drop it (also keeps drift cards
+# readable). Real fixtures top out well under this.
+_MAX_INTENTION_TEXT_LEN = 80
+
+# Inverted-urge guard: the writer journals about RESISTING/QUITTING a habit, so
+# the urge itself ("smoke", "take a break and smoke") must NEVER become a drift
+# card — surfacing it would nag them toward the thing they're trying to stop, and
+# their actual GOAL is the opposite. KEEP the quit-framed goal ("not be a
+# smoker", "quit smoking", "skip the cigarette"). Scoped to smoking-class urges
+# (the only one in real data); extend only if real traffic shows another.
+_URGE_TOKENS = ("smoke", "smoking", "cigarette", "cigarettes", "vape", "vaping", "nicotine")
+_QUIT_MARKERS = (
+    "not ", "quit", "stop", "skip", "give up", "gave up", "cut down", "cut back",
+    "less", "no more", "avoid", "resist", "without", "instead",
+)
+
+# Contentless guard: a real intention names a concrete object/aim. Pronoun-only /
+# filler fragments ("go back", "fix it though", "sort that one too", "see how it
+# goes", "hope for it a lot") carry no action object. A candidate is contentless
+# when EVERY token is a function/vague word — the concrete nouns in real
+# intentions (gym, job, keyboard, AND dev-task objects like "rag system") always
+# leave at least one content token, so dev-TODOs are NOT dropped.
+_NONCONTENT = {
+    "a", "an", "the", "to", "of", "in", "on", "for", "and", "or", "but", "with", "at", "by",
+    "as", "from", "my", "me", "i", "we", "us", "our", "you", "your", "myself", "it", "its",
+    "that", "this", "these", "those", "them", "they", "is", "am", "are", "was", "were", "be",
+    "been", "being", "do", "does", "did", "have", "has", "had", "will", "would", "can", "could",
+    "should", "may", "might", "must", "not", "no", "just", "really", "very", "so", "too",
+    "though", "also", "again", "back", "now", "then", "here", "there", "up", "down", "out",
+    "about", "around", "over", "like", "how", "if", "well", "more", "less", "much", "many",
+    "some", "any", "all", "quite", "still", "yet", "maybe", "somehow", "go", "going", "goes",
+    "gone", "went", "see", "seeing", "seen", "hope", "hoping", "sort", "sorting", "work",
+    "working", "works", "fix", "fixing", "check", "checking", "keep", "keeping", "try", "trying",
+    "get", "getting", "make", "making", "want", "wanting", "need", "needing", "thing", "things",
+    "stuff", "one", "ones", "something", "anything", "everything", "nothing", "way", "ways",
+    "lot", "lots", "bit", "kind",
+}
+
+
+def _is_inverted_urge(probe: str) -> bool:
+    if not any(t in probe for t in _URGE_TOKENS):
+        return False
+    return not any(q in probe for q in _QUIT_MARKERS)  # keep the quit-framed goal
+
+
+def _is_contentless(text: str) -> bool:
+    tokens = [t.strip("'\".,!?;:()-") for t in text.lower().split()]
+    tokens = [t for t in tokens if t]
+    return bool(tokens) and all(t in _NONCONTENT for t in tokens)
+
+
 def drop_non_intentions(items: list[dict]) -> list[dict]:
-    """Drop candidates that are disqualified and not rescued. Precision backstop."""
+    """Drop candidates that are over-long, inverted urges, contentless, or
+    disqualified-and-not-rescued. Precision backstop."""
     kept: list[dict] = []
     for item in items:
-        probe = f"{item.get('raw_text', '')} {item.get('text', '')}".lower()
+        text = item.get("text", "")
+        if len(text) > _MAX_INTENTION_TEXT_LEN:
+            continue
+        probe = f"{item.get('raw_text', '')} {text}".lower()
+        if _is_inverted_urge(probe):       # "smoke" when journaling about quitting
+            continue
+        if _is_contentless(text):          # "go back", "fix it though"
+            continue
         if _is_disqualified(probe) and not _is_rescued(probe):
             continue
         kept.append(item)
@@ -189,7 +249,19 @@ async def extract_intentions(state: JournalState) -> dict:
     raw_text = state["raw_text"]
 
     prompt = build_intention_prompt(text, raw_text)
-    result = await structured_model.ainvoke(prompt)
+    try:
+        result = await structured_model.ainvoke(prompt)
+    except Exception as exc:
+        # Rate/quota errors must PROPAGATE — live treats them as a retryable entry
+        # error, and the backfill retries them with backoff (else a transient 429
+        # would silently drop real intentions). Any OTHER error (e.g. a parse the
+        # schema can't bind) fails safe — extract nothing rather than crash the
+        # fan-out node and error the whole entry.
+        msg = str(exc).lower()
+        if any(s in msg for s in ("429", "resource exhausted", "exhausted", "quota")):
+            raise
+        logger.warning("extract_intentions: structured parse failed; extracting nothing: %s", exc)
+        return {"intentions": []}
 
     # Structured decoding returns None on an empty/blocked/zero-token response
     # (observed under Vertex 429 pressure; the same flash-lite pathology noted

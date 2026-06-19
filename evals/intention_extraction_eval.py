@@ -116,6 +116,9 @@ FIXTURES = [
     {"name": "pos_boundary_drive_lament", "label": "intention", "markers": ["driv"],
      "text": "it genuinely frustrates me that I still haven't started learning to drive.",
      "note": "BOUNDARY: lament-as-latent-intention -> extract"},
+    # the quit-smoking GOAL is a real intention and MUST survive (vs the urge below)
+    {"name": "pos_quit_smoking", "label": "intention", "markers": ["smok"],
+     "text": "I really want to quit smoking for good this time."},
 
     # ---- NEGATIVES: must NOT extract -----------------------------------------
     # past narration (already happened)
@@ -195,6 +198,23 @@ FIXTURES = [
      "text": "finally submitted the visa form, such a relief to have it off my plate."},
     {"name": "neg_done_passport", "label": "none", "category": "completed",
      "text": "renewed my passport today, one less thing to worry about."},
+    # inverted urges — the writer is journaling about a habit they want to STOP;
+    # the urge must NOT surface as a drift card (Option B, real-data finding)
+    {"name": "neg_urge_smoke", "label": "none", "category": "inverted_urge",
+     "text": "ugh the craving is bad, I just want to take a break and go smoke."},
+    {"name": "neg_urge_smoke2", "label": "none", "category": "inverted_urge",
+     "text": "I really want to smoke a cigarette right now, the urge is so strong."},
+    # contentless / pronoun-only fragments — no concrete action object
+    {"name": "neg_vague_go_back", "label": "none", "category": "contentless",
+     "text": "honestly part of me just wants to go back."},
+    {"name": "neg_vague_fix_it", "label": "none", "category": "contentless",
+     "text": "I really need to fix it though, at some point."},
+    {"name": "neg_vague_sort_that", "label": "none", "category": "contentless",
+     "text": "I keep meaning to sort that one too eventually."},
+    {"name": "neg_vague_see_how", "label": "none", "category": "contentless",
+     "text": "no real plan, I guess I'll just see how it goes."},
+    {"name": "neg_vague_hope", "label": "none", "category": "contentless",
+     "text": "I really do hope for it a lot."},
 ]
 
 
