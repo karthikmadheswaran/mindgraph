@@ -278,6 +278,14 @@ async def delete_deadline(
     return await deadline_service.delete_deadline(deadline_id, user_id)
 
 
+@app.post("/deadlines/{deadline_id}/restore")
+async def restore_deadline(
+    deadline_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    return await deadline_service.restore_deadline(deadline_id, user_id)
+
+
 @app.get("/projects")
 async def get_projects(
     status: Optional[str] = Query(default=None),

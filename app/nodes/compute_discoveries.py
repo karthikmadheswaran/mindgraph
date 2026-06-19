@@ -249,6 +249,7 @@ def _unmet_deadline_echo(user_id: str, has_deadline: bool) -> Optional[dict]:
             .lt("due_date", now)
             .neq("status", "done")
             .neq("status", "snoozed")
+            .is_("deleted_at", "null")
             .execute()
         )
         count = len(result.data or [])

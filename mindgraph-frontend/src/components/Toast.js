@@ -48,6 +48,7 @@ export default function Toast({
   duration = 4000,
   visible,
   onDismiss,
+  offset = 0,
 }) {
   useEffect(() => {
     if (!visible || duration == null) return;
@@ -61,6 +62,7 @@ export default function Toast({
       {visible && (
         <motion.div
           className={`toast ${type}`}
+          style={{ "--toast-offset": offset }}
           initial={{ opacity: 0, y: 40, scale: 0.95, x: "-50%" }}
           animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
           exit={{ opacity: 0, y: 20, scale: 0.95, x: "-50%" }}

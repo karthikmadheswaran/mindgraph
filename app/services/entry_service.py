@@ -147,6 +147,7 @@ def _fetch_entry_deadlines(entry_id: str, user_id: str) -> list[dict]:
         .select("description, due_date")
         .eq("user_id", user_id)
         .eq("source_entry_id", entry_id)
+        .is_("deleted_at", "null")
         .order("due_date", desc=False)
         .execute()
     )

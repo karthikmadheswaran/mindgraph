@@ -384,8 +384,7 @@ function Dashboard({ isActive, userId }) {
   const [openDeadlineMenuId, setOpenDeadlineMenuId] = useState(null);
   const [openProjectMenuId, setOpenProjectMenuId] = useState(null);
   const [pendingSnooze, setPendingSnooze] = useState(null);
-  const [pendingDeletion, setPendingDeletion] = useState(null);
-  const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
   const [shuffleKey, setShuffleKey] = useState(0);
   const [shuffling, setShuffling] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -396,51 +395,58 @@ function Dashboard({ isActive, userId }) {
   const refreshTimeoutRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   const deadlineBadgeRefs = useRef({});
-  const pendingDeletionRef = useRef(null);
-  const pendingDeletionTimerRef = useRef(null);
+  // id -> { deletion, timerId, toastId }. Multiple deletes can be pending at
+  // once (per-row undo); single-slot would silently drop a 2nd rapid delete.
+  const pendingDeletionsRef = useRef(new Map());
+  const toastIdRef = useRef(0);
   const pendingSnoozeRef = useRef(null);
   const pendingSnoozeTimerRef = useRef(null);
 
-  const applySnapshot = useCallback((snapshot) => {
-    const activePendingDeletion = pendingDeletionRef.current;
-    const nextDeadlines = normalizeDeadlines(snapshot.deadlines || []).filter(
-      (deadline) =>
-        !(
-          activePendingDeletion?.kind === "deadline" &&
-          activePendingDeletion.item.id === deadline.id
-        )
-    );
-    const nextProjects = normalizeProjects(snapshot.projects || []).filter(
-      (project) =>
-        !(
-          activePendingDeletion?.kind === "project" &&
-          activePendingDeletion.item.id === project.id
-        )
-    );
-
-    const nextEntries = (snapshot.entries || []).filter(
-      (entry) =>
-        !(
-          activePendingDeletion?.kind === "entry" &&
-          activePendingDeletion.item.id === entry.id
-        )
-    );
-    setEntries(nextEntries);
-    setAllDeadlines(nextDeadlines);
-    setAllProjects(nextProjects);
-    setEntities(snapshot.entities || []);
-    setRelations(snapshot.relations || []);
-    setStats(snapshot.stats || null);
-    setTagline(snapshot.tagline || null);
-    setLoadingData(false);
-    setRefreshing(false);
-    setSnapshotReady(true);
-    setLastSynced(formatSyncTime(snapshot.fetchedAt));
+  // A row is mid-delete (within its 5s undo window) when its id is in the map.
+  // A background snapshot refresh must NOT resurrect any pending row.
+  const isPendingDeletion = useCallback((kind, id) => {
+    const entry = pendingDeletionsRef.current.get(id);
+    return Boolean(entry && entry.deletion.kind === kind);
   }, []);
 
-  useEffect(() => {
-    pendingDeletionRef.current = pendingDeletion;
-  }, [pendingDeletion]);
+  const applySnapshot = useCallback(
+    (snapshot) => {
+      const nextDeadlines = normalizeDeadlines(snapshot.deadlines || []).filter(
+        (deadline) => !isPendingDeletion("deadline", deadline.id)
+      );
+      const nextProjects = normalizeProjects(snapshot.projects || []).filter(
+        (project) => !isPendingDeletion("project", project.id)
+      );
+      const nextEntries = (snapshot.entries || []).filter(
+        (entry) => !isPendingDeletion("entry", entry.id)
+      );
+      setEntries(nextEntries);
+      setAllDeadlines(nextDeadlines);
+      setAllProjects(nextProjects);
+      setEntities(snapshot.entities || []);
+      setRelations(snapshot.relations || []);
+      setStats(snapshot.stats || null);
+      setTagline(snapshot.tagline || null);
+      setLoadingData(false);
+      setRefreshing(false);
+      setSnapshotReady(true);
+      setLastSynced(formatSyncTime(snapshot.fetchedAt));
+    },
+    [isPendingDeletion]
+  );
+
+  // ——— Toast stack: many toasts (delete + snooze + errors) coexist, each
+  // with its own id so undo/finalize can dismiss exactly one ———
+  const dismissToast = useCallback((id) => {
+    setToasts((current) => current.filter((item) => item.id !== id));
+  }, []);
+
+  const pushToast = useCallback((toast) => {
+    toastIdRef.current += 1;
+    const id = `toast-${toastIdRef.current}`;
+    setToasts((current) => [...current, { ...toast, id }]);
+    return id;
+  }, []);
 
   const fetchEntries = useCallback(async () => {
     const headers = await authHeaders();
@@ -567,10 +573,11 @@ function Dashboard({ isActive, userId }) {
   }, [entries, fetchEntries, scheduleSilentRefresh, userId]);
 
   useEffect(() => {
+    const pendingDeletions = pendingDeletionsRef.current;
     return () => {
       clearTimeout(refreshTimeoutRef.current);
       clearTimeout(retryTimeoutRef.current);
-      clearTimeout(pendingDeletionTimerRef.current);
+      pendingDeletions.forEach((pending) => clearTimeout(pending.timerId));
       clearTimeout(pendingSnoozeTimerRef.current);
     };
   }, []);
@@ -826,35 +833,33 @@ function Dashboard({ isActive, userId }) {
     [setDeadlinesState, setEntriesState, setProjectsState]
   );
 
-  const clearPendingDeleteTimer = useCallback(() => {
-    if (pendingDeletionTimerRef.current) {
-      clearTimeout(pendingDeletionTimerRef.current);
-      pendingDeletionTimerRef.current = null;
-    }
-  }, []);
-
   const finalizePendingDeletion = useCallback(
     async (deletion) => {
       if (!deletion?.item) {
         return;
       }
 
-      clearPendingDeleteTimer();
-      pendingDeletionRef.current = null;
-      setPendingDeletion(null);
-      setToast(null);
+      const id = deletion.item.id;
+      const pending = pendingDeletionsRef.current.get(id);
+      if (pending?.timerId) {
+        clearTimeout(pending.timerId);
+      }
+      if (pending?.toastId) {
+        dismissToast(pending.toastId);
+      }
+      pendingDeletionsRef.current.delete(id);
 
       try {
         if (deletion.kind === "entry") {
-          await deleteEntry(deletion.item.id);
+          await deleteEntry(id);
         } else if (deletion.kind === "deadline") {
-          await deleteDeadline(deletion.item.id);
+          await deleteDeadline(id);
         } else {
-          await deleteProject(deletion.item.id);
+          await deleteProject(id);
         }
       } catch (error) {
         restoreDeletedItem(deletion);
-        setToast({
+        pushToast({
           message:
             error.message ||
             `Failed to delete ${deletion.kind}. Please try again.`,
@@ -863,30 +868,41 @@ function Dashboard({ isActive, userId }) {
       }
     },
     [
-      clearPendingDeleteTimer,
       deleteDeadline,
       deleteEntry,
       deleteProject,
+      dismissToast,
+      pushToast,
       restoreDeletedItem,
     ]
   );
 
-  const undoPendingDeletion = useCallback(() => {
-    const deletion = pendingDeletionRef.current;
-    if (!deletion?.item) {
-      return;
-    }
+  const undoPendingDeletion = useCallback(
+    (deletion) => {
+      if (!deletion?.item) {
+        return;
+      }
 
-    clearPendingDeleteTimer();
-    pendingDeletionRef.current = null;
-    restoreDeletedItem(deletion);
-    setPendingDeletion(null);
-    setToast(null);
-  }, [clearPendingDeleteTimer, restoreDeletedItem]);
+      const id = deletion.item.id;
+      const pending = pendingDeletionsRef.current.get(id);
+      if (pending?.timerId) {
+        clearTimeout(pending.timerId);
+      }
+      if (pending?.toastId) {
+        dismissToast(pending.toastId);
+      }
+      pendingDeletionsRef.current.delete(id);
+      restoreDeletedItem(deletion);
+    },
+    [dismissToast, restoreDeletedItem]
+  );
 
   const scheduleDelete = useCallback(
     (kind, item) => {
-      if (!item || pendingDeletionRef.current) {
+      // Per-id pending state: each rapid delete gets its own optimistic
+      // removal, finalize timer, and undo toast. Re-deleting an id already
+      // pending is a no-op; a different id is fully independent.
+      if (!item || pendingDeletionsRef.current.has(item.id)) {
         return;
       }
 
@@ -904,8 +920,6 @@ function Dashboard({ isActive, userId }) {
       }
 
       const deletion = { kind, item: normalizedItem };
-
-      pendingDeletionRef.current = deletion;
 
       if (kind === "entry") {
         setEntriesState((current) =>
@@ -936,23 +950,25 @@ function Dashboard({ isActive, userId }) {
         actionAriaLabel = `Undo project delete for ${item.name}`;
       }
 
-      setPendingDeletion(deletion);
-      setToast({
+      const toastId = pushToast({
         message,
         type: "success",
         actionLabel: "Undo",
         actionAriaLabel,
-        onAction: undoPendingDeletion,
+        onAction: () => undoPendingDeletion(deletion),
         duration: 5000,
       });
 
-      pendingDeletionTimerRef.current = setTimeout(() => {
+      const timerId = setTimeout(() => {
         finalizePendingDeletion(deletion);
       }, 5000);
+
+      pendingDeletionsRef.current.set(item.id, { deletion, timerId, toastId });
     },
     [
       editingDeadlineId,
       finalizePendingDeletion,
+      pushToast,
       setDeadlinesState,
       setEntriesState,
       setProjectsState,
@@ -1039,7 +1055,7 @@ function Dashboard({ isActive, userId }) {
           );
         }
 
-        setToast({
+        pushToast({
           message: error.message || "Failed to update project. Please try again.",
           type: "error",
         });
@@ -1051,7 +1067,7 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [setProgressState, setProjectsState, updateProjectStatus]
+    [pushToast, setProgressState, setProjectsState, updateProjectStatus]
   );
 
   const handleDeadlineStatusChange = useCallback(
@@ -1139,7 +1155,7 @@ function Dashboard({ isActive, userId }) {
           );
         }
 
-        setToast({
+        pushToast({
           message: error.message || "Failed to update deadline. Please try again.",
           type: "error",
         });
@@ -1151,7 +1167,13 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [editingDeadlineId, setDeadlinesState, setProgressState, updateDeadlineStatus]
+    [
+      editingDeadlineId,
+      pushToast,
+      setDeadlinesState,
+      setProgressState,
+      updateDeadlineStatus,
+    ]
   );
 
   const closeDeadlinePicker = useCallback((deadlineId = null) => {
@@ -1205,7 +1227,7 @@ function Dashboard({ isActive, userId }) {
             )
           )
         );
-        setToast({
+        pushToast({
           message:
             error.message || "Failed to update deadline date. Please try again.",
           type: "error",
@@ -1218,7 +1240,7 @@ function Dashboard({ isActive, userId }) {
         });
       }
     },
-    [closeDeadlinePicker, setDeadlinesState, updateDeadlineDate]
+    [closeDeadlinePicker, pushToast, setDeadlinesState, updateDeadlineDate]
   );
 
   // ——— Snooze (with 5s undo, mirrors scheduleDelete pattern) ———
@@ -1256,8 +1278,10 @@ function Dashboard({ isActive, userId }) {
       )
     );
     setPendingSnooze(null);
-    setToast(null);
-  }, [clearPendingSnoozeTimer, setDeadlinesState]);
+    if (snooze.toastId) {
+      dismissToast(snooze.toastId);
+    }
+  }, [clearPendingSnoozeTimer, dismissToast, setDeadlinesState]);
 
   const finalizePendingSnooze = useCallback(
     async (snooze) => {
@@ -1265,7 +1289,9 @@ function Dashboard({ isActive, userId }) {
       clearPendingSnoozeTimer();
       pendingSnoozeRef.current = null;
       setPendingSnooze(null);
-      setToast(null);
+      if (snooze.toastId) {
+        dismissToast(snooze.toastId);
+      }
       try {
         const updated = normalizeDeadline(
           await updateDeadlineDate(snooze.deadlineId, snooze.newDueDate)
@@ -1285,13 +1311,19 @@ function Dashboard({ isActive, userId }) {
             )
           )
         );
-        setToast({
+        pushToast({
           message: error.message || "Failed to snooze. Please try again.",
           type: "error",
         });
       }
     },
-    [clearPendingSnoozeTimer, setDeadlinesState, updateDeadlineDate]
+    [
+      clearPendingSnoozeTimer,
+      dismissToast,
+      pushToast,
+      setDeadlinesState,
+      updateDeadlineDate,
+    ]
   );
 
   const scheduleSnooze = useCallback(
@@ -1336,7 +1368,9 @@ function Dashboard({ isActive, userId }) {
       );
 
       const label = days === 1 ? "1 day" : days === 7 ? "1 week" : `${days} days`;
-      setToast({
+      // Snooze stays single-slot logically (pendingSnoozeRef); only its toast
+      // joins the shared stack so it coexists with delete/error toasts.
+      snooze.toastId = pushToast({
         message: `Snoozed ${label}.`,
         type: "success",
         actionLabel: "Undo",
@@ -1352,6 +1386,7 @@ function Dashboard({ isActive, userId }) {
     [
       finalizePendingSnooze,
       formatDueDateInput,
+      pushToast,
       setDeadlinesState,
       undoPendingSnooze,
     ]
@@ -1919,16 +1954,20 @@ function Dashboard({ isActive, userId }) {
         )}
       </AnimatePresence>
 
-      <Toast
-        message={toast?.message}
-        type={toast?.type || "success"}
-        actionLabel={toast?.actionLabel}
-        actionAriaLabel={toast?.actionAriaLabel}
-        onAction={toast?.onAction}
-        duration={toast?.duration}
-        visible={!!toast}
-        onDismiss={() => setToast(null)}
-      />
+      {toasts.map((toastItem, index) => (
+        <Toast
+          key={toastItem.id}
+          offset={index}
+          message={toastItem.message}
+          type={toastItem.type || "success"}
+          actionLabel={toastItem.actionLabel}
+          actionAriaLabel={toastItem.actionAriaLabel}
+          onAction={toastItem.onAction}
+          duration={toastItem.duration}
+          visible
+          onDismiss={() => dismissToast(toastItem.id)}
+        />
+      ))}
     </AnimatedView>
   );
 }
