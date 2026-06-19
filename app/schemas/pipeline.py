@@ -78,9 +78,12 @@ class DeadlineList(BaseModel):
 class ExtractedIntention(BaseModel):
     """A single stated intention — an UNDATED aspiration the writer expresses a
     present, first-person want/intent to pursue but is NOT yet acting on. `text`
-    is the clean canonical phrase ("get back to the gym"), not the raw sentence;
-    normalization + per-entry dedup happen as Python post-processing in the node."""
+    is the clean canonical phrase ("get back to the gym"); `raw_text` is the
+    exact source phrase, kept so the deterministic precision backstop can judge
+    tense/subject/date on the original words (normalization strips that signal).
+    Normalization + per-entry dedup happen as Python post-processing in the node."""
     text: str = Field(min_length=1, max_length=120)
+    raw_text: str = Field(default="", max_length=300)
 
 
 class IntentionList(BaseModel):

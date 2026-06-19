@@ -36,6 +36,7 @@ Run:
 """
 import asyncio
 import os
+import random
 
 from dotenv import load_dotenv
 
@@ -197,6 +198,32 @@ FIXTURES = [
 ]
 
 
+# Vertex QPM is shallow for flash-lite in us-central1; 58 fixtures x N rounds
+# bursts past it (STATE: the eval-burst 429 artifact). Pace calls and back off
+# on 429 so the run survives without a quota bump. Tunable via env.
+_PACE_S = float(os.getenv("INTENTION_EVAL_DELAY", "0.8"))
+
+
+async def _extract_paced(state, max_attempts: int = 8) -> dict:
+    """Returns the node output, or {"_error": "rate_limited"} if 429s outlast all
+    retries. An errored call is EXCLUDED from the precision/recall denominators
+    (not counted as a clean rejection) so a depleted quota can't silently inflate
+    the score. Non-rate exceptions still raise — real bugs must surface."""
+    for attempt in range(max_attempts):
+        try:
+            return await extract_intentions(state)
+        except Exception as exc:
+            msg = str(exc).lower()
+            is_rate = "429" in msg or "resource exhausted" in msg or "exhausted" in msg
+            if not is_rate:
+                raise
+            if attempt == max_attempts - 1:
+                return {"_error": "rate_limited"}
+            backoff = _PACE_S * (2 ** attempt) + random.uniform(0, 1.0)
+            print(f"   [429] backing off {backoff:.1f}s (attempt {attempt + 1}/{max_attempts})")
+            await asyncio.sleep(backoff)
+
+
 def _cand_texts(out) -> list[str]:
     cands = (out or {}).get("intentions") or []
     texts = []
@@ -208,13 +235,22 @@ def _cand_texts(out) -> list[str]:
 
 
 async def run_round(round_idx: int) -> dict:
-    tp = fp = positives_hit = n_pos = 0
+    tp = fp = positives_hit = n_pos = errored = 0
     per_fixture = []
     leaks = []  # FP detail for diagnosis
 
     for fx in FIXTURES:
         state = {**BASE, "raw_text": fx["text"], "cleaned_text": fx["text"]}
-        out = await extract_intentions(state)
+        out = await _extract_paced(state)
+        if not os.getenv("INTENTION_STUB"):
+            await asyncio.sleep(_PACE_S)  # pace to stay under Vertex QPM
+
+        if isinstance(out, dict) and out.get("_error"):
+            errored += 1
+            per_fixture.append({"case_id": fx["name"], "label": fx["label"],
+                                "errored": out["_error"]})
+            print(f"   ERRORED [{fx['name']}] — excluded from precision")
+            continue
         texts = _cand_texts(out)
 
         if fx["label"] == "intention":
@@ -243,18 +279,18 @@ async def run_round(round_idx: int) -> dict:
 
     precision = tp / (tp + fp) if (tp + fp) else None
     recall = positives_hit / n_pos if n_pos else None
-    n_pass = sum(1 for r in per_fixture if r["passed"])
+    n_pass = sum(1 for r in per_fixture if r.get("passed"))
     print(f"\n--- round {round_idx + 1}: "
           f"precision={'n/a' if precision is None else f'{precision:.3f}'} "
           f"recall={'n/a' if recall is None else f'{recall:.3f}'} "
-          f"(tp={tp} fp={fp})  fixtures {n_pass}/{len(FIXTURES)} ---")
+          f"(tp={tp} fp={fp} errored={errored})  fixtures {n_pass}/{len(FIXTURES)} ---")
     for lk in leaks:
         print(f"   LEAK [{lk['kind']}] {lk['fixture']}: {lk['texts']}")
 
     return {
         "round": round_idx + 1, "precision": precision, "recall": recall,
-        "tp": tp, "fp": fp, "fixtures_passed": n_pass, "leaks": leaks,
-        "per_fixture": per_fixture,
+        "tp": tp, "fp": fp, "errored": errored, "fixtures_passed": n_pass,
+        "leaks": leaks, "per_fixture": per_fixture,
     }
 
 
@@ -271,9 +307,11 @@ async def run() -> dict:
     mean_p = sum(precisions) / len(precisions) if precisions else None
     mean_r = sum(recalls) / len(recalls) if recalls else None
 
+    total_errored = sum(r.get("errored", 0) for r in round_results)
     summary = {
         "rounds": rounds,
         "n_fixtures": len(FIXTURES),
+        "total_errored_excluded": total_errored,
         "n_positives": sum(1 for f in FIXTURES if f["label"] == "intention"),
         "n_negatives": sum(1 for f in FIXTURES if f["label"] == "none"),
         "precision_per_round": precisions,
@@ -295,6 +333,8 @@ async def run() -> dict:
         print(f"precision: per-round {[round(p, 3) for p in precisions]}  "
               f"mean={mean_p:.3f}  range=[{min(precisions):.3f},{max(precisions):.3f}]")
     print(f"recall:    {'n/a' if mean_r is None else f'mean={mean_r:.3f}'}")
+    if total_errored:
+        print(f"NOTE: {total_errored} call(s) excluded (rate-limited) — re-run if this is large.")
     print(f"GATE >= 0.90 : {'PASS' if summary['gate_passed'] else 'FAIL'}")
 
     if os.getenv("SAVE_RESULTS"):
