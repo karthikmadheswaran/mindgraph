@@ -342,6 +342,26 @@ async def get_intention_drift(
     return await intention_service.get_drift(user_id, threshold_days)
 
 
+@app.post("/intentions/{intention_id}/resolve")
+async def resolve_intention(
+    intention_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    # Soft transition: status -> 'resolved' ("I did this"). Ownership-scoped in
+    # the service (404 if not the caller's). Reversible; never deletes.
+    return await intention_service.resolve_intention(user_id, intention_id)
+
+
+@app.post("/intentions/{intention_id}/dismiss")
+async def dismiss_intention(
+    intention_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    # Soft transition: status -> 'dismissed' ("stop showing me this"). Distinct
+    # from resolve so analytics separate completions from don't-want-shown.
+    return await intention_service.dismiss_intention(user_id, intention_id)
+
+
 @app.post("/entries/stream")
 async def create_entry_stream(entry: EntryRequest, user_id: str = Depends(get_current_user)):
     return await entry_service.create_entry_stream(entry, user_id)

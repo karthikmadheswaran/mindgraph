@@ -321,6 +321,7 @@ function PatternsObservatory({
   noticed = "Noticed from your entries",
   sub = "Things you wouldn't see without someone reading all of it.",
   fallback = PATTERN_CARDS_FALLBACK,
+  onDriftAction,
 }) {
   const renderCards = cards && cards.length > 0 ? cards : fallback;
   return (
@@ -403,9 +404,20 @@ function PatternsObservatory({
                   <span className="po-dot" style={{ background: t.accent }} />
                   {c.footL}
                 </span>
-                <button type="button" className="po-foot-btn" style={{ color: t.accent }}>
-                  {c.footR}
-                </button>
+                {c.type === "drift" && onDriftAction && c.id ? (
+                  <span style={{ display: "flex", gap: "14px" }}>
+                    <button type="button" className="po-foot-btn" style={{ color: t.accent }} onClick={() => onDriftAction(c.id, "resolve")}>
+                      Did this
+                    </button>
+                    <button type="button" className="po-foot-btn" style={{ color: "#8a8780" }} onClick={() => onDriftAction(c.id, "dismiss")}>
+                      Dismiss
+                    </button>
+                  </span>
+                ) : c.footR ? (
+                  <button type="button" className="po-foot-btn" style={{ color: t.accent }}>
+                    {c.footR}
+                  </button>
+                ) : null}
               </div>
             </motion.div>
           );
@@ -460,6 +472,36 @@ function Dashboard({ isActive, userId }) {
   const [noticedInsight, setNoticedInsight] = useState(null);
   const [patternCards, setPatternCards] = useState([]);
   const [driftCards, setDriftCards] = useState([]);
+
+  const refetchDrift = useCallback(async () => {
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API}/intentions/drift`, { headers });
+      if (res.ok) setDriftCards(buildDriftCards(await res.json()));
+    } catch {
+      /* keep last-known cards on a transient fetch error */
+    }
+  }, []);
+
+  // P6: resolve ("Did this") / dismiss ("not relevant") a drifting intention.
+  // Optimistic remove for responsiveness, then re-sync with the server so the
+  // view always reflects truth; on failure, re-sync instead of silently dropping.
+  const handleDriftAction = useCallback(
+    async (id, action) => {
+      if (!id || (action !== "resolve" && action !== "dismiss")) return;
+      setDriftCards((cards) => cards.filter((c) => c.id !== id));
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API}/intentions/${id}/${action}`, { method: "POST", headers });
+        if (!res.ok) throw new Error(`${action} failed: ${res.status}`);
+        await refetchDrift();
+      } catch (err) {
+        console.error("drift action failed", err);
+        await refetchDrift();
+      }
+    },
+    [refetchDrift]
+  );
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -2017,6 +2059,7 @@ function Dashboard({ isActive, userId }) {
             noticed="Stated once, then quiet"
             sub="Not a to-do list — just what you named, and how long it's been since."
             fallback={DRIFT_EMPTY}
+            onDriftAction={handleDriftAction}
           />
         </div>
 

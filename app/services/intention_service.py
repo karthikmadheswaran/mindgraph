@@ -14,11 +14,21 @@ import logging
 import os
 from datetime import datetime, timezone
 
+from fastapi import HTTPException
+
 from app.db import supabase
+from app.services.helpers import utc_now_iso
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_DRIFT_THRESHOLD_DAYS = 14
+
+# Terminal lifecycle statuses (drift P6). SOFT transitions — set status only,
+# never deleted_at. Both fall OUTSIDE the active/dormant whitelist that get_drift
+# (and the resolver's match query) use, so a resolved/dismissed intention drops
+# out of the drift card the moment it's set — read and write stay in lockstep.
+RESOLVED = "resolved"
+DISMISSED = "dismissed"
 
 
 def _drift_days(last_referenced_at, now: datetime):
@@ -64,6 +74,8 @@ async def get_drift(user_id: str, threshold_days: int | None = None) -> dict:
         supabase.table("intentions")
         .select("id, text, first_stated_at, last_referenced_at, reference_count, status")
         .eq("user_id", user_id)
+        # 'resolved'/'dismissed' (P6) are outside this whitelist, so a closed
+        # intention disappears from the card immediately — no separate exclusion.
         .in_("status", ["active", "dormant"])
         .is_("deleted_at", "null")
         .execute()
@@ -93,3 +105,40 @@ async def get_drift(user_id: str, threshold_days: int | None = None) -> dict:
         reverse=True,
     )
     return {"threshold_days": threshold, "intentions": items}
+
+
+# ── Lifecycle (drift P6): the first USER-triggered writes to intentions ────────
+
+
+async def _set_terminal_status(user_id: str, intention_id: str, new_status: str) -> dict:
+    """Ownership-scoped SOFT transition. The UPDATE is scoped
+    WHERE id = ? AND user_id = ? AND deleted_at IS NULL, so another user's id (or
+    a missing / soft-deleted row) matches nothing -> a clean 404, never a 500 and
+    never a cross-user write. Idempotent: re-resolving an already-resolved
+    intention still matches the row and re-sets the same status -> 200, not an
+    error. Sets updated_at as the transition timestamp; the status VALUE
+    ('resolved' vs 'dismissed') is what keeps the two actions distinguishable for
+    analytics. Never touches deleted_at — fully reversible."""
+    result = (
+        supabase.table("intentions")
+        .update({"status": new_status, "updated_at": utc_now_iso()}, returning="representation")
+        .eq("id", intention_id)
+        .eq("user_id", user_id)
+        .is_("deleted_at", "null")
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Intention not found")
+    return {"status": "ok", "intention": result.data[0]}
+
+
+async def resolve_intention(user_id: str, intention_id: str) -> dict:
+    """Positive close — "I did this / no longer true". status -> 'resolved'."""
+    return await _set_terminal_status(user_id, intention_id, RESOLVED)
+
+
+async def dismiss_intention(user_id: str, intention_id: str) -> dict:
+    """"Stop showing me this" — NOT a completion judgment. status -> 'dismissed'.
+    Kept distinct from 'resolved' so launch analytics separate real completions
+    from bad-extraction / don't-want-shown."""
+    return await _set_terminal_status(user_id, intention_id, DISMISSED)
