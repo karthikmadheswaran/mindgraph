@@ -1,0 +1,1815 @@
+{
+ "metadata": {
+  "ran_at": "2026-06-19T14-43-10.925760+00-00",
+  "git_commit": "9ebc3efc4d49b12d0953978d8db1502d454015a2",
+  "harness": "intention_extraction",
+  "rounds_detail": [
+   {
+    "round": 1,
+    "precision": 0.6097560975609756,
+    "recall": 1.0,
+    "tp": 25,
+    "fp": 16,
+    "errored": 0,
+    "fixtures_passed": 43,
+    "leaks": [
+     {
+      "fixture": "neg_past_finished_book",
+      "kind": "past_narration",
+      "texts": [
+       "finish reading that novel"
+      ]
+     },
+     {
+      "fixture": "neg_past_meditated_walked",
+      "kind": "past_narration",
+      "texts": [
+       "meditation",
+       "go for a long walk"
+      ]
+     },
+     {
+      "fixture": "neg_acting_spanish",
+      "kind": "already_acting",
+      "texts": [
+       "started spanish lessons this week"
+      ]
+     },
+     {
+      "fixture": "neg_acting_running_streak",
+      "kind": "already_acting",
+      "texts": [
+       "running"
+      ]
+     },
+     {
+      "fixture": "neg_vent_eat_better",
+      "kind": "venting",
+      "texts": [
+       "eat better"
+      ]
+     },
+     {
+      "fixture": "neg_vent_sleep_more",
+      "kind": "venting",
+      "texts": [
+       "sleep more"
+      ]
+     },
+     {
+      "fixture": "neg_vent_get_act_together",
+      "kind": "venting",
+      "texts": [
+       "get my act together"
+      ]
+     },
+     {
+      "fixture": "neg_vent_slow_down",
+      "kind": "venting",
+      "texts": [
+       "slow down"
+      ]
+     },
+     {
+      "fixture": "neg_other_friend_spanish",
+      "kind": "third_party",
+      "texts": [
+       "learn spanish"
+      ]
+     },
+     {
+      "fixture": "neg_dated_form_friday",
+      "kind": "dated_deadline",
+      "texts": [
+       "submit the form"
+      ]
+     },
+     {
+      "fixture": "neg_dated_rent",
+      "kind": "dated_deadline",
+      "texts": [
+       "pay rent"
+      ]
+     },
+     {
+      "fixture": "neg_hyp_january_fitness",
+      "kind": "hypothetical",
+      "texts": [
+       "get fit"
+      ]
+     },
+     {
+      "fixture": "neg_weak_maybe_travel",
+      "kind": "noncommittal",
+      "texts": [
+       "travel more"
+      ]
+     },
+     {
+      "fixture": "neg_done_visa",
+      "kind": "completed",
+      "texts": [
+       "submit the visa form"
+      ]
+     },
+     {
+      "fixture": "neg_done_passport",
+      "kind": "completed",
+      "texts": [
+       "renew passport"
+      ]
+     }
+    ]
+   },
+   {
+    "round": 2,
+    "precision": 0.6097560975609756,
+    "recall": 1.0,
+    "tp": 25,
+    "fp": 16,
+    "errored": 0,
+    "fixtures_passed": 43,
+    "leaks": [
+     {
+      "fixture": "neg_past_wrote_pages",
+      "kind": "past_narration",
+      "texts": [
+       "write three pages"
+      ]
+     },
+     {
+      "fixture": "neg_past_meditated_walked",
+      "kind": "past_narration",
+      "texts": [
+       "meditation",
+       "go for a long walk"
+      ]
+     },
+     {
+      "fixture": "neg_acting_spanish",
+      "kind": "already_acting",
+      "texts": [
+       "start spanish lessons"
+      ]
+     },
+     {
+      "fixture": "neg_acting_guitar",
+      "kind": "already_acting",
+      "texts": [
+       "pick the guitar back up"
+      ]
+     },
+     {
+      "fixture": "neg_vent_eat_better",
+      "kind": "venting",
+      "texts": [
+       "eat better"
+      ]
+     },
+     {
+      "fixture": "neg_vent_sleep_more",
+      "kind": "venting",
+      "texts": [
+       "sleep more"
+      ]
+     },
+     {
+      "fixture": "neg_vent_get_act_together",
+      "kind": "venting",
+      "texts": [
+       "get my act together"
+      ]
+     },
+     {
+      "fixture": "neg_vent_slow_down",
+      "kind": "venting",
+      "texts": [
+       "slow down"
+      ]
+     },
+     {
+      "fixture": "neg_other_friend_spanish",
+      "kind": "third_party",
+      "texts": [
+       "learn spanish"
+      ]
+     },
+     {
+      "fixture": "neg_dated_form_friday",
+      "kind": "dated_deadline",
+      "texts": [
+       "submit the form"
+      ]
+     },
+     {
+      "fixture": "neg_dated_meeting",
+      "kind": "dated_deadline",
+      "texts": [
+       "plan the launch"
+      ]
+     },
+     {
+      "fixture": "neg_hyp_january_fitness",
+      "kind": "hypothetical",
+      "texts": [
+       "get fit"
+      ]
+     },
+     {
+      "fixture": "neg_weak_maybe_travel",
+      "kind": "noncommittal",
+      "texts": [
+       "travel more"
+      ]
+     },
+     {
+      "fixture": "neg_done_visa",
+      "kind": "completed",
+      "texts": [
+       "submit the visa form"
+      ]
+     },
+     {
+      "fixture": "neg_done_passport",
+      "kind": "completed",
+      "texts": [
+       "renew my passport"
+      ]
+     }
+    ]
+   },
+   {
+    "round": 3,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "tp": 24,
+    "fp": 12,
+    "errored": 0,
+    "fixtures_passed": 46,
+    "leaks": [
+     {
+      "fixture": "neg_past_finished_book",
+      "kind": "past_narration",
+      "texts": [
+       "finish reading that novel"
+      ]
+     },
+     {
+      "fixture": "neg_past_wrote_pages",
+      "kind": "past_narration",
+      "texts": [
+       "write three pages"
+      ]
+     },
+     {
+      "fixture": "neg_acting_spanish",
+      "kind": "already_acting",
+      "texts": [
+       "started spanish lessons"
+      ]
+     },
+     {
+      "fixture": "neg_acting_running_streak",
+      "kind": "already_acting",
+      "texts": [
+       "running"
+      ]
+     },
+     {
+      "fixture": "neg_vent_eat_better",
+      "kind": "venting",
+      "texts": [
+       "eat better"
+      ]
+     },
+     {
+      "fixture": "neg_vent_sleep_more",
+      "kind": "venting",
+      "texts": [
+       "sleep more"
+      ]
+     },
+     {
+      "fixture": "neg_vent_get_act_together",
+      "kind": "venting",
+      "texts": [
+       "get my act together"
+      ]
+     },
+     {
+      "fixture": "neg_vent_slow_down",
+      "kind": "venting",
+      "texts": [
+       "slow down"
+      ]
+     },
+     {
+      "fixture": "neg_other_friend_spanish",
+      "kind": "third_party",
+      "texts": [
+       "learn spanish"
+      ]
+     },
+     {
+      "fixture": "neg_dated_rent",
+      "kind": "dated_deadline",
+      "texts": [
+       "pay rent"
+      ]
+     },
+     {
+      "fixture": "neg_weak_maybe_travel",
+      "kind": "noncommittal",
+      "texts": [
+       "travel more"
+      ]
+     },
+     {
+      "fixture": "neg_done_passport",
+      "kind": "completed",
+      "texts": [
+       "renew my passport"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "summary": {
+  "rounds": 3,
+  "n_fixtures": 58,
+  "total_errored_excluded": 0,
+  "n_positives": 24,
+  "n_negatives": 34,
+  "precision_per_round": [
+   0.6097560975609756,
+   0.6097560975609756,
+   0.6666666666666666
+  ],
+  "precision_mean": 0.6287262872628726,
+  "precision_min": 0.6097560975609756,
+  "precision_max": 0.6666666666666666,
+  "recall_per_round": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "recall_mean": 1.0,
+  "gate": 0.9,
+  "gate_passed": false,
+  "mode": "node",
+  "provider": "vertex"
+ },
+ "results": [
+  {
+   "case_id": "pos_gym_want",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_spanish_meaning_to",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "pos_writing_should_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start writing again"
+   ]
+  },
+  {
+   "case_id": "pos_call_mom_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "call mom more"
+   ]
+  },
+  {
+   "case_id": "pos_meditate_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start meditating"
+   ]
+  },
+  {
+   "case_id": "pos_guitar_buried_ramble",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "pick the guitar back up"
+   ]
+  },
+  {
+   "case_id": "pos_running_terse",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back into running"
+   ]
+  },
+  {
+   "case_id": "pos_read_more_reflective",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "read more"
+   ]
+  },
+  {
+   "case_id": "pos_cook_properly",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to cook properly"
+   ]
+  },
+  {
+   "case_id": "pos_declutter_garage",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "declutter the garage"
+   ]
+  },
+  {
+   "case_id": "pos_paint_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start painting again"
+   ]
+  },
+  {
+   "case_id": "pos_morning_routine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 2,
+   "extracted": [
+    "set up a proper morning routine",
+    "stick to a proper morning routine"
+   ]
+  },
+  {
+   "case_id": "pos_walk_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "walk more during the day"
+   ]
+  },
+  {
+   "case_id": "pos_reconnect_friends",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back in touch with old friends"
+   ]
+  },
+  {
+   "case_id": "pos_save_money_colloquial",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start saving money properly"
+   ]
+  },
+  {
+   "case_id": "pos_piano_forever",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn the piano"
+   ]
+  },
+  {
+   "case_id": "pos_side_project_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start that side project"
+   ]
+  },
+  {
+   "case_id": "pos_present_with_kids",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "be more present with the kids"
+   ]
+  },
+  {
+   "case_id": "pos_finances_in_order",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get my finances in order"
+   ]
+  },
+  {
+   "case_id": "pos_drawing_daily_long",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to drawing every day"
+   ]
+  },
+  {
+   "case_id": "pos_start_therapy",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start therapy"
+   ]
+  },
+  {
+   "case_id": "pos_cut_caffeine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "cut back on caffeine"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_gym_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_drive_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to drive"
+   ]
+  },
+  {
+   "case_id": "neg_past_gym",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_call_mom",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_finished_book",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "finish reading that novel"
+   ]
+  },
+  {
+   "case_id": "neg_past_cooked",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_wrote_pages",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_meditated_walked",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 2,
+   "extracted": [
+    "meditation",
+    "go for a long walk"
+   ]
+  },
+  {
+   "case_id": "neg_acting_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "started spanish lessons this week"
+   ]
+  },
+  {
+   "case_id": "neg_acting_gym_daily",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_journaling",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_guitar",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_side_project",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_running_streak",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "running"
+   ]
+  },
+  {
+   "case_id": "neg_vent_eat_better",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "eat better"
+   ]
+  },
+  {
+   "case_id": "neg_vent_sleep_more",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "sleep more"
+   ]
+  },
+  {
+   "case_id": "neg_vent_get_act_together",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "get my act together"
+   ]
+  },
+  {
+   "case_id": "neg_vent_slow_down",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "slow down"
+   ]
+  },
+  {
+   "case_id": "neg_other_friend_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "neg_other_sister_running",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_other_coworkers",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_form_friday",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "submit the form"
+   ]
+  },
+  {
+   "case_id": "neg_dated_dentist",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_rent",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "pay rent"
+   ]
+  },
+  {
+   "case_id": "neg_dated_meeting",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_low",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_weather",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_busy",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_grateful",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_people_read",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_languages_brain",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_january_fitness",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "get fit"
+   ]
+  },
+  {
+   "case_id": "neg_weak_new_hobby_q",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_weak_maybe_travel",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "travel more"
+   ]
+  },
+  {
+   "case_id": "neg_done_visa",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "submit the visa form"
+   ]
+  },
+  {
+   "case_id": "neg_done_passport",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "renew passport"
+   ]
+  },
+  {
+   "case_id": "pos_gym_want",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_spanish_meaning_to",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "pos_writing_should_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start writing again"
+   ]
+  },
+  {
+   "case_id": "pos_call_mom_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "call mom more"
+   ]
+  },
+  {
+   "case_id": "pos_meditate_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start meditating"
+   ]
+  },
+  {
+   "case_id": "pos_guitar_buried_ramble",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "pick the guitar back up"
+   ]
+  },
+  {
+   "case_id": "pos_running_terse",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back into running"
+   ]
+  },
+  {
+   "case_id": "pos_read_more_reflective",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "read more"
+   ]
+  },
+  {
+   "case_id": "pos_cook_properly",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to cook properly"
+   ]
+  },
+  {
+   "case_id": "pos_declutter_garage",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "declutter the garage"
+   ]
+  },
+  {
+   "case_id": "pos_paint_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start painting again"
+   ]
+  },
+  {
+   "case_id": "pos_morning_routine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 2,
+   "extracted": [
+    "set up a proper morning routine",
+    "stick to a proper morning routine"
+   ]
+  },
+  {
+   "case_id": "pos_walk_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "walk more during the day"
+   ]
+  },
+  {
+   "case_id": "pos_reconnect_friends",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back in touch with old friends"
+   ]
+  },
+  {
+   "case_id": "pos_save_money_colloquial",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start saving money properly"
+   ]
+  },
+  {
+   "case_id": "pos_piano_forever",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn the piano"
+   ]
+  },
+  {
+   "case_id": "pos_side_project_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start that side project"
+   ]
+  },
+  {
+   "case_id": "pos_present_with_kids",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "be more present with the kids"
+   ]
+  },
+  {
+   "case_id": "pos_finances_in_order",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get my finances in order"
+   ]
+  },
+  {
+   "case_id": "pos_drawing_daily_long",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to drawing every day"
+   ]
+  },
+  {
+   "case_id": "pos_start_therapy",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start therapy"
+   ]
+  },
+  {
+   "case_id": "pos_cut_caffeine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "cut back on caffeine"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_gym_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_drive_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to drive"
+   ]
+  },
+  {
+   "case_id": "neg_past_gym",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_call_mom",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_finished_book",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_cooked",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_wrote_pages",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "write three pages"
+   ]
+  },
+  {
+   "case_id": "neg_past_meditated_walked",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 2,
+   "extracted": [
+    "meditation",
+    "go for a long walk"
+   ]
+  },
+  {
+   "case_id": "neg_acting_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "start spanish lessons"
+   ]
+  },
+  {
+   "case_id": "neg_acting_gym_daily",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_journaling",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_guitar",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "pick the guitar back up"
+   ]
+  },
+  {
+   "case_id": "neg_acting_side_project",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_running_streak",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_vent_eat_better",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "eat better"
+   ]
+  },
+  {
+   "case_id": "neg_vent_sleep_more",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "sleep more"
+   ]
+  },
+  {
+   "case_id": "neg_vent_get_act_together",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "get my act together"
+   ]
+  },
+  {
+   "case_id": "neg_vent_slow_down",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "slow down"
+   ]
+  },
+  {
+   "case_id": "neg_other_friend_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "neg_other_sister_running",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_other_coworkers",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_form_friday",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "submit the form"
+   ]
+  },
+  {
+   "case_id": "neg_dated_dentist",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_rent",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_meeting",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "plan the launch"
+   ]
+  },
+  {
+   "case_id": "neg_obs_low",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_weather",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_busy",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_grateful",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_people_read",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_languages_brain",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_january_fitness",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "get fit"
+   ]
+  },
+  {
+   "case_id": "neg_weak_new_hobby_q",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_weak_maybe_travel",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "travel more"
+   ]
+  },
+  {
+   "case_id": "neg_done_visa",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "submit the visa form"
+   ]
+  },
+  {
+   "case_id": "neg_done_passport",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "renew my passport"
+   ]
+  },
+  {
+   "case_id": "pos_gym_want",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_spanish_meaning_to",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "pos_writing_should_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start writing again"
+   ]
+  },
+  {
+   "case_id": "pos_call_mom_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "call mom more"
+   ]
+  },
+  {
+   "case_id": "pos_meditate_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start meditating"
+   ]
+  },
+  {
+   "case_id": "pos_guitar_buried_ramble",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "pick the guitar back up"
+   ]
+  },
+  {
+   "case_id": "pos_running_terse",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back into running"
+   ]
+  },
+  {
+   "case_id": "pos_read_more_reflective",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "read more"
+   ]
+  },
+  {
+   "case_id": "pos_cook_properly",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to cook properly"
+   ]
+  },
+  {
+   "case_id": "pos_declutter_garage",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "declutter the garage"
+   ]
+  },
+  {
+   "case_id": "pos_paint_again",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start painting again"
+   ]
+  },
+  {
+   "case_id": "pos_morning_routine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "set up a proper morning routine"
+   ]
+  },
+  {
+   "case_id": "pos_walk_more",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "walk more during the day"
+   ]
+  },
+  {
+   "case_id": "pos_reconnect_friends",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back in touch with old friends"
+   ]
+  },
+  {
+   "case_id": "pos_save_money_colloquial",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start saving money properly"
+   ]
+  },
+  {
+   "case_id": "pos_piano_forever",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn the piano"
+   ]
+  },
+  {
+   "case_id": "pos_side_project_buried",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start that side project"
+   ]
+  },
+  {
+   "case_id": "pos_present_with_kids",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "be more present with the kids"
+   ]
+  },
+  {
+   "case_id": "pos_finances_in_order",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get my finances in order"
+   ]
+  },
+  {
+   "case_id": "pos_drawing_daily_long",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to drawing every day"
+   ]
+  },
+  {
+   "case_id": "pos_start_therapy",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "start therapy"
+   ]
+  },
+  {
+   "case_id": "pos_cut_caffeine",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "cut back on caffeine"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_gym_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "get back to the gym"
+   ]
+  },
+  {
+   "case_id": "pos_boundary_drive_lament",
+   "label": "intention",
+   "passed": true,
+   "n_extracted": 1,
+   "extracted": [
+    "learn to drive"
+   ]
+  },
+  {
+   "case_id": "neg_past_gym",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_call_mom",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_finished_book",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "finish reading that novel"
+   ]
+  },
+  {
+   "case_id": "neg_past_cooked",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_past_wrote_pages",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "write three pages"
+   ]
+  },
+  {
+   "case_id": "neg_past_meditated_walked",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "started spanish lessons"
+   ]
+  },
+  {
+   "case_id": "neg_acting_gym_daily",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_journaling",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_guitar",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_side_project",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_acting_running_streak",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "running"
+   ]
+  },
+  {
+   "case_id": "neg_vent_eat_better",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "eat better"
+   ]
+  },
+  {
+   "case_id": "neg_vent_sleep_more",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "sleep more"
+   ]
+  },
+  {
+   "case_id": "neg_vent_get_act_together",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "get my act together"
+   ]
+  },
+  {
+   "case_id": "neg_vent_slow_down",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "slow down"
+   ]
+  },
+  {
+   "case_id": "neg_other_friend_spanish",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "learn spanish"
+   ]
+  },
+  {
+   "case_id": "neg_other_sister_running",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_other_coworkers",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_form_friday",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_dentist",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_dated_rent",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "pay rent"
+   ]
+  },
+  {
+   "case_id": "neg_dated_meeting",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_low",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_weather",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_busy",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_obs_grateful",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_people_read",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_languages_brain",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_hyp_january_fitness",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_weak_new_hobby_q",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_weak_maybe_travel",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "travel more"
+   ]
+  },
+  {
+   "case_id": "neg_done_visa",
+   "label": "none",
+   "passed": true,
+   "n_extracted": 0,
+   "extracted": []
+  },
+  {
+   "case_id": "neg_done_passport",
+   "label": "none",
+   "passed": false,
+   "n_extracted": 1,
+   "extracted": [
+    "renew my passport"
+   ]
+  }
+ ]
+}

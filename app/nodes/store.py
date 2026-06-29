@@ -5,6 +5,7 @@ from postgrest.exceptions import APIError
 
 from app.db import supabase
 from app.embeddings import get_embedding
+from app.intention_resolver import resolve_and_persist_intentions
 from app.entity_resolver import (
     base_normalize,
     get_match_key,
@@ -261,6 +262,16 @@ async def store_node(state: JournalState) -> dict:
             state.get("user_id", ""),
         )
         logger.info("Deadlines stored: %s", deadlines_result)
+
+        # Resolve + persist stated intentions (drift P2): re-reference an existing
+        # intention or insert a new one. Self-fail-safe per candidate; also inside
+        # this try so it can never sink the entry.
+        intentions_result = await resolve_and_persist_intentions(
+            entry_id,
+            state.get("intentions", []),
+            state.get("user_id", ""),
+        )
+        logger.info("Intentions resolved: %s", intentions_result)
 
     except Exception as exc:
         logger.error("Store node failed: %s", exc, exc_info=True)

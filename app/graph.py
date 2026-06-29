@@ -2,6 +2,7 @@ from langgraph.graph import StateGraph, START, END
 from app.nodes.dedup import dedup
 from app.nodes.title_summary import title_summary
 from app.nodes.deadline import extract_deadlines
+from app.nodes.intentions import extract_intentions
 from app.state import JournalState
 from app.nodes.classify import classify
 from app.nodes.extract_entities import extract_entities
@@ -15,7 +16,7 @@ from app.nodes.assemble_dispatch import assemble_dispatch
 def dedup_router(state: JournalState):
     if state.get("dedup_check_result") == "duplicate":
         return END
-    return ["title_summary", "classify", "entities", "deadline"]
+    return ["title_summary", "classify", "entities", "deadline", "intentions"]
 
 
 def build_graph():
@@ -26,6 +27,7 @@ def build_graph():
     builder.add_node("classify", classify)
     builder.add_node("entities", extract_entities)
     builder.add_node("deadline", extract_deadlines)
+    builder.add_node("intentions", extract_intentions)
     builder.add_node("title_summary", title_summary)
     builder.add_node("extract_relations", extract_relations)
     builder.add_node("compute_discoveries", compute_discoveries)
@@ -35,16 +37,16 @@ def build_graph():
     builder.add_edge(START, "normalize")
     builder.add_edge("normalize", "dedup")
 
-    # dedup fans out to all 4 extraction nodes in parallel (or routes to END on duplicate)
+    # dedup fans out to all 5 extraction nodes in parallel (or routes to END on duplicate)
     builder.add_conditional_edges("dedup", dedup_router)
 
-    # All 4 extraction nodes fan in; then fan OUT to extract_relations AND compute_discoveries in parallel
+    # All 5 extraction nodes fan in; then fan OUT to extract_relations AND compute_discoveries in parallel
     builder.add_edge(
-        ["title_summary", "classify", "entities", "deadline"],
+        ["title_summary", "classify", "entities", "deadline", "intentions"],
         "extract_relations",
     )
     builder.add_edge(
-        ["title_summary", "classify", "entities", "deadline"],
+        ["title_summary", "classify", "entities", "deadline", "intentions"],
         "compute_discoveries",
     )
 

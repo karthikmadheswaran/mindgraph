@@ -34,6 +34,7 @@ from app.services import (
     entity_service,
     entry_service,
     insight_service,
+    intention_service,
     project_service,
     tagline_service,
 )
@@ -328,6 +329,37 @@ async def get_entities(user_id: str = Depends(get_current_user)):
 @app.get("/entity-relations")
 async def get_entity_relations(user_id: str = Depends(get_current_user)):
     return await entity_service.get_entity_relations(user_id)
+
+
+@app.get("/intentions/drift")
+async def get_intention_drift(
+    threshold_days: Optional[int] = None,
+    user_id: str = Depends(get_current_user),
+):
+    # Drift is computed LIVE (days since last_referenced_at) — never stored, so
+    # the clock is always "as of now". The threshold is read per request inside
+    # the service for live tuning; ?threshold_days overrides the env default.
+    return await intention_service.get_drift(user_id, threshold_days)
+
+
+@app.post("/intentions/{intention_id}/resolve")
+async def resolve_intention(
+    intention_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    # Soft transition: status -> 'resolved' ("I did this"). Ownership-scoped in
+    # the service (404 if not the caller's). Reversible; never deletes.
+    return await intention_service.resolve_intention(user_id, intention_id)
+
+
+@app.post("/intentions/{intention_id}/dismiss")
+async def dismiss_intention(
+    intention_id: str,
+    user_id: str = Depends(get_current_user),
+):
+    # Soft transition: status -> 'dismissed' ("stop showing me this"). Distinct
+    # from resolve so analytics separate completions from don't-want-shown.
+    return await intention_service.dismiss_intention(user_id, intention_id)
 
 
 @app.post("/entries/stream")

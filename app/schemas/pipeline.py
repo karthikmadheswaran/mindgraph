@@ -75,6 +75,30 @@ class DeadlineList(BaseModel):
     deadlines: list[ExtractedDeadline] = Field(default_factory=list)
 
 
+class ExtractedIntention(BaseModel):
+    """A single stated intention — an UNDATED aspiration the writer expresses a
+    present, first-person want/intent to pursue but is NOT yet acting on. `text`
+    is the clean canonical phrase ("get back to the gym"); `raw_text` is the
+    exact source phrase, kept so the deterministic precision backstop can judge
+    tense/subject/date on the original words (normalization strips that signal).
+    Normalization + per-entry dedup happen as Python post-processing in the node.
+
+    No length cap here ON PURPOSE: a tight max_length made pydantic raise a
+    ValidationError on a too-long extraction, crashing the WHOLE entry's
+    extraction (real entries hit it). Length is enforced softly in the node's
+    backstop instead (an over-long "intention" is an echoed sentence -> dropped),
+    so one bad item never sinks the good ones."""
+    text: str = Field(min_length=1)
+    raw_text: str = Field(default="")
+
+
+class IntentionList(BaseModel):
+    """Schema for the extract_intentions node output. List wrapped in an object
+    because Gemini's json_schema mode doesn't reliably emit a top-level list.
+    Capped to keep a single entry from flooding the intentions table."""
+    intentions: list[ExtractedIntention] = Field(default_factory=list, max_length=10)
+
+
 class TimeRange(BaseModel):
     """Inclusive date range with an optional explicit time-of-day modifier."""
     start: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")

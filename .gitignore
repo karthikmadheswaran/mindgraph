@@ -38,6 +38,11 @@ scripts/fetch_specific_notion_page.py
 test_store_node.py
 evals/sample_low_confidence_response.py
 
+# Intention backfill dry-run + eval run logs — print RAW private journal text
+# to stdout/log; must never be staged on this public repo.
+evals/_*.log
+scripts/_*.log
+
 # Local Claude session backups + offline reference cache
 claude_backup/
 .offline_reference/

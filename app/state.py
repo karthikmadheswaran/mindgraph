@@ -75,6 +75,10 @@ class JournalState(TypedDict):
     classifier: Annotated[list, keep_latest]
     core_entities: Annotated[list, keep_latest]
     deadline: Annotated[list, keep_latest]
+    # Stated-intention candidates from the (P1) extract_intentions fan-out node.
+    # Inert until that node writes to it; resolved + persisted to the intentions
+    # table in store_node, mirroring how `deadline` is handled. (Drift detection.)
+    intentions: Annotated[list, keep_latest]
     trigger_check: Annotated[bool, keep_latest]
     duplicate_of: Annotated[Optional[str], keep_latest]
     dedup_check_result: Annotated[Optional[str], keep_latest]
