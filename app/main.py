@@ -34,6 +34,7 @@ from app.services import (
     entity_service,
     entry_service,
     insight_service,
+    intention_service,
     project_service,
     tagline_service,
 )
@@ -328,6 +329,17 @@ async def get_entities(user_id: str = Depends(get_current_user)):
 @app.get("/entity-relations")
 async def get_entity_relations(user_id: str = Depends(get_current_user)):
     return await entity_service.get_entity_relations(user_id)
+
+
+@app.get("/intentions/drift")
+async def get_intention_drift(
+    threshold_days: Optional[int] = None,
+    user_id: str = Depends(get_current_user),
+):
+    # Drift is computed LIVE (days since last_referenced_at) — never stored, so
+    # the clock is always "as of now". The threshold is read per request inside
+    # the service for live tuning; ?threshold_days overrides the env default.
+    return await intention_service.get_drift(user_id, threshold_days)
 
 
 @app.post("/entries/stream")
