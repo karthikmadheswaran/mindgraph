@@ -36,7 +36,7 @@ load_dotenv(encoding="utf-8-sig")
 from supabase import create_client
 
 import app.intention_resolver as resolver
-from app.nodes.intentions import extract_intentions
+from app.nodes.intentions import extract_intentions, normalize_intention_text
 
 DRIFT_DAYS = int(os.getenv("DRIFT_THRESHOLD_DAYS", "14"))
 _PACE_S = float(os.getenv("BACKFILL_PACE", "6"))
@@ -153,9 +153,20 @@ async def main():
     ap.add_argument("--email")
     ap.add_argument("--apply", action="store_true", help="WRITE to the DB (default: dry run)")
     ap.add_argument("--limit", type=int, default=None, help="process only the first N entries (sampling)")
+    ap.add_argument(
+        "--exclude-text",
+        action="append",
+        default=[],
+        metavar="TEXT",
+        help="canonical intention text to SKIP at insert time (case-insensitive, "
+        "trimmed; repeatable). Applies a REVIEWED subset without re-running "
+        "extraction — matched by normalized text, since extraction order shifts "
+        "run-to-run.",
+    )
     args = ap.parse_args()
     if not args.user_id and not args.email:
         raise SystemExit("Pass --user-id or --email")
+    exclude = {normalize_intention_text(t) for t in (args.exclude_text or [])}
 
     sb = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
     user_id = resolve_user_id(sb, args)
@@ -185,6 +196,7 @@ async def main():
         resolver.supabase = _FakeSupabase(entries)  # in-memory; zero DB writes
 
     entries_with_intent = 0
+    excluded_total = 0
     totals = {"inserted": 0, "rereferenced": 0, "skipped": 0}
     for i, e in enumerate(entries):
         state = {
@@ -194,6 +206,10 @@ async def main():
         }
         out = await _with_backoff(lambda: extract_intentions(state), "extract")
         cands = out.get("intentions", [])
+        if exclude:
+            kept = [c for c in cands if normalize_intention_text(c["text"]) not in exclude]
+            excluded_total += len(cands) - len(kept)
+            cands = kept
         if cands:
             entries_with_intent += 1
         res = await resolver.resolve_and_persist_intentions(e["id"], cands, user_id)
@@ -232,6 +248,8 @@ async def main():
 
     print(f"\nentries with >=1 extracted intention: {entries_with_intent}/{len(entries)}")
     print(f"resolution: {totals}")
+    if exclude:
+        print(f"excluded by --exclude-text: {excluded_total}  texts={sorted(exclude)}")
     print(f"DRIFTING as of today (last_referenced >= {DRIFT_DAYS}d ago): {drifting}/{len(rows)}")
     if not args.apply:
         print("\nDRY RUN — nothing written. Re-run with --apply to persist (after review).")
