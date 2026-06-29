@@ -126,6 +126,9 @@ const PO_TYPES = {
   avoidance:  { label: "Avoidance signal",  bg: "#e8f2eb", text: "#6b8a6b", accent: "#6b8a6b", tintBg: "#f5faf5" },
   identity:   { label: "Identity gap",      bg: "#f0e8f5", text: "#9a7ab5", accent: "#9a7ab5", tintBg: "#f8f5fd" },
   behavioral: { label: "Behavioral rhythm", bg: "#faeee4", text: "#b84a2d", accent: "#b84a2d", tintBg: "#fdf6f2" },
+  // Drift (P5): a stated intention gone quiet. Calm muted blue-grey — witness,
+  // not alarm. NEVER red/warning styling; guilt framing violates the product.
+  drift:      { label: "Drifting",          bg: "#eceef2", text: "#7c8597", accent: "#8a93a6", tintBg: "#f6f7f9" },
 };
 
 // Fallback only — rendered when /insights/patterns has no cached pattern
@@ -252,16 +255,82 @@ function buildPatternCards(patternsData) {
   return cards.slice(0, 5);
 }
 
-function PatternsObservatory({ cards }) {
-  const renderCards = cards && cards.length > 0 ? cards : PATTERN_CARDS_FALLBACK;
+// Short date for footer context ("Apr 3").
+function _fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// Map a GET /intentions/drift response into drift cards for the Observatory.
+// WITNESS, NOT MANAGER (locked product philosophy): state the intention and how
+// long it's been quiet — no streaks, no "falling behind", no nudging, no alarm.
+// Only the is_drifting (>=14d) intentions become cards; the API returns the rest
+// too, already sorted drift_days descending — we preserve that order. id is
+// carried through for P6 (resolve/dismiss), unused in render now.
+function buildDriftCards(driftData) {
+  const items = driftData?.intentions;
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter((it) => it && it.is_drifting)
+    .map((it) => {
+      const days = it.drift_days;
+      const refs = it.reference_count || 1;
+      const first = _fmtDate(it.first_stated_at);
+      const last = _fmtDate(it.last_referenced_at);
+      const title = it.text
+        ? it.text.charAt(0).toUpperCase() + it.text.slice(1)
+        : "A stated intention";
+      const body =
+        refs >= 2
+          ? `You first wrote this on ${first}, and came back to it ${refs} times — last on ${last}. It's been quiet since.`
+          : `You wrote this on ${first}. It hasn't come up since.`;
+      return {
+        type: "drift",
+        id: it.id,
+        statN: days != null ? String(days) : "",
+        statU: "days quiet",
+        title,
+        body,
+        footL:
+          refs >= 2
+            ? `First stated ${first} · mentioned ${refs}×`
+            : `First stated ${first}`,
+        footR: "Still open →",
+      };
+    });
+}
+
+// Calm empty state for the drift group — shown when nothing is drifting. NOT the
+// pattern fallback, NOT an error. Mirrors PATTERN_CARDS_FALLBACK's role.
+const DRIFT_EMPTY = [
+  {
+    type: "drift",
+    statN: "",
+    statU: "",
+    title: "Nothing's drifting right now.",
+    body: "Everything you've stated has come up recently. When an intention goes quiet for a couple of weeks, it'll show up here — gently, no pressure.",
+    footL: "Watching your stated intentions",
+    footR: "",
+  },
+];
+
+function PatternsObservatory({
+  cards,
+  eyebrow = "What your mind is doing",
+  noticed = "Noticed from your entries",
+  sub = "Things you wouldn't see without someone reading all of it.",
+  fallback = PATTERN_CARDS_FALLBACK,
+}) {
+  const renderCards = cards && cards.length > 0 ? cards : fallback;
   return (
     <div className="patterns-observatory">
       <div className="po-sep" />
       <div className="po-head">
-        <span className="po-eyebrow">What your mind is doing</span>
-        <span className="po-noticed">Noticed from your entries</span>
+        <span className="po-eyebrow">{eyebrow}</span>
+        <span className="po-noticed">{noticed}</span>
       </div>
-      <div className="po-sub">Things you wouldn't see without someone reading all of it.</div>
+      <div className="po-sub">{sub}</div>
       <motion.div
         className="po-cards"
         initial={{ opacity: 0 }}
@@ -390,6 +459,7 @@ function Dashboard({ isActive, userId }) {
   const [syncing, setSyncing] = useState(false);
   const [noticedInsight, setNoticedInsight] = useState(null);
   const [patternCards, setPatternCards] = useState([]);
+  const [driftCards, setDriftCards] = useState([]);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -1406,17 +1476,20 @@ function Dashboard({ isActive, userId }) {
     const fetchInsights = async () => {
       try {
         const headers = await authHeaders();
-        const [insightsRes, patternsRes] = await Promise.all([
+        const [insightsRes, patternsRes, driftRes] = await Promise.all([
           fetch(`${API}/insights`, { headers }),
           fetch(`${API}/insights/patterns`, { headers }),
+          fetch(`${API}/intentions/drift`, { headers }),
         ]);
         const insightsData = insightsRes.ok ? await insightsRes.json() : null;
         const patternsData = patternsRes.ok ? await patternsRes.json() : null;
+        const driftData = driftRes.ok ? await driftRes.json() : null;
 
         console.log("RAW insights response:", JSON.stringify(insightsData, null, 2));
         console.log("RAW patterns response:", JSON.stringify(patternsData, null, 2));
 
         setPatternCards(buildPatternCards(patternsData?.data));
+        setDriftCards(buildDriftCards(driftData));
 
         const TYPE_LABELS = {
           tool:    "FORGOTTEN TOOL",
@@ -1934,6 +2007,17 @@ function Dashboard({ isActive, userId }) {
         {/* ——— Patterns Observatory — full width below both columns ——— */}
         <div className="spread-full" style={{ marginTop: "2rem" }}>
           <PatternsObservatory cards={patternCards} />
+        </div>
+
+        {/* ——— Drift — stated intentions gone quiet (drift P5) ——— */}
+        <div className="spread-full" style={{ marginTop: "2rem" }}>
+          <PatternsObservatory
+            cards={driftCards}
+            eyebrow="Things you said you'd do"
+            noticed="Stated once, then quiet"
+            sub="Not a to-do list — just what you named, and how long it's been since."
+            fallback={DRIFT_EMPTY}
+          />
         </div>
 
         </>
