@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timezone
 
 from app.ask_memory import (
@@ -83,6 +84,35 @@ _BROAD_QUERY_SIGNALS = (
 def is_broad_query(question: str) -> bool:
     q = question.lower().strip()
     return any(signal in q for signal in _BROAD_QUERY_SIGNALS)
+
+
+# --- Deadline-list query detection ---
+# A deterministic backstop for the LLM router's dashboard_context_needed flag.
+# The router is unreliable on deadline-list questions, and a query that collapses
+# to query_types=={"temporal"} makes hybrid_rag self-skip — either way the
+# structured deadline fetch can be missed. This heuristic forces the fetch when a
+# high-signal deadline phrasing appears, OR-ed with the LLM flag in
+# dashboard_context. Kept PRECISE on purpose: a false positive would fetch
+# deadlines for an off-topic query and (via dashboard_has_results) mark it
+# high-confidence, defeating the honest-refusal path — so only unambiguous
+# deadline language is matched. "due" is word-boundaried so "produce"/"reduce"
+# don't trip it; bare "behind" is excluded (only "behind on" / "am i behind").
+_DEADLINE_PHRASES = (
+    "deadline",       # deadline(s), "my deadlines", "what deadlines do I have"
+    "overdue",
+    "behind on",      # "am I behind on anything", "behind on my report"
+    "am i behind",
+    "falling behind",
+    "by when",
+)
+_DEADLINE_DUE_RE = re.compile(r"\bdue\b")  # "what's due", "due soon", "is X due"
+
+
+def is_deadline_query(question: str) -> bool:
+    q = question.lower().strip()
+    if any(phrase in q for phrase in _DEADLINE_PHRASES):
+        return True
+    return bool(_DEADLINE_DUE_RE.search(q))
 
 
 # --- Topic switch detection ---
