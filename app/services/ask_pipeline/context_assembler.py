@@ -194,9 +194,14 @@ async def context_assembler(state: AskState) -> dict:
         parts.append(
             f"Active projects: {', '.join(projects) if projects else '(none)'}"
         )
-        parts.append(
-            f"Upcoming deadlines: {', '.join(deadlines) if deadlines else '(none)'}"
-        )
+        # Deadlines are status-tagged (pending / overdue / snoozed) and rendered
+        # one per line. Header is "Deadlines" not "Upcoming" — overdue (missed)
+        # rows are now included so the model can answer "am I behind".
+        if deadlines:
+            parts.append("Deadlines:")
+            parts.extend(f"- {d}" for d in deadlines)
+        else:
+            parts.append("Deadlines: (none)")
 
     is_low_confidence = _compute_low_confidence(state)
     if is_low_confidence:
