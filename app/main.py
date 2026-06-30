@@ -108,7 +108,17 @@ async def health_check():
 
 
 @app.post("/entries", response_model=EntryResponse)
-async def create_entry(entry: EntryRequest, user_id: str = Depends(get_current_user)):
+async def create_entry(
+    entry: EntryRequest,
+    user_id: str = Depends(get_current_user),
+    _rl: None = Depends(entry_rate_limit),
+):
+    # Metered, mirroring /entries/async exactly: entry_rate_limit (dep, fires
+    # before the body) + cost cap before the work. Closes the pre-launch
+    # ungated-API gate (these routes have no frontend caller; direct-API surface).
+    tier = await tier_service.get_user_tier(user_id)
+    await check_cost_cap(user_id, tier)
+    track(user_id, "entry_submitted", {"tier": tier})
     return await entry_service.create_entry(entry, user_id)
 
 
@@ -363,7 +373,17 @@ async def dismiss_intention(
 
 
 @app.post("/entries/stream")
-async def create_entry_stream(entry: EntryRequest, user_id: str = Depends(get_current_user)):
+async def create_entry_stream(
+    entry: EntryRequest,
+    user_id: str = Depends(get_current_user),
+    _rl: None = Depends(entry_rate_limit),
+):
+    # Metered, mirroring /entries/async. CRITICAL: the rate-limit dep + the cost
+    # cap both fire BEFORE create_entry_stream is called, so a limit/cap hit
+    # returns a clean 429 and the StreamingResponse never opens (no partial stream).
+    tier = await tier_service.get_user_tier(user_id)
+    await check_cost_cap(user_id, tier)
+    track(user_id, "entry_submitted", {"tier": tier})
     return await entry_service.create_entry_stream(entry, user_id)
 
 
