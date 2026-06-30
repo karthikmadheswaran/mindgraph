@@ -281,10 +281,12 @@ function buildDriftCards(driftData) {
       const title = it.text
         ? it.text.charAt(0).toUpperCase() + it.text.slice(1)
         : "A stated intention";
-      // Multi-mention (ref >= 2) renders distinctly from single-mention. Witness
-      // tone: "came back to it N×" is a neutral fact, not praise — same calm
-      // styling, only the sentence/footer differ. Guard the same-day re-mention
-      // edge (last === first) so the card never reads "first Apr 3 … last Apr 3".
+      // Multi-mention (ref >= 2) renders LIGHT, not heavy — SAME visual weight as
+      // a single-mention card: a one-line body (the count is NOT narrated in
+      // prose) + a compact one-line footer carrying the span + count
+      // ("Apr 3 → May 13 · 2×"), reusing the muted po-foot-l styling — no badge,
+      // no accent. Witness tone, same calm card. Guard the same-day re-mention
+      // edge (last === first) so the footer never reads "Apr 3 → Apr 3".
       const multi = refs >= 2;
       const distinctLast = multi && last && last !== first;
       let body;
@@ -293,11 +295,11 @@ function buildDriftCards(driftData) {
         body = `You wrote this on ${first}. It hasn't come up since.`;
         footL = `First stated ${first}`;
       } else if (distinctLast) {
-        body = `You first wrote this on ${first}, and came back to it ${refs}× — last on ${last}. It's been quiet since.`;
-        footL = `First stated ${first} · mentioned ${refs}× · last ${last}`;
+        body = `You kept coming back to this — last on ${last}. Quiet since.`;
+        footL = `${first} → ${last} · ${refs}×`;
       } else {
-        body = `You first wrote this on ${first}, and came back to it ${refs}×. It's been quiet since.`;
-        footL = `First stated ${first} · mentioned ${refs}×`;
+        body = `You wrote this more than once on ${first}. Quiet since.`;
+        footL = `${first} · ${refs}×`;
       }
       return {
         type: "drift",
