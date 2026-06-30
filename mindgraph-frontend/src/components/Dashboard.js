@@ -281,10 +281,24 @@ function buildDriftCards(driftData) {
       const title = it.text
         ? it.text.charAt(0).toUpperCase() + it.text.slice(1)
         : "A stated intention";
-      const body =
-        refs >= 2
-          ? `You first wrote this on ${first}, and came back to it ${refs} times — last on ${last}. It's been quiet since.`
-          : `You wrote this on ${first}. It hasn't come up since.`;
+      // Multi-mention (ref >= 2) renders distinctly from single-mention. Witness
+      // tone: "came back to it N×" is a neutral fact, not praise — same calm
+      // styling, only the sentence/footer differ. Guard the same-day re-mention
+      // edge (last === first) so the card never reads "first Apr 3 … last Apr 3".
+      const multi = refs >= 2;
+      const distinctLast = multi && last && last !== first;
+      let body;
+      let footL;
+      if (!multi) {
+        body = `You wrote this on ${first}. It hasn't come up since.`;
+        footL = `First stated ${first}`;
+      } else if (distinctLast) {
+        body = `You first wrote this on ${first}, and came back to it ${refs}× — last on ${last}. It's been quiet since.`;
+        footL = `First stated ${first} · mentioned ${refs}× · last ${last}`;
+      } else {
+        body = `You first wrote this on ${first}, and came back to it ${refs}×. It's been quiet since.`;
+        footL = `First stated ${first} · mentioned ${refs}×`;
+      }
       return {
         type: "drift",
         id: it.id,
@@ -292,10 +306,7 @@ function buildDriftCards(driftData) {
         statU: "days quiet",
         title,
         body,
-        footL:
-          refs >= 2
-            ? `First stated ${first} · mentioned ${refs}×`
-            : `First stated ${first}`,
+        footL,
         footR: "Still open →",
       };
     });
