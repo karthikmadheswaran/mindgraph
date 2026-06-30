@@ -1,4 +1,4 @@
-# STATE — updated 2026-06-29 (🚀 Drift detection SHIPPED — merged `63259ede` + deployed to prod; P0–P7 complete. NEXT: launch / demand-test, not more backend)
+# STATE — updated 2026-06-30 (🚀 Drift detection SHIPPED — merged `63259ede` + deployed to prod; P0–P7 complete. NEXT: launch / demand-test, not more backend)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -13,9 +13,8 @@ LIVE hero feature, full loop: intention extraction (5th pipeline fan-out, now ru
 
 ## Next (ordered)
 1. **Flip B on prod** — set Railway env `ASK_GENERATION_MODEL=gemini-3.1-flash-lite` + `ASK_GENERATION_THINKING=minimal` (gated on the 15/06 merge — satisfied). Rollback: delete both vars → reverts to `flash` (gemini-2.5-flash-lite, thinking_budget=0). Then run the first-prod-reask check (Watching).
-2. Route "list my deadlines"-class Ask queries through structured `/deadlines` data instead of journal prose (P1 — `retrieve_relevant_entries` never queries the deadlines table; confirmed via code read 08/06).
-3. Codebase Review 2026-06-05 — **remaining** critical finding (Notion page `3769402f…`): sequential-blocking "parallel" retrieval. (The two metering findings shipped — PR #5, live in prod.)
-4. Edit + archive flows (entries/deadlines/projects from dashboard) — longstanding queued milestone.
+2. Codebase Review 2026-06-05 — **remaining** critical finding (Notion page `3769402f…`): sequential-blocking "parallel" retrieval. (The two metering findings shipped — PR #5, live in prod.)
+3. Edit + archive flows (entries/deadlines/projects from dashboard) — longstanding queued milestone.
 
 ## Known broken / degraded (open only)
 - **Dedup-orphan empty entries — backfill pending (P2, 17/06, after the 0.92 merge):** 9 completed entries DB-wide have empty `cleaned_text`, ALL dedup-flagged (`dispatch_payload.pipeline_version='duplicate'`). Only **1 is a real-user FALSE positive** (entry 769bc801, ~51d gap to its alleged "match"); the other 8 are a test account / near-simultaneous true re-submits. Backfill sketch (do NOT run yet): for each empty+duplicate entry with non-empty `raw_text`, re-embed, re-run `match_entries`, and if sim ≤ 0.92 re-run the pipeline to populate it.
@@ -23,7 +22,7 @@ LIVE hero feature, full loop: intention extraction (5th pipeline fan-out, now ru
 - **Dedup orphan rows — populate behavior still open (P2, next dedup item):** dashboard DISPLAY now excludes orphan rows (feed + counts, `fix/consolidate-staleness` Part C), but a TRUE duplicate STILL leaves an empty `completed` row in the DB that never advances `last_seen` — now hidden, not fixed. Fix direction: populate the row from the matched entry OR don't persist a dashboard-visible row.
 - **Cost-cap cost model — flat estimate fallback (P2):** `record_cost` uses the actual Langfuse trace cost when available, else a fixed per-type estimate (`entry`=$0.003, `ask`=$0.0008; `app/services/cost_cap.py`); the estimate can under-count expensive calls. Revisit with real per-call cost if abuse appears. (The unmetered-`/entries`+`/entries/stream` follow-up is CLOSED — both now metered, `a9de0ac`, mirror `/entries/async`.)
 - **CI needs a programmatic re-ask judge with the fixed rubric** (P1): inline gemini-2.5-pro judging dropped 11/06 (quota troughs) and the session-agent batch judging used for the B experiment is non-reproducible. Candidate: flash-class judge + fixed rubric; harness `--no-judge` flag exists.
-- Ask answers deadline-list queries from prose, not the deadlines table (P1).
+- **Stale deadline Ask eval case — re-baseline pending (P3, follow-up to the 30/06 deadline-retrieval fix):** `evals/rag_test_cases.json` case "What are my deadlines for the end of May?" is `category:"temporal"` and scored on PROSE-entry retrieval F1 (`expected_entry_id` + keywords) — it encodes the old "answer deadlines from journal prose" behavior as correct, so it no longer reflects the fixed path (deadlines now come from the structured table via `dashboard_context`). Decide: re-categorize/retire it, or convert to an answer-content assertion like the new `evals/eval_ask_deadlines.py`. Not urgent — `eval_ask_retrieval.py` still scores it on retrieval, not answer quality.
 - Read-after-write lag on `ask_messages` can defeat loop detection under rapid back-to-back sends (P2; not hit at human pace).
 - Referenced-date indexing gap (Layer 3): entries mentioning a date aren't visible to temporal queries about that date — needs `entry_referenced_dates` table + pipeline extraction node (P2, ~4–6h).
 - `ChatVertexAI` deprecation warning at every boot — migrate Vertex branch of `app/llm.py` to maintained class before LangChain 4.0 (P3).
