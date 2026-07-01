@@ -197,62 +197,100 @@ const PATTERN_CARDS_FALLBACK = [
 
 const PO_BAR_HEIGHTS = [5, 14, 6, 8, 9, 7, 18];
 
-// Map a /insights/patterns response payload to the card shape this
-// component renders. Backend returns four arrays; we flatten them into
-// up to 5 cards, preserving each item's category color treatment.
-function buildPatternCards(patternsData) {
-  if (!patternsData || typeof patternsData !== "object") return [];
-  const cards = [];
+// Parse the self-synthesis markdown doc into { title, body } insight blocks.
+// The doc is "**Title**\n body\n\n**Title**\n body ..." (see app/synthesis_engine).
+function parseSynthesis(text) {
+  if (!text || typeof text !== "string") return [];
+  const blocks = [];
+  const re = /\*\*(.+?)\*\*\s*\n?([\s\S]*?)(?=\n\s*\*\*|$)/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const title = (m[1] || "").trim();
+    const body = (m[2] || "").replace(/\s+/g, " ").trim();
+    if (title) blocks.push({ title, body });
+  }
+  // Fallback: unparseable doc -> show it whole rather than nothing.
+  if (blocks.length === 0 && text.trim()) blocks.push({ title: "", body: text.trim() });
+  return blocks;
+}
 
-  for (const item of patternsData.repeated_themes || []) {
-    if (!item?.observation) continue;
-    cards.push({
-      type: "behavioral",
-      statN: item.count ? `${item.count}×` : "",
-      statU: item.count === 1 ? "entry" : "entries",
-      title: item.theme || "Repeated theme",
-      body: item.observation,
-      footL: "Repeated theme",
-      footR: "Explore this →",
-    });
+// The Reflection "gift": an evolving self-understanding doc that reveals non-obvious
+// behavioural patterns (distinct from drift). Arrives WRAPPED (opened_at null) and
+// reveals on open. Replaces the old shallow pattern cards. Reuses the po-* card look
+// for the revealed state; a calm violet accent sets it apart from drift's grey.
+const REFLECTION_ACCENT = "#8a7bb5";
+
+function ReflectionGift({ reflection, onReveal }) {
+  const [revealed, setRevealed] = useState(Boolean(reflection?.opened));
+
+  useEffect(() => {
+    setRevealed(Boolean(reflection?.opened));
+  }, [reflection]);
+
+  if (!reflection || !reflection.synthesis_text) return null;
+
+  const handleOpen = () => {
+    setRevealed(true);
+    if (onReveal) onReveal();
+  };
+
+  if (!revealed) {
+    return (
+      <div className="reflection-gift">
+        <div className="po-sep" />
+        <motion.div
+          className="reflection-wrapped"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <div className="reflection-mark">✶</div>
+          <div className="reflection-wrapped-title">A reflection is waiting for you</div>
+          <div className="reflection-wrapped-sub">
+            I read back through everything you've written. Here's what I noticed —
+            things you wouldn't see without someone reading all of it.
+          </div>
+          <button type="button" className="reflection-open-btn" onClick={handleOpen}>
+            Open it
+          </button>
+        </motion.div>
+      </div>
+    );
   }
-  for (const item of patternsData.shiny_objects || []) {
-    if (!item?.observation) continue;
-    cards.push({
-      type: "avoidance",
-      statN: "",
-      statU: "",
-      title: item.name || "Shiny object",
-      body: item.observation,
-      footL: "Shiny-object signal",
-      footR: "Track progress →",
-    });
-  }
-  for (const item of patternsData.commitment_gaps || []) {
-    if (!item?.observation) continue;
-    cards.push({
-      type: "identity",
-      statN: "",
-      statU: "",
-      title: "Commitment vs follow-through",
-      body: item.observation,
-      footL: "Commitment gap",
-      footR: "See the evidence →",
-    });
-  }
-  for (const item of patternsData.relationship_patterns || []) {
-    if (!item?.observation) continue;
-    cards.push({
-      type: "language",
-      statN: "",
-      statU: "",
-      title: item.entity || "Relationship pattern",
-      body: item.observation,
-      footL: "Relationship signal",
-      footR: "Show me all →",
-    });
-  }
-  return cards.slice(0, 5);
+
+  const insights = parseSynthesis(reflection.synthesis_text);
+  return (
+    <div className="patterns-observatory reflection-revealed">
+      <div className="po-sep" />
+      <div className="po-head">
+        <span className="po-eyebrow">What your journal reveals</span>
+        <span className="po-noticed">Noticed reading all of it</span>
+      </div>
+      <div className="po-sub">
+        Patterns in how you think and move — not a summary of what you wrote.
+      </div>
+      <motion.div
+        className="po-cards"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.45 }}
+      >
+        {insights.map((c, i) => (
+          <motion.div
+            key={i}
+            className="po-card"
+            style={{ borderLeft: `4px solid ${REFLECTION_ACCENT}` }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+          >
+            {c.title && <div className="po-title">{c.title}</div>}
+            <div className="po-body">{c.body}</div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  );
 }
 
 // Short date for footer context ("Apr 3").
@@ -483,7 +521,7 @@ function Dashboard({ isActive, userId }) {
   const [shuffling, setShuffling] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [noticedInsight, setNoticedInsight] = useState(null);
-  const [patternCards, setPatternCards] = useState([]);
+  const [reflection, setReflection] = useState(null);
   const [driftCards, setDriftCards] = useState([]);
 
   const refetchDrift = useCallback(async () => {
@@ -515,6 +553,18 @@ function Dashboard({ isActive, userId }) {
     },
     [refetchDrift]
   );
+
+  // Reveal the reflection "gift": optimistically flip to opened, then persist.
+  // Non-fatal on failure — the doc is already visible; opened_at just won't stick.
+  const handleReflectionReveal = useCallback(async () => {
+    setReflection((r) => (r ? { ...r, opened: true } : r));
+    try {
+      const headers = await authHeaders();
+      await fetch(`${API}/insights/synthesis/open`, { method: "POST", headers });
+    } catch (err) {
+      console.error("reflection open failed", err);
+    }
+  }, []);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -1531,19 +1581,17 @@ function Dashboard({ isActive, userId }) {
     const fetchInsights = async () => {
       try {
         const headers = await authHeaders();
-        const [insightsRes, patternsRes, driftRes] = await Promise.all([
+        const [insightsRes, synthesisRes, driftRes] = await Promise.all([
           fetch(`${API}/insights`, { headers }),
-          fetch(`${API}/insights/patterns`, { headers }),
+          fetch(`${API}/insights/synthesis`, { headers }),
           fetch(`${API}/intentions/drift`, { headers }),
         ]);
         const insightsData = insightsRes.ok ? await insightsRes.json() : null;
-        const patternsData = patternsRes.ok ? await patternsRes.json() : null;
+        const synthesisData = synthesisRes.ok ? await synthesisRes.json() : null;
         const driftData = driftRes.ok ? await driftRes.json() : null;
 
-        console.log("RAW insights response:", JSON.stringify(insightsData, null, 2));
-        console.log("RAW patterns response:", JSON.stringify(patternsData, null, 2));
-
-        setPatternCards(buildPatternCards(patternsData?.data));
+        // Reflection self-synthesis (the "gift") replaces the old shallow pattern cards.
+        setReflection(synthesisData?.data || null);
         setDriftCards(buildDriftCards(driftData));
 
         const TYPE_LABELS = {
@@ -2059,9 +2107,10 @@ function Dashboard({ isActive, userId }) {
           </div>
         </div>
 
-        {/* ——— Patterns Observatory — full width below both columns ——— */}
+        {/* ——— Reflection — the evolving self-understanding "gift" (replaces the
+            shallow pattern cards). Arrives wrapped; reveals on open. ——— */}
         <div className="spread-full" style={{ marginTop: "2rem" }}>
-          <PatternsObservatory cards={patternCards} />
+          <ReflectionGift reflection={reflection} onReveal={handleReflectionReveal} />
         </div>
 
         {/* ——— Drift — stated intentions gone quiet (drift P5) ——— */}

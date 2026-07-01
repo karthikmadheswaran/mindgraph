@@ -289,11 +289,15 @@ def clear_old_insights(user_id: str, types: list[str] | None = None):
 
 
 async def regenerate_insights_background(user_id: str):
-    """Background task: clear old insights and regenerate patterns + forgotten projects.
-    Called after each new entry is processed."""
+    """Background task: refresh the forgotten-projects insight after each new entry.
+
+    NOTE: the shallow "pattern" cards (generate_patterns) are RETIRED — they were
+    replaced by the Reflection self-synthesis feature (app/synthesis_engine.py), which
+    the entry pipeline triggers separately (debounced). generate_patterns is left in
+    place but no longer called here. forgotten_projects is a distinct feature (stalled
+    projects) and is still refreshed."""
     try:
-        clear_old_insights(user_id, ["pattern", "forgotten_projects"])
-        generate_patterns(user_id)
+        clear_old_insights(user_id, ["forgotten_projects"])
         generate_forgotten_projects(user_id)
     except Exception as e:
         logger.error("Insight regeneration failed: %s", e, exc_info=True)

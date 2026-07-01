@@ -29,9 +29,11 @@ The synthesis doc contains the user's private journal-derived text; the CLI prin
 it to stdout only and writes NO files.
 """
 
+import os
 import sys
+import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.db import supabase
 from app.llm import pro as model
@@ -42,6 +44,13 @@ logger = logging.getLogger(__name__)
 # is the single source of truth so the eval and the prompt agree.
 MAX_INSIGHTS = 7
 
+# Cadence (debounced-on-entry, NOT a scheduler): regenerate at most once every
+# REFLECTION_STALE_DAYS, and only when there are new entries to fold. The very first
+# gift also needs at least REFLECTION_MIN_ENTRIES so it isn't thin. Both env-tunable,
+# mirroring DRIFT_THRESHOLD_DAYS.
+REFLECTION_STALE_DAYS = int(os.getenv("REFLECTION_STALE_DAYS", "3"))
+REFLECTION_MIN_ENTRIES = int(os.getenv("REFLECTION_MIN_ENTRIES", "5"))
+
 
 # ---------------------------------------------------------------------------
 # Data access
@@ -51,7 +60,7 @@ def fetch_synthesis_row(user_id: str) -> dict | None:
     """The user's current synthesis row, or None on first run."""
     result = (
         supabase.table("user_synthesis")
-        .select("synthesis_text, last_processed_at")
+        .select("synthesis_text, last_processed_at, generated_at, updated_at")
         .eq("user_id", user_id)
         .limit(1)
         .execute()
@@ -258,6 +267,9 @@ def generate_synthesis(user_id: str, reprocess_all: bool = False) -> dict:
                 "last_processed_at": new_watermark,
                 "generated_at": now,
                 "updated_at": now,
+                # Re-wrap the gift: a freshly generated reflection is unopened, so the
+                # UX shows it "wrapped" again until the user reveals it.
+                "opened_at": None,
             },
             on_conflict="user_id",
         )
@@ -273,6 +285,56 @@ def generate_synthesis(user_id: str, reprocess_all: bool = False) -> dict:
         "had_existing_doc": bool(existing.strip()),
         "usage": usage,
     }
+
+
+# ---------------------------------------------------------------------------
+# Cadence: debounced-on-entry regeneration (no scheduler)
+# ---------------------------------------------------------------------------
+
+def _is_stale(row: dict | None) -> bool:
+    """True when the doc is old enough to refresh (or doesn't exist yet)."""
+    if not row:
+        return True
+    stamp = row.get("generated_at") or row.get("updated_at")
+    if not stamp:
+        return True
+    try:
+        ts = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+    except Exception:
+        return True
+    return (datetime.now(timezone.utc) - ts) >= timedelta(days=REFLECTION_STALE_DAYS)
+
+
+def maybe_regenerate_synthesis(user_id: str) -> dict:
+    """Gated regeneration: run generate_synthesis ONLY when the doc is stale
+    (older than REFLECTION_STALE_DAYS, or absent) AND there are new entries to fold.
+    The first-ever gift additionally needs REFLECTION_MIN_ENTRIES so it isn't thin.
+    Cheap DB reads short-circuit before any LLM call — safe to call after every entry."""
+    row = fetch_synthesis_row(user_id)
+    if not _is_stale(row):
+        return {"status": "skipped_fresh"}
+
+    watermark = (row or {}).get("last_processed_at")
+    new_entries = fetch_new_entries(user_id, watermark)
+    if not new_entries:
+        return {"status": "skipped_no_new_entries"}
+    if not row and len(new_entries) < REFLECTION_MIN_ENTRIES:
+        return {"status": "skipped_too_few_entries", "count": len(new_entries)}
+
+    return generate_synthesis(user_id, reprocess_all=False)
+
+
+async def maybe_regenerate_synthesis_bg(user_id: str) -> None:
+    """Fire-and-forget wrapper for the entry pipeline. Runs the (blocking, sync)
+    gate + LLM call in a worker thread so it never blocks the event loop or the
+    entry response. Swallows errors — a failed reflection must never fail an entry."""
+    try:
+        result = await asyncio.to_thread(maybe_regenerate_synthesis, user_id)
+        logger.info("reflection synthesis: %s (user %s)", result.get("status"), user_id)
+    except Exception as exc:
+        logger.error("reflection synthesis regen failed for %s: %s", user_id, exc, exc_info=True)
 
 
 # ---------------------------------------------------------------------------

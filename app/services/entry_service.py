@@ -595,6 +595,13 @@ async def process_entry_background(
 
         await regenerate_insights_background(user_id)
 
+        # Reflection self-synthesis (debounced): fire-and-forget so it never blocks
+        # the entry. Internally gated — regenerates at most once every
+        # REFLECTION_STALE_DAYS and only when there are new entries to fold.
+        from app.synthesis_engine import maybe_regenerate_synthesis_bg
+
+        asyncio.create_task(maybe_regenerate_synthesis_bg(user_id))
+
         from app.services.cost_cap import record_cost
 
         asyncio.create_task(record_cost(user_id, "entry", trace_id=trace_id))

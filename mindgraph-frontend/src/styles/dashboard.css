@@ -639,6 +639,59 @@
   /* sits on the page background — no dark frame */
 }
 
+/* ——— Reflection "gift" (self-synthesis) — wrapped/unopened state ——— */
+.reflection-wrapped {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 2.25rem 1.5rem;
+  background: linear-gradient(135deg, #f5f0fa, #ece4f2);
+  border: 1px solid rgba(138, 123, 181, 0.25);
+  border-radius: 16px;
+}
+
+.reflection-mark {
+  font-size: 22px;
+  color: #8a7bb5;
+  line-height: 1;
+}
+
+.reflection-wrapped-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 16px;
+  color: #3a3450;
+}
+
+.reflection-wrapped-sub {
+  max-width: 460px;
+  font-family: "Newsreader", Georgia, serif;
+  font-style: italic;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #8a80a0;
+}
+
+.reflection-open-btn {
+  margin-top: 6px;
+  padding: 8px 22px;
+  border: none;
+  border-radius: 999px;
+  background: #8a7bb5;
+  color: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.reflection-open-btn:hover {
+  background: #7a6ba5;
+  transform: translateY(-1px);
+}
+
 .po-sep {
   border: none;
   border-top: 1px solid rgba(26,22,18,0.06);
