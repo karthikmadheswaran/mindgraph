@@ -639,57 +639,38 @@
   /* sits on the page background — no dark frame */
 }
 
-/* ——— Reflection "gift" (self-synthesis) — wrapped/unopened state ——— */
-.reflection-wrapped {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding: 2.25rem 1.5rem;
-  background: linear-gradient(135deg, #f5f0fa, #ece4f2);
-  border: 1px solid rgba(138, 123, 181, 0.25);
-  border-radius: 16px;
-}
-
+/* ——— Reflection "gift" (self-synthesis) — each insight is its own wrapped card ——— */
 .reflection-mark {
-  font-size: 22px;
+  font-size: 20px;
   color: #8a7bb5;
   line-height: 1;
 }
 
-.reflection-wrapped-title {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-size: 16px;
-  color: #3a3450;
-}
-
-.reflection-wrapped-sub {
-  max-width: 460px;
-  font-family: "Newsreader", Georgia, serif;
-  font-style: italic;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: #8a80a0;
-}
-
-.reflection-open-btn {
-  margin-top: 6px;
-  padding: 8px 22px;
-  border: none;
-  border-radius: 999px;
-  background: #8a7bb5;
-  color: #fff;
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.03em;
+.reflection-card-wrapped {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 92px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  text-align: center;
+  background: linear-gradient(135deg, #f5f0fa, #e7dff1);
+  border: 1px dashed rgba(138, 123, 181, 0.45);
+  border-radius: 12px;
+  padding: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.reflection-open-btn:hover {
-  background: #7a6ba5;
-  transform: translateY(-1px);
+.reflection-card-wrapped:hover {
+  box-shadow: 0 4px 14px rgba(138, 123, 181, 0.18);
+  border-color: rgba(138, 123, 181, 0.7);
+}
+
+.reflection-card-hint {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #8a80a0;
 }
 
 .po-sep {

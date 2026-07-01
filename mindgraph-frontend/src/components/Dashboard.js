@@ -221,44 +221,36 @@ function parseSynthesis(text) {
 const REFLECTION_ACCENT = "#8a7bb5";
 
 function ReflectionGift({ reflection, onReveal }) {
-  const [revealed, setRevealed] = useState(Boolean(reflection?.opened));
+  const insights = reflection?.synthesis_text ? parseSynthesis(reflection.synthesis_text) : [];
+  const alreadyOpened = Boolean(reflection?.opened);
+  // Each insight is its OWN gift, opened separately. openedSet tracks which are
+  // revealed this session; revealPosted guards the single "seen" POST.
+  const [openedSet, setOpenedSet] = useState(() => new Set());
+  const revealPosted = useRef(false);
 
+  // Fresh gift => everything wrapped; a previously-seen gift => all revealed.
+  // Re-run whenever the reflection payload changes (new gift after a regen).
   useEffect(() => {
-    setRevealed(Boolean(reflection?.opened));
+    revealPosted.current = false;
+    setOpenedSet(alreadyOpened ? new Set(insights.map((_, i) => i)) : new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reflection]);
 
   if (!reflection || !reflection.synthesis_text) return null;
 
-  const handleOpen = () => {
-    setRevealed(true);
-    if (onReveal) onReveal();
+  const openCard = (i) => {
+    setOpenedSet((prev) => {
+      const next = new Set(prev);
+      next.add(i);
+      return next;
+    });
+    // Persist "seen" once, on the first card the user opens.
+    if (!alreadyOpened && !revealPosted.current) {
+      revealPosted.current = true;
+      if (onReveal) onReveal();
+    }
   };
 
-  if (!revealed) {
-    return (
-      <div className="reflection-gift">
-        <div className="po-sep" />
-        <motion.div
-          className="reflection-wrapped"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-          <div className="reflection-mark">✶</div>
-          <div className="reflection-wrapped-title">A reflection is waiting for you</div>
-          <div className="reflection-wrapped-sub">
-            I read back through everything you've written. Here's what I noticed —
-            things you wouldn't see without someone reading all of it.
-          </div>
-          <button type="button" className="reflection-open-btn" onClick={handleOpen}>
-            Open it
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  const insights = parseSynthesis(reflection.synthesis_text);
   return (
     <div className="patterns-observatory reflection-revealed">
       <div className="po-sep" />
@@ -267,7 +259,7 @@ function ReflectionGift({ reflection, onReveal }) {
         <span className="po-noticed">Noticed reading all of it</span>
       </div>
       <div className="po-sub">
-        Patterns in how you think and move — not a summary of what you wrote.
+        Open each one when you're ready — patterns in how you think and move, not a summary.
       </div>
       <motion.div
         className="po-cards"
@@ -275,19 +267,42 @@ function ReflectionGift({ reflection, onReveal }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
       >
-        {insights.map((c, i) => (
-          <motion.div
-            key={i}
-            className="po-card"
-            style={{ borderLeft: `4px solid ${REFLECTION_ACCENT}` }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: i * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            {c.title && <div className="po-title">{c.title}</div>}
-            <div className="po-body">{c.body}</div>
-          </motion.div>
-        ))}
+        {insights.map((c, i) =>
+          openedSet.has(i) ? (
+            <motion.div
+              key={`open-${i}`}
+              className="po-card"
+              style={{ borderLeft: `4px solid ${REFLECTION_ACCENT}` }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              {c.title && <div className="po-title">{c.title}</div>}
+              <div className="po-body">{c.body}</div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`wrap-${i}`}
+              className="reflection-card-wrapped"
+              role="button"
+              tabIndex={0}
+              onClick={() => openCard(i)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openCard(i);
+                }
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              whileHover={{ y: -2 }}
+            >
+              <div className="reflection-mark">✶</div>
+              <div className="reflection-card-hint">A reflection · tap to open</div>
+            </motion.div>
+          )
+        )}
       </motion.div>
     </div>
   );
@@ -554,10 +569,11 @@ function Dashboard({ isActive, userId }) {
     [refetchDrift]
   );
 
-  // Reveal the reflection "gift": optimistically flip to opened, then persist.
-  // Non-fatal on failure — the doc is already visible; opened_at just won't stick.
+  // Persist that the reflection was seen (fired once, when the first card is opened).
+  // Deliberately does NOT flip local `opened` state — that stays per-card so opening
+  // one gift doesn't cascade the rest open. Non-fatal on failure. On a later load,
+  // GET /insights/synthesis returns opened=true and all cards render revealed.
   const handleReflectionReveal = useCallback(async () => {
-    setReflection((r) => (r ? { ...r, opened: true } : r));
     try {
       const headers = await authHeaders();
       await fetch(`${API}/insights/synthesis/open`, { method: "POST", headers });
