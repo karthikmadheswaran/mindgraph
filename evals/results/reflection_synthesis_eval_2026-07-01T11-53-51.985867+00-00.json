@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "ran_at": "2026-07-01T11-53-51.985867+00-00",
+    "git_commit": "44181486e57a8f93ea1d840d69f31de22b40e327",
+    "user_id": "eval-user-synthesis"
+  },
+  "summary": {
+    "status": "GREEN",
+    "passed": 11,
+    "failed": 0
+  },
+  "blocks": [
+    {
+      "id": "new_prompt",
+      "checks": [
+        {
+          "desc": "full raw_text included (sentinel beyond char 200 present)",
+          "ok": true
+        },
+        {
+          "desc": "no occurrence-count formatting ('N mentions'/'N times')",
+          "ok": true
+        },
+        {
+          "desc": "no entity mention_count field name injected",
+          "ok": true
+        },
+        {
+          "desc": "bounded-doc: 'draft to rewrite' instruction present",
+          "ok": true
+        },
+        {
+          "desc": "bounded-doc: 'strongest' insights cap present",
+          "ok": true
+        },
+        {
+          "desc": "distinct-from-drift guard present",
+          "ok": true
+        },
+        {
+          "desc": "completed+non-deleted entries only (3 folded, noise excluded)",
+          "ok": true
+        },
+        {
+          "desc": "soft-deleted entry text excluded",
+          "ok": true
+        },
+        {
+          "desc": "processing entry text excluded",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "old_format_control",
+      "checks": [
+        {
+          "desc": "old format is missing the full text (sentinel absent) \u2014 correctly caught",
+          "ok": true
+        },
+        {
+          "desc": "old format contains 'N mentions' count list \u2014 correctly caught",
+          "ok": true
+        }
+      ]
+    }
+  ]
+}
