@@ -267,42 +267,67 @@ function ReflectionGift({ reflection, onReveal }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.45 }}
       >
-        {insights.map((c, i) =>
-          openedSet.has(i) ? (
-            <motion.div
-              key={`open-${i}`}
-              className="po-card"
-              style={{ borderLeft: `4px solid ${REFLECTION_ACCENT}` }}
-              initial={{ opacity: 0, scale: 0.96, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              {c.title && <div className="po-title">{c.title}</div>}
-              <div className="po-body">{c.body}</div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={`wrap-${i}`}
-              className="reflection-card-wrapped"
-              role="button"
-              tabIndex={0}
-              onClick={() => openCard(i)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openCard(i);
-                }
-              }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              whileHover={{ y: -2 }}
-            >
-              <div className="reflection-mark">✶</div>
-              <div className="reflection-card-hint">A reflection · tap to open</div>
-            </motion.div>
-          )
-        )}
+        {insights.map((c, i) => (
+          <div key={i} className="reflection-slot">
+            <AnimatePresence mode="wait">
+              {openedSet.has(i) ? (
+                // Insight UNFOLDS up into place (as if lifted out of the box), with
+                // a one-shot sparkle. Spring gives it a little life.
+                <motion.div
+                  key="open"
+                  className="po-card reflection-opened-card"
+                  style={{ borderLeft: `4px solid ${REFLECTION_ACCENT}`, transformOrigin: "bottom center" }}
+                  initial={{ rotateX: 78, opacity: 0, y: 10 }}
+                  animate={{ rotateX: 0, opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
+                >
+                  <motion.span
+                    className="reflection-burst"
+                    initial={{ opacity: 0.9, scale: 0.2, rotate: 0 }}
+                    animate={{ opacity: 0, scale: 1.9, rotate: 40 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  >
+                    ✦
+                  </motion.span>
+                  {c.title && <div className="po-title">{c.title}</div>}
+                  <div className="po-body">{c.body}</div>
+                </motion.div>
+              ) : (
+                // Wrapped gift. On open, the "lid" flips up and off (rotateX around
+                // the top edge) before the insight unfolds in.
+                <motion.div
+                  key="wrap"
+                  className="reflection-card-wrapped"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openCard(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openCard(i);
+                    }
+                  }}
+                  style={{ transformOrigin: "top center" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ rotateX: -95, opacity: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.div
+                    className="reflection-mark"
+                    animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.08, 1] }}
+                    transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+                  >
+                    ✶
+                  </motion.div>
+                  <div className="reflection-card-hint">A reflection · tap to open</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
       </motion.div>
     </div>
   );

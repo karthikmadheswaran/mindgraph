@@ -673,6 +673,26 @@
   color: #8a80a0;
 }
 
+/* 3D context so the lid-flip / unfold reads as depth, not a slide. */
+.reflection-slot {
+  perspective: 800px;
+  min-height: 92px;
+}
+
+/* Opened insight needs the sparkle to escape the card bounds. */
+.reflection-opened-card {
+  position: relative;
+  overflow: visible;
+}
+.reflection-burst {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 18px;
+  color: #b9a7e0;
+  pointer-events: none;
+}
+
 .po-sep {
   border: none;
   border-top: 1px solid rgba(26,22,18,0.06);
