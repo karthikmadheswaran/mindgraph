@@ -67,24 +67,9 @@ const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
 // as "quiet" next to bars driven by real density.
 const PROGRESS_MIN_WIDTH = 8;
 
-// Fallback content for the MindGraph Noticed card. Only renders when
-// /insights has not yet produced a forgotten_projects item for this user
-// (cold start, network error, or empty insights table). Once real data
-// arrives, `noticedInsight` is populated and this array is not consulted.
-const DAILY_THREADS_FALLBACK = [
-  {
-    q: "You've mentioned the dentist 4 times since January. What's the actual plan?",
-    tag: "AVOIDANCE · OPEN SINCE JAN",
-  },
-  {
-    q: "Rafael's tone shifted this week. Want to write about why?",
-    tag: "PATTERN · 14 DAYS",
-  },
-  {
-    q: "The Pune trip hasn't moved in 11 days. Book it, or let it go?",
-    tag: "STALLED PROJECT",
-  },
-];
+// (DAILY_THREADS_FALLBACK removed with the MindGraph Noticed card — retired from the
+// UI as a shallow duplicate of drift. forgotten_projects data is still generated
+// backend-side, just unconsumed; see git history to restore this card.)
 
 const MOOD_WEATHER = [
   { text: "Mostly reflective this week. Chance of avoidance by Thursday.", dot: "" },
@@ -560,7 +545,6 @@ function Dashboard({ isActive, userId }) {
   const [shuffleKey, setShuffleKey] = useState(0);
   const [shuffling, setShuffling] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [noticedInsight, setNoticedInsight] = useState(null);
   const [reflection, setReflection] = useState(null);
   const [driftCards, setDriftCards] = useState([]);
 
@@ -1616,73 +1600,26 @@ function Dashboard({ isActive, userId }) {
     setOpenProjectMenuId((current) => (current === projectId ? null : projectId));
   }, []);
 
-  // Fetch insights for Noticed card when view becomes active
+  // Fetch reflection (the "gift") + drift cards when the view becomes active.
+  // The /insights (forgotten_projects) fetch was removed with the MindGraph Noticed
+  // card — that endpoint fed ONLY that card. Backend still generates forgotten_projects;
+  // it's just no longer consumed by the UI (reversible).
   useEffect(() => {
     if (!isActive) return;
     const fetchInsights = async () => {
       try {
         const headers = await authHeaders();
-        const [insightsRes, synthesisRes, driftRes] = await Promise.all([
-          fetch(`${API}/insights`, { headers }),
+        const [synthesisRes, driftRes] = await Promise.all([
           fetch(`${API}/insights/synthesis`, { headers }),
           fetch(`${API}/intentions/drift`, { headers }),
         ]);
-        const insightsData = insightsRes.ok ? await insightsRes.json() : null;
         const synthesisData = synthesisRes.ok ? await synthesisRes.json() : null;
         const driftData = driftRes.ok ? await driftRes.json() : null;
 
-        // Reflection self-synthesis (the "gift") replaces the old shallow pattern cards.
         setReflection(synthesisData?.data || null);
         setDriftCards(buildDriftCards(driftData));
-
-        const TYPE_LABELS = {
-          tool:    "FORGOTTEN TOOL",
-          person:  "QUIET CONNECTION",
-          project: "STALLED PROJECT",
-          task:    "OPEN TASK",
-        };
-
-        // Actual shape (confirmed from console):
-        // /insights/patterns → { status, data: { repeated_themes, shiny_objects, ... } } — no stale data
-        // /insights          → { insights: [{ insight_type: "forgotten_projects", content: JSON_STRING, ... }] }
-        //   insight.content is a JSON string: { stale: [...], active: [...], stale_count, active_count }
-        //   Must JSON.parse(insight.content) to get the stale array.
-
-        const forgottenInsight = insightsData?.insights?.find(
-          (i) => i.insight_type === "forgotten_projects"
-        );
-        let parsedContent = null;
-        try { parsedContent = forgottenInsight ? JSON.parse(forgottenInsight.content) : null; } catch { /* malformed */ }
-
-        const stale = Array.isArray(parsedContent?.stale) ? parsedContent.stale : [];
-        const item = [...stale].sort(
-          (a, b) => (b.mention_count || 0) - (a.mention_count || 0)
-        )[0] || null;
-
-        if (item) {
-          const typeLabel = TYPE_LABELS[item.type] || "PATTERN";
-          // Compute days-quiet at READ time from the canonical last-mention date
-          // (same accessor as the Active Projects card), NOT the frozen
-          // days_since_mention baked into the stored insight JSON — which goes
-          // silently stale whenever the insight regen fails to run.
-          const daysQuiet = daysSinceLastMention(item.last_mentioned);
-          const dateTag = `QUIET FOR ${daysQuiet} DAYS`;
-          const cardText = `${item.name} hasn't come up in ${daysQuiet} days. ${item.context || ""}`.trim();
-          setNoticedInsight({
-            category: typeLabel,
-            dateTag,
-            content: cardText,
-            hasActions: true,
-          });
-        } else {
-          setNoticedInsight({
-            category: "PATTERN",
-            content: "No patterns detected yet. Keep journaling.",
-            hasActions: false,
-          });
-        }
       } catch {
-        // keep null — fallback shown in JSX
+        // keep current state — component fallbacks handle empties
       }
     };
     fetchInsights();
@@ -1719,7 +1656,6 @@ function Dashboard({ isActive, userId }) {
   const activeProjectsCount = stats?.active_projects ?? activeProjects.length;
   const hiddenProjectsCount = stats?.hidden_projects ?? 0;
   const entitiesTracked = stats?.entities_tracked ?? entities.length;
-  const currentThread = DAILY_THREADS_FALLBACK[shuffleKey % DAILY_THREADS_FALLBACK.length];
   const currentWeather = MOOD_WEATHER[shuffleKey % MOOD_WEATHER.length];
   const handleShuffle = () => {
     setShuffling(true);
@@ -1987,54 +1923,9 @@ function Dashboard({ isActive, userId }) {
               </div>
             </div>
 
-            {/*
-              // GET /insights returned: checked in console.log above
-              // GET /insights/patterns returned: checked in console.log above
-              // noticedInsight uses: .type/.category (tag), .content/.description (body), .created_at (month), .title
-            */}
-            {/* MindGraph Noticed / Daily Thread */}
-            <div className="dthread">
-              {noticedInsight ? (
-                <>
-                  <div className="dthread-kicker">
-                    <span className="pulse-sm" />
-                    MINDGRAPH NOTICED ·{" "}
-                    {(noticedInsight.category || noticedInsight.type || "PATTERN").toUpperCase()}
-                    {noticedInsight.dateTag
-                      ? ` · ${noticedInsight.dateTag}`
-                      : noticedInsight.created_at
-                      ? ` · OPEN SINCE ${new Date(noticedInsight.created_at).toLocaleString("en", { month: "short" }).toUpperCase()}`
-                      : ""}
-                  </div>
-                  {noticedInsight.title && (
-                    <div className="dthread-q">{noticedInsight.title}</div>
-                  )}
-                  <div className="dthread-q" style={noticedInsight.title ? { fontSize: "16px", marginTop: "-6px" } : undefined}>
-                    {noticedInsight.content || noticedInsight.description}
-                  </div>
-                  {noticedInsight.hasActions !== false && (
-                    <div className="dthread-actions">
-                      <button type="button" className="dthread-btn primary">Answer now</button>
-                      <button type="button" className="dthread-btn">Snooze</button>
-                      <button type="button" className="dthread-btn">Not now</button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="dthread-kicker">
-                    <span className="pulse-sm" />
-                    MINDGRAPH NOTICED · {currentThread.tag}
-                  </div>
-                  <div className="dthread-q">{currentThread.q}</div>
-                  <div className="dthread-actions">
-                    <button type="button" className="dthread-btn primary">Answer now</button>
-                    <button type="button" className="dthread-btn">Snooze</button>
-                    <button type="button" className="dthread-btn">Not now</button>
-                  </div>
-                </>
-              )}
-            </div>
+            {/* MindGraph Noticed card removed — shallow duplicate of drift with dead
+                (never-wired) buttons. Render-only removal; forgotten_projects data is
+                still generated backend-side (reversible; see git history to restore). */}
 
             <hr style={{ border: "none", borderTop: "1px solid rgba(26,22,18,0.06)", margin: "0" }} />
 
