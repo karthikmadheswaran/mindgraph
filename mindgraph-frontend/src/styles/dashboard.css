@@ -181,82 +181,8 @@
   margin-top: 6px;
 }
 
-/* ——— Daily Thread / MindGraph Noticed ——— */
-
-.dthread {
-  padding: 18px 20px 16px;
-  background: linear-gradient(135deg, #faf5ea, #ece4d5);
-  border: 1px solid rgba(26, 22, 18, 0.10);
-  border-radius: 14px;
-  box-shadow: 0 1px 0 rgba(26,22,18,0.04), 0 6px 18px rgba(26,22,18,0.04);
-  position: relative;
-}
-
-.dthread-kicker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #b84a2d;
-  margin-bottom: 10px;
-}
-
-.pulse-sm {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #b84a2d;
-  flex-shrink: 0;
-  animation: pulseAcc 1.8s infinite;
-}
-
-@keyframes pulseAcc {
-  0%   { box-shadow: 0 0 0 0 rgba(184, 74, 45, 0.5); }
-  70%  { box-shadow: 0 0 0 8px rgba(184, 74, 45, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(184, 74, 45, 0); }
-}
-
-.dthread-q {
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 22px;
-  font-weight: 300;
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-  color: #1a1612;
-  margin-bottom: 14px;
-}
-
-.dthread-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.dthread-btn {
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 500;
-  font-family: "Inter", system-ui, sans-serif;
-  border: 1px solid rgba(26, 22, 18, 0.10);
-  background: #faf5ea;
-  color: #3a3228;
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.dthread-btn:hover {
-  transform: translateY(-1px);
-}
-
-.dthread-btn.primary {
-  background: #1a1612;
-  color: #f2ece1;
-  border-color: #1a1612;
-}
+/* ——— Daily Thread / MindGraph Noticed — REMOVED (card retired as a shallow
+   duplicate of drift; .dthread-* / .pulse-sm styles deleted. See git history). ——— */
 
 /* ——— Projects list ——— */
 
@@ -949,9 +875,5 @@
 
   .spread-masthead h1 {
     font-size: 26px;
-  }
-
-  .dthread-q {
-    font-size: 18px;
   }
 }
