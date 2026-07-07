@@ -13,14 +13,15 @@ import DateTimePicker from "./DateTimePicker";
 import Toast from "./Toast";
 import EntriesControls from "./EntriesControls";
 import EntriesList from "./EntriesList";
-import { PoCard, buildIntentionCards } from "./InsightCards";
+import { ReflectionGift, buildIntentionCards } from "./InsightCards";
 import "../styles/dashboard.css";
 
-// Journal — the filing cabinet. Everything STORED lives here, organized in
-// sub-views: Entries (the archive, relocated from the old Write page) ·
-// Deadlines (relocated from Today) · Projects (relocated from Today) ·
-// Intentions (all pending intentions; the drift wall as a browsable list).
-// Witness, not manager: plain dates, no red urgency, no streaks.
+// Journal — one scrollable life view (v2, no sub-tabs): On your plate (next
+// deadlines + active projects, overflow behind a quiet expander) → Patterns
+// (the FULL reflection set; Home shows the capped subset) → Intentions (raw
+// rows — the drift card framing stays Home-only) → Entries (reverse-chron
+// timeline, infinite scroll only, filters behind one control). Empty sections
+// collapse. Witness, not manager: plain dates, no red urgency, no streaks.
 
 const normalizeDeadline = (deadline) => ({
   ...deadline,
@@ -63,19 +64,11 @@ const sortProgressProjects = (items) =>
 const upsertById = (items, item, sorter = (nextItems) => nextItems) =>
   sorter([...items.filter((existingItem) => existingItem.id !== item.id), item]);
 
-// Minimum bar width for active projects with no recent mentions. Avoids
-// rendering an empty/0-width bar that looks broken, while still reading
-// as "quiet" next to bars driven by real density.
-const PROGRESS_MIN_WIDTH = 8;
-
 const PAGE_SIZE = 10;
 
-const TABS = [
-  { id: "entries", label: "Entries" },
-  { id: "deadlines", label: "Deadlines" },
-  { id: "projects", label: "Projects" },
-  { id: "intentions", label: "Intentions" },
-];
+// "On your plate" shows this many upcoming deadlines; the rest live behind
+// the overflow expander together with missed deadlines + hidden projects.
+const PLATE_DEADLINES = 3;
 
 function getProjectMeta(project) {
   // "Days quiet" = days since the project was last MENTIONED, via the single
@@ -114,8 +107,6 @@ function buildFilterOptions(entries) {
 function Journal({ isActive, userId }) {
   const cachedSnapshot = getCachedDashboardSnapshot({ userId });
 
-  const [tab, setTab] = useState("entries");
-
   // ——— Deadlines + Projects state (relocated from Today, snapshot-backed) ———
   const [allDeadlines, setAllDeadlines] = useState(
     normalizeDeadlines(cachedSnapshot?.deadlines || [])
@@ -125,8 +116,9 @@ function Journal({ isActive, userId }) {
   );
   const [loadingData, setLoadingData] = useState(!cachedSnapshot);
   const [snapshotReady, setSnapshotReady] = useState(Boolean(cachedSnapshot));
-  const [showHidden, setShowHidden] = useState(false);
-  const [showAllMissed, setShowAllMissed] = useState(false);
+  // One quiet expander for everything beyond the plate: extra upcoming
+  // deadlines, the missed group, hidden projects.
+  const [overflowOpen, setOverflowOpen] = useState(false);
   const [projectActionState, setProjectActionState] = useState({});
   const [deadlineActionState, setDeadlineActionState] = useState({});
   const [editingDeadlineId, setEditingDeadlineId] = useState(null);
@@ -144,10 +136,14 @@ function Journal({ isActive, userId }) {
   const [filters, setFilters] = useState({});
   const [filterOptions, setFilterOptions] = useState({ mood: [], person: [], category: [] });
 
-  // ——— Intentions state ———
+  // ——— Intentions + Patterns state ———
   const [intentionCards, setIntentionCards] = useState(null);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [reflection, setReflection] = useState(null);
+
+  // ——— Entries timeline state ———
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const hasLoadedRef = useRef(Boolean(cachedSnapshot));
   const refreshTimeoutRef = useRef(null);
@@ -372,17 +368,46 @@ function Journal({ isActive, userId }) {
     fetchEntries(1, newFilters);
   }, [fetchEntries]);
 
-  const handlePageChange = useCallback((pg) => {
-    setPage(pg);
-    fetchEntries(pg, filters);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [fetchEntries, filters]);
-
   const handleLoadMore = useCallback(() => {
     const nextPage = page + 1;
     setPage(nextPage);
     fetchEntries(nextPage, filters, true);
   }, [fetchEntries, filters, page]);
+
+  // Infinite scroll — the ONLY pagination mechanism. A sentinel below the
+  // timeline loads the next page as it approaches the viewport. Callback ref
+  // (not an effect) because the sentinel mounts late — after the initial
+  // loading gate — and the observer must attach whenever the node appears.
+  const entriesRef = useRef({ hasMore: false, busy: false });
+  entriesRef.current = {
+    hasMore: Boolean(entries) && entries.length < totalCount,
+    busy: entriesLoading || appendingMore,
+  };
+  const loadMoreRef = useRef(handleLoadMore);
+  loadMoreRef.current = handleLoadMore;
+  const sentinelObserverRef = useRef(null);
+
+  const entriesSentinelRefCb = useCallback((node) => {
+    if (sentinelObserverRef.current) {
+      sentinelObserverRef.current.disconnect();
+      sentinelObserverRef.current = null;
+    }
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (observed) => {
+        if (
+          observed.some((o) => o.isIntersecting) &&
+          entriesRef.current.hasMore &&
+          !entriesRef.current.busy
+        ) {
+          loadMoreRef.current();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    io.observe(node);
+    sentinelObserverRef.current = io;
+  }, []);
 
   // ——— Deadline + project mutations (relocated unchanged from Today) ———
 
@@ -1090,10 +1115,34 @@ function Journal({ isActive, userId }) {
   }, [isPendingDismiss]);
 
   useEffect(() => {
-    if (isActive && tab === "intentions" && intentionCards === null) {
+    if (!isActive) return;
+    if (intentionCards === null) {
       refetchIntentions();
     }
-  }, [isActive, tab, intentionCards, refetchIntentions]);
+    if (reflection === null) {
+      const fetchSynthesis = async () => {
+        try {
+          const headers = await authHeaders();
+          const res = await fetch(`${API}/insights/synthesis`, { headers });
+          const data = res.ok ? await res.json() : null;
+          setReflection(data?.data || null);
+        } catch {
+          /* Patterns section simply stays collapsed */
+        }
+      };
+      fetchSynthesis();
+    }
+  }, [isActive, intentionCards, reflection, refetchIntentions]);
+
+  // Persist that the reflection was seen (same contract as Home).
+  const handleReflectionReveal = useCallback(async () => {
+    try {
+      const headers = await authHeaders();
+      await fetch(`${API}/insights/synthesis/open`, { method: "POST", headers });
+    } catch (err) {
+      console.error("reflection open failed", err);
+    }
+  }, []);
 
   // Single-card resolve ("Did this") / dismiss — same optimistic remove +
   // re-sync as the Home card.
@@ -1349,12 +1398,8 @@ function Journal({ isActive, userId }) {
     );
   };
 
-  const renderProjectRow = (project, maxMentions) => {
+  const renderProjectRow = (project) => {
     const pm = getProjectMeta(project);
-    const mentions = project.mention_count_last_7d || 0;
-    const widthPct = maxMentions === 0
-      ? PROGRESS_MIN_WIDTH
-      : Math.max(PROGRESS_MIN_WIDTH, Math.round((mentions / maxMentions) * 100));
     const menuOpen = openProjectMenuId === project.id;
     const isUpdating = Boolean(projectActionState[project.id]);
     const isHidden = project.status === "hidden";
@@ -1362,20 +1407,15 @@ function Journal({ isActive, userId }) {
 
     return (
       <div key={project.id} className={`proj-wrap${isHidden ? " proj-wrap--hidden" : ""}`}>
-        <div className="proj">
-          <div>
-            <div className="proj-title">
-              {project.name}
-              {isHidden && <span className="proj-hidden-tag">Hidden</span>}
-            </div>
-            <div className="proj-meta">
-              <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
-              {pm.meta}
-              {linkedCount > 0 && ` · ${linkedCount} ${linkedCount === 1 ? "entry" : "entries"}`}
-            </div>
+        <div className="proj proj--line">
+          <div className="proj-title">
+            {project.name}
+            {isHidden && <span className="proj-hidden-tag">Hidden</span>}
           </div>
-          <div className="proj-bar">
-            <span style={{ width: `${widthPct}%` }} />
+          <div className="proj-meta">
+            <span className={`pulse${pm.state === "warm" ? " warm" : ""}`} />
+            {pm.meta}
+            {linkedCount > 0 && ` · ${linkedCount} ${linkedCount === 1 ? "entry" : "entries"}`}
           </div>
           <button
             type="button"
@@ -1431,191 +1471,63 @@ function Journal({ isActive, userId }) {
     );
   };
 
-  // ——— Tab bodies ———
+  // ——— Sections (empty sections collapse — header included) ———
 
-  const renderEntriesTab = () => (
-    <div>
-      <div className="entries-section-head">
-        <span className="entries-section-label">Your entries</span>
-        {totalCount > 0 && (
-          <span className="entries-section-count">{totalCount} total</span>
-        )}
-      </div>
+  const plateDeadlines = deadlines.slice(0, PLATE_DEADLINES);
+  const extraDeadlines = deadlines.slice(PLATE_DEADLINES);
+  const hasActiveFilter = Object.values(filters).some(Boolean);
 
-      <EntriesControls
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        filterOptions={filterOptions}
-        page={page}
-        totalCount={totalCount}
-        pageSize={PAGE_SIZE}
-        onPageChange={handlePageChange}
-        onLoadMore={handleLoadMore}
-        loadingMore={appendingMore}
-      />
+  const overflowParts = [];
+  if (extraDeadlines.length > 0) overflowParts.push(`${extraDeadlines.length} more`);
+  if (missedDeadlines.length > 0) overflowParts.push(`${missedDeadlines.length} past`);
+  if (hiddenProjects.length > 0) overflowParts.push(`${hiddenProjects.length} hidden`);
 
-      <EntriesList
-        entries={entries}
-        loading={entriesLoading}
-        appended={appendingMore}
-      />
-    </div>
-  );
+  const showPlate =
+    plateDeadlines.length > 0 || activeProjects.length > 0 || overflowParts.length > 0;
+  const showPatterns = Boolean(reflection?.synthesis_text);
+  const intentions = intentionCards || [];
+  const showIntentions = intentions.length > 0;
+  const showEntries = entries === null || totalCount > 0 || hasActiveFilter;
+  const journalEmpty = !showPlate && !showPatterns && !showIntentions && !showEntries;
 
-  const renderDeadlinesTab = () => (
-    <div>
-      <h2>
-        Upcoming
-        <span className="count">{deadlines.length} open</span>
-      </h2>
-      {deadlines.length === 0 ? (
-        <p className="spread-empty">
-          No upcoming deadlines. Mention a due date in your next entry.
-        </p>
-      ) : (
-        <div className="deadlines">
-          {deadlines.map((deadline) => renderDeadlineRow(deadline, { missed: false }))}
-        </div>
-      )}
-
-      {missedDeadlines.length > 0 && (
-        <div style={{ marginTop: "1.5rem" }}>
-          <h2>
-            Past
-            <span className="count">{missedDeadlines.length} slipped</span>
-          </h2>
-          <div className="deadlines">
-            {(showAllMissed ? missedDeadlines : missedDeadlines.slice(0, 5)).map(
-              (deadline) => renderDeadlineRow(deadline, { missed: true })
-            )}
-          </div>
-          {missedDeadlines.length > 5 && (
-            <button
-              type="button"
-              className="dl-view-all"
-              onClick={() => setShowAllMissed((v) => !v)}
-            >
-              {showAllMissed
-                ? "Show fewer"
-                : `View all ${missedDeadlines.length}`}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderProjectsTab = () => (
-    <div>
-      <h2>
-        Projects
-        <span className="count">
-          {activeProjects.length} ACTIVE
-          {hiddenProjects.length > 0 && ` · ${hiddenProjects.length} HIDDEN`}
+  // Raw intention row — same data + actions as the old wall, none of the
+  // drift-card framing (pill/prose/stat block); that stays Home-only.
+  const renderIntentionRow = (card) => (
+    <div key={card.id} className="intent-row">
+      {selectMode ? (
+        <input
+          type="checkbox"
+          className="intent-check"
+          aria-label={`Select intention: ${card.title}`}
+          checked={selectedIds.has(card.id)}
+          onChange={() => toggleSelected(card.id)}
+        />
+      ) : null}
+      <span className="intent-text">{card.title}</span>
+      <span className="intent-meta">
+        {card.statN !== "" ? `${card.statN} days quiet` : "quiet time unknown"}
+        {card.status ? ` · ${card.status}` : ""}
+      </span>
+      {!selectMode && (
+        <span className="intent-actions">
+          <button
+            type="button"
+            className="po-foot-btn"
+            onClick={() => handleIntentionAction(card.id, "resolve")}
+          >
+            Did this
+          </button>
+          <button
+            type="button"
+            className="po-foot-btn intent-dismiss"
+            onClick={() => handleIntentionAction(card.id, "dismiss")}
+          >
+            Dismiss
+          </button>
         </span>
-      </h2>
-      <div className="proj-list">
-        {activeProjects.length === 0 ? (
-          <p className="spread-empty">
-            No active projects. Write about something you're working on.
-          </p>
-        ) : (() => {
-          // Bar width encodes 7-day mention density, normalized against the
-          // project with the highest count in this user's active set.
-          const maxMentions = activeProjects.reduce(
-            (acc, project) => Math.max(acc, project.mention_count_last_7d || 0),
-            0
-          );
-          return activeProjects.map((project) => renderProjectRow(project, maxMentions));
-        })()}
-
-        {showHidden && hiddenProjects.length > 0 && (
-          <>
-            <div className="proj-section-label">Hidden</div>
-            {hiddenProjects.map((project) => renderProjectRow(project, 0))}
-          </>
-        )}
-      </div>
-
-      {hiddenProjects.length > 0 && (
-        <button
-          type="button"
-          className="dl-view-all"
-          onClick={() => setShowHidden((v) => !v)}
-        >
-          {showHidden
-            ? "Hide hidden projects"
-            : `Show ${hiddenProjects.length} hidden`}
-        </button>
       )}
     </div>
   );
-
-  const renderIntentionsTab = () => {
-    const cards = intentionCards || [];
-    return (
-      <div>
-        <div className="journal-intent-head">
-          <h2>
-            Intentions
-            <span className="count">{cards.length} pending</span>
-          </h2>
-          <div className="journal-intent-actions">
-            {selectMode && (
-              <button
-                type="button"
-                className="dl-chip dl-chip--danger"
-                disabled={selectedIds.size === 0}
-                onClick={bulkDismissSelected}
-              >
-                Dismiss {selectedIds.size || ""} selected
-              </button>
-            )}
-            <button
-              type="button"
-              className="dl-chip"
-              onClick={() => {
-                setSelectMode((v) => !v);
-                setSelectedIds(new Set());
-              }}
-            >
-              {selectMode ? "Cancel" : "Select"}
-            </button>
-          </div>
-        </div>
-
-        {intentionCards === null ? (
-          <p className="spread-empty">Loading intentions…</p>
-        ) : cards.length === 0 ? (
-          <p className="spread-empty">
-            Nothing pending. When you state an intention in an entry, it shows up
-            here — gently, no pressure.
-          </p>
-        ) : (
-          <div className="po-cards journal-intent-cards">
-            {cards.map((card, i) => (
-              <div key={card.id} className="journal-intent-slot">
-                {selectMode && (
-                  <input
-                    type="checkbox"
-                    className="journal-intent-check"
-                    aria-label={`Select intention: ${card.title}`}
-                    checked={selectedIds.has(card.id)}
-                    onChange={() => toggleSelected(card.id)}
-                  />
-                )}
-                <PoCard
-                  card={card}
-                  index={Math.min(i, 6)}
-                  onDriftAction={selectMode ? undefined : handleIntentionAction}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <AnimatedView viewKey="journal" isActive={isActive}>
@@ -1632,24 +1544,152 @@ function Journal({ isActive, userId }) {
         </div>
       ) : (
         <div className="journal-view">
-          <nav className="journal-tabs" aria-label="Journal sections">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                className={`journal-tab${tab === t.id ? " active" : ""}`}
-                aria-current={tab === t.id ? "page" : undefined}
-                onClick={() => setTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </nav>
+          {/* ——— On your plate ——— */}
+          {showPlate && (
+            <section className="journal-section journal-plate">
+              <h2>
+                On your plate
+                {deadlines.length > 0 && (
+                  <span className="count">{deadlines.length} open</span>
+                )}
+              </h2>
+              {plateDeadlines.length > 0 && (
+                <div className="deadlines">
+                  {plateDeadlines.map((deadline) =>
+                    renderDeadlineRow(deadline, { missed: false })
+                  )}
+                </div>
+              )}
+              {activeProjects.length > 0 && (
+                <div className="proj-list">
+                  {activeProjects.map((project) => renderProjectRow(project))}
+                </div>
+              )}
+              {overflowParts.length > 0 && (
+                <button
+                  type="button"
+                  className="plate-expander"
+                  onClick={() => setOverflowOpen((v) => !v)}
+                >
+                  {overflowOpen ? "Show less" : overflowParts.join(" · ")}
+                </button>
+              )}
+              {overflowOpen && (
+                <div className="plate-overflow">
+                  {extraDeadlines.length > 0 && (
+                    <div className="deadlines">
+                      {extraDeadlines.map((deadline) =>
+                        renderDeadlineRow(deadline, { missed: false })
+                      )}
+                    </div>
+                  )}
+                  {missedDeadlines.length > 0 && (
+                    <>
+                      <div className="proj-section-label">Past</div>
+                      <div className="deadlines">
+                        {missedDeadlines.map((deadline) =>
+                          renderDeadlineRow(deadline, { missed: true })
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {hiddenProjects.length > 0 && (
+                    <>
+                      <div className="proj-section-label">Hidden</div>
+                      <div className="proj-list">
+                        {hiddenProjects.map((project) => renderProjectRow(project))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
 
-          {tab === "entries" && renderEntriesTab()}
-          {tab === "deadlines" && renderDeadlinesTab()}
-          {tab === "projects" && renderProjectsTab()}
-          {tab === "intentions" && renderIntentionsTab()}
+          {/* ——— Patterns — the FULL reflection set (Home caps at 3) ——— */}
+          {showPatterns && (
+            <section className="journal-section journal-patterns">
+              <h2>Patterns</h2>
+              <ReflectionGift
+                bare
+                reflection={reflection}
+                onReveal={handleReflectionReveal}
+              />
+            </section>
+          )}
+
+          {/* ——— Intentions — raw rows; drift framing stays Home-only ——— */}
+          {showIntentions && (
+            <section className="journal-section journal-intentions">
+              <div className="journal-intent-head">
+                <h2>
+                  Intentions
+                  <span className="count">{intentions.length} pending</span>
+                </h2>
+                <div className="journal-intent-actions">
+                  {selectMode && (
+                    <button
+                      type="button"
+                      className="dl-chip dl-chip--danger"
+                      disabled={selectedIds.size === 0}
+                      onClick={bulkDismissSelected}
+                    >
+                      Dismiss {selectedIds.size || ""} selected
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="dl-chip"
+                    onClick={() => {
+                      setSelectMode((v) => !v);
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    {selectMode ? "Cancel" : "Select"}
+                  </button>
+                </div>
+              </div>
+              <div className="intent-list">{intentions.map(renderIntentionRow)}</div>
+            </section>
+          )}
+
+          {/* ——— Entries — reverse-chron timeline, infinite scroll only ——— */}
+          {showEntries && (
+            <section className="journal-section journal-entries">
+              <h2>
+                Entries
+                <span className="count">
+                  {totalCount > 0 && <span>{totalCount} total</span>}
+                  <button
+                    type="button"
+                    className={`entries-filter-toggle${hasActiveFilter ? " active" : ""}`}
+                    onClick={() => setFilterOpen((v) => !v)}
+                  >
+                    Filter{hasActiveFilter ? " ●" : ""}
+                  </button>
+                </span>
+              </h2>
+              {filterOpen && (
+                <EntriesControls
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  filterOptions={filterOptions}
+                />
+              )}
+              <EntriesList
+                entries={entries}
+                loading={entriesLoading}
+                appended={appendingMore}
+              />
+              <div ref={entriesSentinelRefCb} className="entries-sentinel" aria-hidden="true" />
+            </section>
+          )}
+
+          {journalEmpty && (
+            <p className="spread-empty journal-empty">
+              Nothing here yet — write your first entry and it all fills in.
+            </p>
+          )}
         </div>
       )}
 

@@ -6,39 +6,129 @@
   padding: 24px 0 64px;
 }
 
-.journal-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 28px;
-  border-bottom: 1px solid rgba(26, 22, 18, 0.10);
-  padding-bottom: 0;
+/* Single-page sections */
+.journal-section {
+  margin-bottom: 44px;
 }
 
-.journal-tab {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+/* Quiet overflow expander under "On your plate" */
+.plate-expander {
+  font-family: "Inter", system-ui, sans-serif;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: #9a8d77;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  padding: 8px 12px 10px;
+  padding: 6px 0;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
 }
 
-.journal-tab:hover {
+.plate-expander:hover {
   color: #6b5f4e;
+  text-decoration: underline;
 }
 
-.journal-tab.active {
+.plate-overflow {
+  margin-top: 6px;
+}
+
+/* Compact single-line project rows (density bar retired with the tabs) */
+.proj--line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.proj--line .proj-title {
+  flex-shrink: 0;
+}
+
+.proj--line .proj-meta {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Raw intention rows — no drift-card framing in Journal */
+.intent-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.intent-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(26, 22, 18, 0.06);
+}
+
+.intent-check {
+  align-self: center;
+  width: 15px;
+  height: 15px;
+  accent-color: #b84a2d;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.intent-text {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 15px;
   color: #1a1612;
-  border-bottom-color: #b84a2d;
+  flex: 1;
+  min-width: 0;
 }
 
-/* Intentions tab: select-mode header + selectable card slots */
+.intent-meta {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: #9a8d77;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.intent-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.intent-dismiss {
+  color: #8a8780;
+}
+
+/* Entries header: single Filter control + infinite-scroll sentinel */
+.entries-filter-toggle {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9a8d77;
+  background: transparent;
+  border: 1px solid rgba(26, 22, 18, 0.14);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.entries-filter-toggle:hover,
+.entries-filter-toggle.active {
+  color: #b84a2d;
+  border-color: #b84a2d;
+}
+
+.entries-sentinel {
+  height: 1px;
+}
+
+.journal-empty {
+  padding: 24px 0;
+}
+
+/* Select-mode header for the Intentions section */
 .journal-intent-head {
   display: flex;
   align-items: baseline;
@@ -56,24 +146,8 @@
   flex-shrink: 0;
 }
 
-.journal-intent-cards {
-  margin-top: 4px;
-}
 
-.journal-intent-slot {
-  position: relative;
-}
 
-.journal-intent-check {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  width: 16px;
-  height: 16px;
-  accent-color: #b84a2d;
-  cursor: pointer;
-}
 
 /* ——— Section headings ——— */
 
