@@ -64,7 +64,7 @@ jest.mock("./components/Sidebar", () => ({
   default: ({ onBrandClick, onLogout, onViewChange }) => (
     <div data-testid="sidebar">
       <button onClick={onBrandClick}>Brand</button>
-      <button onClick={() => onViewChange("dashboard")}>Go Dashboard</button>
+      <button onClick={() => onViewChange("journal")}>Go Journal</button>
       <button onClick={() => onViewChange("graph")}>Go Graph</button>
       <button onClick={() => onViewChange("ask")}>Go Ask</button>
       <button onClick={onLogout}>Log out</button>
@@ -72,9 +72,9 @@ jest.mock("./components/Sidebar", () => ({
   ),
 }));
 
-jest.mock("./components/Dashboard", () => ({
+jest.mock("./components/Journal", () => ({
   __esModule: true,
-  default: () => <div data-testid="dashboard-view">Dashboard view</div>,
+  default: () => <div data-testid="journal-view">Journal view</div>,
 }));
 
 jest.mock("./components/MyProgress", () => ({
@@ -90,6 +90,11 @@ jest.mock("./components/AskView", () => ({
 jest.mock("./components/KnowledgeGraphView", () => ({
   __esModule: true,
   default: () => <div data-testid="graph-view">Graph view</div>,
+}));
+
+jest.mock("./components/Home", () => ({
+  __esModule: true,
+  default: () => <div data-testid="home-view">Home view</div>,
 }));
 
 import App from "./App";
@@ -144,7 +149,7 @@ test("auth intent survives a stale passive session invalidation", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 
   await act(async () => {
     authStateChangeCallback?.("SIGNED_OUT", null);
@@ -165,7 +170,7 @@ test("auth intent with a valid existing session enters the app", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 });
 
 test("manual logout clears auth intent and returns to landing", async () => {
@@ -176,7 +181,7 @@ test("manual logout clears auth intent and returns to landing", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 
   userEvent.click(screen.getByRole("button", { name: /log out/i }));
 
@@ -215,20 +220,20 @@ test("completing auth clears the auth intent query", async () => {
 
   userEvent.click(await screen.findByRole("button", { name: /complete auth/i }));
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
   expect(window.location.search).toBe("");
-  expect(window.location.hash).toBe("#ask");
+  expect(window.location.hash).toBe("#home");
 });
 
-test("authenticated bootstrap with no hash lands on ask and starts prefetch", async () => {
+test("authenticated bootstrap with no hash lands on home and starts prefetch", async () => {
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
   });
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#ask");
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#home");
 
   await waitFor(() => {
     expect(prefetchDashboardSnapshot).toHaveBeenCalledWith({
@@ -237,32 +242,32 @@ test("authenticated bootstrap with no hash lands on ask and starts prefetch", as
   });
 });
 
-test("authenticated bootstrap honors a dashboard hash", async () => {
-  window.history.replaceState({}, "", "/#dashboard");
+test("authenticated bootstrap honors a journal hash", async () => {
+  window.history.replaceState({}, "", "/#journal");
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
   });
 
   render(<App />);
 
-  expect(await screen.findByTestId("dashboard-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#dashboard");
+  expect(await screen.findByTestId("journal-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#journal");
 });
 
-test("brand click navigates back to ask", async () => {
-  window.history.replaceState({}, "", "/#dashboard");
+test("brand click navigates back to home", async () => {
+  window.history.replaceState({}, "", "/#journal");
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
   });
 
   render(<App />);
 
-  expect(await screen.findByTestId("dashboard-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("journal-view")).toBeInTheDocument();
 
   userEvent.click(screen.getByRole("button", { name: /brand/i }));
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#ask");
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#home");
 });
 
 test("later auth callbacks do not reset the current hash-backed view", async () => {
@@ -272,19 +277,19 @@ test("later auth callbacks do not reset the current hash-backed view", async () 
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 
-  userEvent.click(screen.getByRole("button", { name: /go dashboard/i }));
+  userEvent.click(screen.getByRole("button", { name: /go journal/i }));
 
-  expect(await screen.findByTestId("dashboard-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#dashboard");
+  expect(await screen.findByTestId("journal-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#journal");
 
   await act(async () => {
     authStateChangeCallback?.("TOKEN_REFRESHED", mockAuthenticatedSession);
   });
 
-  expect(screen.getByTestId("dashboard-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#dashboard");
+  expect(screen.getByTestId("journal-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#journal");
 });
 
 test("hash changes update the active authenticated view", async () => {
@@ -294,7 +299,7 @@ test("hash changes update the active authenticated view", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 
   await act(async () => {
     window.location.hash = "#ask";
@@ -304,11 +309,11 @@ test("hash changes update the active authenticated view", async () => {
   expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
 
   await act(async () => {
-    window.location.hash = "#dashboard";
+    window.location.hash = "#journal";
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   });
 
-  expect(await screen.findByTestId("dashboard-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("journal-view")).toBeInTheDocument();
 });
 
 test("slash-prefixed progress hash resolves to the progress view", async () => {
@@ -323,7 +328,7 @@ test("slash-prefixed progress hash resolves to the progress view", async () => {
   expect(window.location.hash).toBe("#/progress");
 });
 
-test("legacy write hash resolves back to ask", async () => {
+test("legacy write hash resolves to home", async () => {
   window.history.replaceState({}, "", "/#write");
   supabase.auth.getSession.mockResolvedValueOnce({
     data: { session: mockAuthenticatedSession },
@@ -331,8 +336,8 @@ test("legacy write hash resolves back to ask", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#ask");
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#home");
 });
 
 test("sidebar navigation can move into the graph view", async () => {
@@ -342,7 +347,7 @@ test("sidebar navigation can move into the graph view", async () => {
 
   render(<App />);
 
-  expect(await screen.findByTestId("ask-view")).toBeInTheDocument();
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
 
   userEvent.click(screen.getByRole("button", { name: /go graph/i }));
 
