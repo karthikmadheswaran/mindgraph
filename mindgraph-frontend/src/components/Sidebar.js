@@ -1,35 +1,9 @@
-import { useState, useEffect } from "react";
-import { API, authHeaders } from "../utils/auth";
+import { useState } from "react";
 import SettingsModal from "./SettingsModal";
 import "../styles/sidebar.css";
 
-const BAR_COUNT = 14;
-const BAR_MAX_PX = 14;
-const BAR_MIN_PX = 2;
-
-function getUserTimezone() {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-}
-
-function scaleBars(buckets) {
-  const safe = Array.isArray(buckets) && buckets.length === BAR_COUNT
-    ? buckets
-    : new Array(BAR_COUNT).fill(0);
-  const max = Math.max(...safe, 0);
-  if (max === 0) return safe.map(() => BAR_MIN_PX);
-  return safe.map((v) => {
-    if (v <= 0) return BAR_MIN_PX;
-    const scaled = Math.round((v / max) * BAR_MAX_PX);
-    return Math.max(BAR_MIN_PX, scaled);
-  });
-}
-
 const icons = {
-  write: (
+  home: (
     <svg
       width="20"
       height="20"
@@ -41,11 +15,11 @@ const icons = {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 20h4l10-10-4-4L4 16v4z" />
-      <path d="M14 6l4 4" />
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5 10.5V20h14v-9.5" />
     </svg>
   ),
-  dashboard: (
+  journal: (
     <svg
       width="20"
       height="20"
@@ -130,59 +104,12 @@ export default function Sidebar({
   onLogout,
   onBrandClick,
 }) {
-  const [stats, setStats] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    const userTz = encodeURIComponent(getUserTimezone());
-    authHeaders().then((headers) =>
-      fetch(`${API}/stats/showed-up?user_tz=${userTz}`, { headers })
-        .then((r) => (r.ok ? r.json() : Promise.reject()))
-        .then((data) => {
-          if (cancelled) return;
-          setStats({
-            count: Number(data?.count) || 0,
-            daily_buckets: Array.isArray(data?.daily_buckets) ? data.daily_buckets : [],
-          });
-        })
-        .catch(() => {
-          if (!cancelled) setStats(null);
-        })
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Optimistic update: when an entry is submitted, if today's bucket is still 0,
-  // bump it to 1 and increment the all-time count. Listens for a window event
-  // dispatched from InputView so we don't have to thread a callback through App.
-  useEffect(() => {
-    function handleSubmitted() {
-      setStats((prev) => {
-        if (!prev) return prev;
-        const buckets = prev.daily_buckets || [];
-        const todayIdx = buckets.length - 1;
-        if (todayIdx < 0) return prev;
-        if ((buckets[todayIdx] || 0) > 0) return prev;
-        const nextBuckets = buckets.slice();
-        nextBuckets[todayIdx] = 1;
-        return { count: prev.count + 1, daily_buckets: nextBuckets };
-      });
-    }
-    window.addEventListener("mindgraph:entry-submitted", handleSubmitted);
-    return () => window.removeEventListener("mindgraph:entry-submitted", handleSubmitted);
-  }, []);
-
-  const buckets = stats?.daily_buckets || new Array(BAR_COUNT).fill(0);
-  const barHeights = scaleBars(buckets);
-  const displayCount = stats === null ? "—" : stats.count;
-
   const navItems = [
-    { id: "write", label: "Write", icon: icons.write },
+    { id: "home", label: "Home", icon: icons.home },
+    { id: "journal", label: "Journal", icon: icons.journal },
     { id: "ask", label: "Ask", icon: icons.ask },
-    { id: "dashboard", label: "Today", icon: icons.dashboard },
     { id: "graph", label: "Graph", icon: icons.graph },
   ];
 
@@ -212,28 +139,6 @@ export default function Sidebar({
               </button>
             ))}
           </nav>
-        </div>
-
-        <div className="growth-widget">
-          <div className="growth-count">{displayCount}</div>
-          <div className="growth-label">times you showed up</div>
-          <div className="growth-bars">
-            {barHeights.map((h, i) => {
-              const isLast = i === barHeights.length - 1;
-              const hasActivity = (buckets[i] || 0) > 0;
-              const color = isLast ? "#1a1612" : "#b84a2d";
-              const opacity = isLast
-                ? (hasActivity ? 0.85 : 0.25)
-                : (hasActivity ? 0.3 + (h / BAR_MAX_PX) * 0.5 : 0.18);
-              return (
-                <span
-                  key={i}
-                  className="growth-bar"
-                  style={{ height: h, background: color, opacity }}
-                />
-              );
-            })}
-          </div>
         </div>
 
         <div className="sidebar-bottom">

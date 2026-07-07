@@ -5,12 +5,12 @@ import { trackEvent } from "../posthog";
 import AnimatedView from "./AnimatedView";
 import Toast from "./Toast";
 import DispatchReveal from "./DispatchReveal";
-import EntriesList from "./EntriesList";
-import EntriesControls from "./EntriesControls";
+import { PoCard, ReflectionGift, buildIntentionCards } from "./InsightCards";
 import "../styles/input.css";
 
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLLS = 80; // 200s ceiling — non-dedup pipeline runs 5+ Gemini calls and can take 60-90s
+const RECENT_COUNT = 3;
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -33,6 +33,13 @@ function fmtTime(d) {
   return `${hh}:${mm}`;
 }
 
+function fmtRecentDate(str) {
+  const d = new Date(str);
+  return isNaN(d)
+    ? ""
+    : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <rect x="9" y="3" width="6" height="11" rx="3" />
@@ -46,26 +53,7 @@ const AttachIcon = () => (
   </svg>
 );
 
-function buildFilterOptions(entries) {
-  const moods = new Set();
-  const persons = new Set();
-  const categories = new Set();
-  for (const e of entries) {
-    const stamps = e.dispatch_payload?.stamps || [];
-    for (const s of stamps) {
-      if (s.kind === "mood" && s.value) moods.add(s.value);
-      if (s.kind === "person" && s.value) persons.add(s.value);
-      if (s.kind === "pattern" && s.value) categories.add(s.value);
-    }
-  }
-  return {
-    mood: Array.from(moods),
-    person: Array.from(persons),
-    category: Array.from(categories),
-  };
-}
-
-function InputView({ isActive, onEntrySubmitted }) {
+function Home({ isActive, onNavigate }) {
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
   const [toast, setToast] = useState(null);
@@ -80,15 +68,10 @@ function InputView({ isActive, onEntrySubmitted }) {
   const pollRef = useRef(null);
   const pollCountRef = useRef(0);
 
-  // Entries list state
-  const [entries, setEntries] = useState(null);
-  const [totalCount, setTotalCount] = useState(0);
-  const [entriesLoading, setEntriesLoading] = useState(false);
-  const [appendingMore, setAppendingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({});
-  const [filterOptions, setFilterOptions] = useState({ mood: [], person: [], category: [] });
-  const PAGE_SIZE = 10;
+  // Witness surfaces (Noticed) + the 3 most recent entries
+  const [recentEntries, setRecentEntries] = useState(null);
+  const [driftCards, setDriftCards] = useState([]);
+  const [reflection, setReflection] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -109,96 +92,90 @@ function InputView({ isActive, onEntrySubmitted }) {
     if (isActive && taRef.current) taRef.current.focus();
   }, [isActive]);
 
-  const fetchEntries = useCallback(async (pg = 1, activeFilters = {}, append = false) => {
-    if (append) {
-      setAppendingMore(true);
-    } else {
-      setEntriesLoading(true);
-    }
+  // Bounded card composer: the textarea auto-grows with the text instead of
+  // occupying a fixed 50vh ruled page.
+  useEffect(() => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${ta.scrollHeight}px`;
+  }, [text]);
 
+  const fetchRecent = useCallback(async () => {
     try {
-      const params = new URLSearchParams({
-        page: String(pg),
-        page_size: String(PAGE_SIZE),
-      });
-      if (activeFilters.mood) params.set("mood", activeFilters.mood);
-      if (activeFilters.person) params.set("person", activeFilters.person);
-      if (activeFilters.category) params.set("category", activeFilters.category);
-      if (activeFilters.date_from) params.set("date_from", activeFilters.date_from);
-      if (activeFilters.date_to) params.set("date_to", activeFilters.date_to);
-      if (activeFilters.search) params.set("search", activeFilters.search);
-
       const headers = await authHeaders();
-      const res = await fetch(`${API}/entries?${params}`, { headers });
+      const res = await fetch(
+        `${API}/entries?page=1&page_size=${RECENT_COUNT}`,
+        { headers }
+      );
       if (!res.ok) throw new Error("fetch failed");
       const data = await res.json();
-      const fetched = data.entries || [];
-
-      if (append) {
-        setEntries((prev) => [...(prev || []), ...fetched]);
-      } else {
-        setEntries(fetched);
-        if (pg === 1 && !Object.values(activeFilters).some(Boolean) && fetched.length > 0) {
-          setFilterOptions((prev) => {
-            const hasOptions = prev.mood.length > 0 || prev.person.length > 0 || prev.category.length > 0;
-            return hasOptions ? prev : buildFilterOptions(fetched);
-          });
-        }
-      }
-      setTotalCount(data.total_count || 0);
+      setRecentEntries(data.entries || []);
     } catch {
-      if (!append) setEntries([]);
-    } finally {
-      setEntriesLoading(false);
-      setAppendingMore(false);
+      setRecentEntries((prev) => prev || []);
     }
   }, []);
 
-  const fetchFilterOptions = useCallback(async () => {
+  // Drift pick v1: the backend chooses THE one card (scored, 48h-sticky, 14d
+  // cooldown, self-judgment guard) and logs drift_card_served per pick.
+  const refetchDrift = useCallback(async () => {
     try {
       const headers = await authHeaders();
-      const res = await fetch(`${API}/entries/filter-options`, { headers });
-      if (!res.ok) {
-        console.warn(`filter-options: ${res.status} — filter dropdowns will use client-side fallback`);
-        setFilterOptions({ mood: [], person: [], category: [] });
-        return;
-      }
+      const res = await fetch(`${API}/intentions/drift?pick=true`, { headers });
+      if (!res.ok) return;
       const data = await res.json();
-      if (data && Array.isArray(data.mood) && Array.isArray(data.person) && Array.isArray(data.category)) {
-        setFilterOptions(data);
+      setDriftCards(data?.pick ? buildIntentionCards({ intentions: [data.pick] }) : []);
+    } catch {
+      /* keep last-known card on a transient fetch error */
+    }
+  }, []);
+
+  // Resolve ("Did this") / dismiss a drifting intention — same optimistic
+  // remove + server re-sync as the Today view, so behavior (and any analytics
+  // fired server-side) is identical from Home.
+  const handleDriftAction = useCallback(
+    async (id, action) => {
+      if (!id || (action !== "resolve" && action !== "dismiss")) return;
+      setDriftCards((cards) => cards.filter((c) => c.id !== id));
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API}/intentions/${id}/${action}`, { method: "POST", headers });
+        if (!res.ok) throw new Error(`${action} failed: ${res.status}`);
+        await refetchDrift();
+      } catch (err) {
+        console.error("drift action failed", err);
+        await refetchDrift();
       }
+    },
+    [refetchDrift]
+  );
+
+  // Persist that the reflection was seen (fired once, when the first card is opened).
+  const handleReflectionReveal = useCallback(async () => {
+    try {
+      const headers = await authHeaders();
+      await fetch(`${API}/insights/synthesis/open`, { method: "POST", headers });
     } catch (err) {
-      console.warn("filter-options fetch failed:", err);
-      setFilterOptions({ mood: [], person: [], category: [] });
+      console.error("reflection open failed", err);
     }
   }, []);
 
   useEffect(() => {
-    if (isActive) {
-      setPage(1);
-      fetchEntries(1, filters);
-      fetchFilterOptions();
-    }
-  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Re-fetch when filters change
-  const handleFiltersChange = useCallback((newFilters) => {
-    setFilters(newFilters);
-    setPage(1);
-    fetchEntries(1, newFilters);
-  }, [fetchEntries]);
-
-  const handlePageChange = useCallback((pg) => {
-    setPage(pg);
-    fetchEntries(pg, filters);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [fetchEntries, filters]);
-
-  const handleLoadMore = useCallback(() => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchEntries(nextPage, filters, true);
-  }, [fetchEntries, filters, page]);
+    if (!isActive) return;
+    fetchRecent();
+    refetchDrift();
+    const fetchSynthesis = async () => {
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API}/insights/synthesis`, { headers });
+        const synthesisData = res.ok ? await res.json() : null;
+        setReflection(synthesisData?.data || null);
+      } catch {
+        // keep current state — the section simply doesn't render on empties
+      }
+    };
+    fetchSynthesis();
+  }, [isActive, fetchRecent, refetchDrift]);
 
   // Poll entry status until complete
   const startPolling = useCallback((entryId) => {
@@ -250,20 +227,14 @@ function InputView({ isActive, onEntrySubmitted }) {
           console.warn("[dispatch poll] status=error — returning to idle");
           setDispatchPhase("idle");
           setToast({ message: "Processing failed. Please try again.", type: "error" });
-          fetchEntries(1, {});
-          fetchFilterOptions();
-          setPage(1);
-          setFilters({});
+          fetchRecent();
         } else if (data.status === "completed" && hasDispatch) {
           // Both signals present — reveal the telegram.
           clearInterval(pollRef.current);
           console.log("[dispatch poll] revealing with payload:", dp);
           setDispatchPayload(dp);
           setDispatchPhase("revealing");
-          fetchEntries(1, {});
-          fetchFilterOptions();
-          setPage(1);
-          setFilters({});
+          fetchRecent();
         } else if (data.status === "completed" && !hasDispatch) {
           // Status flipped but dispatch_payload hasn't arrived in the read yet
           // — read-after-write inconsistency. Keep polling instead of giving up;
@@ -276,7 +247,7 @@ function InputView({ isActive, onEntrySubmitted }) {
         /* keep polling */
       }
     }, POLL_INTERVAL_MS);
-  }, [fetchEntries, fetchFilterOptions]);
+  }, [fetchRecent]);
 
   useEffect(() => {
     return () => clearInterval(pollRef.current);
@@ -311,9 +282,7 @@ function InputView({ isActive, onEntrySubmitted }) {
       const entryId = data.entry_id;
       setDispatchEntryId(entryId);
       trackEvent("entry_submitted", { input_type: "text", char_count: submittedText.length });
-      window.dispatchEvent(new CustomEvent("mindgraph:entry-submitted"));
 
-      if (onEntrySubmitted) onEntrySubmitted();
       startPolling(entryId);
     } catch {
       setDispatchPhase("idle");
@@ -321,8 +290,18 @@ function InputView({ isActive, onEntrySubmitted }) {
     }
   };
 
+  // Noticed section content: at most 2 cards — the backend-picked drift card
+  // (drift pick v1) + the reflection gift. The gift renders whenever a
+  // synthesis exists: unopened arrives wrapped, previously-opened renders
+  // revealed (Home is now the only surface for past reflections since Today
+  // was retired). Neither -> the whole section (header included) stays out of
+  // the DOM.
+  const noticedDriftCard = driftCards.length > 0 ? driftCards[0] : null;
+  const hasGift = Boolean(reflection?.synthesis_text);
+  const showNoticed = Boolean(noticedDriftCard) || hasGift;
+
   return (
-    <AnimatedView viewKey="write" isActive={isActive}>
+    <AnimatedView viewKey="home" isActive={isActive}>
       <div className="write-view">
         <div className="write-wrap minimal">
           <div className="write-mini-head">
@@ -340,13 +319,14 @@ function InputView({ isActive, onEntrySubmitted }) {
             What&apos;s been on your mind that you haven&apos;t said out loud?
           </p>
 
-          {/* Composer - always visible */}
-          <div className="composer tall">
+          {/* Composer — bounded card, grows with the text */}
+          <div className="composer">
             <textarea
               ref={taRef}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Start anywhere..."
+              placeholder="What's on your mind? Messy is fine."
+              rows={3}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
               }}
@@ -400,32 +380,68 @@ function InputView({ isActive, onEntrySubmitted }) {
             />
           )}
 
-          {/* Entries list section */}
+          {/* Noticed — witness surfaces, max 2 cards, section hidden when empty */}
+          {showNoticed && (
+            <div className="noticed-section">
+              <div className="entries-section-head">
+                <span className="entries-section-label">Noticed</span>
+              </div>
+              <div className="noticed-cards">
+                {noticedDriftCard && (
+                  <PoCard card={noticedDriftCard} onDriftAction={handleDriftAction} />
+                )}
+                {hasGift && (
+                  <ReflectionGift
+                    bare
+                    reflection={reflection}
+                    onReveal={handleReflectionReveal}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Recent — the 3 most recent entries, one line each */}
           <div className="recent-entries-section">
             <div className="entries-section-head">
-              <span className="entries-section-label">Your entries</span>
-              {totalCount > 0 && (
-                <span className="entries-section-count">{totalCount} total</span>
-              )}
+              <span className="entries-section-label">Recent</span>
+              <button
+                type="button"
+                className="recent-all-link"
+                onClick={() => onNavigate && onNavigate("journal")}
+              >
+                All entries →
+              </button>
             </div>
-
-            <EntriesControls
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              filterOptions={filterOptions}
-              page={page}
-              totalCount={totalCount}
-              pageSize={PAGE_SIZE}
-              onPageChange={handlePageChange}
-              onLoadMore={handleLoadMore}
-              loadingMore={appendingMore}
-            />
-
-            <EntriesList
-              entries={entries}
-              loading={entriesLoading}
-              appended={appendingMore}
-            />
+            {recentEntries === null ? (
+              <div>
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="recent-entry-skeleton">
+                    <div className="skeleton-line" style={{ width: "65%" }} />
+                    <div className="skeleton-line short" />
+                  </div>
+                ))}
+              </div>
+            ) : recentEntries.length === 0 ? (
+              <p className="recent-empty">Nothing yet. Start writing.</p>
+            ) : (
+              recentEntries.slice(0, RECENT_COUNT).map((entry) => {
+                const title =
+                  entry.auto_title ||
+                  (entry.raw_text
+                    ? entry.raw_text.slice(0, 80) + (entry.raw_text.length > 80 ? "…" : "")
+                    : "Untitled");
+                return (
+                  <div
+                    key={entry.id || entry.created_at}
+                    className="recent-entry-row recent-entry-row--line"
+                  >
+                    <span className="recent-entry-date">{fmtRecentDate(entry.created_at)}</span>
+                    <span className="recent-entry-title">{title}</span>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -440,4 +456,4 @@ function InputView({ isActive, onEntrySubmitted }) {
   );
 }
 
-export default InputView;
+export default Home;

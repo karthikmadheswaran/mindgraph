@@ -11,18 +11,21 @@ import {
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./components/Dashboard";
+import Journal from "./components/Journal";
 import MyProgress from "./components/MyProgress";
 import AskView from "./components/AskView";
 import KnowledgeGraphView from "./components/KnowledgeGraphView";
-import InputView from "./components/InputView";
+import Home from "./components/Home";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
-const APP_VIEWS = new Set(["write", "ask", "dashboard", "graph", "progress"]);
-const DEFAULT_APP_VIEW = "ask";
+// Capture-first IA: "home" absorbed the old "write" view and "journal"
+// replaced "dashboard" (Today). Legacy #write / #dashboard hashes fall
+// through normalizeHashView to the default, which is home.
+const APP_VIEWS = new Set(["home", "journal", "ask", "graph", "progress"]);
+const DEFAULT_APP_VIEW = "home";
 
 const normalizeHashView = (hashValue) => {
   const hash = String(hashValue || "")
@@ -110,8 +113,8 @@ export default function App() {
     shouldStartOnAuth() ? "auth" : "landing"
   );
   const [currentView, setCurrentView] = useState(initialAppView);
-  const [hasVisitedDashboard, setHasVisitedDashboard] = useState(
-    initialAppView === "dashboard"
+  const [hasVisitedJournal, setHasVisitedJournal] = useState(
+    initialAppView === "journal"
   );
 
   const hasBootstrappedAuthViewRef = useRef(false);
@@ -135,8 +138,8 @@ export default function App() {
 
     setCurrentView(normalizedView);
 
-    if (normalizedView === "dashboard") {
-      setHasVisitedDashboard(true);
+    if (normalizedView === "journal") {
+      setHasVisitedJournal(true);
     }
 
     return normalizedView;
@@ -146,13 +149,13 @@ export default function App() {
     const normalizedView = setHashView(nextView);
     setCurrentView(normalizedView);
 
-    if (normalizedView === "dashboard") {
-      setHasVisitedDashboard(true);
+    if (normalizedView === "journal") {
+      setHasVisitedJournal(true);
     }
   }, []);
 
   const startBackgroundEntriesPolling = useCallback((userId) => {
-    if (!userId || hasVisitedDashboard || backgroundEntriesPollRef.current) {
+    if (!userId || hasVisitedJournal || backgroundEntriesPollRef.current) {
       return;
     }
 
@@ -191,16 +194,16 @@ export default function App() {
         // silently fail
       }
     }, 4000);
-  }, [hasVisitedDashboard, stopBackgroundEntriesPolling]);
+  }, [hasVisitedJournal, stopBackgroundEntriesPolling]);
 
   const syncBackgroundEntriesPolling = useCallback((entries, userId) => {
-    if (hasVisitedDashboard || !hasProcessingEntries(entries)) {
+    if (hasVisitedJournal || !hasProcessingEntries(entries)) {
       stopBackgroundEntriesPolling();
       return;
     }
 
     startBackgroundEntriesPolling(userId);
-  }, [hasVisitedDashboard, startBackgroundEntriesPolling, stopBackgroundEntriesPolling]);
+  }, [hasVisitedJournal, startBackgroundEntriesPolling, stopBackgroundEntriesPolling]);
 
   const handlePublicBrandClick = () => {
     authIntentRef.current = false;
@@ -209,7 +212,7 @@ export default function App() {
   };
 
   const handleAppBrandClick = () => {
-    navigateToAppView("ask");
+    navigateToAppView("home");
   };
 
   useEffect(() => {
@@ -225,8 +228,8 @@ export default function App() {
 
       setCurrentView(normalizedView);
 
-      if (normalizedView === "dashboard") {
-        setHasVisitedDashboard(true);
+      if (normalizedView === "journal") {
+        setHasVisitedJournal(true);
       }
     };
 
@@ -265,7 +268,7 @@ export default function App() {
       }
 
       setCurrentView(DEFAULT_APP_VIEW);
-      setHasVisitedDashboard(false);
+      setHasVisitedJournal(false);
     };
 
     const handleSignedIn = (nextSession) => {
@@ -273,7 +276,7 @@ export default function App() {
 
       if (activeUserIdRef.current && activeUserIdRef.current !== nextUserId) {
         clearDashboardSnapshotCache();
-        setHasVisitedDashboard(false);
+        setHasVisitedJournal(false);
       }
 
       activeUserIdRef.current = nextUserId;
@@ -329,8 +332,8 @@ export default function App() {
   }, [stopBackgroundEntriesPolling, syncCurrentViewFromHash]);
 
   useEffect(() => {
-    if (currentView === "dashboard") {
-      setHasVisitedDashboard(true);
+    if (currentView === "journal") {
+      setHasVisitedJournal(true);
     }
   }, [currentView]);
 
@@ -340,15 +343,15 @@ export default function App() {
   }, [currentView]);
 
   useEffect(() => {
-    if (hasVisitedDashboard) {
+    if (hasVisitedJournal) {
       stopBackgroundEntriesPolling();
     }
-  }, [hasVisitedDashboard, stopBackgroundEntriesPolling]);
+  }, [hasVisitedJournal, stopBackgroundEntriesPolling]);
 
   useEffect(() => {
     const userId = session?.user?.id;
 
-    if (view !== "app" || !userId || hasVisitedDashboard) {
+    if (view !== "app" || !userId || hasVisitedJournal) {
       stopBackgroundEntriesPolling();
       return undefined;
     }
@@ -372,7 +375,7 @@ export default function App() {
       stopBackgroundEntriesPolling();
     };
   }, [
-    hasVisitedDashboard,
+    hasVisitedJournal,
     session?.user?.id,
     stopBackgroundEntriesPolling,
     syncBackgroundEntriesPolling,
@@ -403,7 +406,7 @@ export default function App() {
             activeUserIdRef.current = nextSession.user?.id || null;
             hasBootstrappedAuthViewRef.current = true;
             setSession(nextSession);
-            setHasVisitedDashboard(false);
+            setHasVisitedJournal(false);
             setCurrentView(setHashView(DEFAULT_APP_VIEW, { replace: true }));
             setView("app");
           }}
@@ -426,14 +429,14 @@ export default function App() {
             onBrandClick={handleAppBrandClick}
           />
 
-          <main className={`main-content${currentView === "write" ? " main-content--write" : ""}`}>
-            {hasVisitedDashboard && (
+          <main className={`main-content${currentView === "home" ? " main-content--home" : ""}`}>
+            {hasVisitedJournal && (
               <div
-                style={{ display: currentView === "dashboard" ? "block" : "none" }}
+                style={{ display: currentView === "journal" ? "block" : "none" }}
               >
-                <Dashboard
+                <Journal
                   key={session.user?.id || session.user?.email}
-                  isActive={currentView === "dashboard"}
+                  isActive={currentView === "journal"}
                   userId={session.user?.id}
                 />
               </div>
@@ -450,10 +453,10 @@ export default function App() {
             <div style={{ display: currentView === "ask" ? "block" : "none" }}>
               <AskView isActive={currentView === "ask"} />
             </div>
-            <div style={{ display: currentView === "write" ? "block" : "none" }}>
-              <InputView
-                isActive={currentView === "write"}
-                onEntrySubmitted={() => {}}
+            <div style={{ display: currentView === "home" ? "block" : "none" }}>
+              <Home
+                isActive={currentView === "home"}
+                onNavigate={navigateToAppView}
               />
             </div>
           </main>

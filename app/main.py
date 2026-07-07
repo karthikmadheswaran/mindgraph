@@ -344,11 +344,17 @@ async def get_entity_relations(user_id: str = Depends(get_current_user)):
 @app.get("/intentions/drift")
 async def get_intention_drift(
     threshold_days: Optional[int] = None,
+    pick: bool = False,
     user_id: str = Depends(get_current_user),
 ):
     # Drift is computed LIVE (days since last_referenced_at) — never stored, so
     # the clock is always "as of now". The threshold is read per request inside
     # the service for live tuning; ?threshold_days overrides the env default.
+    # ?pick=true switches to single-pick mode (drift pick v1): scored choice of
+    # THE one Home card — 48h stickiness, 14d cooldown, self-judgment guard,
+    # surfaced_at stamp + drift_card_served event once per pick.
+    if pick:
+        return await intention_service.pick_drift(user_id, threshold_days)
     return await intention_service.get_drift(user_id, threshold_days)
 
 

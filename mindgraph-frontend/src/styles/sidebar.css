@@ -90,41 +90,6 @@
   white-space: nowrap;
 }
 
-.growth-widget {
-  padding: 16px 8px;
-  border-top: 1px solid rgba(26,22,18,0.08);
-}
-
-.growth-count {
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 28px;
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  color: #1a1612;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.growth-label {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-size: 10px;
-  color: #9a8d77;
-  letter-spacing: 0.06em;
-  margin-bottom: 10px;
-}
-
-.growth-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 14px;
-}
-
-.growth-bar {
-  width: 6px;
-  border-radius: 2px 2px 1px 1px;
-}
-
 /* Ambient pulse on the Graph nav icon. Each connecting edge breathes 0.7 -> 1.0 -> 0.7
    on a shared 3s cycle, staggered 0.75s apart so the network reads as "transmitting"
    rather than blinking. */

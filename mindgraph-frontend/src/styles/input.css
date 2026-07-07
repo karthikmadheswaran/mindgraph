@@ -114,28 +114,24 @@
   opacity: 1;
 }
 
-/* Ruled-line composer */
+/* Bounded card composer — replaces the full-height ruled-lines page. The
+   textarea auto-grows with the text (height set from scrollHeight in Home). */
 .composer {
   position: relative;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 31px,
-    var(--w-line-soft) 31px,
-    var(--w-line-soft) 32px
-  );
-  min-height: 260px;
+  background: var(--w-surface);
+  border: 1px solid var(--w-line);
+  border-radius: 14px;
+  box-shadow: var(--w-shadow-1);
+  padding: 18px 18px 12px;
 }
-
-.composer.tall          { min-height: 50vh; }
-.composer.tall textarea { min-height: 50vh; }
 
 .composer textarea {
   width: 100%;
-  min-height: 260px;
+  min-height: 96px;
   border: none;
   outline: none;
   resize: none;
+  overflow-y: hidden;
   background: transparent;
   font-family: var(--w-font-read);
   font-size: 19px;
@@ -307,10 +303,51 @@
   border: none;
 }
 
+/* Noticed section — witness cards below the composer (max 2) */
+.noticed-section {
+  padding: 1.5rem 0 0;
+  margin-top: 16px;
+}
+
+.noticed-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* Recent entries section */
 .recent-entries-section {
   padding: 1.5rem 0;
   margin-top: 16px;
+}
+
+/* One-line recent rows (date + title) on Home */
+.recent-entry-row--line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  cursor: default;
+}
+
+.recent-entry-row--line .recent-entry-date {
+  margin-top: 0;
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.recent-all-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--w-font-ui);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--w-accent);
+}
+
+.recent-all-link:hover {
+  text-decoration: underline;
 }
 
 .recent-entries-head {
