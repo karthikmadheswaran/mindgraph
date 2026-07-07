@@ -45,9 +45,12 @@ const REFLECTION_ACCENT = "#8a7bb5";
 
 // `bare` renders just the gift cards without the section chrome (separator,
 // eyebrow, sub) — used inside Home's "Noticed" section, which carries its own
-// header. Default (false) renders exactly the original Today-view block.
-export function ReflectionGift({ reflection, onReveal, bare = false }) {
-  const insights = reflection?.synthesis_text ? parseSynthesis(reflection.synthesis_text) : [];
+// header. `maxCards` caps how many insights render (Home shows a curated
+// subset — the doc's leading "strongest" blocks; the full set is Journal's
+// job). Default (unset) renders everything.
+export function ReflectionGift({ reflection, onReveal, bare = false, maxCards }) {
+  const allInsights = reflection?.synthesis_text ? parseSynthesis(reflection.synthesis_text) : [];
+  const insights = maxCards ? allInsights.slice(0, maxCards) : allInsights;
   const alreadyOpened = Boolean(reflection?.opened);
   // Each insight is its OWN gift, opened separately. openedSet tracks which are
   // revealed this session; revealPosted guards the single "seen" POST.

@@ -11,6 +11,9 @@ import "../styles/input.css";
 const POLL_INTERVAL_MS = 2500;
 const MAX_POLLS = 80; // 200s ceiling — non-dedup pipeline runs 5+ Gemini calls and can take 60-90s
 const RECENT_COUNT = 3;
+// Noticed stays curated: at most this many reflection cards on Home (the
+// doc's leading/strongest insights). The FULL gift belongs to Journal.
+const HOME_MAX_INSIGHTS = 3;
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -393,6 +396,7 @@ function Home({ isActive, onNavigate }) {
                 {hasGift && (
                   <ReflectionGift
                     bare
+                    maxCards={HOME_MAX_INSIGHTS}
                     reflection={reflection}
                     onReveal={handleReflectionReveal}
                   />
