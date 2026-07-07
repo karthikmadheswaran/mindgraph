@@ -217,6 +217,7 @@ export function buildIntentionCards(driftData) {
         type: "drift",
         id: it.id,
         isDrifting: Boolean(it.is_drifting),
+        status: it.status,
         statN: days != null ? String(days) : "",
         statU: "days quiet",
         title,

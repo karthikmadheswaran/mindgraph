@@ -9,39 +9,19 @@ const FILTER_DEFS = [
   { key: "search",   label: "Search",   type: "text" },
 ];
 
-// Hand-drawn SVG circle for active page number
-function HandCircle() {
-  return (
-    <svg className="entries-page-circle" viewBox="0 0 26 26">
-      <path
-        d="M 13 2 C 19 2, 23 6, 23 13 C 23 19, 19 23, 13 23 C 7 23, 2 19, 2 13 C 2 7, 6 2, 13 2 Z"
-        fill="none"
-        stroke="#5c4a2a"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        strokeDasharray="0.5 0.8"
-      />
-    </svg>
-  );
-}
-
+// Filters only (Journal v2). Pagination moved to the timeline's infinite
+// scroll — the old page-number strip and "load more" button used to render
+// SIMULTANEOUSLY (bug), and both are gone with it.
 export default function EntriesControls({
   filters,
   onFiltersChange,
   filterOptions,
-  page,
-  totalCount,
-  pageSize,
-  onPageChange,
-  onLoadMore,
-  loadingMore,
 }) {
   const [openFilter, setOpenFilter] = useState(null);
   const [searchDraft, setSearchDraft] = useState(filters.search || "");
   const debounceRef = useRef(null);
   const popoverRef = useRef(null);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const hasActiveFilter = Object.values(filters).some(Boolean);
 
   // Debounce search input
@@ -128,22 +108,6 @@ export default function EntriesControls({
     return null;
   }
 
-  // Build page number array with ellipsis
-  function buildPageNums(current, total) {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages = [];
-    pages.push(1);
-    if (current > 3) pages.push("...");
-    for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) {
-      pages.push(p);
-    }
-    if (current < total - 2) pages.push("...");
-    pages.push(total);
-    return pages;
-  }
-
-  const pageNums = buildPageNums(page, totalPages);
-
   return (
     <div className="entries-controls">
       {/* Filter tab row */}
@@ -184,55 +148,6 @@ export default function EntriesControls({
       </div>
 
       <hr className="entries-rule" />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="entries-pagination">
-          <button
-            className="entries-page-nav"
-            onClick={() => onPageChange(page - 1)}
-            disabled={page === 1}
-          >
-            &larr; prev
-          </button>
-
-          <div className="entries-page-numbers">
-            {pageNums.map((p, i) =>
-              p === "..." ? (
-                <span key={`ellipsis-${i}`} className="entries-page-ellipsis">...</span>
-              ) : (
-                <button
-                  key={p}
-                  className={`entries-page-num${p === page ? " active" : ""}`}
-                  onClick={() => onPageChange(p)}
-                >
-                  {p === page && <HandCircle />}
-                  <span style={{ position: "relative", zIndex: 1 }}>{p}</span>
-                </button>
-              )
-            )}
-          </div>
-
-          <button
-            className="entries-page-nav"
-            onClick={() => onPageChange(page + 1)}
-            disabled={page === totalPages}
-          >
-            next &rarr;
-          </button>
-        </div>
-      )}
-
-      {/* Load more */}
-      {page < totalPages && (
-        <button
-          className="entries-load-more"
-          onClick={onLoadMore}
-          disabled={loadingMore}
-        >
-          {loadingMore ? "loading..." : "↓ load more"}
-        </button>
-      )}
     </div>
   );
 }
