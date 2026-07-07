@@ -90,6 +90,10 @@ same = pick2 and pick2["id"] == pick["id"]
 print(f"{'PASS' if same else 'FAIL'} sticky re-serve returned the same pick")
 
 # 4. surfaced_at stamped (service-role read)
+# Two valid outcomes:
+#  - FRESH pick: stamped within the last few minutes.
+#  - STICKY re-serve: an existing stamp inside the 48h window, deliberately
+#    NOT refreshed (restamping would defeat rotation) -- also a PASS.
 rows = get_json(
     f"{supa_url}/rest/v1/intentions?id=eq.{pick['id']}&select=id,surfaced_at",
     {"apikey": service, "Authorization": f"Bearer {service}"},
@@ -97,7 +101,15 @@ rows = get_json(
 stamp = rows[0]["surfaced_at"] if rows else None
 if stamp:
     stamped_at = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
-    fresh = abs((stamped_at - before).total_seconds()) < 300
-    print(f"{'PASS' if fresh else 'FAIL'} surfaced_at stamped: {stamp} (fresh={fresh})")
+    age_s = (before - stamped_at).total_seconds()
+    if abs(age_s) < 300:
+        print(f"PASS surfaced_at freshly stamped: {stamp}")
+    elif 0 <= age_s < 48 * 3600:
+        print(
+            f"PASS surfaced_at unchanged inside the 48h sticky window "
+            f"(stamped {age_s/3600:.1f}h ago) -- sticky serve, no restamp by design"
+        )
+    else:
+        print(f"FAIL surfaced_at stale beyond the sticky window: {stamp}")
 else:
     print("FAIL surfaced_at not stamped")
