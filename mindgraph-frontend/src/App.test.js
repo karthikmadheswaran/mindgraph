@@ -328,6 +328,24 @@ test("slash-prefixed progress hash resolves to the progress view", async () => {
   expect(window.location.hash).toBe("#/progress");
 });
 
+test("root visit and unknown hashes land on Home, never Ask", async () => {
+  // Task A regression pin: the default/fallback view is home. (The reported
+  // prod "root -> Ask" did not reproduce — root was already home; this pins it.)
+  window.history.replaceState({}, "", "/#not-a-view");
+  supabase.auth.getSession.mockResolvedValueOnce({
+    data: { session: mockAuthenticatedSession },
+  });
+
+  render(<App />);
+
+  expect(await screen.findByTestId("home-view")).toBeInTheDocument();
+  expect(window.location.hash).toBe("#home");
+  // Views stay mounted behind display:none — assert Ask's container is hidden.
+  expect(
+    screen.getByTestId("ask-view").parentElement
+  ).toHaveStyle({ display: "none" });
+});
+
 test("legacy write hash resolves to home", async () => {
   window.history.replaceState({}, "", "/#write");
   supabase.auth.getSession.mockResolvedValueOnce({
