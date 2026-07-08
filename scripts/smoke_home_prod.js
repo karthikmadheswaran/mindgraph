@@ -78,10 +78,20 @@ function check(label, ok, detail = "") {
         homeVisible: visible(".write-view"),
         askVisible: visible(".ask-view"),
         activeNav: (document.querySelector(".sidebar-nav-item.active") || {}).textContent || "?",
-        insightCards: document.querySelectorAll(
-          ".noticed-section .reflection-slot, .noticed-section .reflection-card-wrapped"
+        // Wrapped (unopened) insight cards on Home — capped at MAX_INSIGHTS.
+        wrappedInsights: document.querySelectorAll(
+          ".noticed-section .reflection-card-wrapped"
         ).length,
-        noticedPoCards: document.querySelectorAll(".noticed-section .po-card").length,
+        // Revealed insight cards must NEVER render on Home now (opened gift
+        // lives only in Journal → Patterns).
+        revealedInsights: document.querySelectorAll(
+          ".noticed-section .reflection-opened-card"
+        ).length,
+        // Drift po-cards = po-cards that are not revealed reflection cards.
+        driftCards: Array.from(
+          document.querySelectorAll(".noticed-section .po-card")
+        ).filter((el) => !el.classList.contains("reflection-opened-card")).length,
+        promiseCard: Boolean(document.querySelector(".home-promise")),
       };
     });
 
@@ -89,16 +99,16 @@ function check(label, ok, detail = "") {
     check("Home view visible", s.homeVisible);
     check("Ask view hidden", !s.askVisible);
     check("active nav is Home", s.activeNav === "Home", `nav=${s.activeNav}`);
+    // Founder account: the reflection gift is already opened, so Home shows NO
+    // insight cards (wrapped or revealed) — only the single drift pick.
+    check("no revealed insights on Home", s.revealedInsights === 0, `revealed=${s.revealedInsights}`);
     check(
-      `Noticed insights capped at ${MAX_INSIGHTS}`,
-      s.insightCards <= MAX_INSIGHTS,
-      `rendered=${s.insightCards}`
+      `wrapped insights capped at ${MAX_INSIGHTS}`,
+      s.wrappedInsights <= MAX_INSIGHTS,
+      `wrapped=${s.wrappedInsights}`
     );
-    check(
-      `Noticed total cards <= ${MAX_INSIGHTS + 1} (drift pick + insights)`,
-      s.noticedPoCards <= MAX_INSIGHTS + 1,
-      `rendered=${s.noticedPoCards}`
-    );
+    check("one drift card served", s.driftCards === 1, `drift=${s.driftCards}`);
+    check("first-run promise card absent", !s.promiseCard);
   } finally {
     await browser.close();
   }

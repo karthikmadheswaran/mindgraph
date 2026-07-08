@@ -303,6 +303,35 @@
   border: none;
 }
 
+/* First-run promise card — dashed, quiet, no action; placeholder for the
+   witness surfaces until there's enough written to notice anything. */
+.home-promise {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 18px 20px;
+  border: 1px dashed var(--w-line);
+  border-radius: 14px;
+  background: var(--w-surface);
+}
+
+.home-promise-mark {
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--w-accent);
+  flex-shrink: 0;
+}
+
+.home-promise-text {
+  margin: 0;
+  font-family: var(--w-font-read);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--w-ink-3);
+}
+
 /* Noticed section — witness cards below the composer (max 2) */
 .noticed-section {
   padding: 1.5rem 0 0;
