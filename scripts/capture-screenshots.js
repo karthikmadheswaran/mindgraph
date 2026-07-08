@@ -7,7 +7,6 @@ const SCREENSHOT_DIR = path.join(ROOT_DIR, "docs", "screenshots");
 const ENV_PATH = path.join(ROOT_DIR, ".env");
 const DEFAULT_BASE_URL = "https://rawtxt.in";
 const HEADED = process.argv.includes("--headed");
-const TEST_ENTRY = "Working on screenshot capture for MindGraph portfolio";
 let baseUrl = DEFAULT_BASE_URL;
 
 function loadDotEnv(filePath) {
@@ -85,6 +84,18 @@ async function waitForAnySelector(page, selectors, options = {}) {
   }
 }
 
+// Wait for a nice-to-have selector without failing the capture if it never
+// appears (e.g. the drift card only shows when the account has a pending
+// drifting intention). Returns true if it showed, false on timeout.
+async function waitForOptionalSelector(page, selector, timeout = 8000) {
+  try {
+    await page.waitForSelector(selector, { timeout, visible: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function clickButtonByText(page, text) {
   const clicked = await page.evaluate((targetText) => {
     const normalizedTarget = targetText.trim().toLowerCase();
@@ -153,30 +164,44 @@ async function captureLanding(page) {
   await capture(page, "landing.png", { fullPage: true });
 }
 
-async function captureDashboard(page) {
+// Home — capture-first composer + the "Noticed" drift card. The drift card is
+// only present when the account has a pending drifting intention, so we wait
+// for it optionally and shoot the view either way.
+async function captureHome(page) {
   await page.setViewport({ width: 1280, height: 900 });
-  await navigateToView(page, "Dashboard");
-
-  try {
-    await page.waitForSelector(".entries-list", { timeout: 15000, visible: true });
-  } catch {
-    log("Entries list was not visible; falling back to dashboard shell.");
-    await page.waitForSelector(".dashboard-page", { timeout: 10000, visible: true });
+  await navigateToView(page, "Home");
+  await page.waitForSelector(".write-view", { timeout: 15000, visible: true });
+  const hadDrift = await waitForOptionalSelector(page, ".noticed-section");
+  if (!hadDrift) {
+    log("No 'Noticed' drift card on the account — capturing Home without it.");
   }
-
   await stabilize();
-  await capture(page, "dashboard.png");
+  await capture(page, "home.png");
 }
 
-async function captureKnowledgeGraph(page) {
+// Journal — one scrollable life view (On your plate / Patterns / Intentions /
+// Entries), no sub-tabs.
+async function captureJournal(page) {
   await page.setViewport({ width: 1280, height: 900 });
-  await navigateToView(page, "Knowledge Graph");
+  await navigateToView(page, "Journal");
+  await page.waitForSelector(".journal-view", { timeout: 15000, visible: true });
+  // Entries stream in via infinite scroll after mount; wait for a real card so
+  // the shot doesn't catch the skeleton loaders (falls through if the account
+  // has no entries yet).
+  await waitForOptionalSelector(page, ".entry-card", 10000);
+  await stabilize();
+  await capture(page, "journal.png");
+}
+
+async function captureGraph(page) {
+  await page.setViewport({ width: 1280, height: 900 });
+  await navigateToView(page, "Graph");
   await waitForAnySelector(page, [
     ".knowledge-graph-svg",
     'svg[aria-label="Interactive knowledge graph"]',
   ]);
   await stabilize();
-  await capture(page, "knowledge-graph.png");
+  await capture(page, "graph.png");
 }
 
 async function captureAskView(page) {
@@ -185,35 +210,6 @@ async function captureAskView(page) {
   await page.waitForSelector(".ask-view", { timeout: 15000, visible: true });
   await stabilize();
   await capture(page, "ask-view.png");
-}
-
-async function capturePipelineStatus(page) {
-  await page.setViewport({ width: 1280, height: 900 });
-  await navigateToView(page, "Ask");
-  await page.waitForSelector(".ask-view", { timeout: 15000, visible: true });
-  await clickButtonByText(page, "Journal");
-  await page.waitForSelector(".ask-input-shell input", { timeout: 10000, visible: true });
-  await page.type(".ask-input-shell input", TEST_ENTRY, { delay: 20 });
-  await page.click('.ask-input-shell button[type="submit"]');
-  await waitForAnySelector(page, [".pipeline-status", ".journal-card-content.loading"], {
-    timeout: 10000,
-  });
-  await stabilize();
-  await capture(page, "pipeline-status.png");
-}
-
-async function captureProgress(page) {
-  await page.setViewport({ width: 1280, height: 900 });
-  log("Navigating to Progress");
-  await page.evaluate(() => {
-    window.location.hash = "#/progress";
-  });
-  await stabilize();
-  await waitForAnySelector(page, [".progress-page", ".progress-loading"], {
-    timeout: 15000,
-  });
-  await stabilize();
-  await capture(page, "insights.png");
 }
 
 async function main() {
@@ -248,11 +244,10 @@ async function main() {
       return;
     }
 
-    await captureStep("dashboard.png", () => captureDashboard(page));
-    await captureStep("knowledge-graph.png", () => captureKnowledgeGraph(page));
+    await captureStep("home.png", () => captureHome(page));
+    await captureStep("journal.png", () => captureJournal(page));
+    await captureStep("graph.png", () => captureGraph(page));
     await captureStep("ask-view.png", () => captureAskView(page));
-    await captureStep("pipeline-status.png", () => capturePipelineStatus(page));
-    await captureStep("insights.png", () => captureProgress(page));
   } finally {
     await browser.close();
     log("Browser closed");
