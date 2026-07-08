@@ -1,11 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import Home from "./Home";
 
-// Task A regression (post-restructure hotfix): Home's "Noticed" section must
-// stay curated — ONE drift card + at most HOME_MAX_INSIGHTS reflection cards,
-// even when the synthesis doc carries its full "keep strongest <=7" load. The
-// full set belongs to Journal. Pre-restructure Home (the Write view) rendered
-// zero cards; the flood came from rendering the whole gift on Home.
+// Home quietness pass:
+//  1. Noticed shows the reflection gift ONLY while unopened (wrapped), still
+//     capped at HOME_MAX_INSIGHTS. An opened gift renders nothing on Home —
+//     it lives on in Journal → Patterns. (The `opened` flag is gift-level in
+//     the schema, so "opened" == the whole gift is revealed; opening any card
+//     marks it opened server-side and it drops off Home on the next fetch.)
+//  2. First-run promise card: a dashed hint under the composer while the user
+//     has < 3 total entries — never at 3+, never alongside a drift card.
 
 jest.mock("./AnimatedView", () => ({
   __esModule: true,
@@ -37,7 +40,7 @@ const SEVEN_INSIGHT_DOC = Array.from(
   (_, i) => `**Insight ${i + 1}**\nBody of insight ${i + 1}.`
 ).join("\n\n");
 
-const pick = {
+const DRIFT_PICK = {
   id: "intent-1",
   text: "go to the gym",
   drift_days: 54,
@@ -49,6 +52,8 @@ const pick = {
   score: 4.324,
 };
 
+const PROMISE_FRAGMENT = /After a few entries, MindGraph starts noticing/i;
+
 function jsonResponse(payload, ok = true) {
   return Promise.resolve({
     ok,
@@ -57,25 +62,33 @@ function jsonResponse(payload, ok = true) {
   });
 }
 
-beforeEach(() => {
-  // CRA jest runs with resetMocks: true — (re)apply implementations per test.
-  supabase.auth.getSession.mockResolvedValue({
-    data: { session: { user: { id: "user-1", email: "test@rawtxt.in" } } },
-  });
+// Per-test wiring: pick (drift card or null), synthesis (gift or null),
+// entriesTotal (drives the promise card).
+function wireFetch({ pick = null, synthesis = null, entriesTotal = 0 } = {}) {
   global.fetch = jest.fn((input) => {
     const url = typeof input === "string" ? input : input.url;
     if (url.includes("/intentions/drift")) {
       return jsonResponse({ threshold_days: 14, pick });
     }
     if (url.includes("/insights/synthesis")) {
-      return jsonResponse({
-        data: { synthesis_text: SEVEN_INSIGHT_DOC, opened: true },
-      });
+      return jsonResponse({ data: synthesis });
     }
     if (url.includes("/entries")) {
-      return jsonResponse({ entries: [], total_count: 0 });
+      const entries = Array.from({ length: Math.min(entriesTotal, 3) }, (_, i) => ({
+        id: `e-${i + 1}`,
+        auto_title: `Entry ${i + 1}`,
+        created_at: `2026-06-0${i + 1}T10:00:00Z`,
+      }));
+      return jsonResponse({ entries, total_count: entriesTotal });
     }
     return jsonResponse({});
+  });
+}
+
+beforeEach(() => {
+  // CRA jest runs with resetMocks: true — (re)apply implementations per test.
+  supabase.auth.getSession.mockResolvedValue({
+    data: { session: { user: { id: "user-1", email: "test@rawtxt.in" } } },
   });
 });
 
@@ -83,46 +96,39 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-test("Noticed renders the single drift pick plus at most 3 reflection cards", async () => {
-  const { container } = render(<Home isActive onNavigate={() => {}} />);
+// ——— Task 1: gift shows only while unopened ———
 
-  // Drift card (backend pick) renders once.
-  expect(await screen.findByText("Go to the gym")).toBeInTheDocument();
-
-  // The opened 7-insight gift must be capped, not rendered wholesale.
-  await waitFor(() => {
-    expect(
-      container.querySelectorAll(".noticed-section .reflection-slot").length
-    ).toBeGreaterThan(0);
+test("an OPENED gift renders nothing on Home (lives in Journal, not here)", async () => {
+  wireFetch({
+    pick: DRIFT_PICK,
+    synthesis: { synthesis_text: SEVEN_INSIGHT_DOC, opened: true },
+    entriesTotal: 40,
   });
 
-  const slots = container.querySelectorAll(".noticed-section .reflection-slot");
-  expect(slots.length).toBeLessThanOrEqual(3);
+  const { container } = render(<Home isActive onNavigate={() => {}} />);
 
-  // Cap keeps the STRONGEST (first) insights of the doc.
-  expect(screen.getByText("Insight 1")).toBeInTheDocument();
-  expect(screen.queryByText("Insight 7")).not.toBeInTheDocument();
+  // Drift card still renders — the gift gate does not touch it.
+  expect(await screen.findByText("Go to the gym")).toBeInTheDocument();
 
-  // Exactly one drift po-card; total noticed po-cards = drift + capped insights.
-  const noticedCards = container.querySelectorAll(".noticed-section .po-card");
-  expect(noticedCards.length).toBeLessThanOrEqual(4); // 1 drift + <=3 insights
+  // No reflection cards of any kind: not wrapped, not revealed.
+  await waitFor(() => {
+    expect(container.querySelector(".noticed-section")).not.toBeNull();
+  });
+  expect(container.querySelectorAll(".noticed-section .reflection-slot").length).toBe(0);
+  expect(
+    container.querySelectorAll(".noticed-section .reflection-card-wrapped").length
+  ).toBe(0);
+  expect(
+    container.querySelectorAll(".noticed-section .reflection-opened-card").length
+  ).toBe(0);
+  expect(screen.queryByText("Insight 1")).not.toBeInTheDocument();
 });
 
-test("wrapped (unopened) gift is capped the same way", async () => {
-  global.fetch.mockImplementation((input) => {
-    const url = typeof input === "string" ? input : input.url;
-    if (url.includes("/intentions/drift")) {
-      return jsonResponse({ threshold_days: 14, pick: null });
-    }
-    if (url.includes("/insights/synthesis")) {
-      return jsonResponse({
-        data: { synthesis_text: SEVEN_INSIGHT_DOC, opened: false },
-      });
-    }
-    if (url.includes("/entries")) {
-      return jsonResponse({ entries: [], total_count: 0 });
-    }
-    return jsonResponse({});
+test("an UNOPENED gift renders wrapped cards, capped at 3, strongest first", async () => {
+  wireFetch({
+    pick: DRIFT_PICK,
+    synthesis: { synthesis_text: SEVEN_INSIGHT_DOC, opened: false },
+    entriesTotal: 40,
   });
 
   const { container } = render(<Home isActive onNavigate={() => {}} />);
@@ -133,7 +139,50 @@ test("wrapped (unopened) gift is capped the same way", async () => {
     ).toBeGreaterThan(0);
   });
 
+  const wrapped = container.querySelectorAll(".noticed-section .reflection-card-wrapped");
+  expect(wrapped.length).toBeLessThanOrEqual(3);
+  // No revealed cards render on Home — wrapped only.
   expect(
-    container.querySelectorAll(".noticed-section .reflection-card-wrapped").length
-  ).toBeLessThanOrEqual(3);
+    container.querySelectorAll(".noticed-section .reflection-opened-card").length
+  ).toBe(0);
+  // Drift card unaffected.
+  expect(screen.getByText("Go to the gym")).toBeInTheDocument();
+});
+
+// ——— Task 2: first-run promise card ———
+
+test("promise card renders at 0 entries", async () => {
+  wireFetch({ pick: null, synthesis: null, entriesTotal: 0 });
+
+  render(<Home isActive onNavigate={() => {}} />);
+
+  expect(await screen.findByText(PROMISE_FRAGMENT)).toBeInTheDocument();
+});
+
+test("promise card renders at 2 entries", async () => {
+  wireFetch({ pick: null, synthesis: null, entriesTotal: 2 });
+
+  render(<Home isActive onNavigate={() => {}} />);
+
+  expect(await screen.findByText(PROMISE_FRAGMENT)).toBeInTheDocument();
+});
+
+test("promise card is gone at 3 entries", async () => {
+  wireFetch({ pick: null, synthesis: null, entriesTotal: 3 });
+
+  render(<Home isActive onNavigate={() => {}} />);
+
+  // Anchor on a post-load element (a real entry row), then assert absence.
+  expect(await screen.findByText("Entry 1")).toBeInTheDocument();
+  expect(screen.queryByText(PROMISE_FRAGMENT)).not.toBeInTheDocument();
+});
+
+test("promise card never renders alongside a drift card", async () => {
+  // Fewer than 3 entries but a drift card is served — the guard wins.
+  wireFetch({ pick: DRIFT_PICK, synthesis: null, entriesTotal: 0 });
+
+  render(<Home isActive onNavigate={() => {}} />);
+
+  expect(await screen.findByText("Go to the gym")).toBeInTheDocument();
+  expect(screen.queryByText(PROMISE_FRAGMENT)).not.toBeInTheDocument();
 });

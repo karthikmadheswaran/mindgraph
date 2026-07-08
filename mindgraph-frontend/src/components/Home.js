@@ -14,6 +14,9 @@ const RECENT_COUNT = 3;
 // Noticed stays curated: at most this many reflection cards on Home (the
 // doc's leading/strongest insights). The FULL gift belongs to Journal.
 const HOME_MAX_INSIGHTS = 3;
+// Below this many total entries, Home shows the first-run promise card instead
+// of witness surfaces (there's nothing to notice yet).
+const FIRST_RUN_ENTRY_THRESHOLD = 3;
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -73,6 +76,7 @@ function Home({ isActive, onNavigate }) {
 
   // Witness surfaces (Noticed) + the 3 most recent entries
   const [recentEntries, setRecentEntries] = useState(null);
+  const [totalEntries, setTotalEntries] = useState(null);
   const [driftCards, setDriftCards] = useState([]);
   const [reflection, setReflection] = useState(null);
 
@@ -114,6 +118,13 @@ function Home({ isActive, onNavigate }) {
       if (!res.ok) throw new Error("fetch failed");
       const data = await res.json();
       setRecentEntries(data.entries || []);
+      // total_count drives the first-run promise card. Fall back to the page
+      // length if the API omits it, so the card can't get stuck on.
+      setTotalEntries(
+        typeof data.total_count === "number"
+          ? data.total_count
+          : (data.entries || []).length
+      );
     } catch {
       setRecentEntries((prev) => prev || []);
     }
@@ -294,14 +305,21 @@ function Home({ isActive, onNavigate }) {
   };
 
   // Noticed section content: at most 2 cards — the backend-picked drift card
-  // (drift pick v1) + the reflection gift. The gift renders whenever a
-  // synthesis exists: unopened arrives wrapped, previously-opened renders
-  // revealed (Home is now the only surface for past reflections since Today
-  // was retired). Neither -> the whole section (header included) stays out of
-  // the DOM.
+  // (drift pick v1) + the reflection gift, shown ONLY while UNOPENED (wrapped),
+  // capped at HOME_MAX_INSIGHTS. `opened` is gift-level: opening any card marks
+  // the whole gift seen (POST /open), so on the next fetch it drops off Home
+  // and lives on only in Journal → Patterns. Neither card -> the whole section
+  // (header included) stays out of the DOM.
   const noticedDriftCard = driftCards.length > 0 ? driftCards[0] : null;
-  const hasGift = Boolean(reflection?.synthesis_text);
-  const showNoticed = Boolean(noticedDriftCard) || hasGift;
+  const hasUnopenedGift = Boolean(reflection?.synthesis_text) && !reflection.opened;
+  const showNoticed = Boolean(noticedDriftCard) || hasUnopenedGift;
+
+  // First-run promise card: a quiet dashed hint under the composer while the
+  // user has fewer than 3 total entries. Never at 3+, and never alongside a
+  // drift card (the drift card is the real "we noticed" moment; the promise is
+  // its placeholder). Gated on a settled count so it doesn't flash during load.
+  const showPromise =
+    totalEntries !== null && totalEntries < FIRST_RUN_ENTRY_THRESHOLD && !noticedDriftCard;
 
   return (
     <AnimatedView viewKey="home" isActive={isActive}>
@@ -383,6 +401,17 @@ function Home({ isActive, onNavigate }) {
             />
           )}
 
+          {/* First-run promise — dashed hint while there's nothing to notice yet */}
+          {showPromise && (
+            <div className="home-promise">
+              <span className="home-promise-mark" aria-hidden="true">✦</span>
+              <p className="home-promise-text">
+                After a few entries, MindGraph starts noticing — the goals you
+                mention, and the ones that go quiet.
+              </p>
+            </div>
+          )}
+
           {/* Noticed — witness surfaces, max 2 cards, section hidden when empty */}
           {showNoticed && (
             <div className="noticed-section">
@@ -393,7 +422,7 @@ function Home({ isActive, onNavigate }) {
                 {noticedDriftCard && (
                   <PoCard card={noticedDriftCard} onDriftAction={handleDriftAction} />
                 )}
-                {hasGift && (
+                {hasUnopenedGift && (
                   <ReflectionGift
                     bare
                     maxCards={HOME_MAX_INSIGHTS}
