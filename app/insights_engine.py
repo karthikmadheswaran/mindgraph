@@ -212,92 +212,14 @@ Rules:
     return result
 
 
-def generate_forgotten_projects(user_id: str) -> dict:
-    """
-    Forgotten project detector: entities of type 'project' or high-mention
-    entities that haven't been mentioned in 14+ days.
-    """
-    from datetime import timedelta
-
-    entities = fetch_entities(user_id)
-    now = datetime.now(timezone.utc)
-    stale_threshold_days = 14
-
-    stale = []
-    active = []
-
-    for e in entities:
-        if e["mention_count"] < 2:
-            continue  # skip things mentioned only once — not established yet
-
-        last_seen_raw = e.get("last_seen_at")
-        if not last_seen_raw:
-            continue
-
-        # Parse last_seen_at
-        try:
-            last_seen = datetime.fromisoformat(last_seen_raw.replace("Z", "+00:00"))
-            if last_seen.tzinfo is None:
-                last_seen = last_seen.replace(tzinfo=timezone.utc)
-        except Exception:
-            continue
-
-        days_since = (now - last_seen).days
-
-        item = {
-            "name": e["name"],
-            "type": e["entity_type"],
-            "mention_count": e["mention_count"],
-            "days_since_mention": days_since,
-            "last_mentioned": last_seen_raw[:10],
-            "context": e.get("context_summary", ""),
-        }
-
-        if days_since >= stale_threshold_days:
-            stale.append(item)
-        else:
-            active.append(item)
-
-    # Sort stale by most recently mentioned first (closest to coming back)
-    stale.sort(key=lambda x: x["days_since_mention"])
-
-    result = {
-        "stale": stale[:10],      # cap at 10
-        "active": active[:10],
-        "stale_count": len(stale),
-        "active_count": len(active),
-    }
-
-    if stale:
-        severity = "attention" if len(stale) >= 3 else "info"
-        store_insight(user_id, "forgotten_projects", json.dumps(result), severity)
-
-    return result
-
 def clear_old_insights(user_id: str, types: list[str] | None = None):
     """Delete old insights before regenerating.
 
     Pass `types` to clear only specific insight_types. Default (None) wipes ALL
-    types -- but the entry-pipeline path now passes a narrow list so cached
-    artefacts that have their own lifecycles (weekly_tagline, weekly_digest)
-    survive every entry submission.
+    types -- but callers pass a narrow list so cached artefacts that have their
+    own lifecycles (weekly_digest) survive every entry submission.
     """
     query = supabase.table("insights").delete().eq("user_id", user_id)
     if types is not None:
         query = query.in_("insight_type", types)
     query.execute()
-
-
-async def regenerate_insights_background(user_id: str):
-    """Background task: refresh the forgotten-projects insight after each new entry.
-
-    NOTE: the shallow "pattern" cards (generate_patterns) are RETIRED — they were
-    replaced by the Reflection self-synthesis feature (app/synthesis_engine.py), which
-    the entry pipeline triggers separately (debounced). generate_patterns is left in
-    place but no longer called here. forgotten_projects is a distinct feature (stalled
-    projects) and is still refreshed."""
-    try:
-        clear_old_insights(user_id, ["forgotten_projects"])
-        generate_forgotten_projects(user_id)
-    except Exception as e:
-        logger.error("Insight regeneration failed: %s", e, exc_info=True)

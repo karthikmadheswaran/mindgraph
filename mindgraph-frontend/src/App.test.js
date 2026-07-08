@@ -77,11 +77,6 @@ jest.mock("./components/Journal", () => ({
   default: () => <div data-testid="journal-view">Journal view</div>,
 }));
 
-jest.mock("./components/MyProgress", () => ({
-  __esModule: true,
-  default: () => <div data-testid="progress-view">Progress view</div>,
-}));
-
 jest.mock("./components/AskView", () => ({
   __esModule: true,
   default: () => <div data-testid="ask-view">Ask view</div>,
@@ -314,18 +309,6 @@ test("hash changes update the active authenticated view", async () => {
   });
 
   expect(await screen.findByTestId("journal-view")).toBeInTheDocument();
-});
-
-test("slash-prefixed progress hash resolves to the progress view", async () => {
-  window.history.replaceState({}, "", "/#/progress");
-  supabase.auth.getSession.mockResolvedValueOnce({
-    data: { session: mockAuthenticatedSession },
-  });
-
-  render(<App />);
-
-  expect(await screen.findByTestId("progress-view")).toBeInTheDocument();
-  expect(window.location.hash).toBe("#/progress");
 });
 
 test("root visit and unknown hashes land on Home, never Ask", async () => {

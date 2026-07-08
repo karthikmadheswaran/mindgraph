@@ -36,7 +36,6 @@ from app.services import (
     insight_service,
     intention_service,
     project_service,
-    tagline_service,
 )
 from app.payments.router import router as payments_router
 
@@ -468,22 +467,6 @@ async def insights_synthesis(user_id: str = Depends(get_current_user)):
 @app.post("/insights/synthesis/open")
 async def insights_synthesis_open(user_id: str = Depends(get_current_user)):
     return await insight_service.mark_synthesis_opened(user_id)
-
-
-@app.get("/insights/tagline")
-async def insights_tagline(
-    user_tz: Optional[str] = Query(default="UTC"),
-    user_id: str = Depends(get_current_user),
-):
-    return await tagline_service.get_or_generate_tagline(user_id, user_tz or "UTC")
-
-
-@app.get("/stats/showed-up")
-async def get_showed_up_stats(
-    user_tz: Optional[str] = Query(default="UTC"),
-    user_id: str = Depends(get_current_user),
-):
-    return await entry_service.get_showed_up_stats(user_id, user_tz or "UTC")
 
 
 @app.get("/stats/dashboard")

@@ -21,11 +21,6 @@ const normalizeStats = (stats = {}) => ({
   entities_tracked: Number(stats.entities_tracked) || 0,
 });
 
-const normalizeTagline = (tagline = {}) => ({
-  text: typeof tagline.text === "string" ? tagline.text : "",
-  cached: Boolean(tagline.cached),
-});
-
 const normalizeSnapshot = (snapshot = {}) => ({
   entries: snapshot.entries || [],
   deadlines: snapshot.deadlines || [],
@@ -35,7 +30,6 @@ const normalizeSnapshot = (snapshot = {}) => ({
   patterns: snapshot.patterns || {},
   progress: normalizeProgress(snapshot.progress),
   stats: normalizeStats(snapshot.stats),
-  tagline: normalizeTagline(snapshot.tagline),
 });
 
 const getUserTimezone = () => {
@@ -90,7 +84,6 @@ const fetchDashboardSnapshot = async () => {
     relationsData,
     patternsData,
     statsData,
-    taglineData,
   ] = await Promise.all([
     fetch(`${API}/entries`, { headers }).then((response) => response.json()),
     fetch(`${API}/deadlines?status=pending,snoozed,missed`, { headers }).then(
@@ -128,9 +121,6 @@ const fetchDashboardSnapshot = async () => {
     fetch(`${API}/stats/dashboard?user_tz=${userTz}`, { headers })
       .then((response) => (response.ok ? response.json() : {}))
       .catch(() => ({})),
-    fetch(`${API}/insights/tagline?user_tz=${userTz}`, { headers })
-      .then((response) => (response.ok ? response.json() : {}))
-      .catch(() => ({})),
   ]);
 
   return stampSnapshot({
@@ -142,7 +132,6 @@ const fetchDashboardSnapshot = async () => {
     relations: relationsData.relations || [],
     patterns: patternsData.data || {},
     stats: statsData,
-    tagline: taglineData,
   });
 };
 
