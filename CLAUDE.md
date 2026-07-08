@@ -1,8 +1,8 @@
 # MindGraph — agent context
 
 Personal AI journal engine, live at https://rawtxt.in (solo project, **public repo**).
-Write → 8-node LangGraph pipeline → Supabase. Ask → multi-branch retrieval DAG → grounded answers.
-Backend FastAPI + LangGraph + Gemini (Vertex AI in prod); frontend React (CRA). Hosted on Railway.
+Capture → LangGraph entry pipeline (parallel extractor fan-out) → Supabase. Ask → multi-branch retrieval DAG → grounded answers.
+Backend FastAPI + LangGraph + Gemini (Vertex AI in prod); frontend React (CRA), nav = Home · Journal · Ask · Graph. Hosted on Railway.
 
 ## Read next
 - `docs/STATE.md` — current focus + known-broken. Read before any project work.

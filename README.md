@@ -1,260 +1,149 @@
 # MindGraph
 
-A production-grade personal AI engine that turns unstructured daily text into searchable memory, entities, deadlines, knowledge graphs, grounded answers, and behavioral insight.
+**You dump. It organizes.** A journal that reads what you write and reflects it back — a mirror with memory, not a productivity tracker.
+
+Write in plain, messy language. MindGraph extracts the people, projects, and deadlines you mention, notices the intentions that go quiet, synthesizes the patterns in how you actually think, and lets you ask questions about your own past in natural language.
+
+**Live at [rawtxt.in](https://rawtxt.in)** · [API docs (Swagger)](https://mindgraph-production.up.railway.app/docs)
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-rawtxt.in-2ea44f?style=for-the-badge)](https://rawtxt.in)
-[![API Docs](https://img.shields.io/badge/API%20Docs-Swagger-2563eb?style=for-the-badge)](https://mindgraph-production.up.railway.app/docs)
 
-## What It Does
+![MindGraph home — capture-first composer with a drift card the backend surfaced](docs/screenshots/home.png)
 
-- Converts messy personal text into structured memory that can be searched, queried, and visualized.
-- Extracts people, projects, deadlines, decisions, and relationships without forcing the user into forms.
-- Answers natural-language questions with grounded retrieval, conversation memory, and temporal awareness.
-- Reveals forgotten projects, recurring patterns, weekly summaries, and progress history.
-- Maps entities and semantic relationships as an interactive knowledge graph.
-- Keeps each user's data isolated behind Supabase Auth and JWT-protected API access.
+---
 
-## Key Engineering Metrics
+## What it does
 
-- **10x latency improvement:** 67s → 6.66s.
-- **30x cost reduction:** $0.009 → $0.0003 per entry.
-- **RAG F1:** 0.369 baseline → 0.782 after hybrid BM25 + pgvector + Cohere Rerank v3.5.
-- **MRR:** 0.759 → 0.957.
-- **Ask generation quality:** Inference Quality 4.00 → 4.53, Conversational Intelligence 3.87 → 4.47, judged by Gemini Pro across a 32-case harness.
-- **Zero hallucinations** across all RAG and Ask eval runs.
-- **225 tests** across 9 harnesses.
-- **Date normalization:** 64% → 96% functional pass rate, 100% date F1.
+MindGraph is a **witness, not a manager**. It doesn't set goals for you, count streaks, or nag. It watches what you write over time and shows you what's there.
 
-## Architecture Diagram
+- **Capture-first journaling.** One composer. Write a thought — messy is fine — and it's acknowledged instantly while an 11-node pipeline processes it in the background. No forms, no fields, no tagging.
+- **Drift detection.** MindGraph tracks the gap between *stated intent* and *behavior over time*. When something you kept returning to goes quiet, it surfaces one card — "you kept coming back to this; quiet since May 13" — without judgment. "Days quiet" is data, not a scold.
+- **Reflection (self-synthesis).** An evolving, per-user document of the **non-obvious behavioral patterns** in your writing — who you are across your entries, not a mention-count summary. It rewrites itself from your full journal as you accumulate entries.
+- **Ask — RAG over your own journal.** Natural-language questions answered with grounded retrieval over everything you've written, with conversation memory and temporal awareness. "What was I worried about in April?" gets a cited answer, not a hallucination.
+- **Graph view.** An interactive, force-directed map of the people, projects, and entries in your life and how they connect.
 
-```text
-React Frontend (Write + Dashboard + Knowledge Graph + Ask + Insights)
-         ↓
-FastAPI Backend (15 endpoints, JWT auth, async background processing)
-         ↓
-LangGraph Pipeline (8 nodes, parallel fan-out + fan-in)
-         ↓
-Supabase (Postgres + pgvector + tsvector/GIN + Auth)
-         ↓
-Gemini API (gemini-2.5-flash-lite pipeline · gemini-2.5-pro insights + eval judge)
-         ↓ (Ask retrieval only)
-Cohere Rerank v3.5 (cross-encoder re-ranking of hybrid BM25 + vector candidates)
+The interface is four surfaces: **Home** (capture + what was noticed), **Journal** (one scrollable life view — deadlines, projects, patterns, entries), **Ask**, and **Graph**.
+
+![Journal — one scrollable life view: "on your plate" plus synthesized patterns](docs/screenshots/journal.png)
+
+![Graph — a force-directed map of people, projects, and entries](docs/screenshots/graph.png)
+
+## Architecture
+
+Two paths do the work: an **entry pipeline** that turns raw text into structured memory, and an **Ask path** that retrieves and grounds answers over it.
+
+### Entry pipeline — FastAPI + LangGraph
+
+A submission is acknowledged immediately (FastAPI `BackgroundTask`) and processed by a LangGraph DAG. `normalize` and `dedup` run first; on a duplicate the graph short-circuits to `END`. Otherwise five extractors fan out in parallel, then fan into relation-extraction and discovery-computation before the result is embedded and stored.
+
+```
+POST /entries/async ──► normalize ──► dedup ──┬─(duplicate)──► END
+   (instant ack,                               │
+    background task)             parallel      ├─► title_summary ┐
+                                 fan-out ─────► ├─► classify       │
+                                               ├─► entities        ├─► extract_relations ──┐
+                                               ├─► deadline         │                       ├─► store ──► assemble_dispatch ──► Supabase
+                                               └─► intentions ──────┴─► compute_discoveries ─┘        (Postgres + pgvector)
 ```
 
-```text
-START → normalize → dedup ──→ classify        ─┐
-                         │   → entities        ├→ extract_relations → store → END
-                         │   → deadline        │
-                         │   → title_summary   ┘
-                         └──→ END  (duplicate detected)
+Entities are linked through a 3-stage match (normalized exact → project-normalized → semantic embedding) so name variants don't create duplicate rows. Embeddings are 1536-dim (`embedding-001`, task-type-aware).
+
+### Ask path — hybrid retrieval + rerank + Gemini
+
+```
+POST /ask ──► query router ──┬─ temporal ──► date-range retrieval (embedding bypass)
+                             │
+                             └─ semantic ──► hybrid retrieval (BM25 + pgvector)
+                                                     │
+                                                     ▼
+                                             Cohere Rerank v3.5
+                                                     │
+                                                     ▼
+                                 context assembly (+ conversation memory / compaction)
+                                                     │
+                                                     ▼
+                                     Gemini generation (Vertex AI) ──► grounded answer
 ```
 
-## Tech Stack
+Ask is **not** plain RAG: hybrid BM25 + pgvector retrieval, Cohere cross-encoder rerank, a temporal-routing bypass that answers date questions from structured tables directly, and per-session conversation memory with compaction.
 
-| Constant | Value |
+## Engineering practices
+
+- **RED-first evals.** New retrieval, extraction, and generation behavior starts as a *failing* eval case. Every run writes a SHA-stamped JSON to `evals/results/` (committed), and two runs are diffed with `evals/compare.py` — so quality changes are provable, not vibes.
+- **Variance bands, N≥3.** LLM-as-judge scores are noisy, so eval decisions are made against multi-run variance bands rather than a single number — a change has to clear the noise band to count.
+- **Drift is computed at read time, never stored.** The "drifting" card is scored per request (recency, reference count, maturity window, cooldown) from live intention state. There is no stale `drift` column to reconcile.
+- **Backend-side analytics.** Product events (`drift_card_served`, `intention_resolved`, …) are emitted server-side via PostHog, so analytics don't depend on the client firing them.
+- **Cost metering + caps.** Every LLM-billed request is metered (`app/services/cost_cap.py`), using the real Langfuse trace cost when available and a per-type estimate otherwise, with per-user caps.
+- **Production smoke scripts.** Rendered, prod-facing smokes (`scripts/smoke_home_prod.js`, `scripts/smoke_journal_prod.js`, `scripts/verify_drift_pick_prod.py`) verify the live surfaces end-to-end after deploy.
+- **Observability.** Langfuse traces every LLM call; Sentry catches backend and frontend errors.
+
+## Stack
+
+| Layer | Choice |
 | --- | --- |
-| Pipeline LLM | gemini-2.5-flash-lite |
-| Insights / Eval Judge LLM | gemini-2.5-pro |
-| Embedding model | Gemini embedding-001 |
-| Embedding dimensions | 1536 |
-| Pipeline node count | 8 |
-| RAG retrieval | Hybrid: pgvector cosine + Postgres BM25 (tsvector/GIN) + Cohere Rerank v3.5 + temporal query routing (date-range bypass) |
-| Database | Supabase Postgres + pgvector + tsvector |
-| Auth | Supabase Auth — email/password, JWT ES256/JWKS |
-| Observability | Langfuse ([cloud.langfuse.com](http://cloud.langfuse.com)) |
-| Hosting | Railway (frontend + backend), Docker |
-| Frontend framework | React + react-force-graph |
 | Backend framework | FastAPI + Uvicorn |
-| Orchestration | LangGraph + LangChain |
+| Pipeline orchestration | LangGraph + LangChain |
+| Pipeline LLM | Gemini 2.5 Flash-Lite (`thinking_budget=0`) |
+| Insights / eval-judge LLM | Gemini 2.5 Pro |
+| LLM provider (prod) | Vertex AI (`USE_VERTEX=1`); Gemini API for local dev |
+| Embeddings | `embedding-001`, 1536-dim, task-type-aware |
+| Retrieval | Hybrid BM25 (tsvector/GIN) + pgvector cosine + **Cohere Rerank v3.5** + temporal routing |
+| Database / auth | Supabase — Postgres + pgvector + Supabase Auth (JWT) |
+| Frontend | React 19 (CRA) + custom D3 force-directed SVG graph + Framer Motion |
+| Cache / rate state | Upstash Redis |
+| Analytics | PostHog (backend + frontend) |
+| Observability | Langfuse (LLM traces) · Sentry (errors) |
+| Payments | Razorpay |
+| Hosting | Railway (frontend + backend), Docker |
 
-## Key Engineering Decisions
-
-### Model Optimization (10x Faster, 30x Cheaper)
-
-**Problem:** The original pipeline model was too slow and expensive for a production personal AI engine.
-
-**Solution:** Switched the pipeline from `gemini-3-flash-preview` to `gemini-2.5-flash-lite`.
-
-**Outcome:** Latency dropped from 67s → 6.66s and cost dropped from $0.009 → $0.0003 per entry.
-
-### Hybrid RAG Pipeline
-
-**Problem:** Pure semantic retrieval missed lexical matches, temporal questions, and semantically distant but relevant entries.
-
-**Solution:** Combined BM25 + pgvector cosine + Cohere Rerank v3.5 + temporal query routing. Time-based queries bypass embedding entirely and hit the database directly with a date-range query.
-
-**Outcome:** RAG F1 improved from 0.369 → 0.782 and MRR improved from 0.759 → 0.957.
-
-### Eval-Driven Prompt Engineering
-
-**Problem:** Entity extraction and Ask generation needed measurable quality gains, not subjective prompt tweaking.
-
-**Solution:** Tuned entity extraction across a 41-case harness, 10 failure families, and Ask generation across a 32-case LLM-as-judge harness using Gemini Pro, 6 iterations, and 8 prompt rules.
-
-**Outcome:** Entity extraction improved from 75.6% → 100% pass rate. Ask generation improved from 4.00 → 4.53 on Inference Quality and 3.87 → 4.47 on Conversational Intelligence.
-
-### 3-Stage Entity Linking
-
-**Problem:** Name variants could create duplicate entity rows, while aggressive fuzzy matching risked false merges.
-
-**Solution:** Linked entities through normalized exact match -> project-normalized match -> semantic embedding match with a substring-aware cosine threshold.
-
-**Outcome:** Prevents duplicate rows for name variants without false merges.
-
-### Async Background Processing + Silent Refresh
-
-**Problem:** Railway's proxy breaks long SSE connections, making slow LLM processing unreliable as a foreground request.
-
-**Solution:** Switched to fast-acknowledge/process-slow with FastAPI BackgroundTask, `pipeline_stage` polling, and silent background sync in the frontend.
-
-**Outcome:** Users get immediate acknowledgement while the pipeline finishes in the background, with stable production behavior on Railway.
-
-## RAG Evaluation Results
-
-| Metric | Baseline | Phase 1 (threshold tuning) | Phase 2 (hybrid BM25 + rerank) |
-| --- | ---: | ---: | ---: |
-| Retrieval F1 | 0.369 | 0.669 | **0.782** |
-| MRR | 0.759 | 0.907 | **0.957** |
-| Pass rate | 11/27 (41%) | 20/27 (74%) | **21/27 (78%)** |
-
-## Ask Generation Quality
-
-| Dimension | Baseline | Final | Delta |
-| --- | ---: | ---: | ---: |
-| Inference Quality | 4.00 | 4.53 | +0.53 |
-| Conv. Intelligence | 3.87 | 4.47 | +0.60 |
-| Tone | 4.70 | 4.80 | +0.10 |
-| Groundedness | 4.93 | 5.00 | +0.07 |
-| Noise Resistance | 5.00 | 5.00 | 0.00 |
-| Relevance | 4.87 | 4.93 | +0.06 |
-
-## Test Coverage
-
-| Harness | Tests | Scope |
-| --- | ---: | --- |
-| `test_extract_entities.py` | 41 | 10 families: happy_path, negative_generic, date_leaks, dedup, disambiguation, false_project_promotion, formatting, project_positive, task_boundary, ambiguous |
-| `test_store_entities.py` | 6 | Case-insensitive dedup, same-batch dedup, type separation, mention count updates |
-| `test_store_project_matching.py` | 24 | Spacing/case/hyphen/underscore variants, risky collisions, clearly-different names |
-| `test_extract_relations.py` | 16 | Relation parsing: multi-entity, symmetric relations, confidence scoring, edge cases |
-| `test_store_relations.py` | 4 | Insert, upsert dedup, unresolved entity skip, symmetric relation normalization |
-| `normalize_evaluation.py` | 25 | Live Gemini normalize eval: weekday lookups, offsets, month/year boundaries, slang, no-date hallucination, timezone rollover |
-| `rag_evaluation.py` | 27 | Retrieval F1, MRR, pass rate, pronoun resolution, leakage resistance — 6 categories |
-| `memory_compaction_evaluation.py` | 50 | 36 compaction + 14 Ask cases: stable facts, dedup, contradiction update, precedence, honesty |
-| `eval_generation.py` | 32 | LLM-as-judge: 7 dimensions × 6 behavioral categories + 7 failure mode detectors. Includes: repetition_ignores_user_answer (v11) + repetition_minimal_reply_idk (v12) |
-| **Total** | **225** | Zero hallucinations across all RAG and Ask eval runs |
-
-## API Endpoints
-
-| Method | Path | Description |
-| --- | --- | --- |
-| POST | `/entries/async` | Submit entry — instant response, background processing |
-| GET | `/entries` | Fetch stored entries for authenticated user |
-| GET | `/entries/{id}/status` | Poll pipeline stage for a processing entry |
-| POST | `/ask` | Hybrid RAG + conversation memory Q&A |
-| GET | `/ask/history` | Fetch recent Ask conversation history |
-| GET | `/ask/memory` | Inspect compacted long-term Ask memory |
-| GET | `/search` | Semantic similarity search on entries |
-| GET | `/deadlines` | Fetch upcoming deadlines |
-| GET | `/entities` | Fetch extracted entities ranked by mention count |
-| GET | `/entity-relations` | Fetch LLM-extracted semantic relations between entities |
-| GET | `/insights` | Read all cached insights |
-| GET | `/insights/patterns` | Read cached behavioural pattern analysis |
-| GET | `/insights/weekly` | Read cached weekly digest |
-| GET | `/insights/forgotten` | Read cached forgotten projects detection |
-| GET | `/health` | Health check (no auth required) |
-
-## Project Structure
-
-```text
-.
-|-- app/
-|   |-- main.py                  # FastAPI app, auth, CORS, API routing
-|   |-- graph.py                 # LangGraph pipeline wiring
-|   |-- state.py                 # Shared typed pipeline state
-|   |-- auth.py                  # Supabase JWT verification
-|   |-- db.py                    # Supabase client
-|   |-- retrieval.py             # Hybrid retrieval path
-|   |-- nodes/
-|   |   |-- normalize.py
-|   |   |-- dedup.py
-|   |   |-- classify.py
-|   |   |-- extract_entities.py
-|   |   |-- deadline.py
-|   |   |-- title_summary.py
-|   |   |-- extract_relations.py
-|   |   `-- store.py
-|   `-- services/
-|       |-- ask_service.py
-|       |-- conversation.py
-|       |-- deadline_service.py
-|       |-- entity_service.py
-|       |-- entry_service.py
-|       |-- insight_service.py
-|       |-- observability.py
-|       |-- project_service.py
-|       `-- reranker.py
-|-- tests/                       # Python test harnesses
-|-- evals/                       # RAG, normalize, memory, generation evals
-|-- scripts/                     # Backfills and maintenance scripts
-|-- docs/                        # Architecture notes and assessments
-|-- migrations/                  # Supabase/Postgres migrations
-|-- mindgraph-frontend/
-|   |-- public/
-|   |   |-- index.html
-|   |   |-- env.js
-|   |   |-- rawtxt-landing.html
-|   |   |-- rawtxt-architecture.html
-|   |   |-- landing/index.html
-|   |   `-- architecture/index.html
-|   |-- src/
-|   |   |-- App.js
-|   |   |-- runtimeConfig.js
-|   |   |-- supabaseClient.js
-|   |   |-- components/
-|   |   |   |-- AuthView.js
-|   |   |   |-- InputView.js
-|   |   |   |-- Dashboard.js
-|   |   |   |-- AskView.js
-|   |   |   |-- KnowledgeGraph.js
-|   |   |   |-- KnowledgeGraphView.js
-|   |   |   |-- MyProgress.js
-|   |   |   `-- Sidebar.js
-|   |   |-- styles/
-|   |   `-- utils/
-|   |-- Dockerfile
-|   |-- nginx.conf.template
-|   `-- railway-listen.envsh
-|-- Dockerfile
-|-- docker-compose.yml
-|-- requirements.txt
-`-- README.md
-```
-
-Python files are organized into `tests/`, `evals/`, `scripts/`, and `docs/`; the repo root is intentionally not a flat scratchpad. Frontend components live in `mindgraph-frontend/src/components/`.
-
-## Running Locally
+## Running locally
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 20+
-- Supabase project with Postgres, pgvector, tsvector/GIN, and Auth configured
-- Gemini API key
-- Cohere API key for reranking
+- Python 3.11+, Node.js 20+
+- A Supabase project (Postgres + pgvector + `tsvector`/GIN + Auth)
+- A Gemini API key (local dev) and, optionally, a Cohere API key for reranking
 
 ### Backend
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate           # Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-On Windows PowerShell, activate with:
+Minimum backend environment to boot:
 
-```powershell
-.\.venv\Scripts\Activate.ps1
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+GEMINI_API_KEY=
+COHERE_API_KEY=          # optional — Ask falls back to un-reranked order if unset
+CORS_ORIGINS=
+```
+
+Optional / production parity (each integration degrades gracefully when unset):
+
+```env
+# Vertex AI (production LLM path)
+USE_VERTEX=1
+VERTEX_PROJECT=
+VERTEX_LOCATION=
+GOOGLE_CREDENTIALS_JSON=          # service-account JSON; written to a temp creds file at boot
+
+# Observability & analytics
+LANGFUSE_PUBLIC_KEY=
+LANGFUSE_SECRET_KEY=
+LANGFUSE_BASE_URL=
+SENTRY_DSN_BACKEND=
+POSTHOG_API_KEY=
+
+# Infra & payments
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
 ```
 
 ### Frontend
@@ -265,30 +154,42 @@ npm install
 npm start
 ```
 
-### Environment Variables
-
-Backend:
-
-```env
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-GEMINI_API_KEY=
-COHERE_API_KEY=
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
-LANGFUSE_BASE_URL=
-CORS_ORIGINS=
-```
-
-Frontend:
-
 ```env
 REACT_APP_SUPABASE_URL=
 REACT_APP_SUPABASE_ANON_KEY=
 REACT_APP_API_URL=
+REACT_APP_SENTRY_DSN=             # optional
 ```
 
-Production on Railway generates `/env.js` at container startup for the frontend. The backend service-role variable is `SUPABASE_SERVICE_ROLE_KEY`.
+In production on Railway, the frontend reads a `/env.js` file generated at container startup rather than build-time env. The backend service-role variable is `SUPABASE_SERVICE_ROLE_KEY` (not `SUPABASE_KEY`).
+
+## Repo map
+
+```
+app/
+  main.py                     # FastAPI app: all routes, auth, CORS
+  graph.py · state.py         # LangGraph pipeline wiring + shared typed state
+  nodes/                      # entry pipeline nodes (normalize, dedup, extractors, store, …)
+  services/
+    ask_pipeline/             # the Ask DAG (router, hybrid_rag, rerank, generation)
+    ask_service.py            # retrieval thresholds + conversation memory
+    cost_cap.py               # per-request cost metering + caps
+  synthesis_engine.py         # reflection (self-synthesis) engine
+  schemas/                    # structured-output schemas
+mindgraph-frontend/           # React app; static landing pages in public/
+evals/                        # eval harnesses + results/ (SHA-stamped run JSONs)
+tests/                        # pytest suites
+migrations/                   # numbered SQL, applied manually to Supabase
+scripts/                      # backfills, prod smokes, screenshot capture
+docs/                         # STATE.md, ADRs, screenshots
+```
+
+To derive the current surface from source rather than trusting this file:
+
+- **Routes:** `grep -n "@app\." app/main.py`
+- **Tests:** `pytest --collect-only -q tests/`
+- **Latest eval scores:** newest `evals/results/*.json` → `summary`
+- **Deployed commit:** `curl https://mindgraph-production.up.railway.app/health`
 
 ## License
 
