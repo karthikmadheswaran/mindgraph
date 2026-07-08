@@ -14,7 +14,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 - **Self-judgment guard (HARD, pick-time only):** identity / "useless guy"-class intentions can never be the Home card; Journal still lists them.
 - Deferred (do NOT pre-build): card ranking + dev-vs-life categorization; `resolved_at`/`dismissed_at` column; time-diff maturation; time-adverb `_NONCONTENT`; intention clustering (docs/designs/intention-clustering.md — trigger: user >15 pending); pick-score re-tune from `drift_card_served` telemetry once serves accumulate.
 
-**Reflection (self-synthesis)** — SHIPPED 02/07 (`synthesis_engine.py`, migration 019). Per-user doc of non-obvious behavioural patterns from full journal text; first gift ≥ 5 entries. Home shows it only while unopened (capped 3); opened → lives in Journal → Patterns. `generate_patterns` retired; `forgotten_projects` unconsumed.
+**Reflection (self-synthesis)** — SHIPPED 02/07 (`synthesis_engine.py`, migration 019). Per-user doc of non-obvious behavioural patterns from full journal text; first gift ≥ 5 entries. Home shows it only while unopened (capped 3); opened → lives in Journal → Patterns. `generate_patterns` retired.
 - **Gift-level open gating is the ACCEPTED launch behavior** — do NOT build per-insight `opened_at` (needs a migration; out of scope).
 - Deferred (do NOT pre-build): a scheduler for inactive-user regen; tune `REFLECTION_STALE_DAYS`(3)/`REFLECTION_MIN_ENTRIES`(5) once traffic shows cadence.
 
@@ -25,8 +25,6 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 
 ## Known broken / degraded (open only)
 - **AI Studio prepay depleted — local LLM path dead (P3):** local `GEMINI_API_KEY` 429s; prod unaffected (Vertex). Force Vertex locally or top up.
-- **MyProgress orphaned + red suites (P2 — decide):** hash-only `#/progress`, never in nav → DELETE (suite too). `MyProgress.test.js` (6F) + `AskView.test.js` (3F) pre-existing red across PRs #13–#15 — fix or delete → 0F baseline.
-- **Dormant backend surfaces (P3, deletion candidates):** `/stats/showed-up` (consumer removed 07/07); weather-tagline `/insights/tagline` (unconsumed since Today retired); `forgotten_projects` insight (unconsumed). All reversible.
 - **Dedup-orphan empty entries — backfill pending (P2):** 9 completed entries have empty `cleaned_text`, all dedup-flagged; 1 real false positive. Backfill (do NOT run yet): re-embed, re-run `match_entries`, if sim ≤ 0.92 re-run the pipeline.
 - **Dedup orphan rows — populate open (P2):** a TRUE duplicate still leaves an empty `completed` row (now hidden) that never advances `last_seen`. Fix: populate from the matched entry or don't persist it.
 - **Cost-cap flat-estimate fallback (P2):** `record_cost` uses the Langfuse trace cost when available, else a fixed per-type estimate (`cost_cap.py`) that can under-count. Revisit if abuse appears.
