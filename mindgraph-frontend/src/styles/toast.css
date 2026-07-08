@@ -2,7 +2,7 @@
   position: fixed;
   /* Stacked toasts: each sits one slot (60px) above the previous so
      concurrent deletes/snooze/errors don't overlap. --toast-offset defaults
-     to 0 for single-toast consumers (Home, MyProgress). */
+     to 0 for single-toast consumers (Home). */
   bottom: calc(32px + var(--toast-offset, 0) * 60px);
   left: 50%;
   padding: 12px 20px;

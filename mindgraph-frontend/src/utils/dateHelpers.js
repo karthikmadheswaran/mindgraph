@@ -131,7 +131,7 @@ export const deadlineLabel = (dateStr) => {
 };
 
 // Single source of truth for "days since last mentioned" across every staleness
-// surface (Active Projects card, Noticed/forgotten insight). Normalizes any
+// surface (Active Projects card, Noticed insight). Normalizes any
 // timestamp OR date-only string to a calendar-day count via parseDeadlineDate's
 // dateOnly, so a full ISO timestamp (projects.last_mentioned_at) and a
 // YYYY-MM-DD (insight.last_mentioned) for the same day yield the SAME integer —

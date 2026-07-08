@@ -15,17 +15,6 @@ const FOLLOW_UP_PILLS = [
   "What am I most focused on?",
 ];
 
-function timeAgo(isoStr) {
-  if (!isoStr) return "";
-  const diffMs = Date.now() - new Date(isoStr).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "JUST NOW";
-  if (mins < 60) return `${mins} MIN AGO`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} HR AGO`;
-  const days = Math.floor(hrs / 24);
-  return `${days} DAY${days === 1 ? "" : "S"} AGO`;
-}
 const FINAL_STAGES = new Set(["completed", "error"]);
 const DEFAULT_PIPELINE_STATUS = "Processing...";
 const PIPELINE_STATUS_MAP = {

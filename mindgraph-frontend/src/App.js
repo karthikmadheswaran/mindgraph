@@ -12,7 +12,6 @@ import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
 import Sidebar from "./components/Sidebar";
 import Journal from "./components/Journal";
-import MyProgress from "./components/MyProgress";
 import AskView from "./components/AskView";
 import KnowledgeGraphView from "./components/KnowledgeGraphView";
 import Home from "./components/Home";
@@ -22,9 +21,9 @@ import "./styles/app-shell.css";
 import "./styles/responsive.css";
 
 // Capture-first IA: "home" absorbed the old "write" view and "journal"
-// replaced "dashboard" (Today). Legacy #write / #dashboard hashes fall
-// through normalizeHashView to the default, which is home.
-const APP_VIEWS = new Set(["home", "journal", "ask", "graph", "progress"]);
+// replaced "dashboard" (Today). Legacy #write / #dashboard / #/progress
+// hashes fall through normalizeHashView to the default, which is home.
+const APP_VIEWS = new Set(["home", "journal", "ask", "graph"]);
 const DEFAULT_APP_VIEW = "home";
 
 const normalizeHashView = (hashValue) => {
@@ -37,8 +36,7 @@ const normalizeHashView = (hashValue) => {
   return APP_VIEWS.has(normalizedHash) ? normalizedHash : DEFAULT_APP_VIEW;
 };
 
-const formatHashView = (view) =>
-  view === "progress" ? "#/progress" : `#${view}`;
+const formatHashView = (view) => `#${view}`;
 
 const isHashForView = (hashValue, view) => {
   const normalizedHash = String(hashValue || "").trim().toLowerCase();
@@ -339,7 +337,6 @@ export default function App() {
 
   useEffect(() => {
     if (currentView === "graph") trackEvent("graph_viewed");
-    else if (currentView === "progress") trackEvent("progress_viewed");
   }, [currentView]);
 
   useEffect(() => {
@@ -441,12 +438,6 @@ export default function App() {
                 />
               </div>
             )}
-            <div style={{ display: currentView === "progress" ? "block" : "none" }}>
-              <MyProgress
-                isActive={currentView === "progress"}
-                userId={session.user?.id}
-              />
-            </div>
             <div style={{ display: currentView === "graph" ? "block" : "none" }}>
               <KnowledgeGraphView isActive={currentView === "graph"} />
             </div>

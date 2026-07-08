@@ -29,6 +29,19 @@ function jsonResponse(payload, ok = true) {
   });
 }
 
+// AskView fires several fetches on mount (/ask/memory prefetch, /entries count,
+// /conversations/messages history, plus per-message /status polls). Route the
+// mock by URL so a test's history payload can't be consumed by an unrelated
+// mount fetch — order-independent, the same pattern Journal.test.js uses.
+// Keys are matched with String#includes in insertion order (specific first).
+function mockFetchByUrl(routes) {
+  global.fetch.mockImplementation((url) => {
+    const path = String(url);
+    const key = Object.keys(routes).find((route) => path.includes(route));
+    return jsonResponse(key ? routes[key] : {});
+  });
+}
+
 describe("AskView", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
@@ -44,8 +57,9 @@ describe("AskView", () => {
   });
 
   test("loads stored conversation history and hides the empty state", async () => {
-    global.fetch.mockResolvedValueOnce(
-      jsonResponse({
+    mockFetchByUrl({
+      "/status": { metadata: {} },
+      "/conversations/messages": {
         messages: [
           {
             id: "message-2",
@@ -67,8 +81,10 @@ describe("AskView", () => {
           },
         ],
         has_more: false,
-      })
-    );
+      },
+      "/ask/memory": {},
+      "/entries": { entries: [] },
+    });
 
     render(<AskView isActive />);
 
@@ -136,8 +152,9 @@ describe("AskView", () => {
   });
 
   test("renders completed journal cards without summary, categories, or type labels", async () => {
-    global.fetch.mockResolvedValueOnce(
-      jsonResponse({
+    mockFetchByUrl({
+      "/status": { metadata: { pipeline_stage: "completed" } },
+      "/conversations/messages": {
         messages: [
           {
             id: "journal-1",
@@ -159,8 +176,10 @@ describe("AskView", () => {
           },
         ],
         has_more: false,
-      })
-    );
+      },
+      "/ask/memory": {},
+      "/entries": { entries: [] },
+    });
 
     const { container } = render(<AskView isActive />);
 
@@ -177,8 +196,9 @@ describe("AskView", () => {
   });
 
   test("shows skeleton and mapped pipeline status while journal cards process", async () => {
-    global.fetch.mockResolvedValueOnce(
-      jsonResponse({
+    mockFetchByUrl({
+      "/status": { metadata: { pipeline_stage: "entities" }, entry_id: null },
+      "/conversations/messages": {
         messages: [
           {
             id: "journal-2",
@@ -193,8 +213,10 @@ describe("AskView", () => {
           },
         ],
         has_more: false,
-      })
-    );
+      },
+      "/ask/memory": {},
+      "/entries": { entries: [] },
+    });
 
     const { container } = render(<AskView isActive />);
 
