@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../supabaseClient";
+import RequestAccessForm from "./RequestAccessForm";
 import "../styles/auth.css";
 
 function AuthView({ onAuth, onBack, onBrandClick }) {
@@ -9,6 +10,7 @@ function AuthView({ onAuth, onBack, onBrandClick }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [showRequestAccess, setShowRequestAccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -123,6 +125,27 @@ function AuthView({ onAuth, onBack, onBrandClick }) {
 
         {error && <div className="auth-error">{error}</div>}
         {info && <div className="auth-info">{info}</div>}
+
+        {mode === "signup" && (
+          <div className="auth-request-access">
+            {showRequestAccess ? (
+              <>
+                <p className="auth-invite-note">
+                  Not invited yet? Leave your email and Karthik will be in touch.
+                </p>
+                <RequestAccessForm defaultEmail={email} />
+              </>
+            ) : (
+              <button
+                type="button"
+                className="auth-request-access-link"
+                onClick={() => setShowRequestAccess(true)}
+              >
+                Not invited yet? Request access
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
