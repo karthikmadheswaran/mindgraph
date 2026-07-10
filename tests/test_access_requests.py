@@ -147,6 +147,24 @@ def test_table_absent_fails_safe_and_reports_to_sentry():
         sentry.capture_exception.assert_called_once()
 
 
+def test_client_ip_prefers_forwarded_for():
+    from unittest.mock import MagicMock
+
+    from app.dependencies.rate_limit import _client_ip
+
+    # Railway populates X-Forwarded-For with "client, proxy…"; take the client.
+    req = MagicMock()
+    req.headers = {"x-forwarded-for": "203.0.113.7, 10.0.0.1"}
+    req.client.host = "10.0.0.1"  # proxy peer — must NOT be used
+    assert _client_ip(req) == "203.0.113.7"
+
+    # No header (local/dev): fall back to the peer address.
+    req2 = MagicMock()
+    req2.headers = {}
+    req2.client.host = "127.0.0.1"
+    assert _client_ip(req2) == "127.0.0.1"
+
+
 def test_note_truncated_to_280_at_service_layer():
     with patch.object(access_request_service, "supabase") as svc_sb:
         insert_chain = MagicMock()
