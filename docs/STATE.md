@@ -8,6 +8,8 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 3. **Launch / demand-test** (not another backend phase): put drift + reflection in front of strangers (3+ entries each); watch for the "that's the gap" reaction.
 
 ## Pins — shipped features + spec decisions that must hold
+**Trial gating** (shipped 07/10, PR merge 48a5bca). `allowed_emails` table (migration 021, RLS deny-all, service-role only, 60s in-process cache); enforced in `get_current_user` → 403 `{"detail":"invite_only"}`; founder seeded; fails open if the table is absent (no lockout). **021 must be applied via the Supabase dashboard for the gate to actually gate** (dashboard-only; not applied by the PR).
+
 **Drift + Home IA** (shipped 07/07). One backend-picked Home card, scored at read time (`GET /intentions/drift?pick=true`); Journal v2 = one scrollable life view, no sub-tabs.
 - **Stickiness = 48h-unacted window** (not same-calendar-day); sticky re-serves don't restamp/re-log; acting rotates immediately.
 - **Drift framing = po-card/Drifting pill, Home-only; "days quiet" is data, not framing.**
@@ -24,6 +26,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 3. **Edit + archive flows** (entries/deadlines/projects from Journal) — longstanding queued milestone.
 
 ## Known broken / degraded (open only)
+- **🔴 P0 — anon key reads all user data (RLS ineffective):** the public anon key reads `entries`/`entities`/`deadlines`/`projects`/`insights`/`ask_messages`/`users` etc. directly from Supabase REST (verified live: 148 entries, multiple user_ids, raw `cleaned_text`). Backend uses service-role (bypasses RLS); per-user isolation is app-code only. The invite gate does NOT close this. Fix: apply RLS migration 022 (SQL in `docs/security-audit-2026-07.md`) — enable RLS, no anon/authenticated policy. **Blocks trial.** Also rotate the 2 Gemini/Google keys in git history (commits 89c8d07, 35120fb).
 - **AI Studio prepay depleted — local LLM path dead (P3):** local `GEMINI_API_KEY` 429s; prod unaffected (Vertex). Force Vertex locally or top up.
 - **Dedup-orphan empty entries — backfill pending (P2):** 9 completed entries have empty `cleaned_text`, all dedup-flagged; 1 real false positive. Backfill (do NOT run yet): re-embed, re-run `match_entries`, if sim ≤ 0.92 re-run the pipeline.
 - **Dedup orphan rows — populate open (P2):** a TRUE duplicate still leaves an empty `completed` row (now hidden) that never advances `last_seen`. Fix: populate from the matched entry or don't persist it.
