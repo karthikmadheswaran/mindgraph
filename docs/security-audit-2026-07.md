@@ -33,8 +33,8 @@ The RLS fix is a schema change and — per this session's safety rules — is
 | F1 | **P0** | RLS ineffective on core tables → public anon key reads all users' journal data directly from Supabase REST | **needs-human** (schema change; SQL below) |
 | F2 | P1 | Real personal journal content in committed eval-result JSONs and fixtures | **needs-human** (SHA-stamped history; scrub-vs-gitignore decision) |
 | F3 | P1 | Historical `.env` with live-format API keys in git history (2 commits) | **needs-human** (rotate, then decide on history) |
-| F4 | P2 | `PyJWT 2.11.0` (auth verification path) has known advisories; fix in 2.13.0 | needs-human (pinned; targeted bump) |
-| F5 | P2 | `langgraph` / `langgraph-checkpoint` / `langsmith` pinned at CVE-affected versions | needs-human (targeted bumps) |
+| F4 | P2 | `PyJWT 2.11.0` (auth verification path) has known advisories; fix in 2.13.0 | **fixed-in-PR** (bumped → 2.13.0, 2026-07-10) |
+| F5 | P2 | `langgraph` / `langgraph-checkpoint` pinned at CVE-affected versions | **fixed-in-PR** (bumped); `langchain` CVE-2026-55443 needs-human (langgraph-matrix jump) |
 | F6 | P3 | `aiohttp 3.13.3` (transitive) carries many CVEs; pin constrained by langchain | accepted-risk (version-locked) |
 | F7 | P3 | No invite-only gate existed before this PR (any Supabase signup got full API access) | **fixed-in-this-PR** |
 | F8 | P3 | `POST /payments/verify` returns `str(e)` in a 400 detail | accepted-risk (Razorpay validation text; no stack/SQL) |
@@ -179,18 +179,26 @@ it post-rotation. Nothing was rotated, rewritten, or force-pushed.
 
 ## F4/F5/F6 — Dependencies (criticals only; no mass-upgrade)
 
-Reported from `pip-audit` / `npm audit`; **no upgrades applied** (per B4). Pins
-are deliberately constrained (see the version-lock comments in
-`requirements.txt`), so bumps need a human to re-verify the langchain matrix.
+Reported from `pip-audit` / `npm audit`. **Targeted bumps applied in the
+request-access PR** (2026-07-10); the rest stay constrained by the langchain
+matrix or are accepted-risk.
 
-- **F4 (P2, auth-relevant):** `PyJWT 2.11.0` — multiple PYSEC advisories; this is
-  the library verifying every Supabase JWT in `app/auth.py`. Fix: 2.13.0.
-  Recommend a targeted bump + a quick auth smoke test.
-- **F5 (P2):** `langgraph 1.0.9` (PYSEC-2026-83 → 1.0.10),
-  `langgraph-checkpoint 4.0.0` (CVE-2026-48775 → 4.1.1),
-  `langsmith 0.7.6` (several → 0.8.18). Targeted bumps recommended.
+- **F4 (P2, auth-relevant) — FIXED in PR:** `PyJWT 2.11.0 → 2.13.0`, clearing
+  PYSEC-2026-120/175/176/177/178/179. This is the library verifying every
+  Supabase JWT in `app/auth.py`, so it was the highest-value bump. Full auth +
+  rate-limit test set green after the bump.
+- **F5 (P2) — PARTIALLY FIXED in PR:** `langgraph 1.0.9 → 1.0.10` (PYSEC-2026-83)
+  and `langgraph-checkpoint 4.0.0 → 4.1.1` (CVE-2026-48775) applied. `langsmith
+  0.7.6` is **not** flagged by pip-audit (no action). **`langchain` (1.2.10,
+  CVE-2026-55443, fix 1.3.9) NOT taken** — 1.3.9 requires `langgraph>=1.2.4`,
+  which conflicts with the pinned `langgraph 1.0.10`; taking it would force a
+  langgraph 1.2.x jump + langchain-core re-verify (a mass upgrade, out of the
+  targeted-bump scope). **needs-human:** bump langchain+langgraph together and
+  re-run the eval matrix, or wait for the constraint to relax.
 - **F6 (P3, accepted-risk):** `aiohttp 3.13.3` transitive, ~21 CVEs, but the pin
   is locked by `langchain-google-genai 4.2.1`. Revisit when that constraint lifts.
+  (`python-dotenv 1.2.1`, `python-multipart 0.0.22` also flagged; low-severity,
+  left for the same constraint-driven pass.)
 - **npm:** 58 advisories, 1 critical (`picomatch` ReDoS) — all in the CRA
   dev/build toolchain (`react-scripts`), not shipped to users. Accepted-risk for
   the trial; a future CRA-eject/Vite migration clears most.
@@ -294,11 +302,18 @@ No unauthenticated data route found. The only open endpoint is `/health`
 
 ## Human action queue (prioritized)
 
-1. **[P0] Apply RLS migration 022** (F1) in staging → verify anon probe returns
-   empty/401 → prod. This is the actual gate for trial-safety; the allowlist
-   alone does not protect journal data.
+1. ~~**[P0] Apply RLS migration 022** (F1)~~ — **DONE** (applied + verified closed
+   2026-07-10; anon reads return zero rows on all tables).
 2. **[P1] Rotate** the two historical Gemini/Google API keys (F3), then decide on
-   history rewrite.
+   history rewrite. *(Still open — the only remaining trial-blocker-class item.)*
 3. **[P1] Decide** scrub-vs-gitignore for personal content in `evals/` (F2).
-4. **[P2] Targeted bumps:** PyJWT → 2.13.0 (F4) + langgraph ecosystem (F5), with
-   an auth + pipeline smoke test.
+   *Partially addressed 2026-07-10:* `evals/results/` is now gitignored (no new
+   result JSONs) and the `rag_test_cases.json` input fixture was scrubbed to a
+   synthetic persona. Remaining human call: existing committed result JSONs in
+   history (scrub-vs-leave).
+4. ~~**[P2] PyJWT + langgraph bumps** (F4/F5)~~ — **DONE** 2026-07-10 (PyJWT 2.13.0,
+   langgraph 1.0.10, langgraph-checkpoint 4.1.1). Remaining: `langchain`
+   CVE-2026-55443 needs a coordinated langgraph 1.2.x jump (F5).
+5. **[NEW] Apply migration 023** (`access_requests`) via the Supabase dashboard —
+   the request-access route fails safe until it exists, but requests aren't
+   stored until applied. SQL in the PR / report.

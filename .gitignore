@@ -30,6 +30,10 @@ Ui inspirations/
 generation_evaluation_results.json
 /rag_evaluation_results.json
 evals/eval_emotional_loop_results.json
+# Stop committing SHA-stamped run JSONs — they can carry real journal text in
+# answers/retrieved rows (audit F2/P1). Existing history is left untouched;
+# this only prevents NEW result files from being staged.
+evals/results/
 evals/results/_run_log_*.txt
 
 # Local one-off / scratch (often contain hardcoded secrets — keep local)

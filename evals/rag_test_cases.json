@@ -1,52 +1,52 @@
 {
-  "test_user_id": "97372247-26b1-42a1-9e54-76d6dfe55346",
-  "generated_with": "gemini-2.5-pro",
+  "test_user_id": "00000000-0000-4000-8000-000000000000",
+  "generated_with": "synthetic-fixture (scrubbed of real personal content, 2026-07)",
   "entry_count": 31,
   "total_cases": 52,
   "hard_null_count": 16,
-  "entity_check_cases_note": "Vivek-class entity-check coverage (advisory mode, added 02/06/2026): Aditi + Vivek (existing hard_null) annotated would_refuse; 2 new cases added — Manuel (entity, would_allow) and a retrieval-pipeline topic question (would-be skipped, high-signal filter test).",
+  "entity_check_cases_note": "rohit-class entity-check coverage (advisory mode, added 02/06/2026): nisha + rohit (existing hard_null) annotated would_refuse; 2 new cases added — lorenzo (entity, would_allow) and a retrieval-pipeline topic question (would-be skipped, high-signal filter test).",
   "generated_at": "2026-05-27T13:16:28.943445+00:00",
   "hard_null_expansion_note": "hard_null expansion 27/05/2026: added 12 cases across 5 negative-space subcategories (places_not_visited, people_not_mentioned, events_not_attended, topics_never_discussed, time_periods_no_entries) to enable distribution-calibrated threshold tuning.",
   "cases": [
     {
       "question": "What did I do last week?",
-      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "expected_entry_id": "6d9c08f1-2f01-93b3-10e7-cddca9a75516",
       "expected_keywords": [
         "thinking_budget=0",
         "backfill embeddings",
-        "anjali",
-        "databricks consulting brief"
+        "meera",
+        "acme analytics consulting brief"
       ],
       "category": "temporal"
     },
     {
       "question": "What was on my mind on May 12th?",
-      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_entry_id": "309a15bc-2631-6158-7d55-4de32ad9a47c",
       "expected_keywords": [
         "stale token",
-        "spreading myself too thin",
-        "mindgraph",
+        "stretched across too many fronts",
+        "quillmind",
         "consulting pipeline"
       ],
       "category": "temporal"
     },
     {
       "question": "When do I need to backfill the embeddings by?",
-      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "expected_entry_id": "6d9c08f1-2f01-93b3-10e7-cddca9a75516",
       "expected_keywords": [
         "backfill embeddings",
         "task_type",
         "2026-05-24",
-        "karthik"
+        "arjun"
       ],
       "category": "temporal"
     },
     {
       "question": "What happened on the morning of May 11th?",
-      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "expected_entry_id": "c8ca6ea7-3634-f476-d4cd-722b8ae1fecf",
       "expected_keywords": [
-        "listening to the rain",
-        "filter coffee",
+        "watching the evening light",
+        "pour-over coffee",
         "dispatch feature",
         "production"
       ],
@@ -54,7 +54,7 @@
     },
     {
       "question": "What are my deadlines for the end of May?",
-      "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+      "expected_entry_id": "7c8c4413-0b22-b32e-3177-f29931c56260",
       "expected_keywords": [
         "ship the embedding",
         "task_type change",
@@ -64,84 +64,84 @@
     },
     {
       "question": "What was I doing about two weeks ago?",
-      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_entry_id": "309a15bc-2631-6158-7d55-4de32ad9a47c",
       "expected_keywords": [
         "slow day",
         "stale token",
         "chai",
-        "spreading myself too thin"
+        "stretched across too many fronts"
       ],
       "category": "temporal"
     },
     {
-      "question": "When did I meet with Naveen?",
-      "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+      "question": "When did I meet with deepak?",
+      "expected_entry_id": "5d23915b-b831-67f7-6014-8d88bfbb38a6",
       "expected_keywords": [
         "2026-05-19",
-        "naveen",
-        "erode office",
+        "deepak",
+        "salem office",
         "provider renewal summary"
       ],
       "category": "temporal"
     },
     {
       "question": "What was I doing last Saturday?",
-      "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+      "expected_entry_id": "df627ff5-b3e3-e847-a35f-baaeec0b459b",
       "expected_keywords": [
         "felt off",
-        "rawtxt landing copy",
-        "rumi",
+        "plainpage landing copy",
+        "tagore",
         "rabbit holes"
       ],
       "category": "temporal"
     },
     {
-      "question": "What's the latest with Manuel and Simplico?",
-      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "question": "What's the latest with lorenzo and nimbex?",
+      "expected_entry_id": "d2e46b6c-adef-ae6f-14f3-e966288d9c71",
       "expected_keywords": [
-        "manuel",
-        "simplico",
+        "lorenzo",
+        "nimbex",
         "freelance network rollout",
         "langgraph"
       ],
       "category": "entity"
     },
     {
-      "question": "Who is working on the Simplico engineering side?",
-      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "question": "Who is working on the nimbex engineering side?",
+      "expected_entry_id": "d2e46b6c-adef-ae6f-14f3-e966288d9c71",
       "expected_keywords": [
-        "sachin",
-        "rahul",
+        "vikram",
+        "sameer",
         "engineering side"
       ],
       "category": "entity"
     },
     {
-      "question": "What did Anjali need from me?",
-      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "question": "What did meera need from me?",
+      "expected_entry_id": "6d9c08f1-2f01-93b3-10e7-cddca9a75516",
       "expected_keywords": [
-        "anjali",
+        "meera",
         "response",
-        "databricks consulting brief"
+        "acme analytics consulting brief"
       ],
       "category": "entity"
     },
     {
-      "question": "What was the outcome of my meeting with Naveen at the Erode office?",
-      "expected_entry_id": "06a4b025-7bf3-49ab-adc5-4e12836195ff",
+      "question": "What was the outcome of my meeting with deepak at the salem office?",
+      "expected_entry_id": "5d23915b-b831-67f7-6014-8d88bfbb38a6",
       "expected_keywords": [
-        "naveen",
-        "erode office",
+        "deepak",
+        "salem office",
         "send the draft",
-        "surrey county council"
+        "kent county council"
       ],
       "category": "entity"
     },
     {
-      "question": "What did Priya and I talk about regarding our twenties?",
-      "expected_entry_id": "39051669-328c-4603-95ce-5c32a3f0749b",
+      "question": "What did kavya and I talk about regarding our twenties?",
+      "expected_entry_id": "bf8eedd5-d4e2-b9b0-2f46-48f98b164ba8",
       "expected_keywords": [
-        "priya",
+        "kavya",
         "twenties",
         "happy",
         "getting there"
@@ -149,10 +149,10 @@
       "category": "entity"
     },
     {
-      "question": "What did Karthik flag as high-impact?",
-      "expected_entry_id": "39f65da6-f0af-4cf8-87db-62ed9bfabc8b",
+      "question": "What did arjun flag as high-impact?",
+      "expected_entry_id": "6d9c08f1-2f01-93b3-10e7-cddca9a75516",
       "expected_keywords": [
-        "karthik",
+        "arjun",
         "highest-impact change",
         "backfill embeddings",
         "task_type"
@@ -160,20 +160,20 @@
       "category": "entity"
     },
     {
-      "question": "What did I order from Meghana's?",
-      "expected_entry_id": "1715dd23-4850-4559-b173-e33a4cd85763",
+      "question": "What did I order from sunrise diner?",
+      "expected_entry_id": "5b2d3b58-eabd-b7ad-a9cc-2b85affdbd62",
       "expected_keywords": [
-        "biryani",
-        "meghana's",
+        "thali",
+        "sunrise diner",
         "the office"
       ],
       "category": "entity"
     },
     {
-      "question": "What was the issue with Razorpay?",
-      "expected_entry_id": "c1288694-01ee-4ced-818b-78bdc7b9679a",
+      "question": "What was the issue with paykit?",
+      "expected_entry_id": "8aa69478-39e0-66e2-502c-bf3f097afedd",
       "expected_keywords": [
-        "razorpay",
+        "paykit",
         "merchant account review",
         "pending",
         "third week"
@@ -182,7 +182,7 @@
     },
     {
       "question": "What were my thoughts on Cohere Rerank vs Voyage?",
-      "expected_entry_id": "d445d54f-caac-43c7-91ca-3fe08a126fb6",
+      "expected_entry_id": "0c87be90-6d1e-4464-b9ef-e8fbfaa768d1",
       "expected_keywords": [
         "cohere rerank",
         "voyage",
@@ -193,7 +193,7 @@
     },
     {
       "question": "How did I debug the langfuse trace pipeline?",
-      "expected_entry_id": "a7482f12-4175-42e4-8547-1e7f50a87aee",
+      "expected_entry_id": "7c8c4413-0b22-b32e-3177-f29931c56260",
       "expected_keywords": [
         "langfuse trace pipeline",
         "claude code",
@@ -202,8 +202,8 @@
       "category": "topic"
     },
     {
-      "question": "Tell me about the tech stack for the Simplico network.",
-      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "question": "Tell me about the tech stack for the nimbex network.",
+      "expected_entry_id": "d2e46b6c-adef-ae6f-14f3-e966288d9c71",
       "expected_keywords": [
         "notion",
         "slack",
@@ -214,7 +214,7 @@
     },
     {
       "question": "What were my ideas for the next RAG iteration?",
-      "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+      "expected_entry_id": "f249b9a4-325f-09c0-2498-4253267666bb",
       "expected_keywords": [
         "self-healing rag",
         "implicit feedback signals",
@@ -224,7 +224,7 @@
     },
     {
       "question": "What was I reading about knowledge graphs?",
-      "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+      "expected_entry_id": "5caf1cbc-8036-2f30-305f-a9d2fcab2849",
       "expected_keywords": [
         "knowledge graph architectures",
         "neo4j",
@@ -234,7 +234,7 @@
     },
     {
       "question": "What was the big improvement in my RAG system's F1 score?",
-      "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+      "expected_entry_id": "f249b9a4-325f-09c0-2498-4253267666bb",
       "expected_keywords": [
         "retrieval f1",
         "0.369 to 0.782",
@@ -244,7 +244,7 @@
     },
     {
       "question": "What was the auth issue I debugged?",
-      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_entry_id": "309a15bc-2631-6158-7d55-4de32ad9a47c",
       "expected_keywords": [
         "auth issue",
         "stale token",
@@ -253,10 +253,10 @@
       "category": "topic"
     },
     {
-      "question": "How did I use MindGraph for my May retrospective?",
-      "expected_entry_id": "9d609362-36ca-4070-ba0a-0fa0bdce7fc1",
+      "question": "How did I use quillmind for my May retrospective?",
+      "expected_entry_id": "5665b25c-7ce0-a632-14ae-500bd181d8ac",
       "expected_keywords": [
-        "mindgraph",
+        "quillmind",
         "read through the entries",
         "may",
         "retrospective"
@@ -265,19 +265,19 @@
     },
     {
       "question": "When did I feel like I was procrastinating?",
-      "expected_entry_id": "ebf6322d-6834-40db-9c6a-8aebc07c741c",
+      "expected_entry_id": "5caf1cbc-8036-2f30-305f-a9d2fcab2849",
       "expected_keywords": [
         "rabbit hole",
         "deep research",
-        "sophisticated procrastination"
+        "productive-looking avoidance"
       ],
       "category": "emotional"
     },
     {
       "question": "What was a moment of peace I had recently?",
-      "expected_entry_id": "9745c338-181a-4252-857a-5f752392c3f9",
+      "expected_entry_id": "df627ff5-b3e3-e847-a35f-baaeec0b459b",
       "expected_keywords": [
-        "read a bit of rumi",
+        "read a bit of tagore",
         "helped",
         "couldn't focus"
       ],
@@ -285,20 +285,20 @@
     },
     {
       "question": "When did I feel more optimistic at night?",
-      "expected_entry_id": "758e7dcb-e882-4d48-853c-026a5e3104a8",
+      "expected_entry_id": "51daecef-f5a7-8b3a-ecfc-05d68e99508d",
       "expected_keywords": [
         "late nights",
         "thinking easier",
-        "night version of me",
+        "late-evening version of me",
         "more optimistic"
       ],
       "category": "emotional"
     },
     {
-      "question": "What did my niece's drawing make me feel?",
-      "expected_entry_id": "a71921c4-5bde-46ff-9b95-f8cddc466413",
+      "question": "What did my nephew's drawing make me feel?",
+      "expected_entry_id": "bb23384e-d370-4408-b471-420a2cb81991",
       "expected_keywords": [
-        "niece",
+        "nephew",
         "drawing",
         "made me laugh",
         "a bit sad"
@@ -307,10 +307,10 @@
     },
     {
       "question": "When did I feel spread too thin?",
-      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_entry_id": "309a15bc-2631-6158-7d55-4de32ad9a47c",
       "expected_keywords": [
-        "spreading myself too thin",
-        "mindgraph",
+        "stretched across too many fronts",
+        "quillmind",
         "consulting pipeline",
         "no clear answer"
       ],
@@ -318,10 +318,10 @@
     },
     {
       "question": "What was a small win that I needed to remember?",
-      "expected_entry_id": "3ccfc30a-08f7-42f6-a2a8-d81025269b9e",
+      "expected_entry_id": "8645c3c6-7efd-925e-2b71-71b6c1dc3fd0",
       "expected_keywords": [
         "small wins still count",
-        "mindgraph dashboard",
+        "quillmind dashboard",
         "felt good"
       ],
       "category": "emotional"
@@ -333,50 +333,50 @@
       "category": "hard_null"
     },
     {
-      "question": "How did my trip to Mumbai go?",
+      "question": "How did my trip to pune go?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null"
     },
     {
-      "question": "What did I think of the book 'Klara and the Sun'?",
+      "question": "What did I think of the book 'the midnight library'?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null"
     },
     {
       "question": "What did he want to lock in by next Friday?",
-      "expected_entry_id": "a011a2b8-3dee-4b76-a523-6f8bcc10a4cb",
+      "expected_entry_id": "3ecf3924-12c3-0aad-94a1-b4c1151639dd",
       "expected_keywords": [
-        "manuel",
+        "lorenzo",
         "lock the q3 deliverables",
         "2026-05-15"
       ],
       "category": "hard_pronoun"
     },
     {
-      "question": "What were my impressions of the street food in Delhi?",
+      "question": "What were my impressions of the street food in jaipur?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "places_not_visited"
     },
     {
-      "question": "Remind me about the hike I took in the Swiss Alps.",
+      "question": "Remind me about the hike I took in the norwegian fjords.",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "places_not_visited"
     },
     {
-      "question": "How was the coffee at the Blue Tokai in Koramangala?",
+      "question": "How was the coffee at the corner roasters in indiranagar?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "places_not_visited"
     },
     {
-      "question": "What was the feedback from Aditi on the project proposal?",
+      "question": "What was the feedback from nisha on the project proposal?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
@@ -384,14 +384,14 @@
       "expected_entity_check": "would_refuse"
     },
     {
-      "question": "Did I write down Suresh's contact number anywhere?",
+      "question": "Did I write down ganesh's contact number anywhere?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "people_not_mentioned"
     },
     {
-      "question": "What did I think about Vivek's new startup idea he mentioned over dinner?",
+      "question": "What did I think about rohit's new startup idea he mentioned over dinner?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
@@ -399,14 +399,14 @@
       "expected_entity_check": "would_refuse"
     },
     {
-      "question": "What were the key takeaways from the Google I/O keynote this year?",
+      "question": "What were the key takeaways from the devcon keynote this year?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
       "subcategory": "events_not_attended"
     },
     {
-      "question": "How did my cousin Rohan's wedding in Chennai go?",
+      "question": "How did my cousin aakash's wedding in hyderabad go?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
@@ -420,7 +420,7 @@
       "subcategory": "topics_never_discussed"
     },
     {
-      "question": "What did I think of the movie 'Dune: Part Two'?",
+      "question": "What did I think of the movie 'the northern reach'?",
       "expected_entry_id": null,
       "expected_keywords": [],
       "category": "hard_null",
@@ -442,10 +442,10 @@
     },
     {
       "question": "What did I write on the morning of May 11th?",
-      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "expected_entry_id": "c8ca6ea7-3634-f476-d4cd-722b8ae1fecf",
       "expected_keywords": [
-        "listening to the rain",
-        "filter coffee",
+        "watching the evening light",
+        "pour-over coffee",
         "dispatch feature"
       ],
       "category": "temporal",
@@ -453,7 +453,7 @@
     },
     {
       "question": "What was I doing on the afternoon of May 12?",
-      "expected_entry_id": "b8d4c705-9079-4716-b04f-4bb0e3bbfe66",
+      "expected_entry_id": "309a15bc-2631-6158-7d55-4de32ad9a47c",
       "expected_keywords": [
         "debugging",
         "auth issue",
@@ -472,31 +472,31 @@
     },
     {
       "question": "What happened on May 11?",
-      "expected_entry_id": "dacad580-50b9-4fef-9673-24290db60441",
+      "expected_entry_id": "c8ca6ea7-3634-f476-d4cd-722b8ae1fecf",
       "expected_keywords": [
-        "listening to the rain",
-        "filter coffee",
+        "watching the evening light",
+        "pour-over coffee",
         "dispatch feature"
       ],
       "category": "temporal",
       "subcategory": "general_date_no_time_of_day"
     },
     {
-      "question": "What feedback did Manuel give me?",
-      "expected_entry_id": "f921fdf7-4a25-4ca0-8456-11e1e622cb5b",
+      "question": "What feedback did lorenzo give me?",
+      "expected_entry_id": "d2e46b6c-adef-ae6f-14f3-e966288d9c71",
       "expected_keywords": [
-        "manuel",
-        "simplico",
+        "lorenzo",
+        "nimbex",
         "freelance network"
       ],
       "category": "entity",
       "subcategory": "entity_check_known_person",
       "expected_entity_check": "would_allow",
-      "entity_check_note": "Manuel is a real person entity in the test user's data (4 mentions). The advisory check should find it (exact match) and NOT flag the question, so would_have_changed_outcome=False."
+      "entity_check_note": "lorenzo is a real person entity in the test user's data (4 mentions). The advisory check should find it (exact match) and NOT flag the question, so would_have_changed_outcome=False."
     },
     {
       "question": "What did I brainstorm for the next iteration of my retrieval pipeline?",
-      "expected_entry_id": "574310c8-a707-4fb1-abb7-0a4b2e5bc6f9",
+      "expected_entry_id": "f249b9a4-325f-09c0-2498-4253267666bb",
       "expected_keywords": [
         "rag iteration",
         "retrieval",
@@ -508,5 +508,6 @@
       "entity_check_note": "No high-signal (person/place/organization) entities. query_agent extracts 'retrieval pipeline' as type=project, which is correctly filtered out, so the advisory check is skipped (question_entity_known=None). Exercises the high-signal filter, not just the empty-entities path."
     }
   ],
-  "layer2_timeofday_note": "Layer 2 expansion 27/05/2026: added 4 cases (1 morning, 1 afternoon, 1 night-wrap hard_null, 1 general no-time-of-day) to verify time_of_day filtering and the LIMIT/ASC fix for narrow single-day ranges. Afternoon substituted for brief's evening because the test user has no entries in UTC evening hours (17-21); proper user-timezone plumbing tracked as Layer 3 work."
+  "layer2_timeofday_note": "Layer 2 expansion 27/05/2026: added 4 cases (1 morning, 1 afternoon, 1 night-wrap hard_null, 1 general no-time-of-day) to verify time_of_day filtering and the LIMIT/ASC fix for narrow single-day ranges. Afternoon substituted for brief's evening because the test user has no entries in UTC evening hours (17-21); proper user-timezone plumbing tracked as Layer 3 work.",
+  "synthetic_note": "Personal identifiers replaced with an invented persona; structure, category/subcategory distribution, entity-check annotations, counts and difficulty preserved. Placeholder UUIDs/test_user_id — run generate_rag_test_cases.py against a freshly seeded test user before eval."
 }

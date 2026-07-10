@@ -1,12 +1,32 @@
+import re
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class EntryRequest(BaseModel):
     raw_text: str
     input_type: str = "text"
     user_timezone: str = "UTC"
+
+
+# Pragmatic email shape check — no email_validator dependency. Rejects the
+# obvious garbage; the real gate is manual review before an email is copied
+# into allowed_emails.
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class AccessRequestBody(BaseModel):
+    email: str
+    note: Optional[str] = Field(default=None, max_length=280)
+
+    @field_validator("email")
+    @classmethod
+    def _valid_email(cls, v: str) -> str:
+        v = v.strip()
+        if not _EMAIL_RE.match(v) or len(v) > 254:
+            raise ValueError("invalid email")
+        return v
 
 
 class EntryResponse(BaseModel):

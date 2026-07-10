@@ -86,6 +86,28 @@ async def entry_rate_limit(
         )
 
 
+ACCESS_REQUEST_IP_LIMIT = 3
+ACCESS_REQUEST_WINDOW_STR = "1h"
+
+
+async def access_request_rate_limit(request: Request) -> None:
+    """IP-only guard for the UNauthenticated POST /access-requests route.
+
+    No user_id (anonymous), so this keys purely on client IP: 3 per hour.
+    Reuses the same atomic try_rate_limit RPC as the tiered limits above.
+    """
+    ip = request.client.host if request.client else "unknown"
+    ws = _window_start(ACCESS_REQUEST_WINDOW_STR)
+    if not _try_rate_limit(
+        f"ip:{ip}:access_request", ws, ACCESS_REQUEST_IP_LIMIT
+    ):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many access requests. Please try again later.",
+            headers={"Retry-After": _retry_after(ws, ACCESS_REQUEST_WINDOW_STR)},
+        )
+
+
 async def ask_rate_limit(
     request: Request,
     user_id: str = Depends(get_current_user),

@@ -170,3 +170,35 @@
   font-size: 13px;
   color: var(--text-muted);
 }
+
+.request-access-form {
+  margin-top: 8px;
+}
+
+.invite-only-logout {
+  margin-top: 16px;
+}
+
+.auth-request-access {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.auth-request-access-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.auth-request-access-link:hover {
+  text-decoration: underline;
+}
+
+.request-access-done {
+  margin-top: 12px;
+}
