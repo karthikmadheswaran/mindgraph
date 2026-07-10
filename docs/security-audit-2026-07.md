@@ -38,6 +38,7 @@ The RLS fix is a schema change and — per this session's safety rules — is
 | F6 | P3 | `aiohttp 3.13.3` (transitive) carries many CVEs; pin constrained by langchain | accepted-risk (version-locked) |
 | F7 | P3 | No invite-only gate existed before this PR (any Supabase signup got full API access) | **fixed-in-this-PR** |
 | F8 | P3 | `POST /payments/verify` returns `str(e)` in a 400 detail | accepted-risk (Razorpay validation text; no stack/SQL) |
+| F9 | **P1** | `try_rate_limit` RPC (012) never rejects — ALL rate limits are a no-op in prod (entries/asks + unauth /access-requests) | **needs-human** (fix in migration 024, not applied; app-side keying fixed in 707708e) |
 
 Clean / verified-good (no action): CORS locked to rawtxt.in + localhost with no
 wildcard; Swagger `/docs` + `/openapi.json` public but carry **no** secrets in
@@ -205,6 +206,37 @@ matrix or are accepted-risk.
 
 ---
 
+## F9 (P1) — Rate-limit RPC never rejects (all limits are a no-op)
+
+Found live 2026-07-10 while verifying the new `POST /access-requests` 3/hour/IP
+limit: 6 consecutive requests all returned 200. Root-caused to the
+`try_rate_limit` function (migration 012), **not** IP keying. The `ON CONFLICT`
+`CASE` caps `count` at `p_limit`, then returns `new_count <= p_limit` — once the
+counter reaches the limit it is frozen there and the return is always `true`.
+
+Proven directly against prod via the service-role client (stable key, `p_limit=3`):
+
+```
+call 1..6: allowed = True, True, True, True, True, True
+```
+
+**Blast radius:** every rate limit is ineffective — free/pro entry & ask limits
+and the unauthenticated access-request IP limit. On LLM routes `cost_cap.py` is
+the only remaining spend guard; the anon `/access-requests` route has no working
+throttle at all (bounded only by DB write throughput + email idempotency).
+
+Two-part remediation:
+1. **App-side keying — FIXED (707708e):** `request.client.host` was the Railway
+   proxy peer, not the client. Now keys on the first hop of `X-Forwarded-For`.
+   Necessary for per-client limiting, but insufficient alone.
+2. **RPC — needs-human (migration 024, NOT applied):** drop the cap so the counter
+   increments unconditionally and the `(p_limit+1)`th request rejects. Behaviour
+   change — it starts enforcing limits that have silently never fired, so the
+   founder's free-tier account would begin hitting 5 entries / 7d. Bump the
+   founder to `pro` or raise `LIMITS` first, verify in staging, then prod.
+
+---
+
 ## F8 (P3, accepted-risk) — Error detail in payments route
 
 `app/payments/router.py:31` returns `detail=str(e)` in a 400. The exception is
@@ -317,3 +349,7 @@ No unauthenticated data route found. The only open endpoint is `/health`
 5. **[NEW] Apply migration 023** (`access_requests`) via the Supabase dashboard —
    the request-access route fails safe until it exists, but requests aren't
    stored until applied. SQL in the PR / report.
+6. **[P1, NEW] Fix rate limiting (F9)** — apply migration 024 (`try_rate_limit`
+   never rejects; all limits are currently a no-op). Bump the founder to `pro`
+   or raise `LIMITS` first so the demand-test isn't throttled, verify in staging
+   (4th `/access-requests` in an hour must 429), then prod.
