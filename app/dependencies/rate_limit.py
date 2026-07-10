@@ -7,9 +7,14 @@ from app.db import supabase
 from app.services.analytics import track
 from app.services.tier_service import tier_service
 
-# (limit, window_str) per endpoint per tier
+# (limit, window_str) per endpoint per tier.
+# Launch decision (2026-07-10): free entries 5/7d → 10/day. A keen demand-test
+# user writing daily must never hit a week-long entry wall; cost_cap.py + the
+# 30/hr IP guard remain the abuse backstop. "1d" is a calendar-day (midnight-UTC)
+# tumbling window — same machinery pro's daily limits already use; true rolling-24h
+# is not supported by _window_start and was intentionally not built for this.
 LIMITS: dict[str, dict[str, tuple[int, str]]] = {
-    "free": {"entries": (5, "7d"), "asks": (30, "1d")},
+    "free": {"entries": (10, "1d"), "asks": (30, "1d")},
     "pro": {"entries": (100, "1d"), "asks": (200, "1d")},
 }
 IP_LIMIT = 30

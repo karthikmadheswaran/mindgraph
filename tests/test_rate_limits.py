@@ -42,7 +42,11 @@ def _make_supabase_select_result(rows: list):
 
 @pytest.mark.anyio
 async def test_free_tier_entry_limit_429():
-    """After 5 entries in the window, the 6th call must return 429."""
+    """After 10 entries in the DAY window, the 11th call must return 429.
+
+    Launch decision (2026-07-10): free entries moved 5/ISO-week → 10/day so a
+    keen demand-test user never hits a week-long entry wall. asks unchanged.
+    """
     from fastapi import HTTPException
 
     # try_rate_limit returns False (limit already hit)
@@ -57,8 +61,10 @@ async def test_free_tier_entry_limit_429():
 
         from app.dependencies.rate_limit import _try_rate_limit, _window_start, LIMITS
 
-        ws = _window_start("7d")
+        # Contract: free entries = 10 per day (was 5 per 7d).
+        assert LIMITS["free"]["entries"] == (10, "1d")
         limit, window_str = LIMITS["free"]["entries"]
+        ws = _window_start(window_str)
         allowed = _try_rate_limit(f"user:test-uid:entries", ws, limit)
         assert allowed is False
 
@@ -179,7 +185,7 @@ async def test_rate_limit_headers_on_429():
         headers = exc_info.value.headers
         assert "Retry-After" in headers
         assert "X-RateLimit-Limit" in headers
-        assert headers["X-RateLimit-Limit"] == "5"
+        assert headers["X-RateLimit-Limit"] == "10"
         assert "X-RateLimit-Tier" in headers
         assert headers["X-RateLimit-Tier"] == "free"
         assert exc_info.value.status_code == 429
