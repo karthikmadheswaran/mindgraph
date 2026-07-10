@@ -6,6 +6,8 @@ from fastapi.security import HTTPBearer
 import os
 from dotenv import load_dotenv
 
+from app.services.allowlist import is_email_allowed
+
 load_dotenv()
 
 # --- Step 3 from our diagram: the "magnifying glass" ---
@@ -42,6 +44,12 @@ async def get_current_user(credentials=Depends(security)) -> str:
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token: no user ID")
+
+        # Invite-only gate (closed demand-test): a valid Supabase account is not
+        # enough — the account's email must be on the allowlist. Stable error
+        # code, the frontend matches on it.
+        if not is_email_allowed(payload.get("email")):
+            raise HTTPException(status_code=403, detail="invite_only")
 
         sentry_sdk.set_user({"id": user_id})
         return user_id
