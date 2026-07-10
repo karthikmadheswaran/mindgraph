@@ -20,10 +20,14 @@ python-multipart==0.0.22
 pydantic==2.12.5
 aiohttp==3.13.3
 langfuse
-# langchain left unpinned: the CVE-2026-55443 fix (1.3.9) requires langgraph
-# >=1.2.4, which conflicts with the pinned langgraph 1.0.10 — a larger jump than
-# a targeted bump allows. Tracked as needs-human in docs/security-audit-2026-07.md.
-langchain
+# Pin to the langgraph-1.0.x-compatible line. Leaving this unpinned makes the
+# build non-reproducible: latest langchain (1.3.x) needs langgraph>=1.2.4, so a
+# fresh Railway install has to backtrack from the newest release down to 1.2.10,
+# which is slow and can fail as new 1.3.x versions land. 1.2.10 requires
+# langgraph<1.1.0,>=1.0.8 (matches our pinned 1.0.10) and is what's running in
+# prod. The CVE-2026-55443 fix (1.3.9) needs a coordinated langgraph 1.2.x jump —
+# tracked as needs-human in docs/security-audit-2026-07.md (F5).
+langchain==1.2.10
 PyJWT[crypto]==2.13.0  # PYSEC-2026-120/175/176/177/178/179 (auth verify path; was 2.11.0)
 cohere>=5.0.0
 dateparser==1.2.0
