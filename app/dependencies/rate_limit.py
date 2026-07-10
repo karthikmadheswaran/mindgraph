@@ -46,6 +46,23 @@ def _retry_after(ws: datetime, window_str: str) -> str:
     return str(max(secs, 0))
 
 
+def _client_ip(request: Request) -> str:
+    """Best-effort real client IP.
+
+    On Railway the app sits behind a proxy, so request.client.host is the
+    proxy peer (pooled/rotating) — useless as a rate-limit key, especially for
+    the unauthenticated access-request route where IP is the ONLY key. Prefer
+    the first hop of X-Forwarded-For, which Railway populates with the client
+    IP. Falls back to the peer address when the header is absent (e.g. local).
+    """
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        first = xff.split(",")[0].strip()
+        if first:
+            return first
+    return request.client.host if request.client else "unknown"
+
+
 def _try_rate_limit(key: str, ws: datetime, limit: int) -> bool:
     """Calls the atomic try_rate_limit DB function. Returns True if allowed."""
     result = supabase.rpc(
@@ -60,7 +77,7 @@ async def entry_rate_limit(
     user_id: str = Depends(get_current_user),
 ) -> None:
     # IP-level guard (applies regardless of tier)
-    ip = request.client.host if request.client else "unknown"
+    ip = _client_ip(request)
     ip_ws = _window_start(IP_WINDOW_STR)
     if not _try_rate_limit(f"ip:{ip}:all", ip_ws, IP_LIMIT):
         raise HTTPException(
@@ -96,7 +113,7 @@ async def access_request_rate_limit(request: Request) -> None:
     No user_id (anonymous), so this keys purely on client IP: 3 per hour.
     Reuses the same atomic try_rate_limit RPC as the tiered limits above.
     """
-    ip = request.client.host if request.client else "unknown"
+    ip = _client_ip(request)
     ws = _window_start(ACCESS_REQUEST_WINDOW_STR)
     if not _try_rate_limit(
         f"ip:{ip}:access_request", ws, ACCESS_REQUEST_IP_LIMIT
@@ -113,7 +130,7 @@ async def ask_rate_limit(
     user_id: str = Depends(get_current_user),
 ) -> None:
     # IP-level guard
-    ip = request.client.host if request.client else "unknown"
+    ip = _client_ip(request)
     ip_ws = _window_start(IP_WINDOW_STR)
     if not _try_rate_limit(f"ip:{ip}:all", ip_ws, IP_LIMIT):
         raise HTTPException(
