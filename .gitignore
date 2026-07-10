@@ -26,9 +26,12 @@ Ui inspirations/
 .cursor/
 .antigravity/
 
-# Eval output files (regenerable)
+# Eval output files (regenerable) — contain journal-derived content (F2).
+# generation_/rag_ already here; v2 + memory_compaction added in the F2 HEAD scrub.
 generation_evaluation_results.json
-/rag_evaluation_results.json
+rag_evaluation_results.json
+rag_evaluation_results_v2.json
+memory_compaction_evaluation_results.json
 evals/eval_emotional_loop_results.json
 # Stop committing SHA-stamped run JSONs — they can carry real journal text in
 # answers/retrieved rows (audit F2/P1). Existing history is left untouched;
