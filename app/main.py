@@ -12,11 +12,16 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from app.auth import get_current_user
-from app.dependencies.rate_limit import ask_rate_limit, entry_rate_limit
+from app.dependencies.rate_limit import (
+    access_request_rate_limit,
+    ask_rate_limit,
+    entry_rate_limit,
+)
 from app.services.analytics import track
 from app.services.cost_cap import check_cost_cap
 from app.services.tier_service import tier_service
 from app.schemas import (
+    AccessRequestBody,
     DeadlineDateUpdateRequest,
     DeadlineStatusUpdateRequest,
     EntryRequest,
@@ -28,6 +33,7 @@ from app.schemas import (
     TimezoneUpdateRequest,
 )
 from app.services import (
+    access_request_service,
     ask_service,
     conversation,
     deadline_service,
@@ -104,6 +110,18 @@ async def health_check():
         "commit": commit[:8] if commit != "unknown" else "unknown",
         "service": "mindgraph-backend",
     }
+
+
+@app.post("/access-requests")
+async def create_access_request(
+    body: AccessRequestBody,
+    _rl: None = Depends(access_request_rate_limit),
+):
+    # Unauthenticated intake for invite-gated strangers. Always reports
+    # "received" (idempotent on duplicate email, fail-safe if the table isn't
+    # migrated yet) so we never leak whether an email is already on file.
+    access_request_service.submit_access_request(body.email, body.note)
+    return {"status": "received"}
 
 
 @app.post("/entries", response_model=EntryResponse)
