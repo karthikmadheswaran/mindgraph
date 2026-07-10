@@ -64,6 +64,10 @@ function AuthView({ onAuth, onBack, onBrandClick }) {
           MindGraph
         </button>
         <p className="auth-subtitle">Your AI-powered journal</p>
+        <p className="auth-invite-note">
+          MindGraph is invite-only right now — use the email you were invited
+          with.
+        </p>
 
         <div className="auth-tabs">
           <button

@@ -8,8 +8,10 @@ import {
   prefetchDashboardSnapshot,
   updateDashboardSnapshot,
 } from "./utils/dashboardSnapshot";
+import { installInviteGate, INVITE_ONLY_EVENT } from "./utils/inviteGate";
 import LandingPage from "./components/LandingPage";
 import AuthView from "./components/AuthView";
+import InviteOnlyView from "./components/InviteOnlyView";
 import Sidebar from "./components/Sidebar";
 import Journal from "./components/Journal";
 import AskView from "./components/AskView";
@@ -104,6 +106,8 @@ const clearAuthViewSearch = () => {
 const hasProcessingEntries = (entries = []) =>
   entries.some((entry) => entry.status === "processing");
 
+installInviteGate();
+
 export default function App() {
   const initialAppView = getHashView();
   const [session, setSession] = useState(null);
@@ -114,6 +118,13 @@ export default function App() {
   const [hasVisitedJournal, setHasVisitedJournal] = useState(
     initialAppView === "journal"
   );
+  const [inviteBlocked, setInviteBlocked] = useState(false);
+
+  useEffect(() => {
+    const handleInviteOnly = () => setInviteBlocked(true);
+    window.addEventListener(INVITE_ONLY_EVENT, handleInviteOnly);
+    return () => window.removeEventListener(INVITE_ONLY_EVENT, handleInviteOnly);
+  }, []);
 
   const hasBootstrappedAuthViewRef = useRef(false);
   const activeUserIdRef = useRef(null);
@@ -250,6 +261,7 @@ export default function App() {
       resetUser();
       clearHashView();
       setSession(null);
+      setInviteBlocked(false);
 
       // If the user arrived via ?view=auth (e.g. "Try the App" CTA), show
       // the auth screen instead of bouncing back to the landing page.
@@ -416,7 +428,11 @@ export default function App() {
         />
       )}
 
-      {view === "app" && session && (
+      {view === "app" && session && inviteBlocked && (
+        <InviteOnlyView userEmail={session.user?.email} onLogout={handleLogout} />
+      )}
+
+      {view === "app" && session && !inviteBlocked && (
         <div className="app-layout">
           <Sidebar
             currentView={currentView}
