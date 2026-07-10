@@ -51,6 +51,8 @@ guard; every authenticated route now inherits the allowlist gate via the single
 
 ## F1 (P0) — RLS ineffective; anon key reads all user data
 
+**RLS verified closed 2026-07-10 — anon reads return zero rows on all tables.**
+
 ### What
 The frontend anon key (`role: anon`, published in the JS bundle and referenced
 in `README.md` / `mindgraph-frontend/src/supabaseClient.js` — this is normal;
