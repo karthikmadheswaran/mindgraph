@@ -157,3 +157,16 @@
   background: rgba(138, 154, 122, 0.12);
   color: #4f5c45;
 }
+
+.invite-only-body {
+  margin: 4px 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.auth-invite-note {
+  margin: -4px 0 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
