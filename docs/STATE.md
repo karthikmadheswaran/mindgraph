@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-10 (Invite gating + RLS + request-access + rate-limit fix all live-verified; security audit closed except F3 key rotation. NEXT: launch / demand-test.)
+# STATE — updated 2026-07-15 (commit 66bc69a — trial-readiness sweep: posthog capture fix landed NOT deployed; cold-start audit clean; prod-cleanup SQL drafted. NEXT: deploy + Railway env verify, then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
