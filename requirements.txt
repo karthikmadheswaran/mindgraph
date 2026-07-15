@@ -33,5 +33,8 @@ cohere>=5.0.0
 dateparser==1.2.0
 upstash-redis
 sentry-sdk[fastapi]
-posthog
+# Pinned to the >=6 keyword-only capture() line that analytics.py targets
+# (capture(event, distinct_id=..., properties=...)). Unpinned, a build could
+# resurrect the v5 positional signature and silently drop every event.
+posthog==7.14.0
 razorpay==2.0.1

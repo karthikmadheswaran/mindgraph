@@ -20,6 +20,9 @@ def track(user_id: str, event: str, properties: dict = {}) -> None:
     try:
         ph = get_posthog()
         if ph:
-            ph.capture(user_id, event, properties)
+            # posthog >= 6 signature: capture(event, **kwargs). Passing these
+            # positionally raises inside the client and drops the event —
+            # keyword form is required (regression: tests/test_analytics_capture.py).
+            ph.capture(event, distinct_id=user_id, properties=properties)
     except Exception:
         pass
