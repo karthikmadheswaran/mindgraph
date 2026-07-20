@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-20 (commit 56f4f35 — PostHog capture fix LIVE on prod (5d2c97f2); RLS 025 applied + anon-probe verified; Ask stat fix merged but NOT live — frontend service ignores pushes, founder must redeploy in Railway. NEXT: founder Railway actions below, then demand-test.)
+# STATE — updated 2026-07-20 (commit dfb7c7a — Patterns v1 founder-gated shipped + design doc committed; backend auto-deploys, but the Patterns UI AND the Ask stat fix both need the founder's manual FRONTEND redeploy. NEXT: founder Railway actions below, then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -8,7 +8,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 3. **Launch / demand-test:** put drift + reflection in front of strangers (3+ entries each); watch for the "that's the gap" reaction.
 
 ## Pre-demand-test blockers (all founder-only, 07/20)
-- **🔴 Redeploy the FRONTEND service in the Railway dashboard** to ship the Ask entry-count fix (77df89b) — prod still serves `main.1be98b0b.js`; pushes don't trigger this service (P3 below). Verify: bundle hash changes.
+- **🔴 Redeploy the FRONTEND service in the Railway dashboard** to ship the Ask entry-count fix (77df89b) AND the Patterns v1 UI (dfb7c7a) — prod still serves `main.1be98b0b.js`; pushes don't trigger this service (P3 below). Verify: bundle hash changes.
 - **Verify in Railway:** `POSTHOG_API_KEY` set (else events no-op silently) and `DRIFT_THRESHOLD_DAYS=3` — code default is **14** (`intention_service.py:28`); 3 appears nowhere in code.
 - **Execute prod cleanup:** `docs/reports/prod-cleanup-2026-07-15.sql` (11 target users, 290 orphaned synthetic `public.users` rows; previews + FK-safe deletes + founder-guard). Copy observations: `docs/reports/cold-start-audit-2026-07-15.md`.
 
