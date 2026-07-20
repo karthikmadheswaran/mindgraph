@@ -195,6 +195,25 @@ describe("AskView", () => {
     expect(screen.queryByText("tool")).not.toBeInTheDocument();
   });
 
+  test("MEMORY stat shows the true total entry count, not the fetched page length", async () => {
+    // 12 entries in the account, but GET /entries pages at 10 — the stat must
+    // read total_count, not count the page (regression: stat froze at 10).
+    const pageOfTen = Array.from({ length: 10 }, (_, index) => ({
+      id: `entry-${index}`,
+    }));
+    mockFetchByUrl({
+      "/status": { metadata: {} },
+      "/conversations/messages": { messages: [], has_more: false },
+      "/ask/memory": {},
+      "/entries": { entries: pageOfTen, total_count: 12 },
+    });
+
+    render(<AskView isActive />);
+
+    expect(await screen.findByText("12")).toBeInTheDocument();
+    expect(screen.queryByText("10")).not.toBeInTheDocument();
+  });
+
   test("shows skeleton and mapped pipeline status while journal cards process", async () => {
     mockFetchByUrl({
       "/status": { metadata: { pipeline_stage: "entities" }, entry_id: null },

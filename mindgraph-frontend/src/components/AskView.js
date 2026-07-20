@@ -607,7 +607,13 @@ export default function AskView({ isActive }) {
     authHeaders().then((headers) =>
       fetch(`${API}/entries`, { headers })
         .then((r) => r.ok ? r.json() : Promise.reject())
-        .then((data) => setEntryCount((data.entries || []).length))
+        // total_count is the account-wide count; the entries array is one page
+        // (default page_size=10), so its length under-reports past 10 entries.
+        .then((data) => setEntryCount(
+          typeof data.total_count === "number"
+            ? data.total_count
+            : (data.entries || []).length
+        ))
         .catch(() => setEntryCount(null))
     );
   }, []);
