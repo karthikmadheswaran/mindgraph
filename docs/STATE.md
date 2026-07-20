@@ -25,6 +25,8 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 
 **Reflection (self-synthesis)** — 02/07 (`synthesis_engine.py`, 019). Per-user pattern doc; first gift ≥ 5 entries; Home shows unopened only (cap 3) → then Journal → Patterns. Gift-level open gating is ACCEPTED launch behavior — no per-insight `opened_at`. Deferred: inactive-regen scheduler; tune `REFLECTION_STALE_DAYS`(3)/`MIN_ENTRIES`(5).
 
+**Patterns v1 (founder-gated, 07/20)** — `docs/designs/graph-v2-patterns.md` committed; components 1-3 live in Journal → Patterns: attention mix (`entry_tags` weekly, first frontend use), gravity top-5 (30d vs prior window), drift ledger (reuses non-pick drift read path + existing resolve/dismiss; pick-mode untouched, regression-locked). Gate = `PATTERNS_ENABLED` env (default OFF) OR founder id — backend 404s `/patterns/*`, frontend renders nothing (`patternsGate.js`); trial users see zero difference. `patterns_viewed` + `graph_viewed` events added. Components 4-5 (communities, surprise edges) DEFERRED per doc. UI needs the manual frontend redeploy (blocker above) to appear in prod.
+
 ## Next (ordered)
 1. **Flip B on prod** — Railway `ASK_GENERATION_MODEL=gemini-3.1-flash-lite` + `ASK_GENERATION_THINKING=minimal`; rollback = delete both. Then first-prod-reask check (Watching).
 2. **Codebase Review 06-05 remaining critical:** sequential-blocking "parallel" retrieval (Notion `3769402f…`).

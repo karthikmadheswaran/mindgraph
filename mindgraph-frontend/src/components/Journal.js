@@ -14,6 +14,8 @@ import Toast from "./Toast";
 import EntriesControls from "./EntriesControls";
 import EntriesList from "./EntriesList";
 import { ReflectionGift, buildIntentionCards } from "./InsightCards";
+import PatternsSection from "./PatternsSection";
+import { isPatternsEnabled } from "../utils/patternsGate";
 import "../styles/dashboard.css";
 
 // Journal — one scrollable life view (v2, no sub-tabs): On your plate (next
@@ -1484,7 +1486,11 @@ function Journal({ isActive, userId }) {
 
   const showPlate =
     plateDeadlines.length > 0 || activeProjects.length > 0 || overflowParts.length > 0;
-  const showPatterns = Boolean(reflection?.synthesis_text);
+  // Patterns v1 (founder-gated): attention mix + gravity + drift ledger join
+  // the reflection inside the Patterns section. Gate default OFF — trial
+  // users' render is byte-identical to before (docs/designs/graph-v2-patterns.md).
+  const patternsEnabled = isPatternsEnabled(userId);
+  const showPatterns = Boolean(reflection?.synthesis_text) || patternsEnabled;
   const intentions = intentionCards || [];
   const showIntentions = intentions.length > 0;
   const showEntries = entries === null || totalCount > 0 || hasActiveFilter;
@@ -1606,15 +1612,25 @@ function Journal({ isActive, userId }) {
             </section>
           )}
 
-          {/* ——— Patterns — the FULL reflection set (Home caps at 3) ——— */}
+          {/* ——— Patterns — the FULL reflection set (Home caps at 3), plus the
+                 founder-gated Patterns v1 components ——— */}
           {showPatterns && (
             <section className="journal-section journal-patterns">
               <h2>Patterns</h2>
-              <ReflectionGift
-                bare
-                reflection={reflection}
-                onReveal={handleReflectionReveal}
-              />
+              {Boolean(reflection?.synthesis_text) && (
+                <ReflectionGift
+                  bare
+                  reflection={reflection}
+                  onReveal={handleReflectionReveal}
+                />
+              )}
+              {patternsEnabled && (
+                <PatternsSection
+                  isActive={isActive}
+                  intentions={intentionCards || []}
+                  onIntentionAction={handleIntentionAction}
+                />
+              )}
             </section>
           )}
 

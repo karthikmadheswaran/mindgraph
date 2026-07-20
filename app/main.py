@@ -41,6 +41,7 @@ from app.services import (
     entry_service,
     insight_service,
     intention_service,
+    patterns_service,
     project_service,
 )
 from app.payments.router import router as payments_router
@@ -355,7 +356,35 @@ async def get_entities(user_id: str = Depends(get_current_user)):
 
 @app.get("/entity-relations")
 async def get_entity_relations(user_id: str = Depends(get_current_user)):
+    # graph_viewed: /entity-relations is fetched only by the Graph page, so it
+    # doubles as the "does anyone open Graph?" signal (graph-v2-patterns.md
+    # open question 1). track() never raises.
+    track(user_id, "graph_viewed")
     return await entity_service.get_entity_relations(user_id)
+
+
+# ── Patterns v1 (founder-gated; docs/designs/graph-v2-patterns.md) ────────────
+
+
+def _require_patterns(user_id: str) -> None:
+    # 404 (not 403) so trial users can't tell the surface exists at all.
+    if not patterns_service.patterns_enabled(user_id):
+        raise HTTPException(status_code=404, detail="Not found")
+
+
+@app.get("/patterns/attention-mix")
+async def patterns_attention_mix(user_id: str = Depends(get_current_user)):
+    _require_patterns(user_id)
+    # patterns_viewed fires here only: attention-mix is the section's first
+    # fetch, so one section view = one event (gravity would double-count).
+    track(user_id, "patterns_viewed")
+    return await patterns_service.get_attention_mix(user_id)
+
+
+@app.get("/patterns/gravity")
+async def patterns_gravity(user_id: str = Depends(get_current_user)):
+    _require_patterns(user_id)
+    return await patterns_service.get_gravity(user_id)
 
 
 @app.get("/intentions/drift")

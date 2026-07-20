@@ -810,6 +810,146 @@
   transform: translateX(2px);
 }
 
+/* ——— Patterns v1 (founder-gated; docs/designs/graph-v2-patterns.md) ———
+   Same tokens as the rest of Journal: Newsreader for content, Inter/JetBrains
+   Mono for meta, the paper palette. No new visual language. */
+
+.pat-section {
+  margin-top: 18px;
+}
+
+.pat-question {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1612;
+  margin: 26px 0 6px;
+}
+
+.pat-section .pat-question:first-child {
+  margin-top: 0;
+}
+
+.pat-subtext {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: #9a8d77;
+  margin: 0 0 10px;
+}
+
+.pat-quiet {
+  font-family: "Newsreader", Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  color: #9a8d77;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.pat-chart-wrap {
+  margin: 4px 0 8px;
+}
+
+.pat-chart {
+  position: relative;
+}
+
+.pat-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pat-chart-xlabels {
+  display: flex;
+  justify-content: space-between;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  color: #9a8d77;
+  margin-top: 2px;
+}
+
+.pat-tooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: #fffdf9;
+  border: 1px solid rgba(26, 22, 18, 0.14);
+  border-radius: 6px;
+  padding: 6px 9px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(44, 36, 24, 0.08);
+  z-index: 2;
+}
+
+.pat-tooltip-week {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  color: #6b5f4e;
+  margin-bottom: 3px;
+}
+
+.pat-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: #1a1612;
+}
+
+.pat-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.pat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+}
+
+.pat-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: #6b5f4e;
+}
+
+.pat-gravity {
+  display: flex;
+  flex-direction: column;
+}
+
+.pat-gravity-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(26, 22, 18, 0.06);
+}
+
+.pat-gravity-name {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 15px;
+  color: #1a1612;
+  flex-shrink: 0;
+}
+
+.pat-gravity-meta {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: #9a8d77;
+  min-width: 0;
+}
+
 /* ——— Responsive ——— */
 
 @media (max-width: 900px) {

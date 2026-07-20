@@ -101,6 +101,8 @@ function createFetchHandler({
   entriesTotal = 0,
   entriesPageSize = 10,
   progress = { deadlines: [], projects: [] },
+  attentionMix = { categories: [], weeks: [], tagged_entries: 0 },
+  gravity = { window_days: 30, total_entries: 0, prior_total_entries: 0, entities: [] },
   onDeadlinePatch,
   onDeadlineDatePatch,
   onProjectPatch,
@@ -110,6 +112,14 @@ function createFetchHandler({
   return (input, options = {}) => {
     const url = typeof input === "string" ? input : input.url;
     const method = options.method || "GET";
+
+    if (url.includes("/patterns/attention-mix")) {
+      return jsonResponse(attentionMix);
+    }
+
+    if (url.includes("/patterns/gravity")) {
+      return jsonResponse(gravity);
+    }
 
     if (url.includes("/entries/filter-options")) {
       return jsonResponse({ mood: [], person: [], category: [] });
@@ -267,6 +277,108 @@ describe("Journal single-page life view", () => {
 
     // No sub-tab navigation anywhere.
     expect(container.querySelector(".journal-tabs")).toBeNull();
+  });
+
+  // ——— Patterns v1 (founder-gated; docs/designs/graph-v2-patterns.md) ———
+
+  const FOUNDER_USER_ID = "e7bcef72-a66c-4ebe-9c5e-0a98b5f696d8";
+
+  const founderAttentionMix = {
+    categories: ["work", "personal", "health", "finance", "family", "hobby", "travel", "education", "other"],
+    weeks: [
+      { week_start: "2026-07-06", counts: { work: 3, health: 1 } },
+      { week_start: "2026-07-13", counts: { work: 2, personal: 2 } },
+    ],
+    tagged_entries: 8,
+  };
+
+  const founderGravity = {
+    window_days: 30,
+    total_entries: 12,
+    prior_total_entries: 9,
+    entities: [
+      {
+        entity_id: "ent-1",
+        name: "Rahul",
+        entity_type: "person",
+        entry_count: 5,
+        share: 0.38,
+        prior_share: 0.12,
+      },
+    ],
+  };
+
+  test("Patterns v1 is invisible to non-founder accounts — no render, no fetch", async () => {
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        intentions: [intentionA],
+        synthesis: { synthesis_text: TWO_INSIGHT_DOC, opened: true },
+      })
+    );
+
+    render(<Journal isActive userId={TEST_USER_ID} />);
+
+    await screen.findByText("Start working out");
+    await screen.findByText("Insight 1");
+
+    expect(screen.queryByText(/Where has my attention been going/i)).toBeNull();
+    expect(screen.queryByText(/taking up the most space/i)).toBeNull();
+    expect(screen.queryByText(/gone quiet\?/i)).toBeNull();
+
+    const patternsCalls = global.fetch.mock.calls.filter(([input]) =>
+      String(typeof input === "string" ? input : input.url).includes("/patterns/")
+    );
+    expect(patternsCalls).toHaveLength(0);
+  });
+
+  test("founder sees the three question-framed Patterns components", async () => {
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        intentions: [intentionA],
+        synthesis: null,
+        attentionMix: founderAttentionMix,
+        gravity: founderGravity,
+      })
+    );
+
+    render(<Journal isActive userId={FOUNDER_USER_ID} />);
+
+    expect(
+      await screen.findByText(/Where has my attention been going/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/taking up the most space/i)).toBeInTheDocument();
+    expect(screen.getByText(/gone quiet\?/i)).toBeInTheDocument();
+
+    // Gravity strip: entity + share + trend as data.
+    expect(await screen.findByText("Rahul")).toBeInTheDocument();
+    expect(screen.getByText(/in 38% of your entries/i)).toBeInTheDocument();
+    expect(screen.getByText(/up from 12%/i)).toBeInTheDocument();
+
+    // Drift ledger reuses the drift read path (intention appears in the ledger
+    // as well as the Intentions section below).
+    const ledgerRows = await screen.findAllByText("Start working out");
+    expect(ledgerRows.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("founder Patterns shows quiet sparse states below the data floors", async () => {
+    global.fetch.mockImplementation(
+      createFetchHandler({
+        intentions: [],
+        synthesis: null,
+        attentionMix: { categories: [], weeks: [], tagged_entries: 2 },
+        gravity: { window_days: 30, total_entries: 0, prior_total_entries: 0, entities: [] },
+      })
+    );
+
+    render(<Journal isActive userId={FOUNDER_USER_ID} />);
+
+    expect(
+      await screen.findByText(/Too few entries to see a shape yet/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/No people or projects have taken up space/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/the ledger is quiet/i)).toBeInTheDocument();
   });
 
   test("empty sections collapse — headers do not render over nothing", async () => {
