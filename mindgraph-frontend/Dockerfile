@@ -1,3 +1,7 @@
+# Deploy note (2026-07-20): the src-only push 77df89b did not trigger a Railway
+# rebuild of this service — its watch scope apparently excludes src/ (config
+# lives in the Railway dashboard, not the repo; see docs/STATE.md P3). Touching
+# this Dockerfile is the in-repo way to force a frontend rebuild.
 FROM node:20-slim AS build
 
 WORKDIR /app
