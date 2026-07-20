@@ -1,0 +1,21 @@
+-- Migration 025: enable RLS on the two entry join tables the 022 lockdown
+-- missed (entry_entities, entry_tags).
+--
+-- WHAT: the 2026-07-10 lockdown (022) enabled RLS on the 16 user-data tables
+-- named in the security audit, but the audit's table inventory never listed
+-- the two join tables. Verified 2026-07-15 with the public anon key: both
+-- still return rows over REST (entry_id↔entity_id pairs; per-entry category +
+-- confidence tags). No journal text leaks — entry ids don't resolve against
+-- the RLS-protected parents — but per-entry category labels are user data and
+-- the deny-by-default posture must cover every table.
+--
+-- Same pattern as 022: RLS with NO policies. The backend reads/writes these
+-- via the service-role key (bypasses RLS); nothing user-facing touches them
+-- with the anon key, so the app needs no change.
+--
+-- APPLY: Supabase SQL editor (manual, like 021-024). Idempotent.
+-- VERIFY after apply: anon REST probe on both tables must return [] —
+--   GET {SUPABASE_URL}/rest/v1/entry_entities?select=*&limit=1  → []
+--   GET {SUPABASE_URL}/rest/v1/entry_tags?select=*&limit=1      → []
+ALTER TABLE entry_entities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE entry_tags     ENABLE ROW LEVEL SECURITY;
