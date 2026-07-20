@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-15 (commit 66bc69a — trial-readiness sweep: posthog capture fix landed NOT deployed; cold-start audit clean; prod-cleanup SQL drafted. NEXT: deploy + Railway env verify, then demand-test.)
+# STATE — updated 2026-07-20 (commit 56f4f35 — PostHog capture fix LIVE on prod (5d2c97f2); RLS migration 025 applied + anon-probe verified; Ask stat fix merged but NOT live — frontend service ignores pushes, founder must redeploy in Railway. NEXT: founder Railway actions below, then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -41,12 +41,15 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 - **Stale deadline Ask eval case (P3):** `rag_test_cases.json` "deadlines for the end of May?" is `temporal`, scored on prose-entry F1 — encodes the old prose path, not the fixed structured-table one. Retire or convert to an answer-content assertion (cf. `eval_ask_deadlines.py`).
 - Read-after-write lag on `ask_messages` can defeat loop detection under rapid sends (P2; not at human pace).
 - Referenced-date indexing gap (Layer 3): date-mentioning entries invisible to temporal queries — needs `entry_referenced_dates` + a pipeline node (P2).
+- **Railway frontend auto-deploy dead (P3):** pushes to main never rebuild the frontend service — src-only (77df89b) AND Dockerfile-touch (56f4f35) both ignored, while the backend service redeploys fine (watch-path scoped to backend files). No `railway.json` in repo; the config is dashboard-side. Fix in dashboard: enable auto-deploy / correct the watch path for the frontend service, else every frontend change silently needs a manual redeploy.
 - **Minor (P3):** `ChatVertexAI` deprecation warning at boot (migrate `app/llm.py` Vertex branch before LangChain 4.0); `normalize_thinking_budget_eval.py:97` outdated `model=` kwarg (broken since ~23/05); deadline live eval stale April fixtures (F1 = scoring artifact); local `.env` UTF-8 BOM breaks `os.getenv` locally (prod fine); UI polish (desktop wide-layout space; deadline scroll styling).
 
-## Pre-demand-test blockers (07/15 sweep + follow-up)
-- **🔴 Apply migration 025 to prod (SQL editor, manual):** `entry_entities` + `entry_tags` are STILL anon-readable — the 07/10 RLS lockdown missed the two join tables (audit's inventory never listed them). Metadata only (uuid pairs; per-entry category+confidence), no journal text, but the deny-all posture must cover every table. Verify after: anon probe on both → `[]`.
-- **Verify in Railway (can't be read from repo):** `POSTHOG_API_KEY` set (else events no-op with zero errors) and `DRIFT_THRESHOLD_DAYS=3` for the demand test — the code default is **14** (`intention_service.py:28`) and 3 appears nowhere in code. (PostHog capture fix itself is DEPLOYED — `/health` 5d2c97f2 07/15.)
+## Pre-demand-test blockers (all founder-only, 07/20)
+- **🔴 Redeploy the FRONTEND service in the Railway dashboard** to ship the Ask entry-count fix (77df89b): prod still serves bundle `main.1be98b0b.js`. Pushes do NOT trigger this service — even touching its own Dockerfile (56f4f35) didn't; auto-deploy is off or mis-scoped (see P3 below). Verify: bundle hash at rawtxt.in changes.
+- **Verify in Railway (can't be read from repo):** `POSTHOG_API_KEY` set (else events no-op with zero errors) and `DRIFT_THRESHOLD_DAYS=3` for the demand test — the code default is **14** (`intention_service.py:28`) and 3 appears nowhere in code.
 - **Prod cleanup ready, founder-executed:** `docs/reports/prod-cleanup-2026-07-15.sql` (11 target users incl. 2 data-orphans of deleted auth users, 290 synthetic `public.users` rows, probe access-request; previews + FK-safe deletes, founder-guard). Cold-start audit: `docs/reports/cold-start-audit-2026-07-15.md` — no crashes/blanks; copy observations for founder.
+
+(RLS 025 applied by founder + anon-probe verified 07/20: `entry_entities`/`entry_tags` now return `[]` to anon — join-table gap closed; all 20 tables deny-by-default.)
 
 ## Watching (observation windows)
 - **Reflection cadence:** confirm the debounced post-entry regen writes a first gift once a real user crosses 5 entries (only krithikb4u seeded).
