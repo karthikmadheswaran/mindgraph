@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-20 (commit dfb7c7a — Patterns v1 founder-gated shipped + design doc committed; backend auto-deploys, but the Patterns UI AND the Ask stat fix both need the founder's manual FRONTEND redeploy. NEXT: founder Railway actions below, then demand-test.)
+# STATE — updated 2026-07-22 (signup invite-gate shipped: `POST /auth/signup` + AuthView proxy; NOT deployed. NEXT: founder actions below — SUPABASE_ANON_KEY, redeploy BOTH services, write the STUB signup strings — then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -7,13 +7,16 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 2. **3.1-flash-lite (B) merged 15/06 (PR #2).** Remaining: Railway env flip → watch prod (Next-1).
 3. **Launch / demand-test:** put drift + reflection in front of strangers (3+ entries each); watch for the "that's the gap" reaction.
 
-## Pre-demand-test blockers (all founder-only, 07/20)
-- **🔴 Redeploy the FRONTEND service in the Railway dashboard** to ship the Ask entry-count fix (77df89b) AND the Patterns v1 UI (dfb7c7a) — prod still serves `main.1be98b0b.js`; pushes don't trigger this service (P3 below). Verify: bundle hash changes.
+## Founder actions before invites (all founder-only, 07/22)
+- **Set `SUPABASE_ANON_KEY` in Railway backend env** (the public anon key already in env.js) — without it `POST /auth/signup` 503s for everyone. Then write the real strings for the `SIGNUP_ERROR_STRINGS` stubs in `AuthView.js`.
+- **🔴 Redeploy BOTH Railway services after merge** — backend (signup gate) + frontend (signup UI, Ask entry-count fix 77df89b, Patterns v1 UI dfb7c7a — prod still serves `main.1be98b0b.js`; pushes don't trigger frontend, P3 below). Verify: bundle hash changes.
+- **Custom SMTP in Supabase Auth settings** — built-in quota blocks ALL auth email (confirmations, resets) at ~2 sends/hr; hit live 07/22 (`over_email_send_rate_limit`).
+- **Before-User-Created auth hook** (Supabase dashboard) checking `allowed_emails` — closes the direct-to-GoTrue orphan hole (anon key is public; the backend gate only covers the app's signup path).
 - **Verify in Railway:** `POSTHOG_API_KEY` set (else events no-op silently) and `DRIFT_THRESHOLD_DAYS=3` — code default is **14** (`intention_service.py:28`); 3 appears nowhere in code.
-- **Execute prod cleanup:** `docs/reports/prod-cleanup-2026-07-15.sql` (11 target users, 290 orphaned synthetic `public.users` rows; previews + FK-safe deletes + founder-guard). Copy observations: `docs/reports/cold-start-audit-2026-07-15.md`.
+- **Execute prod cleanup:** `docs/reports/prod-cleanup-2026-07-15.sql` (11 target users, 290 orphaned synthetic `public.users` rows; previews + FK-safe deletes + founder-guard) **+ 07/22's `testemailforrequest@gmail.com` orphan** (signed up unconfirmed; requested access under the different spelling `testemailforrequestaccess@`). Copy observations: `docs/reports/cold-start-audit-2026-07-15.md`.
 
 ## Pins — shipped features + spec decisions that must hold
-**Trial gating** (07/10, live-verified). `allowed_emails` (021, RLS deny-all, service-role, 60s cache) enforced in `get_current_user` → 403 `invite_only`; founder seeded; fails open if table absent. RLS lockdown 022 (file reconstructed 07/15) + 025 (join tables, verified 07/20) — anon reads 0 rows on ALL tables. **Request access** (023): unauth `POST /access-requests` → deny-read table, anon column-scoped insert; grant = manual dashboard copy into `allowed_emails` (`docs/request-access.md`).
+**Trial gating** (07/10, live-verified). `allowed_emails` (021, RLS deny-all, service-role, 60s cache) enforced in `get_current_user` → 403 `invite_only`; founder seeded; fails open if table absent. RLS lockdown 022 (file reconstructed 07/15) + 025 (join tables, verified 07/20) — anon reads 0 rows on ALL tables. **Request access** (023): unauth `POST /access-requests` → deny-read table, anon column-scoped insert; grant = manual dashboard copy into `allowed_emails` (`docs/request-access.md`). **Signup gated server-side** (07/22): `POST /auth/signup` checks the allowlist BEFORE any GoTrue call (403 `not_invited`, 5/hr/IP, fail-open logs "FAILING OPEN"); AuthView proxies signup and flips to request-access on `not_invited`.
 
 **Rate limits** (024 + PR #23, live-verified). `try_rate_limit` enforces (was a no-op). Keying = XFF first hop (707708e), spoof-resistant on Railway (`100.64.x` keying = P3, no fix). **LAUNCH DECISION:** free entries **10/calendar-day (UTC)**; asks 30/day; pro 100/200 unchanged. `cost_cap.py` + 30/hr IP guard backstop; rolling-24h intentionally NOT built. Founder = pro.
 

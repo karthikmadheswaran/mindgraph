@@ -29,6 +29,20 @@ class AccessRequestBody(BaseModel):
         return v
 
 
+class SignupBody(BaseModel):
+    email: str
+    # min_length matches the frontend input and GoTrue's default policy.
+    password: str = Field(min_length=6, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def _valid_email(cls, v: str) -> str:
+        v = v.strip()
+        if not _EMAIL_RE.match(v) or len(v) > 254:
+            raise ValueError("invalid email")
+        return v
+
+
 class EntryResponse(BaseModel):
     auto_title: str
     summary: str

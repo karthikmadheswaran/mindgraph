@@ -31,9 +31,15 @@ def _fetch_allowed_emails() -> set[str]:
     return {row["email"].strip().lower() for row in (resp.data or [])}
 
 
-def is_email_allowed(email: str | None) -> bool:
+def check_email_allowed(email: str | None) -> tuple[bool, bool]:
+    """Returns (allowed, failed_open).
+
+    failed_open is True only on the no-cache fetch-failure path, so callers
+    with side effects behind the gate (e.g. signup) can log the open gate
+    loudly instead of mistaking it for a genuine invite.
+    """
     if not email:
-        return False
+        return False, False
 
     now = time.monotonic()
     if _cache["emails"] is None or (now - _cache["fetched_at"]) >= CACHE_TTL_SECONDS:
@@ -46,12 +52,16 @@ def is_email_allowed(email: str | None) -> bool:
                 logger.error(
                     "allowlist fetch failed with no cached copy — gate is OPEN: %s", exc
                 )
-                return True
+                return True, True
             # Serve stale until the next TTL window retries the fetch.
             logger.warning("allowlist refresh failed — serving stale cache: %s", exc)
             _cache["fetched_at"] = now
 
-    return email.strip().lower() in _cache["emails"]
+    return email.strip().lower() in _cache["emails"], False
+
+
+def is_email_allowed(email: str | None) -> bool:
+    return check_email_allowed(email)[0]
 
 
 def invalidate_cache() -> None:

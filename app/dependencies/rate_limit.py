@@ -130,6 +130,26 @@ async def access_request_rate_limit(request: Request) -> None:
         )
 
 
+SIGNUP_IP_LIMIT = 5
+SIGNUP_WINDOW_STR = "1h"
+
+
+async def signup_rate_limit(request: Request) -> None:
+    """IP-only guard for the UNauthenticated POST /auth/signup route.
+
+    5 per hour: also throttles allowlist-membership probing, which the
+    endpoint's not_invited response inherently reveals.
+    """
+    ip = _client_ip(request)
+    ws = _window_start(SIGNUP_WINDOW_STR)
+    if not _try_rate_limit(f"ip:{ip}:signup", ws, SIGNUP_IP_LIMIT):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many signup attempts. Please try again later.",
+            headers={"Retry-After": _retry_after(ws, SIGNUP_WINDOW_STR)},
+        )
+
+
 async def ask_rate_limit(
     request: Request,
     user_id: str = Depends(get_current_user),

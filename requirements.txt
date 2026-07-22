@@ -11,6 +11,9 @@ google-cloud-aiplatform==1.157.0
 langgraph==1.0.10          # PYSEC-2026-83 (was 1.0.9)
 langgraph-checkpoint==4.1.1  # CVE-2026-48775 (was 4.0.0)
 supabase==2.28.0
+# Direct dependency since the /auth/signup GoTrue forward (was transitive via
+# supabase); pinned to the locally-verified version.
+httpx==0.28.1
 # 1.75.0 is the only window satisfying BOTH langchain-google-genai 4.2.1 (<2.0.0)
 # and google-cloud-aiplatform 1.157.0 (>=1.66.0). Supports genai.Client(vertexai=True)
 # .embed_content for the Vertex embedding path.
