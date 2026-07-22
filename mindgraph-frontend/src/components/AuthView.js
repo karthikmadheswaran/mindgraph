@@ -4,14 +4,21 @@ import { API } from "../utils/auth";
 import RequestAccessForm from "./RequestAccessForm";
 import "../styles/auth.css";
 
-// STUB strings — Karthik writes the real copy. Keys match the backend's
-// /auth/signup error details (GoTrue error_code passthrough).
+// Keys match the backend's /auth/signup error details (GoTrue error_code
+// passthrough). user_already_exists normally can't occur while email
+// confirmations are on (GoTrue anti-enumeration returns 200), but the
+// passthrough would surface it if Supabase config ever changes.
 const SIGNUP_ERROR_STRINGS = {
-  not_invited: "[[STUB: not on the invite list]]",
-  over_email_send_rate_limit: "[[STUB: email limit reached, try later]]",
-  weak_password: "[[STUB: weak password]]",
-  signup_unavailable: "[[STUB: signup temporarily unavailable]]",
-  generic: "[[STUB: signup failed, try again]]",
+  not_invited:
+    "MindGraph is invite-only for now. Leave your email below and Karthik will be in touch.",
+  user_already_exists:
+    "Looks like you already have an account — try logging in instead.",
+  over_email_send_rate_limit:
+    "We couldn't send your confirmation email just now. Please try again in an hour.",
+  weak_password: "Password needs to be at least 6 characters.",
+  signup_unavailable:
+    "Sign-up is temporarily unavailable. Please try again in a few minutes.",
+  generic: "Something went wrong on our end. Please try again in a bit.",
 };
 
 function AuthView({ onAuth, onBack, onBrandClick }) {

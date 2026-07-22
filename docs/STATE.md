@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-22 (signup invite-gate shipped: `POST /auth/signup` + AuthView proxy; NOT deployed. NEXT: founder actions below — SUPABASE_ANON_KEY, redeploy BOTH services, write the STUB signup strings — then demand-test.)
+# STATE — updated 2026-07-22 (signup invite-gate shipped, final copy in: `POST /auth/signup` + AuthView proxy; NOT deployed. NEXT: founder actions below — SUPABASE_ANON_KEY, redeploy BOTH services — then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -8,7 +8,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 3. **Launch / demand-test:** put drift + reflection in front of strangers (3+ entries each); watch for the "that's the gap" reaction.
 
 ## Founder actions before invites (all founder-only, 07/22)
-- **Set `SUPABASE_ANON_KEY` in Railway backend env** (the public anon key already in env.js) — without it `POST /auth/signup` 503s for everyone. Then write the real strings for the `SIGNUP_ERROR_STRINGS` stubs in `AuthView.js`.
+- **Set `SUPABASE_ANON_KEY` in Railway backend env** (the public anon key already in env.js) — without it `POST /auth/signup` 503s for everyone.
 - **🔴 Redeploy BOTH Railway services after merge** — backend (signup gate) + frontend (signup UI, Ask entry-count fix 77df89b, Patterns v1 UI dfb7c7a — prod still serves `main.1be98b0b.js`; pushes don't trigger frontend, P3 below). Verify: bundle hash changes.
 - **Custom SMTP in Supabase Auth settings** — built-in quota blocks ALL auth email (confirmations, resets) at ~2 sends/hr; hit live 07/22 (`over_email_send_rate_limit`).
 - **Before-User-Created auth hook** (Supabase dashboard) checking `allowed_emails` — closes the direct-to-GoTrue orphan hole (anon key is public; the backend gate only covers the app's signup path).
