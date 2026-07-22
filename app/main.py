@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional
 
+import httpx
 import sentry_sdk
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
@@ -16,7 +17,9 @@ from app.dependencies.rate_limit import (
     access_request_rate_limit,
     ask_rate_limit,
     entry_rate_limit,
+    signup_rate_limit,
 )
+from app.services.allowlist import check_email_allowed
 from app.services.analytics import track
 from app.services.cost_cap import check_cost_cap
 from app.services.tier_service import tier_service
@@ -30,6 +33,7 @@ from app.schemas import (
     MessagesResponse,
     ProjectStatusUpdateRequest,
     SendMessageRequest,
+    SignupBody,
     TimezoneUpdateRequest,
 )
 from app.services import (
@@ -50,6 +54,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
 )
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 sentry_sdk.init(
@@ -111,6 +116,65 @@ async def health_check():
         "commit": commit[:8] if commit != "unknown" else "unknown",
         "service": "mindgraph-backend",
     }
+
+
+# Public (browser-visible) anon key — the same one the frontend ships in
+# env.js. Signup is an anon-level GoTrue operation; the service-role key is
+# deliberately NOT used here.
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+
+
+async def _forward_signup_to_gotrue(email: str, password: str) -> tuple[int, str | None]:
+    """POST the signup to GoTrue exactly as the browser used to.
+
+    Returns (status_code, error_code). error_code is GoTrue's machine code
+    (e.g. over_email_send_rate_limit, weak_password) on failure, else None.
+    """
+    supabase_url = os.getenv("SUPABASE_URL")
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.post(
+            f"{supabase_url}/auth/v1/signup",
+            headers={"apikey": SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+            json={"email": email, "password": password},
+        )
+    if resp.status_code >= 400:
+        try:
+            error_code = resp.json().get("error_code")
+        except Exception:
+            error_code = None
+        return resp.status_code, error_code
+    return resp.status_code, None
+
+
+@app.post("/auth/signup")
+async def signup(
+    body: SignupBody,
+    _rl: None = Depends(signup_rate_limit),
+):
+    # Server-side invite gate: the allowlist is checked BEFORE any GoTrue
+    # call, so a non-invited email never creates an auth user or triggers a
+    # confirmation email (orphan-user bug). Login-time enforcement in
+    # get_current_user stays as defense in depth.
+    allowed, failed_open = check_email_allowed(body.email)
+    if failed_open:
+        logger.error(
+            "ALLOWLIST UNREACHABLE — signup gate FAILING OPEN for %s", body.email
+        )
+    if not allowed:
+        raise HTTPException(status_code=403, detail="not_invited")
+
+    if not SUPABASE_ANON_KEY:
+        logger.error("SUPABASE_ANON_KEY not configured — cannot forward signup")
+        raise HTTPException(status_code=503, detail="signup_unavailable")
+
+    status_code, error_code = await _forward_signup_to_gotrue(
+        body.email, body.password
+    )
+    if status_code >= 400:
+        raise HTTPException(
+            status_code=status_code, detail=error_code or "signup_failed"
+        )
+    return {"status": "ok"}
 
 
 @app.post("/access-requests")
