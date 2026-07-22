@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-22 (signup invite-gate shipped, final copy in: `POST /auth/signup` + AuthView proxy; NOT deployed. NEXT: founder actions below — SUPABASE_ANON_KEY, redeploy BOTH services — then demand-test.)
+# STATE — updated 2026-07-22 (commit 099e09e — signup invite-gate + final copy PUSHED; backend auto-deploying, verify `/health` = 099e09e8. NEXT: founder — manual FRONTEND redeploy, then SMTP/hook/cleanup below, then demand-test.)
 
 Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the changelog DB + git), never struck through. Keep ≤1.5K tokens.
 
@@ -8,8 +8,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 3. **Launch / demand-test:** put drift + reflection in front of strangers (3+ entries each); watch for the "that's the gap" reaction.
 
 ## Founder actions before invites (all founder-only, 07/22)
-- **Set `SUPABASE_ANON_KEY` in Railway backend env** (the public anon key already in env.js) — without it `POST /auth/signup` 503s for everyone.
-- **🔴 Redeploy BOTH Railway services after merge** — backend (signup gate) + frontend (signup UI, Ask entry-count fix 77df89b, Patterns v1 UI dfb7c7a — prod still serves `main.1be98b0b.js`; pushes don't trigger frontend, P3 below). Verify: bundle hash changes.
+- **🔴 Manually redeploy the FRONTEND service in Railway** — ships signup UI + copy (099e09e), Ask entry-count fix (77df89b), Patterns v1 UI (dfb7c7a); prod still serves `main.1be98b0b.js`; pushes don't trigger frontend (P3 below). Verify: bundle hash changes. Backend deploys from the 07/22 push — verify `/health` commit = 099e09e8.
 - **Custom SMTP in Supabase Auth settings** — built-in quota blocks ALL auth email (confirmations, resets) at ~2 sends/hr; hit live 07/22 (`over_email_send_rate_limit`).
 - **Before-User-Created auth hook** (Supabase dashboard) checking `allowed_emails` — closes the direct-to-GoTrue orphan hole (anon key is public; the backend gate only covers the app's signup path).
 - **Verify in Railway:** `POSTHOG_API_KEY` set (else events no-op silently) and `DRIFT_THRESHOLD_DAYS=3` — code default is **14** (`intention_service.py:28`); 3 appears nowhere in code.
@@ -53,6 +52,7 @@ Maintained per ADR-0001: fixed/done items are **deleted** (history lives in the 
 - **Minor (P3):** `ChatVertexAI` deprecation at boot; `normalize_thinking_budget_eval.py:97` broken `model=` kwarg; stale April deadline-eval fixtures; local `.env` UTF-8 BOM breaks `os.getenv`; UI polish (wide-layout space; deadline scroll styling).
 
 ## Watching (observation windows)
+- **Signup gate first prod exercise:** after both deploys, next stranger signup should 403 `not_invited` → card flip, zero new `auth.users` orphans; watch for the "ALLOWLIST UNREACHABLE — FAILING OPEN" ERROR log (should never fire).
 - **Reflection cadence:** confirm the debounced post-entry regen writes a first gift once a real user crosses 5 entries (only krithikb4u seeded).
 - **First-prod-reask (after B flip):** pull a real multi-turn re-ask from Langfuse; confirm turn-2 acks + re-presents. Watch Ask gen p95 vs the >25s alert.
 - **Entity-gate advisory decision overdue (09/06):** promote `question_entity_known` to active gating if false-positive rate < 1%, else tune.
